@@ -567,10 +567,10 @@ namespace CodeGen
             }
             
             TabOut($") -> {returnType} {{");
-            
+            TabIn();
             if (gen == CommandFlavor.Synch)
             {
-                TabIn("// Create request structure");
+                Write("// Create request structure");
                 if (reqFields.Length > 0)
                 {
                     Write($"let req = {req.Name} {{");
@@ -592,7 +592,14 @@ namespace CodeGen
                 }
                 
                 Write("// Send command and process response");
-                Write($"let mut resp = {resp.Name}::default();");
+
+                if (respFields.Length > 0) {
+                    Write($"let mut resp = {resp.Name}::default();");
+                } else {
+                    Console.WriteLine($"Used TPMS_EMPTY instead of {resp.Name}");
+                    Write($"let mut resp = TPMS_EMPTY::default();");
+                }
+
                 Write("self.dispatch(req, &mut resp)?;");
                 
                 if (returnFieldName != null)
@@ -633,7 +640,17 @@ namespace CodeGen
             else // AsyncResponse
             {
                 TabIn("// Complete async command by receiving and processing response");
-                Write($"let mut resp = {resp.Name}::default();");
+                
+                if (respFields.Length > 0)
+                {
+                    Write($"let mut resp = {resp.Name}::default();");
+                }
+                else
+                {
+                    Console.WriteLine($"Used TPMS_EMPTY instead of {resp.Name}");
+                    Write($"let mut resp = TPMS_EMPTY::default();");
+                }
+
                 Write("self.tpm.dispatch_async_response(&mut resp)?;");
                 
                 if (returnFieldName != null)
@@ -772,12 +789,12 @@ namespace CodeGen
 
         void GenStructMarshalingImpl(TpmStruct s)
         {
-            Write($"impl {s.Name} {{");
-            TabIn("// Implement serialization/deserialization");
+            TabIn($"impl {s.Name} {{");
+            Write("// Implement serialization/deserialization");
             
             // To TPM implementation
-            Write("fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
-            TabIn("// Serialize fields");
+            TabIn("fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
+            Write("// Serialize fields");
             foreach (var f in s.MarshalFields)
             {
                 if (f.MarshalType == MarshalType.ConstantValue)
@@ -817,10 +834,10 @@ namespace CodeGen
             Write("Ok(())");
             TabOut("}");
             Write("");
-            
+
             // From TPM implementation
-            Write("fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
-            TabIn("// Deserialize fields");
+            TabIn("fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
+            Write("// Deserialize fields");
             foreach (var f in s.MarshalFields)
             {
                 if (f.MarshalType == MarshalType.ConstantValue)
@@ -923,8 +940,8 @@ namespace CodeGen
             Write("");
             
             Write("/// Trait for structures that can be marshaled to/from TPM wire format");
-            Write("pub trait TpmStructure: Sized {");
-            TabIn("/// Serialize the structure to a TPM buffer");
+            TabIn("pub trait TpmStructure: Sized {");
+            Write("/// Serialize the structure to a TPM buffer");
             Write("fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
             Write("");
             Write("/// Deserialize the structure from a TPM buffer");
@@ -938,13 +955,13 @@ namespace CodeGen
             {
                 if (!IsTypedefStruct(s))
                 {
-                    Write($"impl TpmStructure for {s.Name} {{");
+                    TabIn($"impl TpmStructure for {s.Name} {{");
                     TabIn("fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
-                    TabIn("self.serialize(buffer)");
+                    Write("self.serialize(buffer)");
                     TabOut("}");
                     Write("");
-                    Write("fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
-                    TabIn("self.deserialize(buffer)");
+                    TabIn("fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
+                    Write("self.deserialize(buffer)");
                     TabOut("}");
                     TabOut("}");
                     Write("");
