@@ -19,7 +19,8 @@ namespace CodeGen
         CPP,
         Java,
         JS,
-        Py
+        Py,
+        Rust
     }
 
     /// <summary> Handles language specific syntax of the generated code and translations of names, types 
@@ -32,7 +33,7 @@ namespace CodeGen
     {
         /// <summary> Lists code generators corresponding to the supported target languages 
         /// from the Lang enum (listed in the same order) </summary>
-        static Type[] CodeGenerators = { typeof(CGenCpp), typeof(CGenJava), typeof(CGenNode), typeof(CGenPy) };
+        static Type[] CodeGenerators = { typeof(CGenCpp), typeof(CGenJava), typeof(CGenNode), typeof(CGenPy), typeof(CGenRust) };
         
         static Lang _curLang = Lang.None;
 
@@ -60,17 +61,17 @@ namespace CodeGen
         }
 
         static Dictionary<string, ElementaryType> ElementaryTypes = new Dictionary<string, ElementaryType> {
-                //                                 .Net      C++       Java     TypeScript  Python
-                { "BYTE",   new ElementaryType(1, "byte",   "BYTE",   "byte",    "number",  "int")},
-                { "UINT8",  new ElementaryType(1, "byte",   "UINT8",  "byte",    "number",  "int")},
-                { "INT8",   new ElementaryType(1, "sbyte",  "INT8",   "byte",    "number",  "int")},
-                { "UINT16", new ElementaryType(2, "ushort", "UINT16", "int",     "number",  "int")},
-                { "INT16",  new ElementaryType(2, "short",  "INT16",  "int",     "number",  "int")},
-                { "UINT32", new ElementaryType(4, "uint",   "UINT32", "int",     "number",  "int")},
-                { "INT32",  new ElementaryType(4, "int",    "INT32",  "int",     "number",  "int")},
-                { "UINT64", new ElementaryType(8, "ulong",  "UINT64", "long",    "number",  "int")},
-                { "INT64",  new ElementaryType(8, "long",   "INT64",  "long",    "number",  "int")},
-                { "BOOL",   new ElementaryType(1, "bool",   "BOOL",   "boolean", "boolean", "bool")}
+                //                                 .Net      C++       Java     TypeScript  Python    Rust
+                { "BYTE",   new ElementaryType(1, "byte",   "BYTE",   "byte",    "number",  "int",    "u8")},
+                { "UINT8",  new ElementaryType(1, "byte",   "UINT8",  "byte",    "number",  "int",    "u8")},
+                { "INT8",   new ElementaryType(1, "sbyte",  "INT8",   "byte",    "number",  "int",    "i8")},
+                { "UINT16", new ElementaryType(2, "ushort", "UINT16", "int",     "number",  "int",    "u16")},
+                { "INT16",  new ElementaryType(2, "short",  "INT16",  "int",     "number",  "int",    "i16")},
+                { "UINT32", new ElementaryType(4, "uint",   "UINT32", "int",     "number",  "int",    "u32")},
+                { "INT32",  new ElementaryType(4, "int",    "INT32",  "int",     "number",  "int",    "i32")},
+                { "UINT64", new ElementaryType(8, "ulong",  "UINT64", "long",    "number",  "int",    "u64")},
+                { "INT64",  new ElementaryType(8, "long",   "INT64",  "long",    "number",  "int",    "i64")},
+                { "BOOL",   new ElementaryType(1, "bool",   "BOOL",   "boolean", "boolean", "bool",   "bool")}
         };
 
         public static IEnumerable<TpmValueType> GetElementaryTypes()
@@ -86,26 +87,27 @@ namespace CodeGen
         public static bool Java => _curLang == Lang.Java;
         public static bool Node => _curLang == Lang.JS;
         public static bool Py => _curLang == Lang.Py;
+        public static bool Rust => _curLang == Lang.Rust;
 
         public static bool IsOneOf(params Lang[] toCompare) => Current.IsOneOf(toCompare);
 
         // Standalone "this" reference (as used, e.g. to pass it as a function argument)
-        public static string This => Py ? "self" : "this";
+        public static string This => Py ? "self" : Rust ? "self" : "this";
         public static string ThisMember => _thisQual;
-        public static string ClassMember => Cpp ? "::" : ".";
+        public static string ClassMember => Cpp ? "::" : Rust ? ":" : ".";
         public static string Member => Cpp ? "->" : ".";
         public static string Null => _null;
-        public static string Neg => Py ? "not " : "!";
-        public static string LineComment => Py ? "#" : "//";
+        public static string Neg => Py ? "not " : Rust ? "!" : "!";
+        public static string LineComment => Py ? "#" : Rust ? "//" : "//";
 
         public static string If(string cond) => Py ? $"if {cond}:" : $"if ({cond})";
 
         public static string Quote(string str) => _quote + str + _quote;
 
-        public static string TypeInfo(string typeName) => typeName + (Java ? ".class" : "");
+        public static string TypeInfo(string typeName) => typeName + (Java ? ".class" : Rust ? "::type_id()" : "");
 
         public static string LocalVar(string varName, string typeName)
-            => Py ? varName : Node ? $"let {varName}: {typeName}" : $"{typeName} {varName}";
+            => Py ? varName : Node ? $"let {varName}: {typeName}" : Rust ? $"let {varName}: {typeName}" : $"{typeName} {varName}";
 
         public static string NewObject(string type) => $"{_new}{type}()";
 
@@ -116,7 +118,7 @@ namespace CodeGen
         public static string EnumeratorAsUint(string name)
         {
             // TranslateConstExpr() takes care of .toInt() required in Java
-            return (TargetLang.DotNet ? "(uint)" : "") + TranslateConstExpr(name);
+            return (TargetLang.DotNet ? "(uint)" : TargetLang.Rust ? "as u32" : "") + TranslateConstExpr(name);
         }
 
         public static CodeGenBase NewCodeGen (Lang lang, string rootDir)
@@ -132,10 +134,10 @@ namespace CodeGen
 
             _curLang = lang;
             _thisQual = DotNet || Cpp || Java ? "" : This + ".";
-            _null = Py ? "None" : Cpp ? "nullptr" : "null";
-            _new = DotNet || Java || Node ? "new " : "";
-            _quote = Py || Node ? "'" : "\"";
-            _digestSize = Cpp ? "TPMT_HA::DigestSize" : "Crypto.digestSize";
+            _null = Py ? "None" : Rust ? "None" : Cpp ? "nullptr" : "null";
+            _new = DotNet || Java || Node ? "new " : Rust ? "" : "";
+            _quote = Py || Node ? "'" : Rust ? "\"" : "\"";
+            _digestSize = Cpp ? "TPMT_HA::DigestSize" : Rust ? "digest_size" : "Crypto.digestSize";
 
             GeneratedEnums = new HashSet<TpmEnum>();
 
@@ -176,8 +178,8 @@ namespace CodeGen
 
         static bool IsGenerated(TpmEnum e)
         {
-            // In Java mutual order of definitions is not important
-            return Java || (GeneratedEnums != null && GeneratedEnums.Contains(e));
+            // In Java and Rust mutual order of definitions is not important
+            return Java || Rust || (GeneratedEnums != null && GeneratedEnums.Contains(e));
         }
 
     } // static class TargetLang

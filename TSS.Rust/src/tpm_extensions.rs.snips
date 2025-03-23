@@ -1,0 +1,175 @@
+/*
+    This file contains source-code snippets that the code-generator inserts into the 
+    appropriate Rust type implementation file.   
+*/
+
+>> mod_constants
+
+/// Represents TPM_RH::NULL reserved handle
+pub const NULL_HANDLE: TpmHandle = TpmHandle { handle: TpmRh::Null as u32, auth_value: Vec::new() };
+
+/// Represents TPM_RH::OWNER reserved handle
+pub const OWNER_HANDLE: TpmHandle = TpmHandle { handle: TpmRh::Owner as u32, auth_value: Vec::new() };
+
+/// Represents TPM_RH::ENDORSEMENT reserved handle
+pub const ENDORSEMENT_HANDLE: TpmHandle = TpmHandle { handle: TpmRh::Endorsement as u32, auth_value: Vec::new() };
+
+/// Represents TPM_RH::PLATFORM reserved handle
+pub const PLATFORM_HANDLE: TpmHandle = TpmHandle { handle: TpmRh::Platform as u32, auth_value: Vec::new() };
+
+>> TpmHandle
+
+/// The handle value
+pub handle: u32,
+/// The authorization value associated with this handle
+pub auth_value: Vec<u8>,
+
+/// Creates a new handle with the given value
+pub fn new(handle_value: u32) -> Self {
+    Self {
+        handle: handle_value,
+        auth_value: Vec::new(),
+    }
+}
+
+/// Creates a handle for a persistent object
+pub fn persistent(handle_offset: u32) -> Self {
+    Self::new(((TpmHt::Persistent as u32) << 24) + handle_offset)
+}
+
+/// Creates a handle for a PCR
+pub fn pcr(pcr_index: u32) -> Self {
+    Self::new(pcr_index)
+}
+
+/// Creates a handle for an NV slot
+pub fn nv(nv_index: u32) -> Self {
+    Self::new(((TpmHt::NvIndex as u32) << 24) + nv_index)
+}
+
+/// Creates a password session handle with the associated authorization value
+pub fn pw_session(auth_value: &[u8]) -> Self {
+    Self {
+        handle: TpmRs::Pw as u32,
+        auth_value: auth_value.to_vec(),
+    }
+}
+
+/// Returns this handle's type
+pub fn get_type(&self) -> TpmHt {
+    // The handle type is the top byte of the handle value
+    unsafe { std::mem::transmute((self.handle >> 24) as u8) }
+}
+
+/// Get the TPM name of this handle
+pub fn get_name(&self) -> Vec<u8> {
+    let handle_type = self.get_type();
+    
+    // Per spec: handles of these types have their handle value as their name
+    if handle_type == TpmHt::Pcr || handle_type == TpmHt::NvIndex || 
+       handle_type == TpmHt::Permanent || handle_type == TpmHt::Transient {
+        let mut name = Vec::with_capacity(4);
+        name.extend_from_slice(&self.handle.to_be_bytes());
+        return name;
+    }
+    
+    // Other handle types might need more complex name calculation
+    // This would depend on the implementation details
+    panic!("Name calculation not implemented for this handle type")
+}
+
+/// Get a string representation of this handle
+pub fn to_string(&self) -> String {
+    format!("{}:0x{:x}", self.get_type(), self.handle)
+}
+
+>> TpmtPublic
+
+/// Get the TPM name (alg-prepended hash of the public area)
+pub fn get_name(&self) -> Vec<u8> {
+    // Serialize the public area
+    let mut buffer = TpmBuffer::new();
+    self.serialize(&mut buffer).unwrap();
+    let pub_bytes = buffer.to_vec();
+    
+    // Hash the serialized data
+    let hash_alg = self.name_alg;
+    let hash = crate::crypto::hash(hash_alg, &pub_bytes);
+    
+    // Prepend the algorithm identifier
+    let mut name = Vec::with_capacity(2 + hash.len());
+    name.extend_from_slice(&(hash_alg as u16).to_be_bytes());
+    name.extend_from_slice(&hash);
+    
+    name
+}
+
+/// Validate a signature created with this key
+pub fn validate_signature(&self, signed_data: &[u8], signature: &TpmuSignature) -> bool {
+    // Implementation would depend on the crypto backend
+    // This is a placeholder
+    crate::crypto::verify_signature(self, signed_data, signature)
+}
+
+>> TpmtHa
+
+/// The hash algorithm identifier
+pub hash_alg: TpmAlgId,
+/// The digest value
+pub digest: Vec<u8>,
+
+/// Create a new hash with the specified algorithm
+pub fn new(alg: TpmAlgId) -> Self {
+    let size = Self::digest_size(alg) as usize;
+    Self {
+        hash_alg: alg,
+        digest: vec![0; size],
+    }
+}
+
+/// Create a hash from the specified data
+pub fn from_data(alg: TpmAlgId, data: &[u8]) -> Self {
+    let digest = crate::crypto::hash(alg, data);
+    Self {
+        hash_alg: alg,
+        digest,
+    }
+}
+
+/// Get the digest size for the specified algorithm
+pub fn digest_size(alg: TpmAlgId) -> u16 {
+    match alg {
+        TpmAlgId::Sha1 => 20,
+        TpmAlgId::Sha256 => 32,
+        TpmAlgId::Sha384 => 48,
+        TpmAlgId::Sha512 => 64,
+        TpmAlgId::Sm3256 => 32,
+        _ => panic!("Unknown hash algorithm"),
+    }
+}
+
+/// Perform a TPM extend operation (hash concatenation)
+pub fn extend(&mut self, data: &[u8]) -> &mut Self {
+    // Hash the concatenation of the current digest and the data
+    let mut to_hash = Vec::with_capacity(self.digest.len() + data.len());
+    to_hash.extend_from_slice(&self.digest);
+    to_hash.extend_from_slice(data);
+    
+    self.digest = crate::crypto::hash(self.hash_alg, &to_hash);
+    self
+}
+
+/// Event operation (extends the hash of the data)
+pub fn event(&mut self, data: &[u8]) -> &mut Self {
+    // Hash the data first
+    let data_hash = crate::crypto::hash(self.hash_alg, data);
+    
+    // Then extend with the hash
+    self.extend(&data_hash)
+}
+
+/// Reset the hash to all zeros
+pub fn reset(&mut self) {
+    let size = Self::digest_size(self.hash_alg) as usize;
+    self.digest = vec![0; size];
+}
