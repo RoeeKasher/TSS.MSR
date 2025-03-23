@@ -131,10 +131,10 @@ namespace CodeGen
 
             // Implement TryFrom for numeric conversion
             Write("");
-            Write($"impl TryFrom<u{e.GetFinalUnderlyingType().GetSize() * 8}> for {e.Name} {{");
-            TabIn("type Error = TpmError;");
+            TabIn($"impl TryFrom<u{e.GetFinalUnderlyingType().GetSize() * 8}> for {e.Name} {{");
+            Write("type Error = TpmError;");
             Write("");
-            Write($"fn try_from(value: u{e.GetFinalUnderlyingType().GetSize() * 8}) -> Result<Self, Self::Error> {{");
+            TabIn($"fn try_from(value: u{e.GetFinalUnderlyingType().GetSize() * 8}) -> Result<Self, Self::Error> {{");
             TabIn("match value {");
             foreach (var elt in elements)
             {
@@ -143,11 +143,11 @@ namespace CodeGen
             Write("_ => Err(TpmError::InvalidEnumValue),");
             TabOut("}");
             TabOut("}");
-            // TabOut("}");
+            TabOut("}");
             Write("");
 
             // Implement Display trait
-            Write($"impl fmt::Display for {e.Name} {{");
+            TabIn($"impl fmt::Display for {e.Name} {{");
             TabIn("fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {");
             TabIn("match self {");
             foreach (var elt in elements)
@@ -157,7 +157,7 @@ namespace CodeGen
             }
             TabOut("}");
             TabOut("}");
-            // TabOut("}");
+            TabOut("}");
             Write("");
             
             EnumMap[e.Name] = enumVals;
@@ -215,7 +215,7 @@ namespace CodeGen
             TabOut("}");
             Write("");
             
-            Write($"impl TpmUnion for {u.Name} {{");
+            TabIn($"impl TpmUnion for {u.Name} {{");
             TabIn("fn get_union_selector(&self) -> u32 {");
             TabIn("match self {");
             
@@ -234,11 +234,11 @@ namespace CodeGen
             
             TabOut("}");
             TabOut("}");
-            // TabOut("}");
+            TabOut("}");
             Write("");
 
             // Implement Debug trait
-            Write($"impl fmt::Debug for {u.Name} {{");
+            TabIn($"impl fmt::Debug for {u.Name} {{");
             TabIn("fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {");
             TabIn("match self {");
             foreach (var m in u.Members)
@@ -255,7 +255,7 @@ namespace CodeGen
             }
             TabOut("}");
             TabOut("}");
-            // TabOut("}");
+            TabOut("}");
             Write("");
         }
 
@@ -338,7 +338,7 @@ namespace CodeGen
             Write("");
             
             // Default implementation
-            Write($"impl Default for {structName} {{");
+            TabIn($"impl Default for {structName} {{");
             TabIn("fn default() -> Self {");
             TabIn("Self {");
             
@@ -360,7 +360,7 @@ namespace CodeGen
             
             TabOut("}");
             TabOut("}");
-            // TabOut("}");
+            TabOut("}");
             Write("");
             
             // Implement struct methods
@@ -386,7 +386,7 @@ namespace CodeGen
                     first = false;
                 }
                 
-                TabOut($") -> Self {{");
+                Write($") -> Self {{");
                 TabIn("Self {");
                 
                 foreach (var f in s.NonTagFields)
@@ -458,8 +458,8 @@ namespace CodeGen
             TabIn("// Implement deserialization");
             Write("Ok(Self::default())");
             TabOut("}");
-            
-            // TabOut("}");
+
+            TabOut("}");
             Write("");
         }
 
@@ -483,9 +483,9 @@ namespace CodeGen
             TabOut("}");
             Write("");
             
-            Write("impl Tpm2 {");
-            TabIn("/// Creates a new TPM2 instance");
-            Write("pub fn new() -> Result<Self, TpmError> {");
+            TabIn("impl Tpm2 {");
+            Write("/// Creates a new TPM2 instance");
+            TabIn("pub fn new() -> Result<Self, TpmError> {");
             TabIn("Ok(Self {");
             Write("device: crate::device::TpmDevice::new()?,");
             TabOut("})");
@@ -729,7 +729,7 @@ namespace CodeGen
             
             foreach (TpmUnion u in unions)
             {
-                Write($"if type_id == std::any::TypeId::of::<{u.Name}>() {{");
+                TabIn($"if type_id == std::any::TypeId::of::<{u.Name}>() {{");
                 TabIn("match selector {");
                 
                 foreach (UnionMember m in u.Members)

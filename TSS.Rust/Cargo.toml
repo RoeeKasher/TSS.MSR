@@ -3,4 +3,11 @@ name = "tss-rust"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib", "lib"]
+
 [dependencies]
+
+[[example]]
+name = "tpm_samples"
+path = "examples/tpm_samples.rs"
