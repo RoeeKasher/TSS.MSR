@@ -30,52 +30,7 @@ lazy_static::lazy_static! {
     /// Maps enum type IDs to a map of values to string representations
     static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u32, &'static str>> = {
     let mut map = HashMap::new();
-        let mut TPM_ALG_ID_map = HashMap::new();
-        TPM_ALG_ID_map.insert(0x0, "ERROR");
-        TPM_ALG_ID_map.insert(0x1, "FIRST");
-        TPM_ALG_ID_map.insert(0x1, "RSA");
-        TPM_ALG_ID_map.insert(0x3, "TDES");
-        TPM_ALG_ID_map.insert(0x4, "SHA");
-        TPM_ALG_ID_map.insert(0x4, "SHA1");
-        TPM_ALG_ID_map.insert(0x5, "HMAC");
-        TPM_ALG_ID_map.insert(0x6, "AES");
-        TPM_ALG_ID_map.insert(0x7, "MGF1");
-        TPM_ALG_ID_map.insert(0x8, "KEYEDHASH");
-        TPM_ALG_ID_map.insert(0xA, "XOR");
-        TPM_ALG_ID_map.insert(0xB, "SHA256");
-        TPM_ALG_ID_map.insert(0xC, "SHA384");
-        TPM_ALG_ID_map.insert(0xD, "SHA512");
-        TPM_ALG_ID_map.insert(0x10, "NULL");
-        TPM_ALG_ID_map.insert(0x12, "SM3_256");
-        TPM_ALG_ID_map.insert(0x13, "SM4");
-        TPM_ALG_ID_map.insert(0x14, "RSASSA");
-        TPM_ALG_ID_map.insert(0x15, "RSAES");
-        TPM_ALG_ID_map.insert(0x16, "RSAPSS");
-        TPM_ALG_ID_map.insert(0x17, "OAEP");
-        TPM_ALG_ID_map.insert(0x18, "ECDSA");
-        TPM_ALG_ID_map.insert(0x19, "ECDH");
-        TPM_ALG_ID_map.insert(0x1A, "ECDAA");
-        TPM_ALG_ID_map.insert(0x1B, "SM2");
-        TPM_ALG_ID_map.insert(0x1C, "ECSCHNORR");
-        TPM_ALG_ID_map.insert(0x1D, "ECMQV");
-        TPM_ALG_ID_map.insert(0x20, "KDF1_SP800_56A");
-        TPM_ALG_ID_map.insert(0x21, "KDF2");
-        TPM_ALG_ID_map.insert(0x22, "KDF1_SP800_108");
-        TPM_ALG_ID_map.insert(0x23, "ECC");
-        TPM_ALG_ID_map.insert(0x25, "SYMCIPHER");
-        TPM_ALG_ID_map.insert(0x26, "CAMELLIA");
-        TPM_ALG_ID_map.insert(0x27, "SHA3_256");
-        TPM_ALG_ID_map.insert(0x28, "SHA3_384");
-        TPM_ALG_ID_map.insert(0x29, "SHA3_512");
-        TPM_ALG_ID_map.insert(0x3F, "CMAC");
-        TPM_ALG_ID_map.insert(0x40, "CTR");
-        TPM_ALG_ID_map.insert(0x41, "OFB");
-        TPM_ALG_ID_map.insert(0x42, "CBC");
-        TPM_ALG_ID_map.insert(0x43, "CFB");
-        TPM_ALG_ID_map.insert(0x44, "ECB");
-        TPM_ALG_ID_map.insert(0x44, "LAST");
-        TPM_ALG_ID_map.insert(0x7FFF, "ANY");
-        TPM_ALG_ID_map.insert(0x7FFE, "ANY2");
+        let  TPM_ALG_ID_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_ALG_ID>(), TPM_ALG_ID_map);
 
         let mut TPM_ECC_CURVE_map = HashMap::new();
@@ -131,13 +86,7 @@ lazy_static::lazy_static! {
         SHA3_512_map.insert(0x48, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SHA3_512>(), SHA3_512_map);
 
-        let mut Logic_map = HashMap::new();
-        Logic_map.insert(0x1, "TRUE");
-        Logic_map.insert(0x0, "FALSE");
-        Logic_map.insert(0x1, "YES");
-        Logic_map.insert(0x0, "NO");
-        Logic_map.insert(0x1, "SET");
-        Logic_map.insert(0x0, "CLEAR");
+        let  Logic_map = HashMap::new();
         map.insert(std::any::TypeId::of::<Logic>(), Logic_map);
 
         let mut TPM_SPEC_map = HashMap::new();
@@ -152,319 +101,13 @@ lazy_static::lazy_static! {
         TPM_GENERATED_map.insert(0xFF544347, "VALUE");
         map.insert(std::any::TypeId::of::<TPM_GENERATED>(), TPM_GENERATED_map);
 
-        let mut TPM_CC_map = HashMap::new();
-        TPM_CC_map.insert(0x11F, "FIRST");
-        TPM_CC_map.insert(0x11F, "NV_UndefineSpaceSpecial");
-        TPM_CC_map.insert(0x120, "EvictControl");
-        TPM_CC_map.insert(0x121, "HierarchyControl");
-        TPM_CC_map.insert(0x122, "NV_UndefineSpace");
-        TPM_CC_map.insert(0x124, "ChangeEPS");
-        TPM_CC_map.insert(0x125, "ChangePPS");
-        TPM_CC_map.insert(0x126, "Clear");
-        TPM_CC_map.insert(0x127, "ClearControl");
-        TPM_CC_map.insert(0x128, "ClockSet");
-        TPM_CC_map.insert(0x129, "HierarchyChangeAuth");
-        TPM_CC_map.insert(0x12A, "NV_DefineSpace");
-        TPM_CC_map.insert(0x12B, "PCR_Allocate");
-        TPM_CC_map.insert(0x12C, "PCR_SetAuthPolicy");
-        TPM_CC_map.insert(0x12D, "PP_Commands");
-        TPM_CC_map.insert(0x12E, "SetPrimaryPolicy");
-        TPM_CC_map.insert(0x12F, "FieldUpgradeStart");
-        TPM_CC_map.insert(0x130, "ClockRateAdjust");
-        TPM_CC_map.insert(0x131, "CreatePrimary");
-        TPM_CC_map.insert(0x132, "NV_GlobalWriteLock");
-        TPM_CC_map.insert(0x133, "GetCommandAuditDigest");
-        TPM_CC_map.insert(0x134, "NV_Increment");
-        TPM_CC_map.insert(0x135, "NV_SetBits");
-        TPM_CC_map.insert(0x136, "NV_Extend");
-        TPM_CC_map.insert(0x137, "NV_Write");
-        TPM_CC_map.insert(0x138, "NV_WriteLock");
-        TPM_CC_map.insert(0x139, "DictionaryAttackLockReset");
-        TPM_CC_map.insert(0x13A, "DictionaryAttackParameters");
-        TPM_CC_map.insert(0x13B, "NV_ChangeAuth");
-        TPM_CC_map.insert(0x13C, "PCR_Event");
-        TPM_CC_map.insert(0x13D, "PCR_Reset");
-        TPM_CC_map.insert(0x13E, "SequenceComplete");
-        TPM_CC_map.insert(0x13F, "SetAlgorithmSet");
-        TPM_CC_map.insert(0x140, "SetCommandCodeAuditStatus");
-        TPM_CC_map.insert(0x141, "FieldUpgradeData");
-        TPM_CC_map.insert(0x142, "IncrementalSelfTest");
-        TPM_CC_map.insert(0x143, "SelfTest");
-        TPM_CC_map.insert(0x144, "Startup");
-        TPM_CC_map.insert(0x145, "Shutdown");
-        TPM_CC_map.insert(0x146, "StirRandom");
-        TPM_CC_map.insert(0x147, "ActivateCredential");
-        TPM_CC_map.insert(0x148, "Certify");
-        TPM_CC_map.insert(0x149, "PolicyNV");
-        TPM_CC_map.insert(0x14A, "CertifyCreation");
-        TPM_CC_map.insert(0x14B, "Duplicate");
-        TPM_CC_map.insert(0x14C, "GetTime");
-        TPM_CC_map.insert(0x14D, "GetSessionAuditDigest");
-        TPM_CC_map.insert(0x14E, "NV_Read");
-        TPM_CC_map.insert(0x14F, "NV_ReadLock");
-        TPM_CC_map.insert(0x150, "ObjectChangeAuth");
-        TPM_CC_map.insert(0x151, "PolicySecret");
-        TPM_CC_map.insert(0x152, "Rewrap");
-        TPM_CC_map.insert(0x153, "Create");
-        TPM_CC_map.insert(0x154, "ECDH_ZGen");
-        TPM_CC_map.insert(0x155, "HMAC");
-        TPM_CC_map.insert(0x155, "MAC");
-        TPM_CC_map.insert(0x156, "Import");
-        TPM_CC_map.insert(0x157, "Load");
-        TPM_CC_map.insert(0x158, "Quote");
-        TPM_CC_map.insert(0x159, "RSA_Decrypt");
-        TPM_CC_map.insert(0x15B, "HMAC_Start");
-        TPM_CC_map.insert(0x15B, "MAC_Start");
-        TPM_CC_map.insert(0x15C, "SequenceUpdate");
-        TPM_CC_map.insert(0x15D, "Sign");
-        TPM_CC_map.insert(0x15E, "Unseal");
-        TPM_CC_map.insert(0x160, "PolicySigned");
-        TPM_CC_map.insert(0x161, "ContextLoad");
-        TPM_CC_map.insert(0x162, "ContextSave");
-        TPM_CC_map.insert(0x163, "ECDH_KeyGen");
-        TPM_CC_map.insert(0x164, "EncryptDecrypt");
-        TPM_CC_map.insert(0x165, "FlushContext");
-        TPM_CC_map.insert(0x167, "LoadExternal");
-        TPM_CC_map.insert(0x168, "MakeCredential");
-        TPM_CC_map.insert(0x169, "NV_ReadPublic");
-        TPM_CC_map.insert(0x16A, "PolicyAuthorize");
-        TPM_CC_map.insert(0x16B, "PolicyAuthValue");
-        TPM_CC_map.insert(0x16C, "PolicyCommandCode");
-        TPM_CC_map.insert(0x16D, "PolicyCounterTimer");
-        TPM_CC_map.insert(0x16E, "PolicyCpHash");
-        TPM_CC_map.insert(0x16F, "PolicyLocality");
-        TPM_CC_map.insert(0x170, "PolicyNameHash");
-        TPM_CC_map.insert(0x171, "PolicyOR");
-        TPM_CC_map.insert(0x172, "PolicyTicket");
-        TPM_CC_map.insert(0x173, "ReadPublic");
-        TPM_CC_map.insert(0x174, "RSA_Encrypt");
-        TPM_CC_map.insert(0x176, "StartAuthSession");
-        TPM_CC_map.insert(0x177, "VerifySignature");
-        TPM_CC_map.insert(0x178, "ECC_Parameters");
-        TPM_CC_map.insert(0x179, "FirmwareRead");
-        TPM_CC_map.insert(0x17A, "GetCapability");
-        TPM_CC_map.insert(0x17B, "GetRandom");
-        TPM_CC_map.insert(0x17C, "GetTestResult");
-        TPM_CC_map.insert(0x17D, "Hash");
-        TPM_CC_map.insert(0x17E, "PCR_Read");
-        TPM_CC_map.insert(0x17F, "PolicyPCR");
-        TPM_CC_map.insert(0x180, "PolicyRestart");
-        TPM_CC_map.insert(0x181, "ReadClock");
-        TPM_CC_map.insert(0x182, "PCR_Extend");
-        TPM_CC_map.insert(0x183, "PCR_SetAuthValue");
-        TPM_CC_map.insert(0x184, "NV_Certify");
-        TPM_CC_map.insert(0x185, "EventSequenceComplete");
-        TPM_CC_map.insert(0x186, "HashSequenceStart");
-        TPM_CC_map.insert(0x187, "PolicyPhysicalPresence");
-        TPM_CC_map.insert(0x188, "PolicyDuplicationSelect");
-        TPM_CC_map.insert(0x189, "PolicyGetDigest");
-        TPM_CC_map.insert(0x18A, "TestParms");
-        TPM_CC_map.insert(0x18B, "Commit");
-        TPM_CC_map.insert(0x18C, "PolicyPassword");
-        TPM_CC_map.insert(0x18D, "ZGen_2Phase");
-        TPM_CC_map.insert(0x18E, "EC_Ephemeral");
-        TPM_CC_map.insert(0x18F, "PolicyNvWritten");
-        TPM_CC_map.insert(0x190, "PolicyTemplate");
-        TPM_CC_map.insert(0x191, "CreateLoaded");
-        TPM_CC_map.insert(0x192, "PolicyAuthorizeNV");
-        TPM_CC_map.insert(0x193, "EncryptDecrypt2");
-        TPM_CC_map.insert(0x194, "AC_GetCapability");
-        TPM_CC_map.insert(0x195, "AC_Send");
-        TPM_CC_map.insert(0x196, "Policy_AC_SendSelect");
-        TPM_CC_map.insert(0x197, "CertifyX509");
-        TPM_CC_map.insert(0x198, "ACT_SetTimeout");
-        TPM_CC_map.insert(0x199, "ECC_Encrypt");
-        TPM_CC_map.insert(0x19A, "ECC_Decrypt");
-        TPM_CC_map.insert(0x19A, "LAST");
-        TPM_CC_map.insert(0x20000000, "CC_VEND");
-        TPM_CC_map.insert(0x20000000, "Vendor_TCG_Test");
+        let  TPM_CC_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_CC>(), TPM_CC_map);
 
-        let mut Implementation_Constants_map = HashMap::new();
-        Implementation_Constants_map.insert(0x1, "Ossl");
-        Implementation_Constants_map.insert(0x2, "Ltc");
-        Implementation_Constants_map.insert(0x3, "Msbn");
-        Implementation_Constants_map.insert(0x4, "Symcrypt");
-        Implementation_Constants_map.insert(0x3, "HASH_COUNT");
-        Implementation_Constants_map.insert(0x100, "MAX_SYM_KEY_BITS");
-        Implementation_Constants_map.insert(0x20, "MAX_SYM_KEY_BYTES");
-        Implementation_Constants_map.insert(0x10, "MAX_SYM_BLOCK_SIZE");
-        Implementation_Constants_map.insert(0x19A, "MAX_CAP_CC");
-        Implementation_Constants_map.insert(0x100, "MAX_RSA_KEY_BYTES");
-        Implementation_Constants_map.insert(0x20, "MAX_AES_KEY_BYTES");
-        Implementation_Constants_map.insert(0x30, "MAX_ECC_KEY_BYTES");
-        Implementation_Constants_map.insert(0x20, "LABEL_MAX_BUFFER");
-        Implementation_Constants_map.insert(0x4, "_TPM_CAP_SIZE");
-        Implementation_Constants_map.insert(0x3F8, "MAX_CAP_DATA");
-        Implementation_Constants_map.insert(0xA9, "MAX_CAP_ALGS");
-        Implementation_Constants_map.insert(0xFE, "MAX_CAP_HANDLES");
-        Implementation_Constants_map.insert(0x7F, "MAX_TPM_PROPERTIES");
-        Implementation_Constants_map.insert(0xCB, "MAX_PCR_PROPERTIES");
-        Implementation_Constants_map.insert(0x1FC, "MAX_ECC_CURVES");
-        Implementation_Constants_map.insert(0xE, "MAX_TAGGED_POLICIES");
-        Implementation_Constants_map.insert(0x7F, "MAX_AC_CAPABILITIES");
-        Implementation_Constants_map.insert(0x54, "MAX_ACT_DATA");
+        let  Implementation_Constants_map = HashMap::new();
         map.insert(std::any::TypeId::of::<ImplementationConstants>(), Implementation_Constants_map);
 
-        let mut TPM_RC_map = HashMap::new();
-        TPM_RC_map.insert(0x0, "SUCCESS");
-        TPM_RC_map.insert(0x1E, "BAD_TAG");
-        TPM_RC_map.insert(0x100, "RC_VER1");
-        TPM_RC_map.insert(0x100, "INITIALIZE");
-        TPM_RC_map.insert(0x101, "FAILURE");
-        TPM_RC_map.insert(0x103, "SEQUENCE");
-        TPM_RC_map.insert(0x10B, "PRIVATE");
-        TPM_RC_map.insert(0x119, "HMAC");
-        TPM_RC_map.insert(0x120, "DISABLED");
-        TPM_RC_map.insert(0x121, "EXCLUSIVE");
-        TPM_RC_map.insert(0x124, "AUTH_TYPE");
-        TPM_RC_map.insert(0x125, "AUTH_MISSING");
-        TPM_RC_map.insert(0x126, "POLICY");
-        TPM_RC_map.insert(0x127, "PCR");
-        TPM_RC_map.insert(0x128, "PCR_CHANGED");
-        TPM_RC_map.insert(0x12D, "UPGRADE");
-        TPM_RC_map.insert(0x12E, "TOO_MANY_CONTEXTS");
-        TPM_RC_map.insert(0x12F, "AUTH_UNAVAILABLE");
-        TPM_RC_map.insert(0x130, "REBOOT");
-        TPM_RC_map.insert(0x131, "UNBALANCED");
-        TPM_RC_map.insert(0x142, "COMMAND_SIZE");
-        TPM_RC_map.insert(0x143, "COMMAND_CODE");
-        TPM_RC_map.insert(0x144, "AUTHSIZE");
-        TPM_RC_map.insert(0x145, "AUTH_CONTEXT");
-        TPM_RC_map.insert(0x146, "NV_RANGE");
-        TPM_RC_map.insert(0x147, "NV_SIZE");
-        TPM_RC_map.insert(0x148, "NV_LOCKED");
-        TPM_RC_map.insert(0x149, "NV_AUTHORIZATION");
-        TPM_RC_map.insert(0x14A, "NV_UNINITIALIZED");
-        TPM_RC_map.insert(0x14B, "NV_SPACE");
-        TPM_RC_map.insert(0x14C, "NV_DEFINED");
-        TPM_RC_map.insert(0x150, "BAD_CONTEXT");
-        TPM_RC_map.insert(0x151, "CPHASH");
-        TPM_RC_map.insert(0x152, "PARENT");
-        TPM_RC_map.insert(0x153, "NEEDS_TEST");
-        TPM_RC_map.insert(0x154, "NO_RESULT");
-        TPM_RC_map.insert(0x155, "SENSITIVE");
-        TPM_RC_map.insert(0x17F, "RC_MAX_FM0");
-        TPM_RC_map.insert(0x80, "RC_FMT1");
-        TPM_RC_map.insert(0x81, "ASYMMETRIC");
-        TPM_RC_map.insert(0x82, "ATTRIBUTES");
-        TPM_RC_map.insert(0x83, "HASH");
-        TPM_RC_map.insert(0x84, "VALUE");
-        TPM_RC_map.insert(0x85, "HIERARCHY");
-        TPM_RC_map.insert(0x87, "KEY_SIZE");
-        TPM_RC_map.insert(0x88, "MGF");
-        TPM_RC_map.insert(0x89, "MODE");
-        TPM_RC_map.insert(0x8A, "TYPE");
-        TPM_RC_map.insert(0x8B, "HANDLE");
-        TPM_RC_map.insert(0x8C, "KDF");
-        TPM_RC_map.insert(0x8D, "RANGE");
-        TPM_RC_map.insert(0x8E, "AUTH_FAIL");
-        TPM_RC_map.insert(0x8F, "NONCE");
-        TPM_RC_map.insert(0x90, "PP");
-        TPM_RC_map.insert(0x92, "SCHEME");
-        TPM_RC_map.insert(0x95, "SIZE");
-        TPM_RC_map.insert(0x96, "SYMMETRIC");
-        TPM_RC_map.insert(0x97, "TAG");
-        TPM_RC_map.insert(0x98, "SELECTOR");
-        TPM_RC_map.insert(0x9A, "INSUFFICIENT");
-        TPM_RC_map.insert(0x9B, "SIGNATURE");
-        TPM_RC_map.insert(0x9C, "KEY");
-        TPM_RC_map.insert(0x9D, "POLICY_FAIL");
-        TPM_RC_map.insert(0x9F, "INTEGRITY");
-        TPM_RC_map.insert(0xA0, "TICKET");
-        TPM_RC_map.insert(0xA1, "RESERVED_BITS");
-        TPM_RC_map.insert(0xA2, "BAD_AUTH");
-        TPM_RC_map.insert(0xA3, "EXPIRED");
-        TPM_RC_map.insert(0xA4, "POLICY_CC");
-        TPM_RC_map.insert(0xA5, "BINDING");
-        TPM_RC_map.insert(0xA6, "CURVE");
-        TPM_RC_map.insert(0xA7, "ECC_POINT");
-        TPM_RC_map.insert(0x900, "RC_WARN");
-        TPM_RC_map.insert(0x901, "CONTEXT_GAP");
-        TPM_RC_map.insert(0x902, "OBJECT_MEMORY");
-        TPM_RC_map.insert(0x903, "SESSION_MEMORY");
-        TPM_RC_map.insert(0x904, "MEMORY");
-        TPM_RC_map.insert(0x905, "SESSION_HANDLES");
-        TPM_RC_map.insert(0x906, "OBJECT_HANDLES");
-        TPM_RC_map.insert(0x907, "LOCALITY");
-        TPM_RC_map.insert(0x908, "YIELDED");
-        TPM_RC_map.insert(0x909, "CANCELED");
-        TPM_RC_map.insert(0x90A, "TESTING");
-        TPM_RC_map.insert(0x910, "REFERENCE_H0");
-        TPM_RC_map.insert(0x911, "REFERENCE_H1");
-        TPM_RC_map.insert(0x912, "REFERENCE_H2");
-        TPM_RC_map.insert(0x913, "REFERENCE_H3");
-        TPM_RC_map.insert(0x914, "REFERENCE_H4");
-        TPM_RC_map.insert(0x915, "REFERENCE_H5");
-        TPM_RC_map.insert(0x916, "REFERENCE_H6");
-        TPM_RC_map.insert(0x918, "REFERENCE_S0");
-        TPM_RC_map.insert(0x919, "REFERENCE_S1");
-        TPM_RC_map.insert(0x91A, "REFERENCE_S2");
-        TPM_RC_map.insert(0x91B, "REFERENCE_S3");
-        TPM_RC_map.insert(0x91C, "REFERENCE_S4");
-        TPM_RC_map.insert(0x91D, "REFERENCE_S5");
-        TPM_RC_map.insert(0x91E, "REFERENCE_S6");
-        TPM_RC_map.insert(0x920, "NV_RATE");
-        TPM_RC_map.insert(0x921, "LOCKOUT");
-        TPM_RC_map.insert(0x922, "RETRY");
-        TPM_RC_map.insert(0x923, "NV_UNAVAILABLE");
-        TPM_RC_map.insert(0x97F, "NOT_USED");
-        TPM_RC_map.insert(0x0, "H");
-        TPM_RC_map.insert(0x40, "P");
-        TPM_RC_map.insert(0x800, "S");
-        TPM_RC_map.insert(0x100, "_1");
-        TPM_RC_map.insert(0x200, "_2");
-        TPM_RC_map.insert(0x300, "_3");
-        TPM_RC_map.insert(0x400, "_4");
-        TPM_RC_map.insert(0x500, "_5");
-        TPM_RC_map.insert(0x600, "_6");
-        TPM_RC_map.insert(0x700, "_7");
-        TPM_RC_map.insert(0x800, "_8");
-        TPM_RC_map.insert(0x900, "_9");
-        TPM_RC_map.insert(0xA00, "A");
-        TPM_RC_map.insert(0xB00, "B");
-        TPM_RC_map.insert(0xC00, "C");
-        TPM_RC_map.insert(0xD00, "D");
-        TPM_RC_map.insert(0xE00, "E");
-        TPM_RC_map.insert(0xF00, "F");
-        TPM_RC_map.insert(0xF00, "N_MASK");
-        TPM_RC_map.insert(0x40280001, "TSS_TCP_BAD_HANDSHAKE_RESP");
-        TPM_RC_map.insert(0x40280002, "TSS_TCP_SERVER_TOO_OLD");
-        TPM_RC_map.insert(0x40280003, "TSS_TCP_BAD_ACK");
-        TPM_RC_map.insert(0x40280004, "TSS_TCP_BAD_RESP_LEN");
-        TPM_RC_map.insert(0x40280005, "TSS_TCP_UNEXPECTED_STARTUP_RESP");
-        TPM_RC_map.insert(0x40280006, "TSS_TCP_INVALID_SIZE_TAG");
-        TPM_RC_map.insert(0x40280007, "TSS_TCP_DISCONNECTED");
-        TPM_RC_map.insert(0x40280010, "TSS_DISPATCH_FAILED");
-        TPM_RC_map.insert(0x40280011, "TSS_SEND_OP_FAILED");
-        TPM_RC_map.insert(0x40280021, "TSS_RESP_BUF_TOO_SHORT");
-        TPM_RC_map.insert(0x40280022, "TSS_RESP_BUF_INVALID_SESSION_TAG");
-        TPM_RC_map.insert(0x40280023, "TSS_RESP_BUF_INVALID_SIZE");
-        TPM_RC_map.insert(0x80280400, "TBS_COMMAND_BLOCKED");
-        TPM_RC_map.insert(0x80280401, "TBS_INVALID_HANDLE");
-        TPM_RC_map.insert(0x80280402, "TBS_DUPLICATE_V_HANDLE");
-        TPM_RC_map.insert(0x80280403, "TBS_EMBEDDED_COMMAND_BLOCKED");
-        TPM_RC_map.insert(0x80280404, "TBS_EMBEDDED_COMMAND_UNSUPPORTED");
-        TPM_RC_map.insert(0x80284000, "TBS_UNKNOWN_ERROR");
-        TPM_RC_map.insert(0x80284001, "TBS_INTERNAL_ERROR");
-        TPM_RC_map.insert(0x80284002, "TBS_BAD_PARAMETER");
-        TPM_RC_map.insert(0x80284003, "TBS_INVALID_OUTPUT_POINTER");
-        TPM_RC_map.insert(0x80284004, "TBS_INVALID_CONTEXT");
-        TPM_RC_map.insert(0x80284005, "TBS_INSUFFICIENT_BUFFER");
-        TPM_RC_map.insert(0x80284006, "TBS_IO_ERROR");
-        TPM_RC_map.insert(0x80284007, "TBS_INVALID_CONTEXT_PARAM");
-        TPM_RC_map.insert(0x80284008, "TBS_SERVICE_NOT_RUNNING");
-        TPM_RC_map.insert(0x80284009, "TBS_TOO_MANY_CONTEXTS");
-        TPM_RC_map.insert(0x8028400A, "TBS_TOO_MANY_RESOURCES");
-        TPM_RC_map.insert(0x8028400B, "TBS_SERVICE_START_PENDING");
-        TPM_RC_map.insert(0x8028400C, "TBS_PPI_NOT_SUPPORTED");
-        TPM_RC_map.insert(0x8028400D, "TBS_COMMAND_CANCELED");
-        TPM_RC_map.insert(0x8028400E, "TBS_BUFFER_TOO_LARGE");
-        TPM_RC_map.insert(0x8028400F, "TBS_TPM_NOT_FOUND");
-        TPM_RC_map.insert(0x80284010, "TBS_SERVICE_DISABLED");
-        TPM_RC_map.insert(0x80284012, "TBS_ACCESS_DENIED");
-        TPM_RC_map.insert(0x80284014, "TBS_PPI_FUNCTION_NOT_SUPPORTED");
-        TPM_RC_map.insert(0x80284015, "TBS_OWNER_AUTH_NOT_FOUND");
+        let  TPM_RC_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_RC>(), TPM_RC_map);
 
         let mut TPM_CLOCK_ADJUST_map = HashMap::new();
@@ -524,21 +167,7 @@ lazy_static::lazy_static! {
         TPM_SE_map.insert(0x3, "TRIAL");
         map.insert(std::any::TypeId::of::<TPM_SE>(), TPM_SE_map);
 
-        let mut TPM_CAP_map = HashMap::new();
-        TPM_CAP_map.insert(0x0, "FIRST");
-        TPM_CAP_map.insert(0x0, "ALGS");
-        TPM_CAP_map.insert(0x1, "HANDLES");
-        TPM_CAP_map.insert(0x2, "COMMANDS");
-        TPM_CAP_map.insert(0x3, "PP_COMMANDS");
-        TPM_CAP_map.insert(0x4, "AUDIT_COMMANDS");
-        TPM_CAP_map.insert(0x5, "PCRS");
-        TPM_CAP_map.insert(0x6, "TPM_PROPERTIES");
-        TPM_CAP_map.insert(0x7, "PCR_PROPERTIES");
-        TPM_CAP_map.insert(0x8, "ECC_CURVES");
-        TPM_CAP_map.insert(0x9, "AUTH_POLICIES");
-        TPM_CAP_map.insert(0xA, "ACT");
-        TPM_CAP_map.insert(0xA, "LAST");
-        TPM_CAP_map.insert(0x100, "VENDOR_PROPERTY");
+        let  TPM_CAP_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_CAP>(), TPM_CAP_map);
 
         let mut TPM_PT_map = HashMap::new();
@@ -615,24 +244,7 @@ lazy_static::lazy_static! {
         TPM_PT_map.insert(0x214, "AUDIT_COUNTER_1");
         map.insert(std::any::TypeId::of::<TPM_PT>(), TPM_PT_map);
 
-        let mut TPM_PT_PCR_map = HashMap::new();
-        TPM_PT_PCR_map.insert(0x0, "FIRST");
-        TPM_PT_PCR_map.insert(0x0, "SAVE");
-        TPM_PT_PCR_map.insert(0x1, "EXTEND_L0");
-        TPM_PT_PCR_map.insert(0x2, "RESET_L0");
-        TPM_PT_PCR_map.insert(0x3, "EXTEND_L1");
-        TPM_PT_PCR_map.insert(0x4, "RESET_L1");
-        TPM_PT_PCR_map.insert(0x5, "EXTEND_L2");
-        TPM_PT_PCR_map.insert(0x6, "RESET_L2");
-        TPM_PT_PCR_map.insert(0x7, "EXTEND_L3");
-        TPM_PT_PCR_map.insert(0x8, "RESET_L3");
-        TPM_PT_PCR_map.insert(0x9, "EXTEND_L4");
-        TPM_PT_PCR_map.insert(0xA, "RESET_L4");
-        TPM_PT_PCR_map.insert(0x11, "NO_INCREMENT");
-        TPM_PT_PCR_map.insert(0x12, "DRTM_RESET");
-        TPM_PT_PCR_map.insert(0x13, "POLICY");
-        TPM_PT_PCR_map.insert(0x14, "AUTH");
-        TPM_PT_PCR_map.insert(0x14, "LAST");
+        let  TPM_PT_PCR_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_PT_PCR>(), TPM_PT_PCR_map);
 
         let mut TPM_PS_map = HashMap::new();
@@ -654,40 +266,10 @@ lazy_static::lazy_static! {
         TPM_PS_map.insert(0xF, "TC");
         map.insert(std::any::TypeId::of::<TPM_PS>(), TPM_PS_map);
 
-        let mut TPM_HT_map = HashMap::new();
-        TPM_HT_map.insert(0x0, "PCR");
-        TPM_HT_map.insert(0x1, "NV_INDEX");
-        TPM_HT_map.insert(0x2, "HMAC_SESSION");
-        TPM_HT_map.insert(0x2, "LOADED_SESSION");
-        TPM_HT_map.insert(0x3, "POLICY_SESSION");
-        TPM_HT_map.insert(0x3, "SAVED_SESSION");
-        TPM_HT_map.insert(0x40, "PERMANENT");
-        TPM_HT_map.insert(0x80, "TRANSIENT");
-        TPM_HT_map.insert(0x81, "PERSISTENT");
-        TPM_HT_map.insert(0x90, "AC");
+        let  TPM_HT_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_HT>(), TPM_HT_map);
 
-        let mut TPM_RH_map = HashMap::new();
-        TPM_RH_map.insert(0x40000000, "FIRST");
-        TPM_RH_map.insert(0x40000000, "SRK");
-        TPM_RH_map.insert(0x40000001, "OWNER");
-        TPM_RH_map.insert(0x40000002, "REVOKE");
-        TPM_RH_map.insert(0x40000003, "TRANSPORT");
-        TPM_RH_map.insert(0x40000004, "OPERATOR");
-        TPM_RH_map.insert(0x40000005, "ADMIN");
-        TPM_RH_map.insert(0x40000006, "EK");
-        TPM_RH_map.insert(0x40000007, "NULL");
-        TPM_RH_map.insert(0x40000008, "UNASSIGNED");
-        TPM_RH_map.insert(0x40000009, "PW");
-        TPM_RH_map.insert(0x4000000A, "LOCKOUT");
-        TPM_RH_map.insert(0x4000000B, "ENDORSEMENT");
-        TPM_RH_map.insert(0x4000000C, "PLATFORM");
-        TPM_RH_map.insert(0x4000000D, "PLATFORM_NV");
-        TPM_RH_map.insert(0x40000010, "AUTH_00");
-        TPM_RH_map.insert(0x4000010F, "AUTH_FF");
-        TPM_RH_map.insert(0x40000110, "ACT_0");
-        TPM_RH_map.insert(0x4000011F, "ACT_F");
-        TPM_RH_map.insert(0x4000011F, "LAST");
+        let  TPM_RH_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_RH>(), TPM_RH_map);
 
         let mut TPM_NT_map = HashMap::new();
@@ -718,55 +300,7 @@ lazy_static::lazy_static! {
         PLATFORM_map.insert(0x168, "DAY_OF_YEAR");
         map.insert(std::any::TypeId::of::<PLATFORM>(), PLATFORM_map);
 
-        let mut Implementation_map = HashMap::new();
-        Implementation_map.insert(0x0, "FIELD_UPGRADE_IMPLEMENTED");
-        Implementation_map.insert(0x1, "HASH_LIB");
-        Implementation_map.insert(0x1, "SYM_LIB");
-        Implementation_map.insert(0x1, "MATH_LIB");
-        Implementation_map.insert(0x18, "IMPLEMENTATION_PCR");
-        Implementation_map.insert(0x3, "PCR_SELECT_MAX");
-        Implementation_map.insert(0x18, "PLATFORM_PCR");
-        Implementation_map.insert(0x3, "PCR_SELECT_MIN");
-        Implementation_map.insert(0x11, "DRTM_PCR");
-        Implementation_map.insert(0x0, "HCRTM_PCR");
-        Implementation_map.insert(0x5, "NUM_LOCALITIES");
-        Implementation_map.insert(0x3, "MAX_HANDLE_NUM");
-        Implementation_map.insert(0x40, "MAX_ACTIVE_SESSIONS");
-        Implementation_map.insert(0x3, "MAX_LOADED_SESSIONS");
-        Implementation_map.insert(0x3, "MAX_SESSION_NUM");
-        Implementation_map.insert(0x3, "MAX_LOADED_OBJECTS");
-        Implementation_map.insert(0x2, "MIN_EVICT_OBJECTS");
-        Implementation_map.insert(0x1, "NUM_POLICY_PCR_GROUP");
-        Implementation_map.insert(0x1, "NUM_AUTHVALUE_PCR_GROUP");
-        Implementation_map.insert(0x4F0, "MAX_CONTEXT_SIZE");
-        Implementation_map.insert(0x400, "MAX_DIGEST_BUFFER");
-        Implementation_map.insert(0x800, "MAX_NV_INDEX_SIZE");
-        Implementation_map.insert(0x400, "MAX_NV_BUFFER_SIZE");
-        Implementation_map.insert(0x400, "MAX_CAP_BUFFER");
-        Implementation_map.insert(0x4000, "NV_MEMORY_SIZE");
-        Implementation_map.insert(0x8, "MIN_COUNTER_INDICES");
-        Implementation_map.insert(0x10, "NUM_STATIC_PCR");
-        Implementation_map.insert(0x40, "MAX_ALG_LIST_SIZE");
-        Implementation_map.insert(0x20, "PRIMARY_SEED_SIZE");
-        Implementation_map.insert(0x6, "CONTEXT_ENCRYPT_ALGORITHM");
-        Implementation_map.insert(0xC, "NV_CLOCK_UPDATE_INTERVAL");
-        Implementation_map.insert(0x1, "NUM_POLICY_PCR");
-        Implementation_map.insert(0x1000, "MAX_COMMAND_SIZE");
-        Implementation_map.insert(0x1000, "MAX_RESPONSE_SIZE");
-        Implementation_map.insert(0x8, "ORDERLY_BITS");
-        Implementation_map.insert(0x80, "MAX_SYM_DATA");
-        Implementation_map.insert(0x40, "MAX_RNG_ENTROPY_SIZE");
-        Implementation_map.insert(0x200, "RAM_INDEX_SPACE");
-        Implementation_map.insert(0x10001, "RSA_DEFAULT_PUBLIC_EXPONENT");
-        Implementation_map.insert(0x1, "ENABLE_PCR_NO_INCREMENT");
-        Implementation_map.insert(0x1, "CRT_FORMAT_RSA");
-        Implementation_map.insert(0x0, "VENDOR_COMMAND_COUNT");
-        Implementation_map.insert(0x400, "MAX_VENDOR_BUFFER_SIZE");
-        Implementation_map.insert(0x2000, "MAX_DERIVATION_BITS");
-        Implementation_map.insert(0x80, "RSA_MAX_PRIME");
-        Implementation_map.insert(0x280, "RSA_PRIVATE_SIZE");
-        Implementation_map.insert(0x14, "SIZE_OF_X509_SERIAL_NUMBER");
-        Implementation_map.insert(0x280, "PRIVATE_VENDOR_SPECIFIC_BYTES");
+        let  Implementation_map = HashMap::new();
         map.insert(std::any::TypeId::of::<Implementation>(), Implementation_map);
 
         let mut TPM_HC_map = HashMap::new();
@@ -817,20 +351,7 @@ lazy_static::lazy_static! {
         TPMA_ALGORITHM_map.insert(0x400, "method");
         map.insert(std::any::TypeId::of::<TPMA_ALGORITHM>(), TPMA_ALGORITHM_map);
 
-        let mut TPMA_OBJECT_map = HashMap::new();
-        TPMA_OBJECT_map.insert(0x2, "fixedTPM");
-        TPMA_OBJECT_map.insert(0x4, "stClear");
-        TPMA_OBJECT_map.insert(0x10, "fixedParent");
-        TPMA_OBJECT_map.insert(0x20, "sensitiveDataOrigin");
-        TPMA_OBJECT_map.insert(0x40, "userWithAuth");
-        TPMA_OBJECT_map.insert(0x80, "adminWithPolicy");
-        TPMA_OBJECT_map.insert(0x400, "noDA");
-        TPMA_OBJECT_map.insert(0x800, "encryptedDuplication");
-        TPMA_OBJECT_map.insert(0x10000, "restricted");
-        TPMA_OBJECT_map.insert(0x20000, "decrypt");
-        TPMA_OBJECT_map.insert(0x40000, "sign");
-        TPMA_OBJECT_map.insert(0x40000, "encrypt");
-        TPMA_OBJECT_map.insert(0x80000, "x509sign");
+        let  TPMA_OBJECT_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_OBJECT>(), TPMA_OBJECT_map);
 
         let mut TPMA_SESSION_map = HashMap::new();
@@ -885,17 +406,7 @@ lazy_static::lazy_static! {
         TPMA_MODES_map.insert(0x1, "FIPS_140_2");
         map.insert(std::any::TypeId::of::<TPMA_MODES>(), TPMA_MODES_map);
 
-        let mut TPMA_X509_KEY_USAGE_map = HashMap::new();
-        TPMA_X509_KEY_USAGE_map.insert(0x800000, "decipherOnly");
-        TPMA_X509_KEY_USAGE_map.insert(0x1000000, "encipherOnly");
-        TPMA_X509_KEY_USAGE_map.insert(0x2000000, "cRLSign");
-        TPMA_X509_KEY_USAGE_map.insert(0x4000000, "keyCertSign");
-        TPMA_X509_KEY_USAGE_map.insert(0x8000000, "keyAgreement");
-        TPMA_X509_KEY_USAGE_map.insert(0x10000000, "dataEncipherment");
-        TPMA_X509_KEY_USAGE_map.insert(0x20000000, "keyEncipherment");
-        TPMA_X509_KEY_USAGE_map.insert(0x40000000, "nonrepudiation");
-        TPMA_X509_KEY_USAGE_map.insert(0x40000000, "contentCommitment");
-        TPMA_X509_KEY_USAGE_map.insert(0xFFFFFFFF80000000, "digitalSignature");
+        let  TPMA_X509_KEY_USAGE_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_X509_KEY_USAGE>(), TPMA_X509_KEY_USAGE_map);
 
         let mut TPMA_ACT_map = HashMap::new();
@@ -903,37 +414,10 @@ lazy_static::lazy_static! {
         TPMA_ACT_map.insert(0x2, "preserveSignaled");
         map.insert(std::any::TypeId::of::<TPMA_ACT>(), TPMA_ACT_map);
 
-        let mut TPM_NV_INDEX_map = HashMap::new();
+        let  TPM_NV_INDEX_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_NV_INDEX>(), TPM_NV_INDEX_map);
 
-        let mut TPMA_NV_map = HashMap::new();
-        TPMA_NV_map.insert(0x1, "PPWRITE");
-        TPMA_NV_map.insert(0x2, "OWNERWRITE");
-        TPMA_NV_map.insert(0x4, "AUTHWRITE");
-        TPMA_NV_map.insert(0x8, "POLICYWRITE");
-        TPMA_NV_map.insert(0x0, "ORDINARY");
-        TPMA_NV_map.insert(0x10, "COUNTER");
-        TPMA_NV_map.insert(0x20, "BITS");
-        TPMA_NV_map.insert(0x40, "EXTEND");
-        TPMA_NV_map.insert(0x80, "PIN_FAIL");
-        TPMA_NV_map.insert(0x90, "PIN_PASS");
-        TPMA_NV_map.insert(0x400, "POLICY_DELETE");
-        TPMA_NV_map.insert(0x800, "WRITELOCKED");
-        TPMA_NV_map.insert(0x1000, "WRITEALL");
-        TPMA_NV_map.insert(0x2000, "WRITEDEFINE");
-        TPMA_NV_map.insert(0x4000, "WRITE_STCLEAR");
-        TPMA_NV_map.insert(0x8000, "GLOBALLOCK");
-        TPMA_NV_map.insert(0x10000, "PPREAD");
-        TPMA_NV_map.insert(0x20000, "OWNERREAD");
-        TPMA_NV_map.insert(0x40000, "AUTHREAD");
-        TPMA_NV_map.insert(0x80000, "POLICYREAD");
-        TPMA_NV_map.insert(0x2000000, "NO_DA");
-        TPMA_NV_map.insert(0x4000000, "ORDERLY");
-        TPMA_NV_map.insert(0x8000000, "CLEAR_STCLEAR");
-        TPMA_NV_map.insert(0x10000000, "READLOCKED");
-        TPMA_NV_map.insert(0x20000000, "WRITTEN");
-        TPMA_NV_map.insert(0x40000000, "PLATFORMCREATE");
-        TPMA_NV_map.insert(0xFFFFFFFF80000000, "READ_STCLEAR");
+        let  TPMA_NV_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_NV>(), TPMA_NV_map);
 
         map
@@ -942,52 +426,7 @@ lazy_static::lazy_static! {
     /// Maps enum type IDs to a map of string representations to values
     static ref STR_TO_ENUM_MAP: HashMap<std::any::TypeId, HashMap<&'static str, u32>> = {
     let mut map = HashMap::new();
-        let mut TPM_ALG_ID_map = HashMap::new();
-        TPM_ALG_ID_map.insert("ERROR", 0x0);
-        TPM_ALG_ID_map.insert("FIRST", 0x1);
-        TPM_ALG_ID_map.insert("RSA", 0x1);
-        TPM_ALG_ID_map.insert("TDES", 0x3);
-        TPM_ALG_ID_map.insert("SHA", 0x4);
-        TPM_ALG_ID_map.insert("SHA1", 0x4);
-        TPM_ALG_ID_map.insert("HMAC", 0x5);
-        TPM_ALG_ID_map.insert("AES", 0x6);
-        TPM_ALG_ID_map.insert("MGF1", 0x7);
-        TPM_ALG_ID_map.insert("KEYEDHASH", 0x8);
-        TPM_ALG_ID_map.insert("XOR", 0xA);
-        TPM_ALG_ID_map.insert("SHA256", 0xB);
-        TPM_ALG_ID_map.insert("SHA384", 0xC);
-        TPM_ALG_ID_map.insert("SHA512", 0xD);
-        TPM_ALG_ID_map.insert("NULL", 0x10);
-        TPM_ALG_ID_map.insert("SM3_256", 0x12);
-        TPM_ALG_ID_map.insert("SM4", 0x13);
-        TPM_ALG_ID_map.insert("RSASSA", 0x14);
-        TPM_ALG_ID_map.insert("RSAES", 0x15);
-        TPM_ALG_ID_map.insert("RSAPSS", 0x16);
-        TPM_ALG_ID_map.insert("OAEP", 0x17);
-        TPM_ALG_ID_map.insert("ECDSA", 0x18);
-        TPM_ALG_ID_map.insert("ECDH", 0x19);
-        TPM_ALG_ID_map.insert("ECDAA", 0x1A);
-        TPM_ALG_ID_map.insert("SM2", 0x1B);
-        TPM_ALG_ID_map.insert("ECSCHNORR", 0x1C);
-        TPM_ALG_ID_map.insert("ECMQV", 0x1D);
-        TPM_ALG_ID_map.insert("KDF1_SP800_56A", 0x20);
-        TPM_ALG_ID_map.insert("KDF2", 0x21);
-        TPM_ALG_ID_map.insert("KDF1_SP800_108", 0x22);
-        TPM_ALG_ID_map.insert("ECC", 0x23);
-        TPM_ALG_ID_map.insert("SYMCIPHER", 0x25);
-        TPM_ALG_ID_map.insert("CAMELLIA", 0x26);
-        TPM_ALG_ID_map.insert("SHA3_256", 0x27);
-        TPM_ALG_ID_map.insert("SHA3_384", 0x28);
-        TPM_ALG_ID_map.insert("SHA3_512", 0x29);
-        TPM_ALG_ID_map.insert("CMAC", 0x3F);
-        TPM_ALG_ID_map.insert("CTR", 0x40);
-        TPM_ALG_ID_map.insert("OFB", 0x41);
-        TPM_ALG_ID_map.insert("CBC", 0x42);
-        TPM_ALG_ID_map.insert("CFB", 0x43);
-        TPM_ALG_ID_map.insert("ECB", 0x44);
-        TPM_ALG_ID_map.insert("LAST", 0x44);
-        TPM_ALG_ID_map.insert("ANY", 0x7FFF);
-        TPM_ALG_ID_map.insert("ANY2", 0x7FFE);
+        let  TPM_ALG_ID_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_ALG_ID>(), TPM_ALG_ID_map);
 
         let mut TPM_ECC_CURVE_map = HashMap::new();
@@ -1043,13 +482,7 @@ lazy_static::lazy_static! {
         SHA3_512_map.insert("BLOCK_SIZE", 0x48);
         map.insert(std::any::TypeId::of::<SHA3_512>(), SHA3_512_map);
 
-        let mut Logic_map = HashMap::new();
-        Logic_map.insert("TRUE", 0x1);
-        Logic_map.insert("FALSE", 0x0);
-        Logic_map.insert("YES", 0x1);
-        Logic_map.insert("NO", 0x0);
-        Logic_map.insert("SET", 0x1);
-        Logic_map.insert("CLEAR", 0x0);
+        let  Logic_map = HashMap::new();
         map.insert(std::any::TypeId::of::<Logic>(), Logic_map);
 
         let mut TPM_SPEC_map = HashMap::new();
@@ -1064,319 +497,13 @@ lazy_static::lazy_static! {
         TPM_GENERATED_map.insert("VALUE", 0xFF544347);
         map.insert(std::any::TypeId::of::<TPM_GENERATED>(), TPM_GENERATED_map);
 
-        let mut TPM_CC_map = HashMap::new();
-        TPM_CC_map.insert("FIRST", 0x11F);
-        TPM_CC_map.insert("NV_UndefineSpaceSpecial", 0x11F);
-        TPM_CC_map.insert("EvictControl", 0x120);
-        TPM_CC_map.insert("HierarchyControl", 0x121);
-        TPM_CC_map.insert("NV_UndefineSpace", 0x122);
-        TPM_CC_map.insert("ChangeEPS", 0x124);
-        TPM_CC_map.insert("ChangePPS", 0x125);
-        TPM_CC_map.insert("Clear", 0x126);
-        TPM_CC_map.insert("ClearControl", 0x127);
-        TPM_CC_map.insert("ClockSet", 0x128);
-        TPM_CC_map.insert("HierarchyChangeAuth", 0x129);
-        TPM_CC_map.insert("NV_DefineSpace", 0x12A);
-        TPM_CC_map.insert("PCR_Allocate", 0x12B);
-        TPM_CC_map.insert("PCR_SetAuthPolicy", 0x12C);
-        TPM_CC_map.insert("PP_Commands", 0x12D);
-        TPM_CC_map.insert("SetPrimaryPolicy", 0x12E);
-        TPM_CC_map.insert("FieldUpgradeStart", 0x12F);
-        TPM_CC_map.insert("ClockRateAdjust", 0x130);
-        TPM_CC_map.insert("CreatePrimary", 0x131);
-        TPM_CC_map.insert("NV_GlobalWriteLock", 0x132);
-        TPM_CC_map.insert("GetCommandAuditDigest", 0x133);
-        TPM_CC_map.insert("NV_Increment", 0x134);
-        TPM_CC_map.insert("NV_SetBits", 0x135);
-        TPM_CC_map.insert("NV_Extend", 0x136);
-        TPM_CC_map.insert("NV_Write", 0x137);
-        TPM_CC_map.insert("NV_WriteLock", 0x138);
-        TPM_CC_map.insert("DictionaryAttackLockReset", 0x139);
-        TPM_CC_map.insert("DictionaryAttackParameters", 0x13A);
-        TPM_CC_map.insert("NV_ChangeAuth", 0x13B);
-        TPM_CC_map.insert("PCR_Event", 0x13C);
-        TPM_CC_map.insert("PCR_Reset", 0x13D);
-        TPM_CC_map.insert("SequenceComplete", 0x13E);
-        TPM_CC_map.insert("SetAlgorithmSet", 0x13F);
-        TPM_CC_map.insert("SetCommandCodeAuditStatus", 0x140);
-        TPM_CC_map.insert("FieldUpgradeData", 0x141);
-        TPM_CC_map.insert("IncrementalSelfTest", 0x142);
-        TPM_CC_map.insert("SelfTest", 0x143);
-        TPM_CC_map.insert("Startup", 0x144);
-        TPM_CC_map.insert("Shutdown", 0x145);
-        TPM_CC_map.insert("StirRandom", 0x146);
-        TPM_CC_map.insert("ActivateCredential", 0x147);
-        TPM_CC_map.insert("Certify", 0x148);
-        TPM_CC_map.insert("PolicyNV", 0x149);
-        TPM_CC_map.insert("CertifyCreation", 0x14A);
-        TPM_CC_map.insert("Duplicate", 0x14B);
-        TPM_CC_map.insert("GetTime", 0x14C);
-        TPM_CC_map.insert("GetSessionAuditDigest", 0x14D);
-        TPM_CC_map.insert("NV_Read", 0x14E);
-        TPM_CC_map.insert("NV_ReadLock", 0x14F);
-        TPM_CC_map.insert("ObjectChangeAuth", 0x150);
-        TPM_CC_map.insert("PolicySecret", 0x151);
-        TPM_CC_map.insert("Rewrap", 0x152);
-        TPM_CC_map.insert("Create", 0x153);
-        TPM_CC_map.insert("ECDH_ZGen", 0x154);
-        TPM_CC_map.insert("HMAC", 0x155);
-        TPM_CC_map.insert("MAC", 0x155);
-        TPM_CC_map.insert("Import", 0x156);
-        TPM_CC_map.insert("Load", 0x157);
-        TPM_CC_map.insert("Quote", 0x158);
-        TPM_CC_map.insert("RSA_Decrypt", 0x159);
-        TPM_CC_map.insert("HMAC_Start", 0x15B);
-        TPM_CC_map.insert("MAC_Start", 0x15B);
-        TPM_CC_map.insert("SequenceUpdate", 0x15C);
-        TPM_CC_map.insert("Sign", 0x15D);
-        TPM_CC_map.insert("Unseal", 0x15E);
-        TPM_CC_map.insert("PolicySigned", 0x160);
-        TPM_CC_map.insert("ContextLoad", 0x161);
-        TPM_CC_map.insert("ContextSave", 0x162);
-        TPM_CC_map.insert("ECDH_KeyGen", 0x163);
-        TPM_CC_map.insert("EncryptDecrypt", 0x164);
-        TPM_CC_map.insert("FlushContext", 0x165);
-        TPM_CC_map.insert("LoadExternal", 0x167);
-        TPM_CC_map.insert("MakeCredential", 0x168);
-        TPM_CC_map.insert("NV_ReadPublic", 0x169);
-        TPM_CC_map.insert("PolicyAuthorize", 0x16A);
-        TPM_CC_map.insert("PolicyAuthValue", 0x16B);
-        TPM_CC_map.insert("PolicyCommandCode", 0x16C);
-        TPM_CC_map.insert("PolicyCounterTimer", 0x16D);
-        TPM_CC_map.insert("PolicyCpHash", 0x16E);
-        TPM_CC_map.insert("PolicyLocality", 0x16F);
-        TPM_CC_map.insert("PolicyNameHash", 0x170);
-        TPM_CC_map.insert("PolicyOR", 0x171);
-        TPM_CC_map.insert("PolicyTicket", 0x172);
-        TPM_CC_map.insert("ReadPublic", 0x173);
-        TPM_CC_map.insert("RSA_Encrypt", 0x174);
-        TPM_CC_map.insert("StartAuthSession", 0x176);
-        TPM_CC_map.insert("VerifySignature", 0x177);
-        TPM_CC_map.insert("ECC_Parameters", 0x178);
-        TPM_CC_map.insert("FirmwareRead", 0x179);
-        TPM_CC_map.insert("GetCapability", 0x17A);
-        TPM_CC_map.insert("GetRandom", 0x17B);
-        TPM_CC_map.insert("GetTestResult", 0x17C);
-        TPM_CC_map.insert("Hash", 0x17D);
-        TPM_CC_map.insert("PCR_Read", 0x17E);
-        TPM_CC_map.insert("PolicyPCR", 0x17F);
-        TPM_CC_map.insert("PolicyRestart", 0x180);
-        TPM_CC_map.insert("ReadClock", 0x181);
-        TPM_CC_map.insert("PCR_Extend", 0x182);
-        TPM_CC_map.insert("PCR_SetAuthValue", 0x183);
-        TPM_CC_map.insert("NV_Certify", 0x184);
-        TPM_CC_map.insert("EventSequenceComplete", 0x185);
-        TPM_CC_map.insert("HashSequenceStart", 0x186);
-        TPM_CC_map.insert("PolicyPhysicalPresence", 0x187);
-        TPM_CC_map.insert("PolicyDuplicationSelect", 0x188);
-        TPM_CC_map.insert("PolicyGetDigest", 0x189);
-        TPM_CC_map.insert("TestParms", 0x18A);
-        TPM_CC_map.insert("Commit", 0x18B);
-        TPM_CC_map.insert("PolicyPassword", 0x18C);
-        TPM_CC_map.insert("ZGen_2Phase", 0x18D);
-        TPM_CC_map.insert("EC_Ephemeral", 0x18E);
-        TPM_CC_map.insert("PolicyNvWritten", 0x18F);
-        TPM_CC_map.insert("PolicyTemplate", 0x190);
-        TPM_CC_map.insert("CreateLoaded", 0x191);
-        TPM_CC_map.insert("PolicyAuthorizeNV", 0x192);
-        TPM_CC_map.insert("EncryptDecrypt2", 0x193);
-        TPM_CC_map.insert("AC_GetCapability", 0x194);
-        TPM_CC_map.insert("AC_Send", 0x195);
-        TPM_CC_map.insert("Policy_AC_SendSelect", 0x196);
-        TPM_CC_map.insert("CertifyX509", 0x197);
-        TPM_CC_map.insert("ACT_SetTimeout", 0x198);
-        TPM_CC_map.insert("ECC_Encrypt", 0x199);
-        TPM_CC_map.insert("ECC_Decrypt", 0x19A);
-        TPM_CC_map.insert("LAST", 0x19A);
-        TPM_CC_map.insert("CC_VEND", 0x20000000);
-        TPM_CC_map.insert("Vendor_TCG_Test", 0x20000000);
+        let  TPM_CC_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_CC>(), TPM_CC_map);
 
-        let mut Implementation_Constants_map = HashMap::new();
-        Implementation_Constants_map.insert("Ossl", 0x1);
-        Implementation_Constants_map.insert("Ltc", 0x2);
-        Implementation_Constants_map.insert("Msbn", 0x3);
-        Implementation_Constants_map.insert("Symcrypt", 0x4);
-        Implementation_Constants_map.insert("HASH_COUNT", 0x3);
-        Implementation_Constants_map.insert("MAX_SYM_KEY_BITS", 0x100);
-        Implementation_Constants_map.insert("MAX_SYM_KEY_BYTES", 0x20);
-        Implementation_Constants_map.insert("MAX_SYM_BLOCK_SIZE", 0x10);
-        Implementation_Constants_map.insert("MAX_CAP_CC", 0x19A);
-        Implementation_Constants_map.insert("MAX_RSA_KEY_BYTES", 0x100);
-        Implementation_Constants_map.insert("MAX_AES_KEY_BYTES", 0x20);
-        Implementation_Constants_map.insert("MAX_ECC_KEY_BYTES", 0x30);
-        Implementation_Constants_map.insert("LABEL_MAX_BUFFER", 0x20);
-        Implementation_Constants_map.insert("_TPM_CAP_SIZE", 0x4);
-        Implementation_Constants_map.insert("MAX_CAP_DATA", 0x3F8);
-        Implementation_Constants_map.insert("MAX_CAP_ALGS", 0xA9);
-        Implementation_Constants_map.insert("MAX_CAP_HANDLES", 0xFE);
-        Implementation_Constants_map.insert("MAX_TPM_PROPERTIES", 0x7F);
-        Implementation_Constants_map.insert("MAX_PCR_PROPERTIES", 0xCB);
-        Implementation_Constants_map.insert("MAX_ECC_CURVES", 0x1FC);
-        Implementation_Constants_map.insert("MAX_TAGGED_POLICIES", 0xE);
-        Implementation_Constants_map.insert("MAX_AC_CAPABILITIES", 0x7F);
-        Implementation_Constants_map.insert("MAX_ACT_DATA", 0x54);
+        let  Implementation_Constants_map = HashMap::new();
         map.insert(std::any::TypeId::of::<ImplementationConstants>(), Implementation_Constants_map);
 
-        let mut TPM_RC_map = HashMap::new();
-        TPM_RC_map.insert("SUCCESS", 0x0);
-        TPM_RC_map.insert("BAD_TAG", 0x1E);
-        TPM_RC_map.insert("RC_VER1", 0x100);
-        TPM_RC_map.insert("INITIALIZE", 0x100);
-        TPM_RC_map.insert("FAILURE", 0x101);
-        TPM_RC_map.insert("SEQUENCE", 0x103);
-        TPM_RC_map.insert("PRIVATE", 0x10B);
-        TPM_RC_map.insert("HMAC", 0x119);
-        TPM_RC_map.insert("DISABLED", 0x120);
-        TPM_RC_map.insert("EXCLUSIVE", 0x121);
-        TPM_RC_map.insert("AUTH_TYPE", 0x124);
-        TPM_RC_map.insert("AUTH_MISSING", 0x125);
-        TPM_RC_map.insert("POLICY", 0x126);
-        TPM_RC_map.insert("PCR", 0x127);
-        TPM_RC_map.insert("PCR_CHANGED", 0x128);
-        TPM_RC_map.insert("UPGRADE", 0x12D);
-        TPM_RC_map.insert("TOO_MANY_CONTEXTS", 0x12E);
-        TPM_RC_map.insert("AUTH_UNAVAILABLE", 0x12F);
-        TPM_RC_map.insert("REBOOT", 0x130);
-        TPM_RC_map.insert("UNBALANCED", 0x131);
-        TPM_RC_map.insert("COMMAND_SIZE", 0x142);
-        TPM_RC_map.insert("COMMAND_CODE", 0x143);
-        TPM_RC_map.insert("AUTHSIZE", 0x144);
-        TPM_RC_map.insert("AUTH_CONTEXT", 0x145);
-        TPM_RC_map.insert("NV_RANGE", 0x146);
-        TPM_RC_map.insert("NV_SIZE", 0x147);
-        TPM_RC_map.insert("NV_LOCKED", 0x148);
-        TPM_RC_map.insert("NV_AUTHORIZATION", 0x149);
-        TPM_RC_map.insert("NV_UNINITIALIZED", 0x14A);
-        TPM_RC_map.insert("NV_SPACE", 0x14B);
-        TPM_RC_map.insert("NV_DEFINED", 0x14C);
-        TPM_RC_map.insert("BAD_CONTEXT", 0x150);
-        TPM_RC_map.insert("CPHASH", 0x151);
-        TPM_RC_map.insert("PARENT", 0x152);
-        TPM_RC_map.insert("NEEDS_TEST", 0x153);
-        TPM_RC_map.insert("NO_RESULT", 0x154);
-        TPM_RC_map.insert("SENSITIVE", 0x155);
-        TPM_RC_map.insert("RC_MAX_FM0", 0x17F);
-        TPM_RC_map.insert("RC_FMT1", 0x80);
-        TPM_RC_map.insert("ASYMMETRIC", 0x81);
-        TPM_RC_map.insert("ATTRIBUTES", 0x82);
-        TPM_RC_map.insert("HASH", 0x83);
-        TPM_RC_map.insert("VALUE", 0x84);
-        TPM_RC_map.insert("HIERARCHY", 0x85);
-        TPM_RC_map.insert("KEY_SIZE", 0x87);
-        TPM_RC_map.insert("MGF", 0x88);
-        TPM_RC_map.insert("MODE", 0x89);
-        TPM_RC_map.insert("TYPE", 0x8A);
-        TPM_RC_map.insert("HANDLE", 0x8B);
-        TPM_RC_map.insert("KDF", 0x8C);
-        TPM_RC_map.insert("RANGE", 0x8D);
-        TPM_RC_map.insert("AUTH_FAIL", 0x8E);
-        TPM_RC_map.insert("NONCE", 0x8F);
-        TPM_RC_map.insert("PP", 0x90);
-        TPM_RC_map.insert("SCHEME", 0x92);
-        TPM_RC_map.insert("SIZE", 0x95);
-        TPM_RC_map.insert("SYMMETRIC", 0x96);
-        TPM_RC_map.insert("TAG", 0x97);
-        TPM_RC_map.insert("SELECTOR", 0x98);
-        TPM_RC_map.insert("INSUFFICIENT", 0x9A);
-        TPM_RC_map.insert("SIGNATURE", 0x9B);
-        TPM_RC_map.insert("KEY", 0x9C);
-        TPM_RC_map.insert("POLICY_FAIL", 0x9D);
-        TPM_RC_map.insert("INTEGRITY", 0x9F);
-        TPM_RC_map.insert("TICKET", 0xA0);
-        TPM_RC_map.insert("RESERVED_BITS", 0xA1);
-        TPM_RC_map.insert("BAD_AUTH", 0xA2);
-        TPM_RC_map.insert("EXPIRED", 0xA3);
-        TPM_RC_map.insert("POLICY_CC", 0xA4);
-        TPM_RC_map.insert("BINDING", 0xA5);
-        TPM_RC_map.insert("CURVE", 0xA6);
-        TPM_RC_map.insert("ECC_POINT", 0xA7);
-        TPM_RC_map.insert("RC_WARN", 0x900);
-        TPM_RC_map.insert("CONTEXT_GAP", 0x901);
-        TPM_RC_map.insert("OBJECT_MEMORY", 0x902);
-        TPM_RC_map.insert("SESSION_MEMORY", 0x903);
-        TPM_RC_map.insert("MEMORY", 0x904);
-        TPM_RC_map.insert("SESSION_HANDLES", 0x905);
-        TPM_RC_map.insert("OBJECT_HANDLES", 0x906);
-        TPM_RC_map.insert("LOCALITY", 0x907);
-        TPM_RC_map.insert("YIELDED", 0x908);
-        TPM_RC_map.insert("CANCELED", 0x909);
-        TPM_RC_map.insert("TESTING", 0x90A);
-        TPM_RC_map.insert("REFERENCE_H0", 0x910);
-        TPM_RC_map.insert("REFERENCE_H1", 0x911);
-        TPM_RC_map.insert("REFERENCE_H2", 0x912);
-        TPM_RC_map.insert("REFERENCE_H3", 0x913);
-        TPM_RC_map.insert("REFERENCE_H4", 0x914);
-        TPM_RC_map.insert("REFERENCE_H5", 0x915);
-        TPM_RC_map.insert("REFERENCE_H6", 0x916);
-        TPM_RC_map.insert("REFERENCE_S0", 0x918);
-        TPM_RC_map.insert("REFERENCE_S1", 0x919);
-        TPM_RC_map.insert("REFERENCE_S2", 0x91A);
-        TPM_RC_map.insert("REFERENCE_S3", 0x91B);
-        TPM_RC_map.insert("REFERENCE_S4", 0x91C);
-        TPM_RC_map.insert("REFERENCE_S5", 0x91D);
-        TPM_RC_map.insert("REFERENCE_S6", 0x91E);
-        TPM_RC_map.insert("NV_RATE", 0x920);
-        TPM_RC_map.insert("LOCKOUT", 0x921);
-        TPM_RC_map.insert("RETRY", 0x922);
-        TPM_RC_map.insert("NV_UNAVAILABLE", 0x923);
-        TPM_RC_map.insert("NOT_USED", 0x97F);
-        TPM_RC_map.insert("H", 0x0);
-        TPM_RC_map.insert("P", 0x40);
-        TPM_RC_map.insert("S", 0x800);
-        TPM_RC_map.insert("_1", 0x100);
-        TPM_RC_map.insert("_2", 0x200);
-        TPM_RC_map.insert("_3", 0x300);
-        TPM_RC_map.insert("_4", 0x400);
-        TPM_RC_map.insert("_5", 0x500);
-        TPM_RC_map.insert("_6", 0x600);
-        TPM_RC_map.insert("_7", 0x700);
-        TPM_RC_map.insert("_8", 0x800);
-        TPM_RC_map.insert("_9", 0x900);
-        TPM_RC_map.insert("A", 0xA00);
-        TPM_RC_map.insert("B", 0xB00);
-        TPM_RC_map.insert("C", 0xC00);
-        TPM_RC_map.insert("D", 0xD00);
-        TPM_RC_map.insert("E", 0xE00);
-        TPM_RC_map.insert("F", 0xF00);
-        TPM_RC_map.insert("N_MASK", 0xF00);
-        TPM_RC_map.insert("TSS_TCP_BAD_HANDSHAKE_RESP", 0x40280001);
-        TPM_RC_map.insert("TSS_TCP_SERVER_TOO_OLD", 0x40280002);
-        TPM_RC_map.insert("TSS_TCP_BAD_ACK", 0x40280003);
-        TPM_RC_map.insert("TSS_TCP_BAD_RESP_LEN", 0x40280004);
-        TPM_RC_map.insert("TSS_TCP_UNEXPECTED_STARTUP_RESP", 0x40280005);
-        TPM_RC_map.insert("TSS_TCP_INVALID_SIZE_TAG", 0x40280006);
-        TPM_RC_map.insert("TSS_TCP_DISCONNECTED", 0x40280007);
-        TPM_RC_map.insert("TSS_DISPATCH_FAILED", 0x40280010);
-        TPM_RC_map.insert("TSS_SEND_OP_FAILED", 0x40280011);
-        TPM_RC_map.insert("TSS_RESP_BUF_TOO_SHORT", 0x40280021);
-        TPM_RC_map.insert("TSS_RESP_BUF_INVALID_SESSION_TAG", 0x40280022);
-        TPM_RC_map.insert("TSS_RESP_BUF_INVALID_SIZE", 0x40280023);
-        TPM_RC_map.insert("TBS_COMMAND_BLOCKED", 0x80280400);
-        TPM_RC_map.insert("TBS_INVALID_HANDLE", 0x80280401);
-        TPM_RC_map.insert("TBS_DUPLICATE_V_HANDLE", 0x80280402);
-        TPM_RC_map.insert("TBS_EMBEDDED_COMMAND_BLOCKED", 0x80280403);
-        TPM_RC_map.insert("TBS_EMBEDDED_COMMAND_UNSUPPORTED", 0x80280404);
-        TPM_RC_map.insert("TBS_UNKNOWN_ERROR", 0x80284000);
-        TPM_RC_map.insert("TBS_INTERNAL_ERROR", 0x80284001);
-        TPM_RC_map.insert("TBS_BAD_PARAMETER", 0x80284002);
-        TPM_RC_map.insert("TBS_INVALID_OUTPUT_POINTER", 0x80284003);
-        TPM_RC_map.insert("TBS_INVALID_CONTEXT", 0x80284004);
-        TPM_RC_map.insert("TBS_INSUFFICIENT_BUFFER", 0x80284005);
-        TPM_RC_map.insert("TBS_IO_ERROR", 0x80284006);
-        TPM_RC_map.insert("TBS_INVALID_CONTEXT_PARAM", 0x80284007);
-        TPM_RC_map.insert("TBS_SERVICE_NOT_RUNNING", 0x80284008);
-        TPM_RC_map.insert("TBS_TOO_MANY_CONTEXTS", 0x80284009);
-        TPM_RC_map.insert("TBS_TOO_MANY_RESOURCES", 0x8028400A);
-        TPM_RC_map.insert("TBS_SERVICE_START_PENDING", 0x8028400B);
-        TPM_RC_map.insert("TBS_PPI_NOT_SUPPORTED", 0x8028400C);
-        TPM_RC_map.insert("TBS_COMMAND_CANCELED", 0x8028400D);
-        TPM_RC_map.insert("TBS_BUFFER_TOO_LARGE", 0x8028400E);
-        TPM_RC_map.insert("TBS_TPM_NOT_FOUND", 0x8028400F);
-        TPM_RC_map.insert("TBS_SERVICE_DISABLED", 0x80284010);
-        TPM_RC_map.insert("TBS_ACCESS_DENIED", 0x80284012);
-        TPM_RC_map.insert("TBS_PPI_FUNCTION_NOT_SUPPORTED", 0x80284014);
-        TPM_RC_map.insert("TBS_OWNER_AUTH_NOT_FOUND", 0x80284015);
+        let  TPM_RC_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_RC>(), TPM_RC_map);
 
         let mut TPM_CLOCK_ADJUST_map = HashMap::new();
@@ -1436,21 +563,7 @@ lazy_static::lazy_static! {
         TPM_SE_map.insert("TRIAL", 0x3);
         map.insert(std::any::TypeId::of::<TPM_SE>(), TPM_SE_map);
 
-        let mut TPM_CAP_map = HashMap::new();
-        TPM_CAP_map.insert("FIRST", 0x0);
-        TPM_CAP_map.insert("ALGS", 0x0);
-        TPM_CAP_map.insert("HANDLES", 0x1);
-        TPM_CAP_map.insert("COMMANDS", 0x2);
-        TPM_CAP_map.insert("PP_COMMANDS", 0x3);
-        TPM_CAP_map.insert("AUDIT_COMMANDS", 0x4);
-        TPM_CAP_map.insert("PCRS", 0x5);
-        TPM_CAP_map.insert("TPM_PROPERTIES", 0x6);
-        TPM_CAP_map.insert("PCR_PROPERTIES", 0x7);
-        TPM_CAP_map.insert("ECC_CURVES", 0x8);
-        TPM_CAP_map.insert("AUTH_POLICIES", 0x9);
-        TPM_CAP_map.insert("ACT", 0xA);
-        TPM_CAP_map.insert("LAST", 0xA);
-        TPM_CAP_map.insert("VENDOR_PROPERTY", 0x100);
+        let  TPM_CAP_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_CAP>(), TPM_CAP_map);
 
         let mut TPM_PT_map = HashMap::new();
@@ -1527,24 +640,7 @@ lazy_static::lazy_static! {
         TPM_PT_map.insert("AUDIT_COUNTER_1", 0x214);
         map.insert(std::any::TypeId::of::<TPM_PT>(), TPM_PT_map);
 
-        let mut TPM_PT_PCR_map = HashMap::new();
-        TPM_PT_PCR_map.insert("FIRST", 0x0);
-        TPM_PT_PCR_map.insert("SAVE", 0x0);
-        TPM_PT_PCR_map.insert("EXTEND_L0", 0x1);
-        TPM_PT_PCR_map.insert("RESET_L0", 0x2);
-        TPM_PT_PCR_map.insert("EXTEND_L1", 0x3);
-        TPM_PT_PCR_map.insert("RESET_L1", 0x4);
-        TPM_PT_PCR_map.insert("EXTEND_L2", 0x5);
-        TPM_PT_PCR_map.insert("RESET_L2", 0x6);
-        TPM_PT_PCR_map.insert("EXTEND_L3", 0x7);
-        TPM_PT_PCR_map.insert("RESET_L3", 0x8);
-        TPM_PT_PCR_map.insert("EXTEND_L4", 0x9);
-        TPM_PT_PCR_map.insert("RESET_L4", 0xA);
-        TPM_PT_PCR_map.insert("NO_INCREMENT", 0x11);
-        TPM_PT_PCR_map.insert("DRTM_RESET", 0x12);
-        TPM_PT_PCR_map.insert("POLICY", 0x13);
-        TPM_PT_PCR_map.insert("AUTH", 0x14);
-        TPM_PT_PCR_map.insert("LAST", 0x14);
+        let  TPM_PT_PCR_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_PT_PCR>(), TPM_PT_PCR_map);
 
         let mut TPM_PS_map = HashMap::new();
@@ -1566,40 +662,10 @@ lazy_static::lazy_static! {
         TPM_PS_map.insert("TC", 0xF);
         map.insert(std::any::TypeId::of::<TPM_PS>(), TPM_PS_map);
 
-        let mut TPM_HT_map = HashMap::new();
-        TPM_HT_map.insert("PCR", 0x0);
-        TPM_HT_map.insert("NV_INDEX", 0x1);
-        TPM_HT_map.insert("HMAC_SESSION", 0x2);
-        TPM_HT_map.insert("LOADED_SESSION", 0x2);
-        TPM_HT_map.insert("POLICY_SESSION", 0x3);
-        TPM_HT_map.insert("SAVED_SESSION", 0x3);
-        TPM_HT_map.insert("PERMANENT", 0x40);
-        TPM_HT_map.insert("TRANSIENT", 0x80);
-        TPM_HT_map.insert("PERSISTENT", 0x81);
-        TPM_HT_map.insert("AC", 0x90);
+        let  TPM_HT_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_HT>(), TPM_HT_map);
 
-        let mut TPM_RH_map = HashMap::new();
-        TPM_RH_map.insert("FIRST", 0x40000000);
-        TPM_RH_map.insert("SRK", 0x40000000);
-        TPM_RH_map.insert("OWNER", 0x40000001);
-        TPM_RH_map.insert("REVOKE", 0x40000002);
-        TPM_RH_map.insert("TRANSPORT", 0x40000003);
-        TPM_RH_map.insert("OPERATOR", 0x40000004);
-        TPM_RH_map.insert("ADMIN", 0x40000005);
-        TPM_RH_map.insert("EK", 0x40000006);
-        TPM_RH_map.insert("NULL", 0x40000007);
-        TPM_RH_map.insert("UNASSIGNED", 0x40000008);
-        TPM_RH_map.insert("PW", 0x40000009);
-        TPM_RH_map.insert("LOCKOUT", 0x4000000A);
-        TPM_RH_map.insert("ENDORSEMENT", 0x4000000B);
-        TPM_RH_map.insert("PLATFORM", 0x4000000C);
-        TPM_RH_map.insert("PLATFORM_NV", 0x4000000D);
-        TPM_RH_map.insert("AUTH_00", 0x40000010);
-        TPM_RH_map.insert("AUTH_FF", 0x4000010F);
-        TPM_RH_map.insert("ACT_0", 0x40000110);
-        TPM_RH_map.insert("ACT_F", 0x4000011F);
-        TPM_RH_map.insert("LAST", 0x4000011F);
+        let  TPM_RH_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_RH>(), TPM_RH_map);
 
         let mut TPM_NT_map = HashMap::new();
@@ -1630,55 +696,7 @@ lazy_static::lazy_static! {
         PLATFORM_map.insert("DAY_OF_YEAR", 0x168);
         map.insert(std::any::TypeId::of::<PLATFORM>(), PLATFORM_map);
 
-        let mut Implementation_map = HashMap::new();
-        Implementation_map.insert("FIELD_UPGRADE_IMPLEMENTED", 0x0);
-        Implementation_map.insert("HASH_LIB", 0x1);
-        Implementation_map.insert("SYM_LIB", 0x1);
-        Implementation_map.insert("MATH_LIB", 0x1);
-        Implementation_map.insert("IMPLEMENTATION_PCR", 0x18);
-        Implementation_map.insert("PCR_SELECT_MAX", 0x3);
-        Implementation_map.insert("PLATFORM_PCR", 0x18);
-        Implementation_map.insert("PCR_SELECT_MIN", 0x3);
-        Implementation_map.insert("DRTM_PCR", 0x11);
-        Implementation_map.insert("HCRTM_PCR", 0x0);
-        Implementation_map.insert("NUM_LOCALITIES", 0x5);
-        Implementation_map.insert("MAX_HANDLE_NUM", 0x3);
-        Implementation_map.insert("MAX_ACTIVE_SESSIONS", 0x40);
-        Implementation_map.insert("MAX_LOADED_SESSIONS", 0x3);
-        Implementation_map.insert("MAX_SESSION_NUM", 0x3);
-        Implementation_map.insert("MAX_LOADED_OBJECTS", 0x3);
-        Implementation_map.insert("MIN_EVICT_OBJECTS", 0x2);
-        Implementation_map.insert("NUM_POLICY_PCR_GROUP", 0x1);
-        Implementation_map.insert("NUM_AUTHVALUE_PCR_GROUP", 0x1);
-        Implementation_map.insert("MAX_CONTEXT_SIZE", 0x4F0);
-        Implementation_map.insert("MAX_DIGEST_BUFFER", 0x400);
-        Implementation_map.insert("MAX_NV_INDEX_SIZE", 0x800);
-        Implementation_map.insert("MAX_NV_BUFFER_SIZE", 0x400);
-        Implementation_map.insert("MAX_CAP_BUFFER", 0x400);
-        Implementation_map.insert("NV_MEMORY_SIZE", 0x4000);
-        Implementation_map.insert("MIN_COUNTER_INDICES", 0x8);
-        Implementation_map.insert("NUM_STATIC_PCR", 0x10);
-        Implementation_map.insert("MAX_ALG_LIST_SIZE", 0x40);
-        Implementation_map.insert("PRIMARY_SEED_SIZE", 0x20);
-        Implementation_map.insert("CONTEXT_ENCRYPT_ALGORITHM", 0x6);
-        Implementation_map.insert("NV_CLOCK_UPDATE_INTERVAL", 0xC);
-        Implementation_map.insert("NUM_POLICY_PCR", 0x1);
-        Implementation_map.insert("MAX_COMMAND_SIZE", 0x1000);
-        Implementation_map.insert("MAX_RESPONSE_SIZE", 0x1000);
-        Implementation_map.insert("ORDERLY_BITS", 0x8);
-        Implementation_map.insert("MAX_SYM_DATA", 0x80);
-        Implementation_map.insert("MAX_RNG_ENTROPY_SIZE", 0x40);
-        Implementation_map.insert("RAM_INDEX_SPACE", 0x200);
-        Implementation_map.insert("RSA_DEFAULT_PUBLIC_EXPONENT", 0x10001);
-        Implementation_map.insert("ENABLE_PCR_NO_INCREMENT", 0x1);
-        Implementation_map.insert("CRT_FORMAT_RSA", 0x1);
-        Implementation_map.insert("VENDOR_COMMAND_COUNT", 0x0);
-        Implementation_map.insert("MAX_VENDOR_BUFFER_SIZE", 0x400);
-        Implementation_map.insert("MAX_DERIVATION_BITS", 0x2000);
-        Implementation_map.insert("RSA_MAX_PRIME", 0x80);
-        Implementation_map.insert("RSA_PRIVATE_SIZE", 0x280);
-        Implementation_map.insert("SIZE_OF_X509_SERIAL_NUMBER", 0x14);
-        Implementation_map.insert("PRIVATE_VENDOR_SPECIFIC_BYTES", 0x280);
+        let  Implementation_map = HashMap::new();
         map.insert(std::any::TypeId::of::<Implementation>(), Implementation_map);
 
         let mut TPM_HC_map = HashMap::new();
@@ -1729,20 +747,7 @@ lazy_static::lazy_static! {
         TPMA_ALGORITHM_map.insert("method", 0x400);
         map.insert(std::any::TypeId::of::<TPMA_ALGORITHM>(), TPMA_ALGORITHM_map);
 
-        let mut TPMA_OBJECT_map = HashMap::new();
-        TPMA_OBJECT_map.insert("fixedTPM", 0x2);
-        TPMA_OBJECT_map.insert("stClear", 0x4);
-        TPMA_OBJECT_map.insert("fixedParent", 0x10);
-        TPMA_OBJECT_map.insert("sensitiveDataOrigin", 0x20);
-        TPMA_OBJECT_map.insert("userWithAuth", 0x40);
-        TPMA_OBJECT_map.insert("adminWithPolicy", 0x80);
-        TPMA_OBJECT_map.insert("noDA", 0x400);
-        TPMA_OBJECT_map.insert("encryptedDuplication", 0x800);
-        TPMA_OBJECT_map.insert("restricted", 0x10000);
-        TPMA_OBJECT_map.insert("decrypt", 0x20000);
-        TPMA_OBJECT_map.insert("sign", 0x40000);
-        TPMA_OBJECT_map.insert("encrypt", 0x40000);
-        TPMA_OBJECT_map.insert("x509sign", 0x80000);
+        let  TPMA_OBJECT_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_OBJECT>(), TPMA_OBJECT_map);
 
         let mut TPMA_SESSION_map = HashMap::new();
@@ -1797,17 +802,7 @@ lazy_static::lazy_static! {
         TPMA_MODES_map.insert("FIPS_140_2", 0x1);
         map.insert(std::any::TypeId::of::<TPMA_MODES>(), TPMA_MODES_map);
 
-        let mut TPMA_X509_KEY_USAGE_map = HashMap::new();
-        TPMA_X509_KEY_USAGE_map.insert("decipherOnly", 0x800000);
-        TPMA_X509_KEY_USAGE_map.insert("encipherOnly", 0x1000000);
-        TPMA_X509_KEY_USAGE_map.insert("cRLSign", 0x2000000);
-        TPMA_X509_KEY_USAGE_map.insert("keyCertSign", 0x4000000);
-        TPMA_X509_KEY_USAGE_map.insert("keyAgreement", 0x8000000);
-        TPMA_X509_KEY_USAGE_map.insert("dataEncipherment", 0x10000000);
-        TPMA_X509_KEY_USAGE_map.insert("keyEncipherment", 0x20000000);
-        TPMA_X509_KEY_USAGE_map.insert("nonrepudiation", 0x40000000);
-        TPMA_X509_KEY_USAGE_map.insert("contentCommitment", 0x40000000);
-        TPMA_X509_KEY_USAGE_map.insert("digitalSignature", 0xFFFFFFFF80000000);
+        let  TPMA_X509_KEY_USAGE_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_X509_KEY_USAGE>(), TPMA_X509_KEY_USAGE_map);
 
         let mut TPMA_ACT_map = HashMap::new();
@@ -1815,37 +810,10 @@ lazy_static::lazy_static! {
         TPMA_ACT_map.insert("preserveSignaled", 0x2);
         map.insert(std::any::TypeId::of::<TPMA_ACT>(), TPMA_ACT_map);
 
-        let mut TPM_NV_INDEX_map = HashMap::new();
+        let  TPM_NV_INDEX_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_NV_INDEX>(), TPM_NV_INDEX_map);
 
-        let mut TPMA_NV_map = HashMap::new();
-        TPMA_NV_map.insert("PPWRITE", 0x1);
-        TPMA_NV_map.insert("OWNERWRITE", 0x2);
-        TPMA_NV_map.insert("AUTHWRITE", 0x4);
-        TPMA_NV_map.insert("POLICYWRITE", 0x8);
-        TPMA_NV_map.insert("ORDINARY", 0x0);
-        TPMA_NV_map.insert("COUNTER", 0x10);
-        TPMA_NV_map.insert("BITS", 0x20);
-        TPMA_NV_map.insert("EXTEND", 0x40);
-        TPMA_NV_map.insert("PIN_FAIL", 0x80);
-        TPMA_NV_map.insert("PIN_PASS", 0x90);
-        TPMA_NV_map.insert("POLICY_DELETE", 0x400);
-        TPMA_NV_map.insert("WRITELOCKED", 0x800);
-        TPMA_NV_map.insert("WRITEALL", 0x1000);
-        TPMA_NV_map.insert("WRITEDEFINE", 0x2000);
-        TPMA_NV_map.insert("WRITE_STCLEAR", 0x4000);
-        TPMA_NV_map.insert("GLOBALLOCK", 0x8000);
-        TPMA_NV_map.insert("PPREAD", 0x10000);
-        TPMA_NV_map.insert("OWNERREAD", 0x20000);
-        TPMA_NV_map.insert("AUTHREAD", 0x40000);
-        TPMA_NV_map.insert("POLICYREAD", 0x80000);
-        TPMA_NV_map.insert("NO_DA", 0x2000000);
-        TPMA_NV_map.insert("ORDERLY", 0x4000000);
-        TPMA_NV_map.insert("CLEAR_STCLEAR", 0x8000000);
-        TPMA_NV_map.insert("READLOCKED", 0x10000000);
-        TPMA_NV_map.insert("WRITTEN", 0x20000000);
-        TPMA_NV_map.insert("PLATFORMCREATE", 0x40000000);
-        TPMA_NV_map.insert("READ_STCLEAR", 0xFFFFFFFF80000000);
+        let  TPMA_NV_map = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_NV>(), TPMA_NV_map);
 
         map
@@ -1859,20 +827,21 @@ pub struct UnionFactory;
 impl UnionFactory {
     /// Creates a new union instance based on the selector value
     pub fn create<U: TpmUnion>(selector: u32) -> Option<Box<dyn TpmUnion>> {
-    let type_id = std::any::TypeId::of::<U>();
+        let type_id = std::any::TypeId::of::<U>();
+
         if type_id == std::any::TypeId::of::<TPMU_CAPABILITIES>() {
             match selector {
-                TPM_CAP:ALGS as u32 => Some(Box::new(TPMU_CAPABILITIES::algorithms(TPML_ALG_PROPERTY::default()))),
-                TPM_CAP:HANDLES as u32 => Some(Box::new(TPMU_CAPABILITIES::handles(TPML_HANDLE::default()))),
-                TPM_CAP:COMMANDS as u32 => Some(Box::new(TPMU_CAPABILITIES::command(TPML_CCA::default()))),
-                TPM_CAP:PP_COMMANDS as u32 => Some(Box::new(TPMU_CAPABILITIES::ppCommands(TPML_CC::default()))),
-                TPM_CAP:AUDIT_COMMANDS as u32 => Some(Box::new(TPMU_CAPABILITIES::auditCommands(TPML_CC::default()))),
-                TPM_CAP:PCRS as u32 => Some(Box::new(TPMU_CAPABILITIES::assignedPCR(TPML_PCR_SELECTION::default()))),
-                TPM_CAP:TPM_PROPERTIES as u32 => Some(Box::new(TPMU_CAPABILITIES::tpmProperties(TPML_TAGGED_TPM_PROPERTY::default()))),
-                TPM_CAP:PCR_PROPERTIES as u32 => Some(Box::new(TPMU_CAPABILITIES::pcrProperties(TPML_TAGGED_PCR_PROPERTY::default()))),
-                TPM_CAP:ECC_CURVES as u32 => Some(Box::new(TPMU_CAPABILITIES::eccCurves(TPML_ECC_CURVE::default()))),
-                TPM_CAP:AUTH_POLICIES as u32 => Some(Box::new(TPMU_CAPABILITIES::authPolicies(TPML_TAGGED_POLICY::default()))),
-                TPM_CAP:ACT as u32 => Some(Box::new(TPMU_CAPABILITIES::actData(TPML_ACT_DATA::default()))),
+                TPM_CAP::ALGS => Some(Box::new(TPMU_CAPABILITIES::algorithms(TPML_ALG_PROPERTY::default()))),
+                TPM_CAP::HANDLES => Some(Box::new(TPMU_CAPABILITIES::handles(TPML_HANDLE::default()))),
+                TPM_CAP::COMMANDS => Some(Box::new(TPMU_CAPABILITIES::command(TPML_CCA::default()))),
+                TPM_CAP::PP_COMMANDS => Some(Box::new(TPMU_CAPABILITIES::ppCommands(TPML_CC::default()))),
+                TPM_CAP::AUDIT_COMMANDS => Some(Box::new(TPMU_CAPABILITIES::auditCommands(TPML_CC::default()))),
+                TPM_CAP::PCRS => Some(Box::new(TPMU_CAPABILITIES::assignedPCR(TPML_PCR_SELECTION::default()))),
+                TPM_CAP::TPM_PROPERTIES => Some(Box::new(TPMU_CAPABILITIES::tpmProperties(TPML_TAGGED_TPM_PROPERTY::default()))),
+                TPM_CAP::PCR_PROPERTIES => Some(Box::new(TPMU_CAPABILITIES::pcrProperties(TPML_TAGGED_PCR_PROPERTY::default()))),
+                TPM_CAP::ECC_CURVES => Some(Box::new(TPMU_CAPABILITIES::eccCurves(TPML_ECC_CURVE::default()))),
+                TPM_CAP::AUTH_POLICIES => Some(Box::new(TPMU_CAPABILITIES::authPolicies(TPML_TAGGED_POLICY::default()))),
+                TPM_CAP::ACT => Some(Box::new(TPMU_CAPABILITIES::actData(TPML_ACT_DATA::default()))),
                 _ => None,
             }
 
@@ -1880,14 +849,14 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_ATTEST>() {
             match selector {
-                TPM_ST:ATTEST_CERTIFY as u32 => Some(Box::new(TPMU_ATTEST::certify(TPMS_CERTIFY_INFO::default()))),
-                TPM_ST:ATTEST_CREATION as u32 => Some(Box::new(TPMU_ATTEST::creation(TPMS_CREATION_INFO::default()))),
-                TPM_ST:ATTEST_QUOTE as u32 => Some(Box::new(TPMU_ATTEST::quote(TPMS_QUOTE_INFO::default()))),
-                TPM_ST:ATTEST_COMMAND_AUDIT as u32 => Some(Box::new(TPMU_ATTEST::commandAudit(TPMS_COMMAND_AUDIT_INFO::default()))),
-                TPM_ST:ATTEST_SESSION_AUDIT as u32 => Some(Box::new(TPMU_ATTEST::sessionAudit(TPMS_SESSION_AUDIT_INFO::default()))),
-                TPM_ST:ATTEST_TIME as u32 => Some(Box::new(TPMU_ATTEST::time(TPMS_TIME_ATTEST_INFO::default()))),
-                TPM_ST:ATTEST_NV as u32 => Some(Box::new(TPMU_ATTEST::nv(TPMS_NV_CERTIFY_INFO::default()))),
-                TPM_ST:ATTEST_NV_DIGEST as u32 => Some(Box::new(TPMU_ATTEST::nvDigest(TPMS_NV_DIGEST_CERTIFY_INFO::default()))),
+                TPM_ST::ATTEST_CERTIFY => Some(Box::new(TPMU_ATTEST::certify(TPMS_CERTIFY_INFO::default()))),
+                TPM_ST::ATTEST_CREATION => Some(Box::new(TPMU_ATTEST::creation(TPMS_CREATION_INFO::default()))),
+                TPM_ST::ATTEST_QUOTE => Some(Box::new(TPMU_ATTEST::quote(TPMS_QUOTE_INFO::default()))),
+                TPM_ST::ATTEST_COMMAND_AUDIT => Some(Box::new(TPMU_ATTEST::commandAudit(TPMS_COMMAND_AUDIT_INFO::default()))),
+                TPM_ST::ATTEST_SESSION_AUDIT => Some(Box::new(TPMU_ATTEST::sessionAudit(TPMS_SESSION_AUDIT_INFO::default()))),
+                TPM_ST::ATTEST_TIME => Some(Box::new(TPMU_ATTEST::time(TPMS_TIME_ATTEST_INFO::default()))),
+                TPM_ST::ATTEST_NV => Some(Box::new(TPMU_ATTEST::nv(TPMS_NV_CERTIFY_INFO::default()))),
+                TPM_ST::ATTEST_NV_DIGEST => Some(Box::new(TPMU_ATTEST::nvDigest(TPMS_NV_DIGEST_CERTIFY_INFO::default()))),
                 _ => None,
             }
 
@@ -1895,13 +864,13 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_SYM_DETAILS>() {
             match selector {
-                TPM_ALG_ID:TDES as u32 => Some(Box::new(TPMU_SYM_DETAILS::tdes(TPMS_TDES_SYM_DETAILS::default()))),
-                TPM_ALG_ID:AES as u32 => Some(Box::new(TPMU_SYM_DETAILS::aes(TPMS_AES_SYM_DETAILS::default()))),
-                TPM_ALG_ID:SM4 as u32 => Some(Box::new(TPMU_SYM_DETAILS::sm4(TPMS_SM4_SYM_DETAILS::default()))),
-                TPM_ALG_ID:CAMELLIA as u32 => Some(Box::new(TPMU_SYM_DETAILS::camellia(TPMS_CAMELLIA_SYM_DETAILS::default()))),
-                TPM_ALG_ID:ANY as u32 => Some(Box::new(TPMU_SYM_DETAILS::sym(TPMS_ANY_SYM_DETAILS::default()))),
-                TPM_ALG_ID:XOR as u32 => Some(Box::new(TPMU_SYM_DETAILS::xor(TPMS_XOR_SYM_DETAILS::default()))),
-                TPM_ALG_ID:NULL as u32 => Some(Box::new(TPMU_SYM_DETAILS::null(TPMS_NULL_SYM_DETAILS::default()))),
+                TPM_ALG_ID::TDES => Some(Box::new(TPMU_SYM_DETAILS::tdes(TPMS_TDES_SYM_DETAILS::default()))),
+                TPM_ALG_ID::AES => Some(Box::new(TPMU_SYM_DETAILS::aes(TPMS_AES_SYM_DETAILS::default()))),
+                TPM_ALG_ID::SM4 => Some(Box::new(TPMU_SYM_DETAILS::sm4(TPMS_SM4_SYM_DETAILS::default()))),
+                TPM_ALG_ID::CAMELLIA => Some(Box::new(TPMU_SYM_DETAILS::camellia(TPMS_CAMELLIA_SYM_DETAILS::default()))),
+                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SYM_DETAILS::sym(TPMS_ANY_SYM_DETAILS::default()))),
+                TPM_ALG_ID::XOR => Some(Box::new(TPMU_SYM_DETAILS::xor(TPMS_XOR_SYM_DETAILS::default()))),
+                TPM_ALG_ID::NULL => Some(Box::new(TPMU_SYM_DETAILS::null(TPMS_NULL_SYM_DETAILS::default()))),
                 _ => None,
             }
 
@@ -1909,8 +878,8 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_SENSITIVE_CREATE>() {
             match selector {
-                TPM_ALG_ID:ANY as u32 => Some(Box::new(TPMU_SENSITIVE_CREATE::create)),
-                TPM_ALG_ID:ANY2 as u32 => Some(Box::new(TPMU_SENSITIVE_CREATE::derive(TPMS_DERIVE::default()))),
+                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SENSITIVE_CREATE::create)),
+                TPM_ALG_ID::ANY2 => Some(Box::new(TPMU_SENSITIVE_CREATE::derive(TPMS_DERIVE::default()))),
                 _ => None,
             }
 
@@ -1918,9 +887,9 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_SCHEME_KEYEDHASH>() {
             match selector {
-                TPM_ALG_ID:HMAC as u32 => Some(Box::new(TPMU_SCHEME_KEYEDHASH::hmac(TPMS_SCHEME_HMAC::default()))),
-                TPM_ALG_ID:XOR as u32 => Some(Box::new(TPMU_SCHEME_KEYEDHASH::xor(TPMS_SCHEME_XOR::default()))),
-                TPM_ALG_ID:NULL as u32 => Some(Box::new(TPMU_SCHEME_KEYEDHASH::null(TPMS_NULL_SCHEME_KEYEDHASH::default()))),
+                TPM_ALG_ID::HMAC => Some(Box::new(TPMU_SCHEME_KEYEDHASH::hmac(TPMS_SCHEME_HMAC::default()))),
+                TPM_ALG_ID::XOR => Some(Box::new(TPMU_SCHEME_KEYEDHASH::xor(TPMS_SCHEME_XOR::default()))),
+                TPM_ALG_ID::NULL => Some(Box::new(TPMU_SCHEME_KEYEDHASH::null(TPMS_NULL_SCHEME_KEYEDHASH::default()))),
                 _ => None,
             }
 
@@ -1928,15 +897,15 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_SIG_SCHEME>() {
             match selector {
-                TPM_ALG_ID:RSASSA as u32 => Some(Box::new(TPMU_SIG_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA::default()))),
-                TPM_ALG_ID:RSAPSS as u32 => Some(Box::new(TPMU_SIG_SCHEME::rsapss(TPMS_SIG_SCHEME_RSAPSS::default()))),
-                TPM_ALG_ID:ECDSA as u32 => Some(Box::new(TPMU_SIG_SCHEME::ecdsa(TPMS_SIG_SCHEME_ECDSA::default()))),
-                TPM_ALG_ID:ECDAA as u32 => Some(Box::new(TPMU_SIG_SCHEME::ecdaa(TPMS_SIG_SCHEME_ECDAA::default()))),
-                TPM_ALG_ID:SM2 as u32 => Some(Box::new(TPMU_SIG_SCHEME::sm2(TPMS_SIG_SCHEME_SM2::default()))),
-                TPM_ALG_ID:ECSCHNORR as u32 => Some(Box::new(TPMU_SIG_SCHEME::ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR::default()))),
-                TPM_ALG_ID:HMAC as u32 => Some(Box::new(TPMU_SIG_SCHEME::hmac(TPMS_SCHEME_HMAC::default()))),
-                TPM_ALG_ID:ANY as u32 => Some(Box::new(TPMU_SIG_SCHEME::any(TPMS_SCHEME_HASH::default()))),
-                TPM_ALG_ID:NULL as u32 => Some(Box::new(TPMU_SIG_SCHEME::null(TPMS_NULL_SIG_SCHEME::default()))),
+                TPM_ALG_ID::RSASSA => Some(Box::new(TPMU_SIG_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA::default()))),
+                TPM_ALG_ID::RSAPSS => Some(Box::new(TPMU_SIG_SCHEME::rsapss(TPMS_SIG_SCHEME_RSAPSS::default()))),
+                TPM_ALG_ID::ECDSA => Some(Box::new(TPMU_SIG_SCHEME::ecdsa(TPMS_SIG_SCHEME_ECDSA::default()))),
+                TPM_ALG_ID::ECDAA => Some(Box::new(TPMU_SIG_SCHEME::ecdaa(TPMS_SIG_SCHEME_ECDAA::default()))),
+                TPM_ALG_ID::SM2 => Some(Box::new(TPMU_SIG_SCHEME::sm2(TPMS_SIG_SCHEME_SM2::default()))),
+                TPM_ALG_ID::ECSCHNORR => Some(Box::new(TPMU_SIG_SCHEME::ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR::default()))),
+                TPM_ALG_ID::HMAC => Some(Box::new(TPMU_SIG_SCHEME::hmac(TPMS_SCHEME_HMAC::default()))),
+                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SIG_SCHEME::any(TPMS_SCHEME_HASH::default()))),
+                TPM_ALG_ID::NULL => Some(Box::new(TPMU_SIG_SCHEME::null(TPMS_NULL_SIG_SCHEME::default()))),
                 _ => None,
             }
 
@@ -1944,12 +913,12 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_KDF_SCHEME>() {
             match selector {
-                TPM_ALG_ID:MGF1 as u32 => Some(Box::new(TPMU_KDF_SCHEME::mgf1(TPMS_KDF_SCHEME_MGF1::default()))),
-                TPM_ALG_ID:KDF1_SP800_56A as u32 => Some(Box::new(TPMU_KDF_SCHEME::kdf1_sp800_56a(TPMS_KDF_SCHEME_KDF1_SP800_56A::default()))),
-                TPM_ALG_ID:KDF2 as u32 => Some(Box::new(TPMU_KDF_SCHEME::kdf2(TPMS_KDF_SCHEME_KDF2::default()))),
-                TPM_ALG_ID:KDF1_SP800_108 as u32 => Some(Box::new(TPMU_KDF_SCHEME::kdf1_sp800_108(TPMS_KDF_SCHEME_KDF1_SP800_108::default()))),
-                TPM_ALG_ID:ANY as u32 => Some(Box::new(TPMU_KDF_SCHEME::anyKdf(TPMS_SCHEME_HASH::default()))),
-                TPM_ALG_ID:NULL as u32 => Some(Box::new(TPMU_KDF_SCHEME::null(TPMS_NULL_KDF_SCHEME::default()))),
+                TPM_ALG_ID::MGF1 => Some(Box::new(TPMU_KDF_SCHEME::mgf1(TPMS_KDF_SCHEME_MGF1::default()))),
+                TPM_ALG_ID::KDF1_SP800_56A => Some(Box::new(TPMU_KDF_SCHEME::kdf1_sp800_56a(TPMS_KDF_SCHEME_KDF1_SP800_56A::default()))),
+                TPM_ALG_ID::KDF2 => Some(Box::new(TPMU_KDF_SCHEME::kdf2(TPMS_KDF_SCHEME_KDF2::default()))),
+                TPM_ALG_ID::KDF1_SP800_108 => Some(Box::new(TPMU_KDF_SCHEME::kdf1_sp800_108(TPMS_KDF_SCHEME_KDF1_SP800_108::default()))),
+                TPM_ALG_ID::ANY => Some(Box::new(TPMU_KDF_SCHEME::anyKdf(TPMS_SCHEME_HASH::default()))),
+                TPM_ALG_ID::NULL => Some(Box::new(TPMU_KDF_SCHEME::null(TPMS_NULL_KDF_SCHEME::default()))),
                 _ => None,
             }
 
@@ -1957,18 +926,18 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_ASYM_SCHEME>() {
             match selector {
-                TPM_ALG_ID:ECDH as u32 => Some(Box::new(TPMU_ASYM_SCHEME::ecdh(TPMS_KEY_SCHEME_ECDH::default()))),
-                TPM_ALG_ID:ECMQV as u32 => Some(Box::new(TPMU_ASYM_SCHEME::ecmqv(TPMS_KEY_SCHEME_ECMQV::default()))),
-                TPM_ALG_ID:RSASSA as u32 => Some(Box::new(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA::default()))),
-                TPM_ALG_ID:RSAPSS as u32 => Some(Box::new(TPMU_ASYM_SCHEME::rsapss(TPMS_SIG_SCHEME_RSAPSS::default()))),
-                TPM_ALG_ID:ECDSA as u32 => Some(Box::new(TPMU_ASYM_SCHEME::ecdsa(TPMS_SIG_SCHEME_ECDSA::default()))),
-                TPM_ALG_ID:ECDAA as u32 => Some(Box::new(TPMU_ASYM_SCHEME::ecdaa(TPMS_SIG_SCHEME_ECDAA::default()))),
-                TPM_ALG_ID:SM2 as u32 => Some(Box::new(TPMU_ASYM_SCHEME::sm2(TPMS_SIG_SCHEME_SM2::default()))),
-                TPM_ALG_ID:ECSCHNORR as u32 => Some(Box::new(TPMU_ASYM_SCHEME::ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR::default()))),
-                TPM_ALG_ID:RSAES as u32 => Some(Box::new(TPMU_ASYM_SCHEME::rsaes(TPMS_ENC_SCHEME_RSAES::default()))),
-                TPM_ALG_ID:OAEP as u32 => Some(Box::new(TPMU_ASYM_SCHEME::oaep(TPMS_ENC_SCHEME_OAEP::default()))),
-                TPM_ALG_ID:ANY as u32 => Some(Box::new(TPMU_ASYM_SCHEME::anySig(TPMS_SCHEME_HASH::default()))),
-                TPM_ALG_ID:NULL as u32 => Some(Box::new(TPMU_ASYM_SCHEME::null(TPMS_NULL_ASYM_SCHEME::default()))),
+                TPM_ALG_ID::ECDH => Some(Box::new(TPMU_ASYM_SCHEME::ecdh(TPMS_KEY_SCHEME_ECDH::default()))),
+                TPM_ALG_ID::ECMQV => Some(Box::new(TPMU_ASYM_SCHEME::ecmqv(TPMS_KEY_SCHEME_ECMQV::default()))),
+                TPM_ALG_ID::RSASSA => Some(Box::new(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA::default()))),
+                TPM_ALG_ID::RSAPSS => Some(Box::new(TPMU_ASYM_SCHEME::rsapss(TPMS_SIG_SCHEME_RSAPSS::default()))),
+                TPM_ALG_ID::ECDSA => Some(Box::new(TPMU_ASYM_SCHEME::ecdsa(TPMS_SIG_SCHEME_ECDSA::default()))),
+                TPM_ALG_ID::ECDAA => Some(Box::new(TPMU_ASYM_SCHEME::ecdaa(TPMS_SIG_SCHEME_ECDAA::default()))),
+                TPM_ALG_ID::SM2 => Some(Box::new(TPMU_ASYM_SCHEME::sm2(TPMS_SIG_SCHEME_SM2::default()))),
+                TPM_ALG_ID::ECSCHNORR => Some(Box::new(TPMU_ASYM_SCHEME::ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR::default()))),
+                TPM_ALG_ID::RSAES => Some(Box::new(TPMU_ASYM_SCHEME::rsaes(TPMS_ENC_SCHEME_RSAES::default()))),
+                TPM_ALG_ID::OAEP => Some(Box::new(TPMU_ASYM_SCHEME::oaep(TPMS_ENC_SCHEME_OAEP::default()))),
+                TPM_ALG_ID::ANY => Some(Box::new(TPMU_ASYM_SCHEME::anySig(TPMS_SCHEME_HASH::default()))),
+                TPM_ALG_ID::NULL => Some(Box::new(TPMU_ASYM_SCHEME::null(TPMS_NULL_ASYM_SCHEME::default()))),
                 _ => None,
             }
 
@@ -1976,15 +945,15 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_SIGNATURE>() {
             match selector {
-                TPM_ALG_ID:RSASSA as u32 => Some(Box::new(TPMU_SIGNATURE::rsassa(TPMS_SIGNATURE_RSASSA::default()))),
-                TPM_ALG_ID:RSAPSS as u32 => Some(Box::new(TPMU_SIGNATURE::rsapss(TPMS_SIGNATURE_RSAPSS::default()))),
-                TPM_ALG_ID:ECDSA as u32 => Some(Box::new(TPMU_SIGNATURE::ecdsa(TPMS_SIGNATURE_ECDSA::default()))),
-                TPM_ALG_ID:ECDAA as u32 => Some(Box::new(TPMU_SIGNATURE::ecdaa(TPMS_SIGNATURE_ECDAA::default()))),
-                TPM_ALG_ID:SM2 as u32 => Some(Box::new(TPMU_SIGNATURE::sm2(TPMS_SIGNATURE_SM2::default()))),
-                TPM_ALG_ID:ECSCHNORR as u32 => Some(Box::new(TPMU_SIGNATURE::ecschnorr(TPMS_SIGNATURE_ECSCHNORR::default()))),
-                TPM_ALG_ID:HMAC as u32 => Some(Box::new(TPMU_SIGNATURE::hmac(TPMT_HA::default()))),
-                TPM_ALG_ID:ANY as u32 => Some(Box::new(TPMU_SIGNATURE::any(TPMS_SCHEME_HASH::default()))),
-                TPM_ALG_ID:NULL as u32 => Some(Box::new(TPMU_SIGNATURE::null(TPMS_NULL_SIGNATURE::default()))),
+                TPM_ALG_ID::RSASSA => Some(Box::new(TPMU_SIGNATURE::rsassa(TPMS_SIGNATURE_RSASSA::default()))),
+                TPM_ALG_ID::RSAPSS => Some(Box::new(TPMU_SIGNATURE::rsapss(TPMS_SIGNATURE_RSAPSS::default()))),
+                TPM_ALG_ID::ECDSA => Some(Box::new(TPMU_SIGNATURE::ecdsa(TPMS_SIGNATURE_ECDSA::default()))),
+                TPM_ALG_ID::ECDAA => Some(Box::new(TPMU_SIGNATURE::ecdaa(TPMS_SIGNATURE_ECDAA::default()))),
+                TPM_ALG_ID::SM2 => Some(Box::new(TPMU_SIGNATURE::sm2(TPMS_SIGNATURE_SM2::default()))),
+                TPM_ALG_ID::ECSCHNORR => Some(Box::new(TPMU_SIGNATURE::ecschnorr(TPMS_SIGNATURE_ECSCHNORR::default()))),
+                TPM_ALG_ID::HMAC => Some(Box::new(TPMU_SIGNATURE::hmac(TPMT_HA::default()))),
+                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SIGNATURE::any(TPMS_SCHEME_HASH::default()))),
+                TPM_ALG_ID::NULL => Some(Box::new(TPMU_SIGNATURE::null(TPMS_NULL_SIGNATURE::default()))),
                 _ => None,
             }
 
@@ -1992,11 +961,11 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_PUBLIC_ID>() {
             match selector {
-                TPM_ALG_ID:KEYEDHASH as u32 => Some(Box::new(TPMU_PUBLIC_ID::keyedHash(TPM2B_DIGEST_KEYEDHASH::default()))),
-                TPM_ALG_ID:SYMCIPHER as u32 => Some(Box::new(TPMU_PUBLIC_ID::sym(TPM2B_DIGEST_SYMCIPHER::default()))),
-                TPM_ALG_ID:RSA as u32 => Some(Box::new(TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default()))),
-                TPM_ALG_ID:ECC as u32 => Some(Box::new(TPMU_PUBLIC_ID::ecc(TPMS_ECC_POINT::default()))),
-                TPM_ALG_ID:ANY as u32 => Some(Box::new(TPMU_PUBLIC_ID::derive(TPMS_DERIVE::default()))),
+                TPM_ALG_ID::KEYEDHASH => Some(Box::new(TPMU_PUBLIC_ID::keyedHash(TPM2B_DIGEST_KEYEDHASH::default()))),
+                TPM_ALG_ID::SYMCIPHER => Some(Box::new(TPMU_PUBLIC_ID::sym(TPM2B_DIGEST_SYMCIPHER::default()))),
+                TPM_ALG_ID::RSA => Some(Box::new(TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default()))),
+                TPM_ALG_ID::ECC => Some(Box::new(TPMU_PUBLIC_ID::ecc(TPMS_ECC_POINT::default()))),
+                TPM_ALG_ID::ANY => Some(Box::new(TPMU_PUBLIC_ID::derive(TPMS_DERIVE::default()))),
                 _ => None,
             }
 
@@ -2004,11 +973,11 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_PUBLIC_PARMS>() {
             match selector {
-                TPM_ALG_ID:KEYEDHASH as u32 => Some(Box::new(TPMU_PUBLIC_PARMS::keyedHashDetail(TPMS_KEYEDHASH_PARMS::default()))),
-                TPM_ALG_ID:SYMCIPHER as u32 => Some(Box::new(TPMU_PUBLIC_PARMS::symDetail(TPMS_SYMCIPHER_PARMS::default()))),
-                TPM_ALG_ID:RSA as u32 => Some(Box::new(TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::default()))),
-                TPM_ALG_ID:ECC as u32 => Some(Box::new(TPMU_PUBLIC_PARMS::eccDetail(TPMS_ECC_PARMS::default()))),
-                TPM_ALG_ID:ANY as u32 => Some(Box::new(TPMU_PUBLIC_PARMS::asymDetail(TPMS_ASYM_PARMS::default()))),
+                TPM_ALG_ID::KEYEDHASH => Some(Box::new(TPMU_PUBLIC_PARMS::keyedHashDetail(TPMS_KEYEDHASH_PARMS::default()))),
+                TPM_ALG_ID::SYMCIPHER => Some(Box::new(TPMU_PUBLIC_PARMS::symDetail(TPMS_SYMCIPHER_PARMS::default()))),
+                TPM_ALG_ID::RSA => Some(Box::new(TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::default()))),
+                TPM_ALG_ID::ECC => Some(Box::new(TPMU_PUBLIC_PARMS::eccDetail(TPMS_ECC_PARMS::default()))),
+                TPM_ALG_ID::ANY => Some(Box::new(TPMU_PUBLIC_PARMS::asymDetail(TPMS_ASYM_PARMS::default()))),
                 _ => None,
             }
 
@@ -2016,11 +985,11 @@ impl UnionFactory {
 
         if type_id == std::any::TypeId::of::<TPMU_SENSITIVE_COMPOSITE>() {
             match selector {
-                TPM_ALG_ID:RSA as u32 => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::rsa(TPM2B_PRIVATE_KEY_RSA::default()))),
-                TPM_ALG_ID:ECC as u32 => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::ecc(TPM2B_ECC_PARAMETER::default()))),
-                TPM_ALG_ID:KEYEDHASH as u32 => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::bits(TPM2B_SENSITIVE_DATA::default()))),
-                TPM_ALG_ID:SYMCIPHER as u32 => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::sym(TPM2B_SYM_KEY::default()))),
-                TPM_ALG_ID:ANY as u32 => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::any(TPM2B_PRIVATE_VENDOR_SPECIFIC::default()))),
+                TPM_ALG_ID::RSA => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::rsa(TPM2B_PRIVATE_KEY_RSA::default()))),
+                TPM_ALG_ID::ECC => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::ecc(TPM2B_ECC_PARAMETER::default()))),
+                TPM_ALG_ID::KEYEDHASH => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::bits(TPM2B_SENSITIVE_DATA::default()))),
+                TPM_ALG_ID::SYMCIPHER => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::sym(TPM2B_SYM_KEY::default()))),
+                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::any(TPM2B_PRIVATE_VENDOR_SPECIFIC::default()))),
                 _ => None,
             }
 
@@ -2036,14 +1005,17 @@ impl UnionFactory {
 
 impl TPM_HANDLE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u32(self.handle)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.handle = buffer.read_u32()?;
         Ok(())
     }
@@ -2052,13 +1024,12 @@ impl TPM_HANDLE {
 
 impl TPMS_NULL_UNION {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -2066,13 +1037,12 @@ impl TPMS_NULL_UNION {
 
 impl TPMS_EMPTY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -2080,17 +1050,22 @@ impl TPMS_EMPTY {
 
 impl TPMS_ALGORITHM_DESCRIPTION {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.alg as u32)?;
-        buffer.write_u32(self.attributes as u32)?;
+        buffer.write_u32(self.alg.get_value())?;
+        buffer.write_u32(self.attributes.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        self.attributes = TPMA_ALGORITHM::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let alg_value = buffer.read_u32()?;
+        self.alg = TPM_ALG_ID::try_from(alg_value as i16)?;
+        let attributes_value = buffer.read_u32()?;
+        self.attributes = TPMA_ALGORITHM::try_from(attributes_value)?;
         Ok(())
     }
 
@@ -2098,16 +1073,20 @@ impl TPMS_ALGORITHM_DESCRIPTION {
 
 impl TPMT_HA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.hash_Alg as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
         buffer.write_u8(self.digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
         self.digest = buffer.read_u8()?;
         Ok(())
     }
@@ -2116,14 +1095,17 @@ impl TPMT_HA {
 
 impl TPM2B_DIGEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -2132,14 +1114,17 @@ impl TPM2B_DIGEST {
 
 impl TPM2B_DATA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -2148,14 +1133,17 @@ impl TPM2B_DATA {
 
 impl TPM2B_EVENT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -2164,14 +1152,17 @@ impl TPM2B_EVENT {
 
 impl TPM2B_MAX_BUFFER {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -2180,14 +1171,17 @@ impl TPM2B_MAX_BUFFER {
 
 impl TPM2B_MAX_NV_BUFFER {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -2196,14 +1190,17 @@ impl TPM2B_MAX_NV_BUFFER {
 
 impl TPM2B_TIMEOUT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -2212,14 +1209,17 @@ impl TPM2B_TIMEOUT {
 
 impl TPM2B_IV {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -2228,14 +1228,17 @@ impl TPM2B_IV {
 
 impl TPM2B_NAME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.name)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.name = buffer.read_u8()?;
         Ok(())
     }
@@ -2244,14 +1247,17 @@ impl TPM2B_NAME {
 
 impl TPMS_PCR_SELECT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.pcr_Select)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.pcr_Select = buffer.read_u8()?;
         Ok(())
     }
@@ -2260,16 +1266,20 @@ impl TPMS_PCR_SELECT {
 
 impl TPMS_PCR_SELECTION {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.hash as u32)?;
+        buffer.write_u32(self.hash.get_value())?;
         buffer.write_u8(self.pcr_Select)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let hash_value = buffer.read_u32()?;
+        self.hash = TPM_ALG_ID::try_from(hash_value)?;
         self.pcr_Select = buffer.read_u8()?;
         Ok(())
     }
@@ -2278,17 +1288,26 @@ impl TPMS_PCR_SELECTION {
 
 impl TPMT_TK_CREATION {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         // Constant value: TPM_ST::CREATION
+        buffer.write_u32(TPM_ST::CREATION)?;
         self.hierarchy.serialize(buffer)?;
         buffer.write_u8(self.digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         // Constant value: TPM_ST::CREATION
+        let tag = buffer.read_u32()?;
+        if tag != TPM_ST::CREATION {
+        return Err(TpmError::IncorrectTag(TPM_ST::CREATION, tag));
+        }
+
         self.hierarchy.deserialize(buffer)?;
         self.digest = buffer.read_u8()?;
         Ok(())
@@ -2298,17 +1317,26 @@ impl TPMT_TK_CREATION {
 
 impl TPMT_TK_VERIFIED {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         // Constant value: TPM_ST::VERIFIED
+        buffer.write_u32(TPM_ST::VERIFIED)?;
         self.hierarchy.serialize(buffer)?;
         buffer.write_u8(self.digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         // Constant value: TPM_ST::VERIFIED
+        let tag = buffer.read_u32()?;
+        if tag != TPM_ST::VERIFIED {
+        return Err(TpmError::IncorrectTag(TPM_ST::VERIFIED, tag));
+        }
+
         self.hierarchy.deserialize(buffer)?;
         self.digest = buffer.read_u8()?;
         Ok(())
@@ -2318,17 +1346,21 @@ impl TPMT_TK_VERIFIED {
 
 impl TPMT_TK_AUTH {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.tag as u32)?;
+        buffer.write_u32(self.tag.get_value())?;
         self.hierarchy.serialize(buffer)?;
         buffer.write_u8(self.digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tag = TPM_ST::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let tag_value = buffer.read_u32()?;
+        self.tag = TPM_ST::try_from(tag_value)?;
         self.hierarchy.deserialize(buffer)?;
         self.digest = buffer.read_u8()?;
         Ok(())
@@ -2338,17 +1370,26 @@ impl TPMT_TK_AUTH {
 
 impl TPMT_TK_HASHCHECK {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         // Constant value: TPM_ST::HASHCHECK
+        buffer.write_u32(TPM_ST::HASHCHECK)?;
         self.hierarchy.serialize(buffer)?;
         buffer.write_u8(self.digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         // Constant value: TPM_ST::HASHCHECK
+        let tag = buffer.read_u32()?;
+        if tag != TPM_ST::HASHCHECK {
+        return Err(TpmError::IncorrectTag(TPM_ST::HASHCHECK, tag));
+        }
+
         self.hierarchy.deserialize(buffer)?;
         self.digest = buffer.read_u8()?;
         Ok(())
@@ -2358,17 +1399,22 @@ impl TPMT_TK_HASHCHECK {
 
 impl TPMS_ALG_PROPERTY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.alg as u32)?;
-        buffer.write_u32(self.alg_Properties as u32)?;
+        buffer.write_u32(self.alg.get_value())?;
+        buffer.write_u32(self.alg_Properties.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        self.alg_Properties = TPMA_ALGORITHM::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let alg_value = buffer.read_u32()?;
+        self.alg = TPM_ALG_ID::try_from(alg_value as i16)?;
+        let alg_Properties_value = buffer.read_u32()?;
+        self.alg_Properties = TPMA_ALGORITHM::try_from(alg_Properties_value)?;
         Ok(())
     }
 
@@ -2376,16 +1422,20 @@ impl TPMS_ALG_PROPERTY {
 
 impl TPMS_TAGGED_PROPERTY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.property as u32)?;
+        buffer.write_u32(self.property.get_value())?;
         buffer.write_u32(self.value)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.property = TPM_PT::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let property_value = buffer.read_u32()?;
+        self.property = TPM_PT::try_from(property_value)?;
         self.value = buffer.read_u32()?;
         Ok(())
     }
@@ -2394,16 +1444,20 @@ impl TPMS_TAGGED_PROPERTY {
 
 impl TPMS_TAGGED_PCR_SELECT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.tag as u32)?;
+        buffer.write_u32(self.tag.get_value())?;
         buffer.write_u8(self.pcr_Select)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tag = TPM_PT_PCR::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let tag_value = buffer.read_u32()?;
+        self.tag = TPM_PT_PCR::try_from(tag_value as i32)?;
         self.pcr_Select = buffer.read_u8()?;
         Ok(())
     }
@@ -2412,15 +1466,18 @@ impl TPMS_TAGGED_PCR_SELECT {
 
 impl TPMS_TAGGED_POLICY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.handle.serialize(buffer)?;
         self.policy_Hash.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.handle.deserialize(buffer)?;
         self.policy_Hash.deserialize(buffer)?;
         Ok(())
@@ -2430,19 +1487,23 @@ impl TPMS_TAGGED_POLICY {
 
 impl TPMS_ACT_DATA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.handle.serialize(buffer)?;
         buffer.write_u32(self.timeout)?;
-        buffer.write_u32(self.attributes as u32)?;
+        buffer.write_u32(self.attributes.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.handle.deserialize(buffer)?;
         self.timeout = buffer.read_u32()?;
-        self.attributes = TPMA_ACT::try_from(buffer.read_u32()?)?;
+        let attributes_value = buffer.read_u32()?;
+        self.attributes = TPMA_ACT::try_from(attributes_value)?;
         Ok(())
     }
 
@@ -2450,15 +1511,19 @@ impl TPMS_ACT_DATA {
 
 impl TPML_CC {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.command_Codes as u32)?;
+        buffer.write_u32(self.command_Codes.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.command_Codes = Vec<TPM_CC>::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let command_Codes_value = buffer.read_u32()?;
+        self.command_Codes = Vec<TPM_CC>::try_from(command_Codes_value as i32)?;
         Ok(())
     }
 
@@ -2466,15 +1531,19 @@ impl TPML_CC {
 
 impl TPML_CCA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.command_Attributes as u32)?;
+        buffer.write_u32(self.command_Attributes.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.command_Attributes = Vec<TPMA_CC>::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let command_Attributes_value = buffer.read_u32()?;
+        self.command_Attributes = Vec<TPMA_CC>::try_from(command_Attributes_value)?;
         Ok(())
     }
 
@@ -2482,15 +1551,19 @@ impl TPML_CCA {
 
 impl TPML_ALG {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.algorithms as u32)?;
+        buffer.write_u32(self.algorithms.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.algorithms = Vec<TPM_ALG_ID>::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let algorithms_value = buffer.read_u32()?;
+        self.algorithms = Vec<TPM_ALG_ID>::try_from(algorithms_value as i16)?;
         Ok(())
     }
 
@@ -2498,15 +1571,31 @@ impl TPML_ALG {
 
 impl TPML_HANDLE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.handle)?;
+        // List count
+        buffer.write_u32(self.handle.len() as u32)?;
+        for item in &self.handle {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.handle = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let handle_count = buffer.read_u32()? as usize;
+        self.handle.clear();
+        for _ in 0..handle_count {
+            let mut item = TPM_HANDLE::default();
+            item.deserialize(buffer)?;
+            self.handle.push(item);
+        }
+
         Ok(())
     }
 
@@ -2514,15 +1603,31 @@ impl TPML_HANDLE {
 
 impl TPML_DIGEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.digests)?;
+        // List count
+        buffer.write_u32(self.digests.len() as u32)?;
+        for item in &self.digests {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.digests = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let digests_count = buffer.read_u32()? as usize;
+        self.digests.clear();
+        for _ in 0..digests_count {
+            let mut item = TPM2B_DIGEST::default();
+            item.deserialize(buffer)?;
+            self.digests.push(item);
+        }
+
         Ok(())
     }
 
@@ -2530,15 +1635,31 @@ impl TPML_DIGEST {
 
 impl TPML_DIGEST_VALUES {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.digests)?;
+        // List count
+        buffer.write_u32(self.digests.len() as u32)?;
+        for item in &self.digests {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.digests = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let digests_count = buffer.read_u32()? as usize;
+        self.digests.clear();
+        for _ in 0..digests_count {
+            let mut item = TPMT_HA::default();
+            item.deserialize(buffer)?;
+            self.digests.push(item);
+        }
+
         Ok(())
     }
 
@@ -2546,15 +1667,31 @@ impl TPML_DIGEST_VALUES {
 
 impl TPML_PCR_SELECTION {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.pcr_Selections)?;
+        // List count
+        buffer.write_u32(self.pcr_Selections.len() as u32)?;
+        for item in &self.pcr_Selections {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pcr_Selections = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let pcr_Selections_count = buffer.read_u32()? as usize;
+        self.pcr_Selections.clear();
+        for _ in 0..pcr_Selections_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.pcr_Selections.push(item);
+        }
+
         Ok(())
     }
 
@@ -2562,15 +1699,31 @@ impl TPML_PCR_SELECTION {
 
 impl TPML_ALG_PROPERTY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.alg_Properties)?;
+        // List count
+        buffer.write_u32(self.alg_Properties.len() as u32)?;
+        for item in &self.alg_Properties {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.alg_Properties = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let alg_Properties_count = buffer.read_u32()? as usize;
+        self.alg_Properties.clear();
+        for _ in 0..alg_Properties_count {
+            let mut item = TPMS_ALG_PROPERTY::default();
+            item.deserialize(buffer)?;
+            self.alg_Properties.push(item);
+        }
+
         Ok(())
     }
 
@@ -2578,15 +1731,31 @@ impl TPML_ALG_PROPERTY {
 
 impl TPML_TAGGED_TPM_PROPERTY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.tpm_Property)?;
+        // List count
+        buffer.write_u32(self.tpm_Property.len() as u32)?;
+        for item in &self.tpm_Property {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tpm_Property = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let tpm_Property_count = buffer.read_u32()? as usize;
+        self.tpm_Property.clear();
+        for _ in 0..tpm_Property_count {
+            let mut item = TPMS_TAGGED_PROPERTY::default();
+            item.deserialize(buffer)?;
+            self.tpm_Property.push(item);
+        }
+
         Ok(())
     }
 
@@ -2594,15 +1763,31 @@ impl TPML_TAGGED_TPM_PROPERTY {
 
 impl TPML_TAGGED_PCR_PROPERTY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.pcr_Property)?;
+        // List count
+        buffer.write_u32(self.pcr_Property.len() as u32)?;
+        for item in &self.pcr_Property {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pcr_Property = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let pcr_Property_count = buffer.read_u32()? as usize;
+        self.pcr_Property.clear();
+        for _ in 0..pcr_Property_count {
+            let mut item = TPMS_TAGGED_PCR_SELECT::default();
+            item.deserialize(buffer)?;
+            self.pcr_Property.push(item);
+        }
+
         Ok(())
     }
 
@@ -2610,15 +1795,19 @@ impl TPML_TAGGED_PCR_PROPERTY {
 
 impl TPML_ECC_CURVE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.ecc_Curves as u32)?;
+        buffer.write_u32(self.ecc_Curves.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.ecc_Curves = Vec<TPM_ECC_CURVE>::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let ecc_Curves_value = buffer.read_u32()?;
+        self.ecc_Curves = Vec<TPM_ECC_CURVE>::try_from(ecc_Curves_value)?;
         Ok(())
     }
 
@@ -2626,15 +1815,31 @@ impl TPML_ECC_CURVE {
 
 impl TPML_TAGGED_POLICY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.policies)?;
+        // List count
+        buffer.write_u32(self.policies.len() as u32)?;
+        for item in &self.policies {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.policies = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let policies_count = buffer.read_u32()? as usize;
+        self.policies.clear();
+        for _ in 0..policies_count {
+            let mut item = TPMS_TAGGED_POLICY::default();
+            item.deserialize(buffer)?;
+            self.policies.push(item);
+        }
+
         Ok(())
     }
 
@@ -2642,15 +1847,31 @@ impl TPML_TAGGED_POLICY {
 
 impl TPML_ACT_DATA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.act_Data)?;
+        // List count
+        buffer.write_u32(self.act_Data.len() as u32)?;
+        for item in &self.act_Data {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.act_Data = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let act_Data_count = buffer.read_u32()? as usize;
+        self.act_Data.clear();
+        for _ in 0..act_Data_count {
+            let mut item = TPMS_ACT_DATA::default();
+            item.deserialize(buffer)?;
+            self.act_Data.push(item);
+        }
+
         Ok(())
     }
 
@@ -2658,28 +1879,34 @@ impl TPML_ACT_DATA {
 
 impl TPMS_CAPABILITY_DATA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.capability as u32)?;
+        buffer.write_u32(self.capability().get_value())?;
         if let Some(union_obj) = &self.data {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(0)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.capability = TPM_CAP::try_from(buffer.read_u32()?)?;
-        let selector = self.capability();
-        self.data = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_CAPABILITIES>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let capability_value = buffer.read_u32()?;
+        selector_values.insert("capability", capability_value);
+        let selector_value = *selector_values.get("capability").unwrap_or(&0);
+        self.data = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_CAPABILITIES>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -2689,7 +1916,7 @@ impl TPMS_CAPABILITY_DATA {
 
 impl TPMS_CLOCK_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u64(self.clock)?;
         buffer.write_u32(self.reset_Count)?;
@@ -2698,8 +1925,11 @@ impl TPMS_CLOCK_INFO {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.clock = buffer.read_u64()?;
         self.reset_Count = buffer.read_u32()?;
         self.restart_Count = buffer.read_u32()?;
@@ -2711,15 +1941,18 @@ impl TPMS_CLOCK_INFO {
 
 impl TPMS_TIME_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u64(self.time)?;
         self.clock_Info.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.time = buffer.read_u64()?;
         self.clock_Info.deserialize(buffer)?;
         Ok(())
@@ -2729,15 +1962,18 @@ impl TPMS_TIME_INFO {
 
 impl TPMS_TIME_ATTEST_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.time.serialize(buffer)?;
         buffer.write_u64(self.firmware_Version)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.time.deserialize(buffer)?;
         self.firmware_Version = buffer.read_u64()?;
         Ok(())
@@ -2747,15 +1983,18 @@ impl TPMS_TIME_ATTEST_INFO {
 
 impl TPMS_CERTIFY_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.name)?;
         buffer.write_u8(self.qualified_Name)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.name = buffer.read_u8()?;
         self.qualified_Name = buffer.read_u8()?;
         Ok(())
@@ -2765,16 +2004,32 @@ impl TPMS_CERTIFY_INFO {
 
 impl TPMS_QUOTE_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.pcr_Select)?;
+        // List count
+        buffer.write_u32(self.pcr_Select.len() as u32)?;
+        for item in &self.pcr_Select {
+            item.serialize(buffer)?;
+        }
+
         buffer.write_u8(self.pcr_Digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pcr_Select = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let pcr_Select_count = buffer.read_u32()? as usize;
+        self.pcr_Select.clear();
+        for _ in 0..pcr_Select_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.pcr_Select.push(item);
+        }
+
         self.pcr_Digest = buffer.read_u8()?;
         Ok(())
     }
@@ -2783,19 +2038,23 @@ impl TPMS_QUOTE_INFO {
 
 impl TPMS_COMMAND_AUDIT_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u64(self.audit_Counter)?;
-        buffer.write_u32(self.digest_Alg as u32)?;
+        buffer.write_u32(self.digest_Alg.get_value())?;
         buffer.write_u8(self.audit_Digest)?;
         buffer.write_u8(self.command_Digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.audit_Counter = buffer.read_u64()?;
-        self.digest_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let digest_Alg_value = buffer.read_u32()?;
+        self.digest_Alg = TPM_ALG_ID::try_from(digest_Alg_value as i16)?;
         self.audit_Digest = buffer.read_u8()?;
         self.command_Digest = buffer.read_u8()?;
         Ok(())
@@ -2805,15 +2064,18 @@ impl TPMS_COMMAND_AUDIT_INFO {
 
 impl TPMS_SESSION_AUDIT_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.exclusive_Session)?;
         buffer.write_u8(self.session_Digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.exclusive_Session = buffer.read_u8()?;
         self.session_Digest = buffer.read_u8()?;
         Ok(())
@@ -2823,15 +2085,18 @@ impl TPMS_SESSION_AUDIT_INFO {
 
 impl TPMS_CREATION_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.object_Name)?;
         buffer.write_u8(self.creation_Hash)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.object_Name = buffer.read_u8()?;
         self.creation_Hash = buffer.read_u8()?;
         Ok(())
@@ -2841,7 +2106,7 @@ impl TPMS_CREATION_INFO {
 
 impl TPMS_NV_CERTIFY_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.index_Name)?;
         buffer.write_u16(self.offset)?;
@@ -2849,8 +2114,11 @@ impl TPMS_NV_CERTIFY_INFO {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.index_Name = buffer.read_u8()?;
         self.offset = buffer.read_u16()?;
         self.nv_Contents = buffer.read_u8()?;
@@ -2861,15 +2129,18 @@ impl TPMS_NV_CERTIFY_INFO {
 
 impl TPMS_NV_DIGEST_CERTIFY_INFO {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.index_Name)?;
         buffer.write_u8(self.nv_Digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.index_Name = buffer.read_u8()?;
         self.nv_Digest = buffer.read_u8()?;
         Ok(())
@@ -2879,38 +2150,45 @@ impl TPMS_NV_DIGEST_CERTIFY_INFO {
 
 impl TPMS_ATTEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.magic as u32)?;
-        buffer.write_u32(self.type as u32)?;
+        buffer.write_u32(self.magic.get_value())?;
+        buffer.write_u32(self.type().get_value())?;
         buffer.write_u8(self.qualified_Signer)?;
         buffer.write_u8(self.extra_Data)?;
         self.clock_Info.serialize(buffer)?;
         buffer.write_u64(self.firmware_Version)?;
         if let Some(union_obj) = &self.attested {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(0)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.magic = TPM_GENERATED::try_from(buffer.read_u32()?)?;
-        self.type = TPM_ST::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let magic_value = buffer.read_u32()?;
+        self.magic = TPM_GENERATED::try_from(magic_value)?;
+        let type_value = buffer.read_u32()?;
+        selector_values.insert("type", type_value);
         self.qualified_Signer = buffer.read_u8()?;
         self.extra_Data = buffer.read_u8()?;
         self.clock_Info.deserialize(buffer)?;
         self.firmware_Version = buffer.read_u64()?;
-        let selector = self.type();
-        self.attested = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ATTEST>(selector as u32)
+        let selector_value = *selector_values.get("type").unwrap_or(&0);
+        self.attested = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ATTEST>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -2920,14 +2198,17 @@ impl TPMS_ATTEST {
 
 impl TPM2B_ATTEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.attestation_Data.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.attestation_Data.deserialize(buffer)?;
         Ok(())
     }
@@ -2936,20 +2217,24 @@ impl TPM2B_ATTEST {
 
 impl TPMS_AUTH_COMMAND {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.session_Handle.serialize(buffer)?;
         buffer.write_u8(self.nonce)?;
-        buffer.write_u32(self.session_Attributes as u32)?;
+        buffer.write_u32(self.session_Attributes.get_value())?;
         buffer.write_u8(self.hmac)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.session_Handle.deserialize(buffer)?;
         self.nonce = buffer.read_u8()?;
-        self.session_Attributes = TPMA_SESSION::try_from(buffer.read_u32()?)?;
+        let session_Attributes_value = buffer.read_u32()?;
+        self.session_Attributes = TPMA_SESSION::try_from(session_Attributes_value)?;
         self.hmac = buffer.read_u8()?;
         Ok(())
     }
@@ -2958,18 +2243,22 @@ impl TPMS_AUTH_COMMAND {
 
 impl TPMS_AUTH_RESPONSE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.nonce)?;
-        buffer.write_u32(self.session_Attributes as u32)?;
+        buffer.write_u32(self.session_Attributes.get_value())?;
         buffer.write_u8(self.hmac)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.nonce = buffer.read_u8()?;
-        self.session_Attributes = TPMA_SESSION::try_from(buffer.read_u32()?)?;
+        let session_Attributes_value = buffer.read_u32()?;
+        self.session_Attributes = TPMA_SESSION::try_from(session_Attributes_value)?;
         self.hmac = buffer.read_u8()?;
         Ok(())
     }
@@ -2978,13 +2267,12 @@ impl TPMS_AUTH_RESPONSE {
 
 impl TPMS_TDES_SYM_DETAILS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -2992,13 +2280,12 @@ impl TPMS_TDES_SYM_DETAILS {
 
 impl TPMS_AES_SYM_DETAILS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3006,13 +2293,12 @@ impl TPMS_AES_SYM_DETAILS {
 
 impl TPMS_SM4_SYM_DETAILS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3020,13 +2306,12 @@ impl TPMS_SM4_SYM_DETAILS {
 
 impl TPMS_CAMELLIA_SYM_DETAILS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3034,13 +2319,12 @@ impl TPMS_CAMELLIA_SYM_DETAILS {
 
 impl TPMS_ANY_SYM_DETAILS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3048,13 +2332,12 @@ impl TPMS_ANY_SYM_DETAILS {
 
 impl TPMS_XOR_SYM_DETAILS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3062,13 +2345,12 @@ impl TPMS_XOR_SYM_DETAILS {
 
 impl TPMS_NULL_SYM_DETAILS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3076,19 +2358,24 @@ impl TPMS_NULL_SYM_DETAILS {
 
 impl TPMT_SYM_DEF {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.algorithm as u32)?;
+        buffer.write_u32(self.algorithm.get_value())?;
         buffer.write_u16(self.key_Bits)?;
-        buffer.write_u32(self.mode as u32)?;
+        buffer.write_u32(self.mode.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.algorithm = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let algorithm_value = buffer.read_u32()?;
+        self.algorithm = TPM_ALG_ID::try_from(algorithm_value as i16)?;
         self.key_Bits = buffer.read_u16()?;
-        self.mode = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let mode_value = buffer.read_u32()?;
+        self.mode = TPM_ALG_ID::try_from(mode_value as i16)?;
         Ok(())
     }
 
@@ -3096,19 +2383,24 @@ impl TPMT_SYM_DEF {
 
 impl TPMT_SYM_DEF_OBJECT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.algorithm as u32)?;
+        buffer.write_u32(self.algorithm.get_value())?;
         buffer.write_u16(self.key_Bits)?;
-        buffer.write_u32(self.mode as u32)?;
+        buffer.write_u32(self.mode.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.algorithm = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let algorithm_value = buffer.read_u32()?;
+        self.algorithm = TPM_ALG_ID::try_from(algorithm_value as i16)?;
         self.key_Bits = buffer.read_u16()?;
-        self.mode = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let mode_value = buffer.read_u32()?;
+        self.mode = TPM_ALG_ID::try_from(mode_value as i16)?;
         Ok(())
     }
 
@@ -3116,14 +2408,17 @@ impl TPMT_SYM_DEF_OBJECT {
 
 impl TPM2B_SYM_KEY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -3132,14 +2427,17 @@ impl TPM2B_SYM_KEY {
 
 impl TPMS_SYMCIPHER_PARMS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.sym.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.sym.deserialize(buffer)?;
         Ok(())
     }
@@ -3148,14 +2446,17 @@ impl TPMS_SYMCIPHER_PARMS {
 
 impl TPM2B_LABEL {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -3164,15 +2465,18 @@ impl TPM2B_LABEL {
 
 impl TPMS_DERIVE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.label)?;
         buffer.write_u8(self.context)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.label = buffer.read_u8()?;
         self.context = buffer.read_u8()?;
         Ok(())
@@ -3182,14 +2486,17 @@ impl TPMS_DERIVE {
 
 impl TPM2B_DERIVE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.buffer.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer.deserialize(buffer)?;
         Ok(())
     }
@@ -3198,14 +2505,17 @@ impl TPM2B_DERIVE {
 
 impl TPM2B_SENSITIVE_DATA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -3214,15 +2524,18 @@ impl TPM2B_SENSITIVE_DATA {
 
 impl TPMS_SENSITIVE_CREATE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.user_Auth)?;
         buffer.write_u8(self.data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.user_Auth = buffer.read_u8()?;
         self.data = buffer.read_u8()?;
         Ok(())
@@ -3232,14 +2545,17 @@ impl TPMS_SENSITIVE_CREATE {
 
 impl TPM2B_SENSITIVE_CREATE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.sensitive.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.sensitive.deserialize(buffer)?;
         Ok(())
     }
@@ -3248,15 +2564,19 @@ impl TPM2B_SENSITIVE_CREATE {
 
 impl TPMS_SCHEME_HASH {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.hash_Alg as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
         Ok(())
     }
 
@@ -3264,16 +2584,20 @@ impl TPMS_SCHEME_HASH {
 
 impl TPMS_SCHEME_ECDAA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.hash_Alg as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
         buffer.write_u16(self.count)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
         self.count = buffer.read_u16()?;
         Ok(())
     }
@@ -3282,13 +2606,12 @@ impl TPMS_SCHEME_ECDAA {
 
 impl TPMS_SCHEME_HMAC {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3296,17 +2619,22 @@ impl TPMS_SCHEME_HMAC {
 
 impl TPMS_SCHEME_XOR {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.hash_Alg as u32)?;
-        buffer.write_u32(self.kdf as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
+        buffer.write_u32(self.kdf.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        self.kdf = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
+        let kdf_value = buffer.read_u32()?;
+        self.kdf = TPM_ALG_ID::try_from(kdf_value)?;
         Ok(())
     }
 
@@ -3314,13 +2642,12 @@ impl TPMS_SCHEME_XOR {
 
 impl TPMS_NULL_SCHEME_KEYEDHASH {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3328,28 +2655,34 @@ impl TPMS_NULL_SCHEME_KEYEDHASH {
 
 impl TPMT_KEYEDHASH_SCHEME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.scheme as u32)?;
+        buffer.write_u32(self.scheme().get_value())?;
         if let Some(union_obj) = &self.details {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme();
-        self.details = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SCHEME_KEYEDHASH>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let scheme_value = buffer.read_u32()?;
+        selector_values.insert("scheme", scheme_value);
+        let selector_value = *selector_values.get("scheme").unwrap_or(&0);
+        self.details = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SCHEME_KEYEDHASH>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -3359,13 +2692,12 @@ impl TPMT_KEYEDHASH_SCHEME {
 
 impl TPMS_SIG_SCHEME_RSASSA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3373,13 +2705,12 @@ impl TPMS_SIG_SCHEME_RSASSA {
 
 impl TPMS_SIG_SCHEME_RSAPSS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3387,13 +2718,12 @@ impl TPMS_SIG_SCHEME_RSAPSS {
 
 impl TPMS_SIG_SCHEME_ECDSA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3401,13 +2731,12 @@ impl TPMS_SIG_SCHEME_ECDSA {
 
 impl TPMS_SIG_SCHEME_SM2 {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3415,13 +2744,12 @@ impl TPMS_SIG_SCHEME_SM2 {
 
 impl TPMS_SIG_SCHEME_ECSCHNORR {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3429,13 +2757,12 @@ impl TPMS_SIG_SCHEME_ECSCHNORR {
 
 impl TPMS_SIG_SCHEME_ECDAA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3443,13 +2770,12 @@ impl TPMS_SIG_SCHEME_ECDAA {
 
 impl TPMS_NULL_SIG_SCHEME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3457,28 +2783,34 @@ impl TPMS_NULL_SIG_SCHEME {
 
 impl TPMT_SIG_SCHEME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.scheme as u32)?;
+        buffer.write_u32(self.scheme().get_value())?;
         if let Some(union_obj) = &self.details {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme();
-        self.details = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let scheme_value = buffer.read_u32()?;
+        selector_values.insert("scheme", scheme_value);
+        let selector_value = *selector_values.get("scheme").unwrap_or(&0);
+        self.details = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -3488,13 +2820,12 @@ impl TPMT_SIG_SCHEME {
 
 impl TPMS_ENC_SCHEME_OAEP {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3502,13 +2833,12 @@ impl TPMS_ENC_SCHEME_OAEP {
 
 impl TPMS_ENC_SCHEME_RSAES {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3516,13 +2846,12 @@ impl TPMS_ENC_SCHEME_RSAES {
 
 impl TPMS_KEY_SCHEME_ECDH {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3530,13 +2859,12 @@ impl TPMS_KEY_SCHEME_ECDH {
 
 impl TPMS_KEY_SCHEME_ECMQV {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3544,13 +2872,12 @@ impl TPMS_KEY_SCHEME_ECMQV {
 
 impl TPMS_KDF_SCHEME_MGF1 {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3558,13 +2885,12 @@ impl TPMS_KDF_SCHEME_MGF1 {
 
 impl TPMS_KDF_SCHEME_KDF1_SP800_56A {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3572,13 +2898,12 @@ impl TPMS_KDF_SCHEME_KDF1_SP800_56A {
 
 impl TPMS_KDF_SCHEME_KDF2 {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3586,13 +2911,12 @@ impl TPMS_KDF_SCHEME_KDF2 {
 
 impl TPMS_KDF_SCHEME_KDF1_SP800_108 {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3600,13 +2924,12 @@ impl TPMS_KDF_SCHEME_KDF1_SP800_108 {
 
 impl TPMS_NULL_KDF_SCHEME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3614,28 +2937,34 @@ impl TPMS_NULL_KDF_SCHEME {
 
 impl TPMT_KDF_SCHEME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.scheme as u32)?;
+        buffer.write_u32(self.scheme().get_value())?;
         if let Some(union_obj) = &self.details {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme();
-        self.details = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let scheme_value = buffer.read_u32()?;
+        selector_values.insert("scheme", scheme_value);
+        let selector_value = *selector_values.get("scheme").unwrap_or(&0);
+        self.details = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -3645,13 +2974,12 @@ impl TPMT_KDF_SCHEME {
 
 impl TPMS_NULL_ASYM_SCHEME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3659,28 +2987,34 @@ impl TPMS_NULL_ASYM_SCHEME {
 
 impl TPMT_ASYM_SCHEME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.scheme as u32)?;
+        buffer.write_u32(self.scheme().get_value())?;
         if let Some(union_obj) = &self.details {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme();
-        self.details = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let scheme_value = buffer.read_u32()?;
+        selector_values.insert("scheme", scheme_value);
+        let selector_value = *selector_values.get("scheme").unwrap_or(&0);
+        self.details = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -3690,28 +3024,34 @@ impl TPMT_ASYM_SCHEME {
 
 impl TPMT_RSA_SCHEME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.scheme as u32)?;
+        buffer.write_u32(self.scheme().get_value())?;
         if let Some(union_obj) = &self.details {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme();
-        self.details = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let scheme_value = buffer.read_u32()?;
+        selector_values.insert("scheme", scheme_value);
+        let selector_value = *selector_values.get("scheme").unwrap_or(&0);
+        self.details = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -3721,28 +3061,34 @@ impl TPMT_RSA_SCHEME {
 
 impl TPMT_RSA_DECRYPT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.scheme as u32)?;
+        buffer.write_u32(self.scheme().get_value())?;
         if let Some(union_obj) = &self.details {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme();
-        self.details = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let scheme_value = buffer.read_u32()?;
+        selector_values.insert("scheme", scheme_value);
+        let selector_value = *selector_values.get("scheme").unwrap_or(&0);
+        self.details = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -3752,14 +3098,17 @@ impl TPMT_RSA_DECRYPT {
 
 impl TPM2B_PUBLIC_KEY_RSA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -3768,14 +3117,17 @@ impl TPM2B_PUBLIC_KEY_RSA {
 
 impl TPM2B_PRIVATE_KEY_RSA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -3784,14 +3136,17 @@ impl TPM2B_PRIVATE_KEY_RSA {
 
 impl TPM2B_ECC_PARAMETER {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -3800,15 +3155,18 @@ impl TPM2B_ECC_PARAMETER {
 
 impl TPMS_ECC_POINT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.x)?;
         buffer.write_u8(self.y)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.x = buffer.read_u8()?;
         self.y = buffer.read_u8()?;
         Ok(())
@@ -3818,14 +3176,17 @@ impl TPMS_ECC_POINT {
 
 impl TPM2B_ECC_POINT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.point.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.point.deserialize(buffer)?;
         Ok(())
     }
@@ -3834,28 +3195,34 @@ impl TPM2B_ECC_POINT {
 
 impl TPMT_ECC_SCHEME {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.scheme as u32)?;
+        buffer.write_u32(self.scheme().get_value())?;
         if let Some(union_obj) = &self.details {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme();
-        self.details = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let scheme_value = buffer.read_u32()?;
+        selector_values.insert("scheme", scheme_value);
+        let selector_value = *selector_values.get("scheme").unwrap_or(&0);
+        self.details = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -3865,18 +3232,24 @@ impl TPMT_ECC_SCHEME {
 
 impl TPMS_ALGORITHM_DETAIL_ECC {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.curve_ID as u32)?;
+        buffer.write_u32(self.curve_ID.get_value())?;
         buffer.write_u16(self.key_Size)?;
-        buffer.write_u32(self.kdf_Scheme as u32)?;
+        buffer.write_u32(self.kdf_Scheme().get_value())?;
         if let Some(union_obj) = &self.kdf {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
-        buffer.write_u32(self.sign_Scheme as u32)?;
+        buffer.write_u32(self.sign_Scheme().get_value())?;
         if let Some(union_obj) = &self.sign {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         buffer.write_u8(self.p)?;
@@ -3889,32 +3262,36 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.curve_ID = TPM_ECC_CURVE::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let curve_ID_value = buffer.read_u32()?;
+        self.curve_ID = TPM_ECC_CURVE::try_from(curve_ID_value)?;
         self.key_Size = buffer.read_u16()?;
-        self.kdf_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.kdf_Scheme();
-        self.kdf = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector as u32)
+        let kdf_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("kdfScheme", kdf_Scheme_value);
+        let selector_value = *selector_values.get("kdfScheme").unwrap_or(&0);
+        self.kdf = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
-        self.sign_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.sign_Scheme();
-        self.sign = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        let sign_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("signScheme", sign_Scheme_value);
+        let selector_value = *selector_values.get("signScheme").unwrap_or(&0);
+        self.sign = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         self.p = buffer.read_u8()?;
@@ -3931,16 +3308,20 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
 
 impl TPMS_SIGNATURE_RSA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.hash as u32)?;
+        buffer.write_u32(self.hash.get_value())?;
         buffer.write_u8(self.sig)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let hash_value = buffer.read_u32()?;
+        self.hash = TPM_ALG_ID::try_from(hash_value)?;
         self.sig = buffer.read_u8()?;
         Ok(())
     }
@@ -3949,13 +3330,12 @@ impl TPMS_SIGNATURE_RSA {
 
 impl TPMS_SIGNATURE_RSASSA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3963,13 +3343,12 @@ impl TPMS_SIGNATURE_RSASSA {
 
 impl TPMS_SIGNATURE_RSAPSS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -3977,17 +3356,21 @@ impl TPMS_SIGNATURE_RSAPSS {
 
 impl TPMS_SIGNATURE_ECC {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.hash as u32)?;
+        buffer.write_u32(self.hash.get_value())?;
         buffer.write_u8(self.signature_R)?;
         buffer.write_u8(self.signature_S)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let hash_value = buffer.read_u32()?;
+        self.hash = TPM_ALG_ID::try_from(hash_value)?;
         self.signature_R = buffer.read_u8()?;
         self.signature_S = buffer.read_u8()?;
         Ok(())
@@ -3997,13 +3380,12 @@ impl TPMS_SIGNATURE_ECC {
 
 impl TPMS_SIGNATURE_ECDSA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -4011,13 +3393,12 @@ impl TPMS_SIGNATURE_ECDSA {
 
 impl TPMS_SIGNATURE_ECDAA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -4025,13 +3406,12 @@ impl TPMS_SIGNATURE_ECDAA {
 
 impl TPMS_SIGNATURE_SM2 {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -4039,13 +3419,12 @@ impl TPMS_SIGNATURE_SM2 {
 
 impl TPMS_SIGNATURE_ECSCHNORR {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -4053,13 +3432,12 @@ impl TPMS_SIGNATURE_ECSCHNORR {
 
 impl TPMS_NULL_SIGNATURE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -4067,28 +3445,34 @@ impl TPMS_NULL_SIGNATURE {
 
 impl TPMT_SIGNATURE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.sig_Alg as u32)?;
+        buffer.write_u32(self.sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("sigAlg", sig_Alg_value);
+        let selector_value = *selector_values.get("sigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -4098,14 +3482,17 @@ impl TPMT_SIGNATURE {
 
 impl TPM2B_ENCRYPTED_SECRET {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.secret)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.secret = buffer.read_u8()?;
         Ok(())
     }
@@ -4114,28 +3501,34 @@ impl TPM2B_ENCRYPTED_SECRET {
 
 impl TPMS_KEYEDHASH_PARMS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.scheme_Scheme as u32)?;
+        buffer.write_u32(self.scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme_Scheme();
-        self.scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SCHEME_KEYEDHASH>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("schemeScheme", scheme_Scheme_value);
+        let selector_value = *selector_values.get("schemeScheme").unwrap_or(&0);
+        self.scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SCHEME_KEYEDHASH>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -4145,30 +3538,36 @@ impl TPMS_KEYEDHASH_PARMS {
 
 impl TPMS_ASYM_PARMS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.symmetric.serialize(buffer)?;
-        buffer.write_u32(self.scheme_Scheme as u32)?;
+        buffer.write_u32(self.scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.symmetric.deserialize(buffer)?;
-        self.scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme_Scheme();
-        self.scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        let scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("schemeScheme", scheme_Scheme_value);
+        let selector_value = *selector_values.get("schemeScheme").unwrap_or(&0);
+        self.scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -4178,12 +3577,15 @@ impl TPMS_ASYM_PARMS {
 
 impl TPMS_RSA_PARMS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.symmetric.serialize(buffer)?;
-        buffer.write_u32(self.scheme_Scheme as u32)?;
+        buffer.write_u32(self.scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         buffer.write_u16(self.key_Bits)?;
@@ -4191,19 +3593,22 @@ impl TPMS_RSA_PARMS {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.symmetric.deserialize(buffer)?;
-        self.scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme_Scheme();
-        self.scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        let scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("schemeScheme", scheme_Scheme_value);
+        let selector_value = *selector_values.get("schemeScheme").unwrap_or(&0);
+        self.scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         self.key_Bits = buffer.read_u16()?;
@@ -4215,49 +3620,59 @@ impl TPMS_RSA_PARMS {
 
 impl TPMS_ECC_PARMS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.symmetric.serialize(buffer)?;
-        buffer.write_u32(self.scheme_Scheme as u32)?;
+        buffer.write_u32(self.scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
-        buffer.write_u32(self.curve_ID as u32)?;
-        buffer.write_u32(self.kdf_Scheme as u32)?;
+        buffer.write_u32(self.curve_ID.get_value())?;
+        buffer.write_u32(self.kdf_Scheme().get_value())?;
         if let Some(union_obj) = &self.kdf {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.symmetric.deserialize(buffer)?;
-        self.scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.scheme_Scheme();
-        self.scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        let scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("schemeScheme", scheme_Scheme_value);
+        let selector_value = *selector_values.get("schemeScheme").unwrap_or(&0);
+        self.scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
-        self.curve_ID = TPM_ECC_CURVE::try_from(buffer.read_u32()?)?;
-        self.kdf_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.kdf_Scheme();
-        self.kdf = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector as u32)
+        let curve_ID_value = buffer.read_u32()?;
+        self.curve_ID = TPM_ECC_CURVE::try_from(curve_ID_value)?;
+        let kdf_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("kdfScheme", kdf_Scheme_value);
+        let selector_value = *selector_values.get("kdfScheme").unwrap_or(&0);
+        self.kdf = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -4267,28 +3682,34 @@ impl TPMS_ECC_PARMS {
 
 impl TPMT_PUBLIC_PARMS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.type as u32)?;
+        buffer.write_u32(self.type().get_value())?;
         if let Some(union_obj) = &self.parameters {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(0)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.type = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.type();
-        self.parameters = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_PUBLIC_PARMS>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let type_value = buffer.read_u32()?;
+        selector_values.insert("type", type_value);
+        let selector_value = *selector_values.get("type").unwrap_or(&0);
+        self.parameters = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_PUBLIC_PARMS>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -4298,49 +3719,59 @@ impl TPMT_PUBLIC_PARMS {
 
 impl TPMT_PUBLIC {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.type as u32)?;
-        buffer.write_u32(self.name_Alg as u32)?;
-        buffer.write_u32(self.object_Attributes as u32)?;
+        buffer.write_u32(self.type().get_value())?;
+        buffer.write_u32(self.name_Alg.get_value())?;
+        buffer.write_u32(self.object_Attributes.get_value())?;
         buffer.write_u8(self.auth_Policy)?;
         if let Some(union_obj) = &self.parameters {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(0)?;
         }
 
         if let Some(union_obj) = &self.unique {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(0)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.type = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        self.name_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        self.object_Attributes = TPMA_OBJECT::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let type_value = buffer.read_u32()?;
+        selector_values.insert("type", type_value);
+        let name_Alg_value = buffer.read_u32()?;
+        self.name_Alg = TPM_ALG_ID::try_from(name_Alg_value)?;
+        let object_Attributes_value = buffer.read_u32()?;
+        self.object_Attributes = TPMA_OBJECT::try_from(object_Attributes_value)?;
         self.auth_Policy = buffer.read_u8()?;
-        let selector = self.type();
-        self.parameters = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_PUBLIC_PARMS>(selector as u32)
+        let selector_value = *selector_values.get("type").unwrap_or(&0);
+        self.parameters = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_PUBLIC_PARMS>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
-        let selector = self.type();
-        self.unique = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_PUBLIC_ID>(selector as u32)
+        let selector_value = *selector_values.get("type").unwrap_or(&0);
+        self.unique = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_PUBLIC_ID>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -4350,14 +3781,17 @@ impl TPMT_PUBLIC {
 
 impl TPM2B_PUBLIC {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.public_Area.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.public_Area.deserialize(buffer)?;
         Ok(())
     }
@@ -4366,14 +3800,17 @@ impl TPM2B_PUBLIC {
 
 impl TPM2B_TEMPLATE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -4382,14 +3819,17 @@ impl TPM2B_TEMPLATE {
 
 impl TPM2B_PRIVATE_VENDOR_SPECIFIC {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -4398,32 +3838,38 @@ impl TPM2B_PRIVATE_VENDOR_SPECIFIC {
 
 impl TPMT_SENSITIVE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.sensitive_Type as u32)?;
+        buffer.write_u32(self.sensitive_Type().get_value())?;
         buffer.write_u8(self.auth_Value)?;
         buffer.write_u8(self.seed_Value)?;
         if let Some(union_obj) = &self.sensitive {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(0)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.sensitive_Type = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let sensitive_Type_value = buffer.read_u32()?;
+        selector_values.insert("sensitiveType", sensitive_Type_value);
         self.auth_Value = buffer.read_u8()?;
         self.seed_Value = buffer.read_u8()?;
-        let selector = self.sensitive_Type();
-        self.sensitive = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SENSITIVE_COMPOSITE>(selector as u32)
+        let selector_value = *selector_values.get("sensitiveType").unwrap_or(&0);
+        self.sensitive = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SENSITIVE_COMPOSITE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -4433,14 +3879,17 @@ impl TPMT_SENSITIVE {
 
 impl TPM2B_SENSITIVE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.sensitive_Area.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.sensitive_Area.deserialize(buffer)?;
         Ok(())
     }
@@ -4449,7 +3898,7 @@ impl TPM2B_SENSITIVE {
 
 impl _PRIVATE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.integrity_Outer)?;
         buffer.write_u8(self.integrity_Inner)?;
@@ -4457,8 +3906,11 @@ impl _PRIVATE {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.integrity_Outer = buffer.read_u8()?;
         self.integrity_Inner = buffer.read_u8()?;
         self.sensitive.deserialize(buffer)?;
@@ -4469,14 +3921,17 @@ impl _PRIVATE {
 
 impl TPM2B_PRIVATE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -4485,15 +3940,18 @@ impl TPM2B_PRIVATE {
 
 impl TPMS_ID_OBJECT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.integrity_HMAC)?;
         buffer.write_u8(self.enc_Identity)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.integrity_HMAC = buffer.read_u8()?;
         self.enc_Identity = buffer.read_u8()?;
         Ok(())
@@ -4503,14 +3961,17 @@ impl TPMS_ID_OBJECT {
 
 impl TPM2B_ID_OBJECT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.credential.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.credential.deserialize(buffer)?;
         Ok(())
     }
@@ -4519,15 +3980,18 @@ impl TPM2B_ID_OBJECT {
 
 impl TPMS_NV_PIN_COUNTER_PARAMETERS {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u32(self.pin_Count)?;
         buffer.write_u32(self.pin_Limit)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.pin_Count = buffer.read_u32()?;
         self.pin_Limit = buffer.read_u32()?;
         Ok(())
@@ -4537,21 +4001,26 @@ impl TPMS_NV_PIN_COUNTER_PARAMETERS {
 
 impl TPMS_NV_PUBLIC {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.nv_Index.serialize(buffer)?;
-        buffer.write_u32(self.name_Alg as u32)?;
-        buffer.write_u32(self.attributes as u32)?;
+        buffer.write_u32(self.name_Alg.get_value())?;
+        buffer.write_u32(self.attributes.get_value())?;
         buffer.write_u8(self.auth_Policy)?;
         buffer.write_u16(self.data_Size)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.nv_Index.deserialize(buffer)?;
-        self.name_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        self.attributes = TPMA_NV::try_from(buffer.read_u32()?)?;
+        let name_Alg_value = buffer.read_u32()?;
+        self.name_Alg = TPM_ALG_ID::try_from(name_Alg_value)?;
+        let attributes_value = buffer.read_u32()?;
+        self.attributes = TPMA_NV::try_from(attributes_value)?;
         self.auth_Policy = buffer.read_u8()?;
         self.data_Size = buffer.read_u16()?;
         Ok(())
@@ -4561,14 +4030,17 @@ impl TPMS_NV_PUBLIC {
 
 impl TPM2B_NV_PUBLIC {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.nv_Public.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.nv_Public.deserialize(buffer)?;
         Ok(())
     }
@@ -4577,14 +4049,17 @@ impl TPM2B_NV_PUBLIC {
 
 impl TPM2B_CONTEXT_SENSITIVE {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -4593,15 +4068,18 @@ impl TPM2B_CONTEXT_SENSITIVE {
 
 impl TPMS_CONTEXT_DATA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.integrity)?;
         buffer.write_u8(self.encrypted)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.integrity = buffer.read_u8()?;
         self.encrypted = buffer.read_u8()?;
         Ok(())
@@ -4611,14 +4089,17 @@ impl TPMS_CONTEXT_DATA {
 
 impl TPM2B_CONTEXT_DATA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.buffer.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer.deserialize(buffer)?;
         Ok(())
     }
@@ -4627,7 +4108,7 @@ impl TPM2B_CONTEXT_DATA {
 
 impl TPMS_CONTEXT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u64(self.sequence)?;
         self.saved_Handle.serialize(buffer)?;
@@ -4636,8 +4117,11 @@ impl TPMS_CONTEXT {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.sequence = buffer.read_u64()?;
         self.saved_Handle.deserialize(buffer)?;
         self.hierarchy.deserialize(buffer)?;
@@ -4649,24 +4133,42 @@ impl TPMS_CONTEXT {
 
 impl TPMS_CREATION_DATA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.pcr_Select)?;
+        // List count
+        buffer.write_u32(self.pcr_Select.len() as u32)?;
+        for item in &self.pcr_Select {
+            item.serialize(buffer)?;
+        }
+
         buffer.write_u8(self.pcr_Digest)?;
-        buffer.write_u32(self.locality as u32)?;
-        buffer.write_u32(self.parent_Name_Alg as u32)?;
+        buffer.write_u32(self.locality.get_value())?;
+        buffer.write_u32(self.parent_Name_Alg.get_value())?;
         buffer.write_u8(self.parent_Name)?;
         buffer.write_u8(self.parent_Qualified_Name)?;
         buffer.write_u8(self.outside_Info)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pcr_Select = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let pcr_Select_count = buffer.read_u32()? as usize;
+        self.pcr_Select.clear();
+        for _ in 0..pcr_Select_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.pcr_Select.push(item);
+        }
+
         self.pcr_Digest = buffer.read_u8()?;
-        self.locality = TPMA_LOCALITY::try_from(buffer.read_u32()?)?;
-        self.parent_Name_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let locality_value = buffer.read_u32()?;
+        self.locality = TPMA_LOCALITY::try_from(locality_value)?;
+        let parent_Name_Alg_value = buffer.read_u32()?;
+        self.parent_Name_Alg = TPM_ALG_ID::try_from(parent_Name_Alg_value as i16)?;
         self.parent_Name = buffer.read_u8()?;
         self.parent_Qualified_Name = buffer.read_u8()?;
         self.outside_Info = buffer.read_u8()?;
@@ -4677,14 +4179,17 @@ impl TPMS_CREATION_DATA {
 
 impl TPM2B_CREATION_DATA {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.creation_Data.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.creation_Data.deserialize(buffer)?;
         Ok(())
     }
@@ -4693,16 +4198,20 @@ impl TPM2B_CREATION_DATA {
 
 impl TPMS_AC_OUTPUT {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.tag as u32)?;
+        buffer.write_u32(self.tag.get_value())?;
         buffer.write_u32(self.data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tag = TPM_AT::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let tag_value = buffer.read_u32()?;
+        self.tag = TPM_AT::try_from(tag_value)?;
         self.data = buffer.read_u32()?;
         Ok(())
     }
@@ -4711,15 +4220,31 @@ impl TPMS_AC_OUTPUT {
 
 impl TPML_AC_CAPABILITIES {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.ac_Capabilities)?;
+        // List count
+        buffer.write_u32(self.ac_Capabilities.len() as u32)?;
+        for item in &self.ac_Capabilities {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.ac_Capabilities = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let ac_Capabilities_count = buffer.read_u32()? as usize;
+        self.ac_Capabilities.clear();
+        for _ in 0..ac_Capabilities_count {
+            let mut item = TPMS_AC_OUTPUT::default();
+            item.deserialize(buffer)?;
+            self.ac_Capabilities.push(item);
+        }
+
         Ok(())
     }
 
@@ -4727,15 +4252,19 @@ impl TPML_AC_CAPABILITIES {
 
 impl TPM2_Startup_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.startup_Type as u32)?;
+        buffer.write_u32(self.startup_Type.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.startup_Type = TPM_SU::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let startup_Type_value = buffer.read_u32()?;
+        self.startup_Type = TPM_SU::try_from(startup_Type_value)?;
         Ok(())
     }
 
@@ -4743,15 +4272,19 @@ impl TPM2_Startup_REQUEST {
 
 impl TPM2_Shutdown_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.shutdown_Type as u32)?;
+        buffer.write_u32(self.shutdown_Type.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.shutdown_Type = TPM_SU::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let shutdown_Type_value = buffer.read_u32()?;
+        self.shutdown_Type = TPM_SU::try_from(shutdown_Type_value)?;
         Ok(())
     }
 
@@ -4759,14 +4292,17 @@ impl TPM2_Shutdown_REQUEST {
 
 impl TPM2_SelfTest_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.full_Test)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.full_Test = buffer.read_u8()?;
         Ok(())
     }
@@ -4775,15 +4311,19 @@ impl TPM2_SelfTest_REQUEST {
 
 impl TPM2_IncrementalSelfTest_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.to_Test as u32)?;
+        buffer.write_u32(self.to_Test.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.to_Test = Vec<TPM_ALG_ID>::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let to_Test_value = buffer.read_u32()?;
+        self.to_Test = Vec<TPM_ALG_ID>::try_from(to_Test_value as i16)?;
         Ok(())
     }
 
@@ -4791,15 +4331,19 @@ impl TPM2_IncrementalSelfTest_REQUEST {
 
 impl IncrementalSelfTestResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.to_Do_List as u32)?;
+        buffer.write_u32(self.to_Do_List.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.to_Do_List = Vec<TPM_ALG_ID>::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let to_Do_List_value = buffer.read_u32()?;
+        self.to_Do_List = Vec<TPM_ALG_ID>::try_from(to_Do_List_value as i16)?;
         Ok(())
     }
 
@@ -4807,13 +4351,12 @@ impl IncrementalSelfTestResponse {
 
 impl TPM2_GetTestResult_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -4821,17 +4364,21 @@ impl TPM2_GetTestResult_REQUEST {
 
 impl GetTestResultResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.out_Data)?;
-        buffer.write_u32(self.test_Result as u32)?;
+        buffer.write_u32(self.test_Result.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Data = buffer.read_u8()?;
-        self.test_Result = TPM_RC::try_from(buffer.read_u32()?)?;
+        let test_Result_value = buffer.read_u32()?;
+        self.test_Result = TPM_RC::try_from(test_Result_value as i32)?;
         Ok(())
     }
 
@@ -4839,23 +4386,28 @@ impl GetTestResultResponse {
 
 impl TPM2_StartAuthSession_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.nonce_Caller)?;
         buffer.write_u8(self.encrypted_Salt)?;
-        buffer.write_u32(self.session_Type as u32)?;
+        buffer.write_u32(self.session_Type.get_value())?;
         self.symmetric.serialize(buffer)?;
-        buffer.write_u32(self.auth_Hash as u32)?;
+        buffer.write_u32(self.auth_Hash.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.nonce_Caller = buffer.read_u8()?;
         self.encrypted_Salt = buffer.read_u8()?;
-        self.session_Type = TPM_SE::try_from(buffer.read_u32()?)?;
+        let session_Type_value = buffer.read_u32()?;
+        self.session_Type = TPM_SE::try_from(session_Type_value)?;
         self.symmetric.deserialize(buffer)?;
-        self.auth_Hash = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let auth_Hash_value = buffer.read_u32()?;
+        self.auth_Hash = TPM_ALG_ID::try_from(auth_Hash_value)?;
         Ok(())
     }
 
@@ -4863,14 +4415,17 @@ impl TPM2_StartAuthSession_REQUEST {
 
 impl StartAuthSessionResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.nonce_TPM)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.nonce_TPM = buffer.read_u8()?;
         Ok(())
     }
@@ -4879,13 +4434,12 @@ impl StartAuthSessionResponse {
 
 impl TPM2_PolicyRestart_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -4893,21 +4447,37 @@ impl TPM2_PolicyRestart_REQUEST {
 
 impl TPM2_Create_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.in_Sensitive.serialize(buffer)?;
         self.in_Public.serialize(buffer)?;
         buffer.write_u8(self.outside_Info)?;
-        buffer.write_sized_array(&self.creation_PCR)?;
+        // List count
+        buffer.write_u32(self.creation_PCR.len() as u32)?;
+        for item in &self.creation_PCR {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Sensitive.deserialize(buffer)?;
         self.in_Public.deserialize(buffer)?;
         self.outside_Info = buffer.read_u8()?;
-        self.creation_PCR = buffer.read_sized_array()?;
+        // List count
+        let creation_PCR_count = buffer.read_u32()? as usize;
+        self.creation_PCR.clear();
+        for _ in 0..creation_PCR_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.creation_PCR.push(item);
+        }
+
         Ok(())
     }
 
@@ -4915,7 +4485,7 @@ impl TPM2_Create_REQUEST {
 
 impl CreateResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.out_Private.serialize(buffer)?;
         self.out_Public.serialize(buffer)?;
@@ -4925,8 +4495,11 @@ impl CreateResponse {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Private.deserialize(buffer)?;
         self.out_Public.deserialize(buffer)?;
         self.creation_Data.deserialize(buffer)?;
@@ -4939,15 +4512,18 @@ impl CreateResponse {
 
 impl TPM2_Load_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.in_Private.serialize(buffer)?;
         self.in_Public.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Private.deserialize(buffer)?;
         self.in_Public.deserialize(buffer)?;
         Ok(())
@@ -4957,14 +4533,17 @@ impl TPM2_Load_REQUEST {
 
 impl LoadResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.name)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.name = buffer.read_u8()?;
         Ok(())
     }
@@ -4973,7 +4552,7 @@ impl LoadResponse {
 
 impl TPM2_LoadExternal_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.in_Private.serialize(buffer)?;
         self.in_Public.serialize(buffer)?;
@@ -4981,8 +4560,11 @@ impl TPM2_LoadExternal_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Private.deserialize(buffer)?;
         self.in_Public.deserialize(buffer)?;
         self.hierarchy.deserialize(buffer)?;
@@ -4993,14 +4575,17 @@ impl TPM2_LoadExternal_REQUEST {
 
 impl LoadExternalResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.name)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.name = buffer.read_u8()?;
         Ok(())
     }
@@ -5009,13 +4594,12 @@ impl LoadExternalResponse {
 
 impl TPM2_ReadPublic_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -5023,7 +4607,7 @@ impl TPM2_ReadPublic_REQUEST {
 
 impl ReadPublicResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.out_Public.serialize(buffer)?;
         buffer.write_u8(self.name)?;
@@ -5031,8 +4615,11 @@ impl ReadPublicResponse {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Public.deserialize(buffer)?;
         self.name = buffer.read_u8()?;
         self.qualified_Name = buffer.read_u8()?;
@@ -5043,15 +4630,18 @@ impl ReadPublicResponse {
 
 impl TPM2_ActivateCredential_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.credential_Blob.serialize(buffer)?;
         buffer.write_u8(self.secret)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.credential_Blob.deserialize(buffer)?;
         self.secret = buffer.read_u8()?;
         Ok(())
@@ -5061,14 +4651,17 @@ impl TPM2_ActivateCredential_REQUEST {
 
 impl ActivateCredentialResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.cert_Info)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.cert_Info = buffer.read_u8()?;
         Ok(())
     }
@@ -5077,15 +4670,18 @@ impl ActivateCredentialResponse {
 
 impl TPM2_MakeCredential_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.credential)?;
         buffer.write_u8(self.object_Name)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.credential = buffer.read_u8()?;
         self.object_Name = buffer.read_u8()?;
         Ok(())
@@ -5095,15 +4691,18 @@ impl TPM2_MakeCredential_REQUEST {
 
 impl MakeCredentialResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.credential_Blob.serialize(buffer)?;
         buffer.write_u8(self.secret)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.credential_Blob.deserialize(buffer)?;
         self.secret = buffer.read_u8()?;
         Ok(())
@@ -5113,13 +4712,12 @@ impl MakeCredentialResponse {
 
 impl TPM2_Unseal_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -5127,14 +4725,17 @@ impl TPM2_Unseal_REQUEST {
 
 impl UnsealResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.out_Data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Data = buffer.read_u8()?;
         Ok(())
     }
@@ -5143,14 +4744,17 @@ impl UnsealResponse {
 
 impl TPM2_ObjectChangeAuth_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.new_Auth)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.new_Auth = buffer.read_u8()?;
         Ok(())
     }
@@ -5159,14 +4763,17 @@ impl TPM2_ObjectChangeAuth_REQUEST {
 
 impl ObjectChangeAuthResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.out_Private.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Private.deserialize(buffer)?;
         Ok(())
     }
@@ -5175,15 +4782,18 @@ impl ObjectChangeAuthResponse {
 
 impl TPM2_CreateLoaded_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.in_Sensitive.serialize(buffer)?;
         buffer.write_u8(self.in_Public)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Sensitive.deserialize(buffer)?;
         self.in_Public = buffer.read_u8()?;
         Ok(())
@@ -5193,7 +4803,7 @@ impl TPM2_CreateLoaded_REQUEST {
 
 impl CreateLoadedResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.out_Private.serialize(buffer)?;
         self.out_Public.serialize(buffer)?;
@@ -5201,8 +4811,11 @@ impl CreateLoadedResponse {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Private.deserialize(buffer)?;
         self.out_Public.deserialize(buffer)?;
         self.name = buffer.read_u8()?;
@@ -5213,15 +4826,18 @@ impl CreateLoadedResponse {
 
 impl TPM2_Duplicate_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.encryption_Key_In)?;
         self.symmetric_Alg.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.encryption_Key_In = buffer.read_u8()?;
         self.symmetric_Alg.deserialize(buffer)?;
         Ok(())
@@ -5231,7 +4847,7 @@ impl TPM2_Duplicate_REQUEST {
 
 impl DuplicateResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.encryption_Key_Out)?;
         self.duplicate.serialize(buffer)?;
@@ -5239,8 +4855,11 @@ impl DuplicateResponse {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.encryption_Key_Out = buffer.read_u8()?;
         self.duplicate.deserialize(buffer)?;
         self.out_Sym_Seed = buffer.read_u8()?;
@@ -5251,7 +4870,7 @@ impl DuplicateResponse {
 
 impl TPM2_Rewrap_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.in_Duplicate.serialize(buffer)?;
         buffer.write_u8(self.name)?;
@@ -5259,8 +4878,11 @@ impl TPM2_Rewrap_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Duplicate.deserialize(buffer)?;
         self.name = buffer.read_u8()?;
         self.in_Sym_Seed = buffer.read_u8()?;
@@ -5271,15 +4893,18 @@ impl TPM2_Rewrap_REQUEST {
 
 impl RewrapResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.out_Duplicate.serialize(buffer)?;
         buffer.write_u8(self.out_Sym_Seed)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Duplicate.deserialize(buffer)?;
         self.out_Sym_Seed = buffer.read_u8()?;
         Ok(())
@@ -5289,7 +4914,7 @@ impl RewrapResponse {
 
 impl TPM2_Import_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.encryption_Key)?;
         self.object_Public.serialize(buffer)?;
@@ -5299,8 +4924,11 @@ impl TPM2_Import_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.encryption_Key = buffer.read_u8()?;
         self.object_Public.deserialize(buffer)?;
         self.duplicate.deserialize(buffer)?;
@@ -5313,14 +4941,17 @@ impl TPM2_Import_REQUEST {
 
 impl ImportResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.out_Private.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Private.deserialize(buffer)?;
         Ok(())
     }
@@ -5329,31 +4960,37 @@ impl ImportResponse {
 
 impl TPM2_RSA_Encrypt_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.message)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         buffer.write_u8(self.label)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.message = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         self.label = buffer.read_u8()?;
@@ -5364,14 +5001,17 @@ impl TPM2_RSA_Encrypt_REQUEST {
 
 impl RSA_EncryptResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.out_Data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Data = buffer.read_u8()?;
         Ok(())
     }
@@ -5380,31 +5020,37 @@ impl RSA_EncryptResponse {
 
 impl TPM2_RSA_Decrypt_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.cipher_Text)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         buffer.write_u8(self.label)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.cipher_Text = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_ASYM_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         self.label = buffer.read_u8()?;
@@ -5415,14 +5061,17 @@ impl TPM2_RSA_Decrypt_REQUEST {
 
 impl RSA_DecryptResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.message)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.message = buffer.read_u8()?;
         Ok(())
     }
@@ -5431,13 +5080,12 @@ impl RSA_DecryptResponse {
 
 impl TPM2_ECDH_KeyGen_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -5445,15 +5093,18 @@ impl TPM2_ECDH_KeyGen_REQUEST {
 
 impl ECDH_KeyGenResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.zPoint.serialize(buffer)?;
         self.pub_Point.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.zPoint.deserialize(buffer)?;
         self.pub_Point.deserialize(buffer)?;
         Ok(())
@@ -5463,14 +5114,17 @@ impl ECDH_KeyGenResponse {
 
 impl TPM2_ECDH_ZGen_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.in_Point.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Point.deserialize(buffer)?;
         Ok(())
     }
@@ -5479,14 +5133,17 @@ impl TPM2_ECDH_ZGen_REQUEST {
 
 impl ECDH_ZGenResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.out_Point.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Point.deserialize(buffer)?;
         Ok(())
     }
@@ -5495,15 +5152,19 @@ impl ECDH_ZGenResponse {
 
 impl TPM2_ECC_Parameters_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.curve_ID as u32)?;
+        buffer.write_u32(self.curve_ID.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.curve_ID = TPM_ECC_CURVE::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let curve_ID_value = buffer.read_u32()?;
+        self.curve_ID = TPM_ECC_CURVE::try_from(curve_ID_value)?;
         Ok(())
     }
 
@@ -5511,14 +5172,17 @@ impl TPM2_ECC_Parameters_REQUEST {
 
 impl ECC_ParametersResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.parameters.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.parameters.deserialize(buffer)?;
         Ok(())
     }
@@ -5527,20 +5191,24 @@ impl ECC_ParametersResponse {
 
 impl TPM2_ZGen_2Phase_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.in_Qs_B.serialize(buffer)?;
         self.in_Qe_B.serialize(buffer)?;
-        buffer.write_u32(self.in_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme.get_value())?;
         buffer.write_u16(self.counter)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Qs_B.deserialize(buffer)?;
         self.in_Qe_B.deserialize(buffer)?;
-        self.in_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let in_Scheme_value = buffer.read_u32()?;
+        self.in_Scheme = TPM_ALG_ID::try_from(in_Scheme_value)?;
         self.counter = buffer.read_u16()?;
         Ok(())
     }
@@ -5549,15 +5217,18 @@ impl TPM2_ZGen_2Phase_REQUEST {
 
 impl ZGen_2PhaseResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.out_Z1.serialize(buffer)?;
         self.out_Z2.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Z1.deserialize(buffer)?;
         self.out_Z2.deserialize(buffer)?;
         Ok(())
@@ -5567,30 +5238,36 @@ impl ZGen_2PhaseResponse {
 
 impl TPM2_ECC_Encrypt_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.plain_Text)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.plain_Text = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -5600,7 +5277,7 @@ impl TPM2_ECC_Encrypt_REQUEST {
 
 impl ECC_EncryptResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.C1.serialize(buffer)?;
         buffer.write_u8(self.C2)?;
@@ -5608,8 +5285,11 @@ impl ECC_EncryptResponse {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.C1.deserialize(buffer)?;
         self.C2 = buffer.read_u8()?;
         self.C3 = buffer.read_u8()?;
@@ -5620,34 +5300,40 @@ impl ECC_EncryptResponse {
 
 impl TPM2_ECC_Decrypt_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.C1.serialize(buffer)?;
         buffer.write_u8(self.C2)?;
         buffer.write_u8(self.C3)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.C1.deserialize(buffer)?;
         self.C2 = buffer.read_u8()?;
         self.C3 = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_KDF_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -5657,14 +5343,17 @@ impl TPM2_ECC_Decrypt_REQUEST {
 
 impl ECC_DecryptResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.plain_Text)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.plain_Text = buffer.read_u8()?;
         Ok(())
     }
@@ -5673,19 +5362,23 @@ impl ECC_DecryptResponse {
 
 impl TPM2_EncryptDecrypt_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.decrypt)?;
-        buffer.write_u32(self.mode as u32)?;
+        buffer.write_u32(self.mode.get_value())?;
         buffer.write_u8(self.iv_In)?;
         buffer.write_u8(self.in_Data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.decrypt = buffer.read_u8()?;
-        self.mode = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let mode_value = buffer.read_u32()?;
+        self.mode = TPM_ALG_ID::try_from(mode_value)?;
         self.iv_In = buffer.read_u8()?;
         self.in_Data = buffer.read_u8()?;
         Ok(())
@@ -5695,15 +5388,18 @@ impl TPM2_EncryptDecrypt_REQUEST {
 
 impl EncryptDecryptResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.out_Data)?;
         buffer.write_u8(self.iv_Out)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Data = buffer.read_u8()?;
         self.iv_Out = buffer.read_u8()?;
         Ok(())
@@ -5713,20 +5409,24 @@ impl EncryptDecryptResponse {
 
 impl TPM2_EncryptDecrypt2_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.in_Data)?;
         buffer.write_u8(self.decrypt)?;
-        buffer.write_u32(self.mode as u32)?;
+        buffer.write_u32(self.mode.get_value())?;
         buffer.write_u8(self.iv_In)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Data = buffer.read_u8()?;
         self.decrypt = buffer.read_u8()?;
-        self.mode = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let mode_value = buffer.read_u32()?;
+        self.mode = TPM_ALG_ID::try_from(mode_value)?;
         self.iv_In = buffer.read_u8()?;
         Ok(())
     }
@@ -5735,15 +5435,18 @@ impl TPM2_EncryptDecrypt2_REQUEST {
 
 impl EncryptDecrypt2Response {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.out_Data)?;
         buffer.write_u8(self.iv_Out)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Data = buffer.read_u8()?;
         self.iv_Out = buffer.read_u8()?;
         Ok(())
@@ -5753,18 +5456,22 @@ impl EncryptDecrypt2Response {
 
 impl TPM2_Hash_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.data)?;
-        buffer.write_u32(self.hash_Alg as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
         self.hierarchy.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.data = buffer.read_u8()?;
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
         self.hierarchy.deserialize(buffer)?;
         Ok(())
     }
@@ -5773,15 +5480,18 @@ impl TPM2_Hash_REQUEST {
 
 impl HashResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.out_Hash)?;
         self.validation.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Hash = buffer.read_u8()?;
         self.validation.deserialize(buffer)?;
         Ok(())
@@ -5791,17 +5501,21 @@ impl HashResponse {
 
 impl TPM2_HMAC_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
-        buffer.write_u32(self.hash_Alg as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
         Ok(())
     }
 
@@ -5809,14 +5523,17 @@ impl TPM2_HMAC_REQUEST {
 
 impl HMACResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.out_HMAC)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_HMAC = buffer.read_u8()?;
         Ok(())
     }
@@ -5825,17 +5542,21 @@ impl HMACResponse {
 
 impl TPM2_MAC_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
-        buffer.write_u32(self.in_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
-        self.in_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let in_Scheme_value = buffer.read_u32()?;
+        self.in_Scheme = TPM_ALG_ID::try_from(in_Scheme_value)?;
         Ok(())
     }
 
@@ -5843,14 +5564,17 @@ impl TPM2_MAC_REQUEST {
 
 impl MACResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.out_MAC)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_MAC = buffer.read_u8()?;
         Ok(())
     }
@@ -5859,14 +5583,17 @@ impl MACResponse {
 
 impl TPM2_GetRandom_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u16(self.bytes_Requested)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.bytes_Requested = buffer.read_u16()?;
         Ok(())
     }
@@ -5875,14 +5602,17 @@ impl TPM2_GetRandom_REQUEST {
 
 impl GetRandomResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.random_Bytes)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.random_Bytes = buffer.read_u8()?;
         Ok(())
     }
@@ -5891,14 +5621,17 @@ impl GetRandomResponse {
 
 impl TPM2_StirRandom_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.in_Data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Data = buffer.read_u8()?;
         Ok(())
     }
@@ -5907,17 +5640,21 @@ impl TPM2_StirRandom_REQUEST {
 
 impl TPM2_HMAC_Start_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.auth)?;
-        buffer.write_u32(self.hash_Alg as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.auth = buffer.read_u8()?;
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
         Ok(())
     }
 
@@ -5925,13 +5662,12 @@ impl TPM2_HMAC_Start_REQUEST {
 
 impl HMAC_StartResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -5939,17 +5675,21 @@ impl HMAC_StartResponse {
 
 impl TPM2_MAC_Start_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.auth)?;
-        buffer.write_u32(self.in_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.auth = buffer.read_u8()?;
-        self.in_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let in_Scheme_value = buffer.read_u32()?;
+        self.in_Scheme = TPM_ALG_ID::try_from(in_Scheme_value)?;
         Ok(())
     }
 
@@ -5957,13 +5697,12 @@ impl TPM2_MAC_Start_REQUEST {
 
 impl MAC_StartResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -5971,17 +5710,21 @@ impl MAC_StartResponse {
 
 impl TPM2_HashSequenceStart_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.auth)?;
-        buffer.write_u32(self.hash_Alg as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.auth = buffer.read_u8()?;
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
         Ok(())
     }
 
@@ -5989,13 +5732,12 @@ impl TPM2_HashSequenceStart_REQUEST {
 
 impl HashSequenceStartResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -6003,14 +5745,17 @@ impl HashSequenceStartResponse {
 
 impl TPM2_SequenceUpdate_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -6019,15 +5764,18 @@ impl TPM2_SequenceUpdate_REQUEST {
 
 impl TPM2_SequenceComplete_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         self.hierarchy.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         self.hierarchy.deserialize(buffer)?;
         Ok(())
@@ -6037,15 +5785,18 @@ impl TPM2_SequenceComplete_REQUEST {
 
 impl SequenceCompleteResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.result)?;
         self.validation.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.result = buffer.read_u8()?;
         self.validation.deserialize(buffer)?;
         Ok(())
@@ -6055,14 +5806,17 @@ impl SequenceCompleteResponse {
 
 impl TPM2_EventSequenceComplete_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.buffer = buffer.read_u8()?;
         Ok(())
     }
@@ -6071,15 +5825,31 @@ impl TPM2_EventSequenceComplete_REQUEST {
 
 impl EventSequenceCompleteResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.results)?;
+        // List count
+        buffer.write_u32(self.results.len() as u32)?;
+        for item in &self.results {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.results = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let results_count = buffer.read_u32()? as usize;
+        self.results.clear();
+        for _ in 0..results_count {
+            let mut item = TPMT_HA::default();
+            item.deserialize(buffer)?;
+            self.results.push(item);
+        }
+
         Ok(())
     }
 
@@ -6087,30 +5857,36 @@ impl EventSequenceCompleteResponse {
 
 impl TPM2_Certify_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.qualifying_Data)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.qualifying_Data = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6120,30 +5896,36 @@ impl TPM2_Certify_REQUEST {
 
 impl CertifyResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.certify_Info.serialize(buffer)?;
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.certify_Info.deserialize(buffer)?;
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6153,33 +5935,39 @@ impl CertifyResponse {
 
 impl TPM2_CertifyCreation_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.qualifying_Data)?;
         buffer.write_u8(self.creation_Hash)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         self.creation_Ticket.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.qualifying_Data = buffer.read_u8()?;
         self.creation_Hash = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         self.creation_Ticket.deserialize(buffer)?;
@@ -6190,30 +5978,36 @@ impl TPM2_CertifyCreation_REQUEST {
 
 impl CertifyCreationResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.certify_Info.serialize(buffer)?;
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.certify_Info.deserialize(buffer)?;
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6223,34 +6017,53 @@ impl CertifyCreationResponse {
 
 impl TPM2_Quote_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.qualifying_Data)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
-        buffer.write_sized_array(&self.PCRselect)?;
+        // List count
+        buffer.write_u32(self.PCRselect.len() as u32)?;
+        for item in &self.PCRselect {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.qualifying_Data = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
-        self.PCRselect = buffer.read_sized_array()?;
+        // List count
+        let PCRselect_count = buffer.read_u32()? as usize;
+        self.PCRselect.clear();
+        for _ in 0..PCRselect_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.PCRselect.push(item);
+        }
+
         Ok(())
     }
 
@@ -6258,30 +6071,36 @@ impl TPM2_Quote_REQUEST {
 
 impl QuoteResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.quoted.serialize(buffer)?;
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.quoted.deserialize(buffer)?;
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6291,30 +6110,36 @@ impl QuoteResponse {
 
 impl TPM2_GetSessionAuditDigest_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.qualifying_Data)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.qualifying_Data = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6324,30 +6149,36 @@ impl TPM2_GetSessionAuditDigest_REQUEST {
 
 impl GetSessionAuditDigestResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.audit_Info.serialize(buffer)?;
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.audit_Info.deserialize(buffer)?;
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6357,30 +6188,36 @@ impl GetSessionAuditDigestResponse {
 
 impl TPM2_GetCommandAuditDigest_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.qualifying_Data)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.qualifying_Data = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6390,30 +6227,36 @@ impl TPM2_GetCommandAuditDigest_REQUEST {
 
 impl GetCommandAuditDigestResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.audit_Info.serialize(buffer)?;
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.audit_Info.deserialize(buffer)?;
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6423,30 +6266,36 @@ impl GetCommandAuditDigestResponse {
 
 impl TPM2_GetTime_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.qualifying_Data)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.qualifying_Data = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6456,30 +6305,36 @@ impl TPM2_GetTime_REQUEST {
 
 impl GetTimeResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.time_Info.serialize(buffer)?;
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.time_Info.deserialize(buffer)?;
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6489,31 +6344,37 @@ impl GetTimeResponse {
 
 impl TPM2_CertifyX509_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.reserved)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         buffer.write_u8(self.partial_Certificate)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.reserved = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         self.partial_Certificate = buffer.read_u8()?;
@@ -6524,32 +6385,38 @@ impl TPM2_CertifyX509_REQUEST {
 
 impl CertifyX509Response {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.added_To_Certificate)?;
         buffer.write_u8(self.tbs_Digest)?;
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.added_To_Certificate = buffer.read_u8()?;
         self.tbs_Digest = buffer.read_u8()?;
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6559,7 +6426,7 @@ impl CertifyX509Response {
 
 impl TPM2_Commit_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.P1.serialize(buffer)?;
         buffer.write_u8(self.s2)?;
@@ -6567,8 +6434,11 @@ impl TPM2_Commit_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.P1.deserialize(buffer)?;
         self.s2 = buffer.read_u8()?;
         self.y2 = buffer.read_u8()?;
@@ -6579,7 +6449,7 @@ impl TPM2_Commit_REQUEST {
 
 impl CommitResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.K.serialize(buffer)?;
         self.L.serialize(buffer)?;
@@ -6588,8 +6458,11 @@ impl CommitResponse {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.K.deserialize(buffer)?;
         self.L.deserialize(buffer)?;
         self.E.deserialize(buffer)?;
@@ -6601,15 +6474,19 @@ impl CommitResponse {
 
 impl TPM2_EC_Ephemeral_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.curve_ID as u32)?;
+        buffer.write_u32(self.curve_ID.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.curve_ID = TPM_ECC_CURVE::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let curve_ID_value = buffer.read_u32()?;
+        self.curve_ID = TPM_ECC_CURVE::try_from(curve_ID_value)?;
         Ok(())
     }
 
@@ -6617,15 +6494,18 @@ impl TPM2_EC_Ephemeral_REQUEST {
 
 impl EC_EphemeralResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.Q.serialize(buffer)?;
         buffer.write_u16(self.counter)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.Q.deserialize(buffer)?;
         self.counter = buffer.read_u16()?;
         Ok(())
@@ -6635,30 +6515,36 @@ impl EC_EphemeralResponse {
 
 impl TPM2_VerifySignature_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.digest)?;
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.digest = buffer.read_u8()?;
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6668,14 +6554,17 @@ impl TPM2_VerifySignature_REQUEST {
 
 impl VerifySignatureResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.validation.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.validation.deserialize(buffer)?;
         Ok(())
     }
@@ -6684,31 +6573,37 @@ impl VerifySignatureResponse {
 
 impl TPM2_Sign_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.digest)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         self.validation.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.digest = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         self.validation.deserialize(buffer)?;
@@ -6719,28 +6614,34 @@ impl TPM2_Sign_REQUEST {
 
 impl SignResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6750,19 +6651,25 @@ impl SignResponse {
 
 impl TPM2_SetCommandCodeAuditStatus_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.audit_Alg as u32)?;
-        buffer.write_u32(self.set_List as u32)?;
-        buffer.write_u32(self.clear_List as u32)?;
+        buffer.write_u32(self.audit_Alg.get_value())?;
+        buffer.write_u32(self.set_List.get_value())?;
+        buffer.write_u32(self.clear_List.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.audit_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        self.set_List = Vec<TPM_CC>::try_from(buffer.read_u32()?)?;
-        self.clear_List = Vec<TPM_CC>::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let audit_Alg_value = buffer.read_u32()?;
+        self.audit_Alg = TPM_ALG_ID::try_from(audit_Alg_value)?;
+        let set_List_value = buffer.read_u32()?;
+        self.set_List = Vec<TPM_CC>::try_from(set_List_value as i32)?;
+        let clear_List_value = buffer.read_u32()?;
+        self.clear_List = Vec<TPM_CC>::try_from(clear_List_value as i32)?;
         Ok(())
     }
 
@@ -6770,15 +6677,31 @@ impl TPM2_SetCommandCodeAuditStatus_REQUEST {
 
 impl TPM2_PCR_Extend_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.digests)?;
+        // List count
+        buffer.write_u32(self.digests.len() as u32)?;
+        for item in &self.digests {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.digests = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let digests_count = buffer.read_u32()? as usize;
+        self.digests.clear();
+        for _ in 0..digests_count {
+            let mut item = TPMT_HA::default();
+            item.deserialize(buffer)?;
+            self.digests.push(item);
+        }
+
         Ok(())
     }
 
@@ -6786,14 +6709,17 @@ impl TPM2_PCR_Extend_REQUEST {
 
 impl TPM2_PCR_Event_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.event_Data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.event_Data = buffer.read_u8()?;
         Ok(())
     }
@@ -6802,15 +6728,31 @@ impl TPM2_PCR_Event_REQUEST {
 
 impl PCR_EventResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.digests)?;
+        // List count
+        buffer.write_u32(self.digests.len() as u32)?;
+        for item in &self.digests {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.digests = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let digests_count = buffer.read_u32()? as usize;
+        self.digests.clear();
+        for _ in 0..digests_count {
+            let mut item = TPMT_HA::default();
+            item.deserialize(buffer)?;
+            self.digests.push(item);
+        }
+
         Ok(())
     }
 
@@ -6818,15 +6760,31 @@ impl PCR_EventResponse {
 
 impl TPM2_PCR_Read_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.pcr_Selection_In)?;
+        // List count
+        buffer.write_u32(self.pcr_Selection_In.len() as u32)?;
+        for item in &self.pcr_Selection_In {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pcr_Selection_In = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let pcr_Selection_In_count = buffer.read_u32()? as usize;
+        self.pcr_Selection_In.clear();
+        for _ in 0..pcr_Selection_In_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.pcr_Selection_In.push(item);
+        }
+
         Ok(())
     }
 
@@ -6834,19 +6792,48 @@ impl TPM2_PCR_Read_REQUEST {
 
 impl PCR_ReadResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u32(self.pcr_Update_Counter)?;
-        buffer.write_sized_array(&self.pcr_Selection_Out)?;
-        buffer.write_sized_array(&self.pcr_Values)?;
+        // List count
+        buffer.write_u32(self.pcr_Selection_Out.len() as u32)?;
+        for item in &self.pcr_Selection_Out {
+            item.serialize(buffer)?;
+        }
+
+        // List count
+        buffer.write_u32(self.pcr_Values.len() as u32)?;
+        for item in &self.pcr_Values {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.pcr_Update_Counter = buffer.read_u32()?;
-        self.pcr_Selection_Out = buffer.read_sized_array()?;
-        self.pcr_Values = buffer.read_sized_array()?;
+        // List count
+        let pcr_Selection_Out_count = buffer.read_u32()? as usize;
+        self.pcr_Selection_Out.clear();
+        for _ in 0..pcr_Selection_Out_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.pcr_Selection_Out.push(item);
+        }
+
+        // List count
+        let pcr_Values_count = buffer.read_u32()? as usize;
+        self.pcr_Values.clear();
+        for _ in 0..pcr_Values_count {
+            let mut item = TPM2B_DIGEST::default();
+            item.deserialize(buffer)?;
+            self.pcr_Values.push(item);
+        }
+
         Ok(())
     }
 
@@ -6854,15 +6841,31 @@ impl PCR_ReadResponse {
 
 impl TPM2_PCR_Allocate_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.pcr_Allocation)?;
+        // List count
+        buffer.write_u32(self.pcr_Allocation.len() as u32)?;
+        for item in &self.pcr_Allocation {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pcr_Allocation = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let pcr_Allocation_count = buffer.read_u32()? as usize;
+        self.pcr_Allocation.clear();
+        for _ in 0..pcr_Allocation_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.pcr_Allocation.push(item);
+        }
+
         Ok(())
     }
 
@@ -6870,7 +6873,7 @@ impl TPM2_PCR_Allocate_REQUEST {
 
 impl PCR_AllocateResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.allocation_Success)?;
         buffer.write_u32(self.max_PCR)?;
@@ -6879,8 +6882,11 @@ impl PCR_AllocateResponse {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.allocation_Success = buffer.read_u8()?;
         self.max_PCR = buffer.read_u32()?;
         self.size_Needed = buffer.read_u32()?;
@@ -6892,18 +6898,22 @@ impl PCR_AllocateResponse {
 
 impl TPM2_PCR_SetAuthPolicy_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.auth_Policy)?;
-        buffer.write_u32(self.hash_Alg as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
         self.pcr_Num.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.auth_Policy = buffer.read_u8()?;
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
         self.pcr_Num.deserialize(buffer)?;
         Ok(())
     }
@@ -6912,14 +6922,17 @@ impl TPM2_PCR_SetAuthPolicy_REQUEST {
 
 impl TPM2_PCR_SetAuthValue_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.auth)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.auth = buffer.read_u8()?;
         Ok(())
     }
@@ -6928,13 +6941,12 @@ impl TPM2_PCR_SetAuthValue_REQUEST {
 
 impl TPM2_PCR_Reset_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -6942,36 +6954,42 @@ impl TPM2_PCR_Reset_REQUEST {
 
 impl TPM2_PolicySigned_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.nonce_TPM)?;
         buffer.write_u8(self.cp_Hash_A)?;
         buffer.write_u8(self.policy_Ref)?;
         buffer.write_u32(self.expiration)?;
-        buffer.write_u32(self.auth_Sig_Alg as u32)?;
+        buffer.write_u32(self.auth_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.auth {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.nonce_TPM = buffer.read_u8()?;
         self.cp_Hash_A = buffer.read_u8()?;
         self.policy_Ref = buffer.read_u8()?;
         self.expiration = buffer.read_u32()?;
-        self.auth_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.auth_Sig_Alg();
-        self.auth = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let auth_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("authSigAlg", auth_Sig_Alg_value);
+        let selector_value = *selector_values.get("authSigAlg").unwrap_or(&0);
+        self.auth = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -6981,15 +6999,18 @@ impl TPM2_PolicySigned_REQUEST {
 
 impl PolicySignedResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.timeout)?;
         self.policy_Ticket.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.timeout = buffer.read_u8()?;
         self.policy_Ticket.deserialize(buffer)?;
         Ok(())
@@ -6999,7 +7020,7 @@ impl PolicySignedResponse {
 
 impl TPM2_PolicySecret_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.nonce_TPM)?;
         buffer.write_u8(self.cp_Hash_A)?;
@@ -7008,8 +7029,11 @@ impl TPM2_PolicySecret_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.nonce_TPM = buffer.read_u8()?;
         self.cp_Hash_A = buffer.read_u8()?;
         self.policy_Ref = buffer.read_u8()?;
@@ -7021,15 +7045,18 @@ impl TPM2_PolicySecret_REQUEST {
 
 impl PolicySecretResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.timeout)?;
         self.policy_Ticket.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.timeout = buffer.read_u8()?;
         self.policy_Ticket.deserialize(buffer)?;
         Ok(())
@@ -7039,7 +7066,7 @@ impl PolicySecretResponse {
 
 impl TPM2_PolicyTicket_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.timeout)?;
         buffer.write_u8(self.cp_Hash_A)?;
@@ -7049,8 +7076,11 @@ impl TPM2_PolicyTicket_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.timeout = buffer.read_u8()?;
         self.cp_Hash_A = buffer.read_u8()?;
         self.policy_Ref = buffer.read_u8()?;
@@ -7063,15 +7093,31 @@ impl TPM2_PolicyTicket_REQUEST {
 
 impl TPM2_PolicyOR_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_sized_array(&self.pHashList)?;
+        // List count
+        buffer.write_u32(self.pHashList.len() as u32)?;
+        for item in &self.pHashList {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pHashList = buffer.read_sized_array()?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        // List count
+        let pHashList_count = buffer.read_u32()? as usize;
+        self.pHashList.clear();
+        for _ in 0..pHashList_count {
+            let mut item = TPM2B_DIGEST::default();
+            item.deserialize(buffer)?;
+            self.pHashList.push(item);
+        }
+
         Ok(())
     }
 
@@ -7079,17 +7125,33 @@ impl TPM2_PolicyOR_REQUEST {
 
 impl TPM2_PolicyPCR_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.pcr_Digest)?;
-        buffer.write_sized_array(&self.pcrs)?;
+        // List count
+        buffer.write_u32(self.pcrs.len() as u32)?;
+        for item in &self.pcrs {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.pcr_Digest = buffer.read_u8()?;
-        self.pcrs = buffer.read_sized_array()?;
+        // List count
+        let pcrs_count = buffer.read_u32()? as usize;
+        self.pcrs.clear();
+        for _ in 0..pcrs_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.pcrs.push(item);
+        }
+
         Ok(())
     }
 
@@ -7097,15 +7159,19 @@ impl TPM2_PolicyPCR_REQUEST {
 
 impl TPM2_PolicyLocality_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.locality as u32)?;
+        buffer.write_u32(self.locality.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.locality = TPMA_LOCALITY::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let locality_value = buffer.read_u32()?;
+        self.locality = TPMA_LOCALITY::try_from(locality_value)?;
         Ok(())
     }
 
@@ -7113,19 +7179,23 @@ impl TPM2_PolicyLocality_REQUEST {
 
 impl TPM2_PolicyNV_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.operand_B)?;
         buffer.write_u16(self.offset)?;
-        buffer.write_u32(self.operation as u32)?;
+        buffer.write_u32(self.operation.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.operand_B = buffer.read_u8()?;
         self.offset = buffer.read_u16()?;
-        self.operation = TPM_EO::try_from(buffer.read_u32()?)?;
+        let operation_value = buffer.read_u32()?;
+        self.operation = TPM_EO::try_from(operation_value)?;
         Ok(())
     }
 
@@ -7133,19 +7203,23 @@ impl TPM2_PolicyNV_REQUEST {
 
 impl TPM2_PolicyCounterTimer_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.operand_B)?;
         buffer.write_u16(self.offset)?;
-        buffer.write_u32(self.operation as u32)?;
+        buffer.write_u32(self.operation.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.operand_B = buffer.read_u8()?;
         self.offset = buffer.read_u16()?;
-        self.operation = TPM_EO::try_from(buffer.read_u32()?)?;
+        let operation_value = buffer.read_u32()?;
+        self.operation = TPM_EO::try_from(operation_value)?;
         Ok(())
     }
 
@@ -7153,15 +7227,19 @@ impl TPM2_PolicyCounterTimer_REQUEST {
 
 impl TPM2_PolicyCommandCode_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.code as u32)?;
+        buffer.write_u32(self.code.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.code = TPM_CC::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let code_value = buffer.read_u32()?;
+        self.code = TPM_CC::try_from(code_value as i32)?;
         Ok(())
     }
 
@@ -7169,13 +7247,12 @@ impl TPM2_PolicyCommandCode_REQUEST {
 
 impl TPM2_PolicyPhysicalPresence_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7183,14 +7260,17 @@ impl TPM2_PolicyPhysicalPresence_REQUEST {
 
 impl TPM2_PolicyCpHash_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.cp_Hash_A)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.cp_Hash_A = buffer.read_u8()?;
         Ok(())
     }
@@ -7199,14 +7279,17 @@ impl TPM2_PolicyCpHash_REQUEST {
 
 impl TPM2_PolicyNameHash_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.name_Hash)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.name_Hash = buffer.read_u8()?;
         Ok(())
     }
@@ -7215,7 +7298,7 @@ impl TPM2_PolicyNameHash_REQUEST {
 
 impl TPM2_PolicyDuplicationSelect_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.object_Name)?;
         buffer.write_u8(self.new_Parent_Name)?;
@@ -7223,8 +7306,11 @@ impl TPM2_PolicyDuplicationSelect_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.object_Name = buffer.read_u8()?;
         self.new_Parent_Name = buffer.read_u8()?;
         self.include_Object = buffer.read_u8()?;
@@ -7235,7 +7321,7 @@ impl TPM2_PolicyDuplicationSelect_REQUEST {
 
 impl TPM2_PolicyAuthorize_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.approved_Policy)?;
         buffer.write_u8(self.policy_Ref)?;
@@ -7244,8 +7330,11 @@ impl TPM2_PolicyAuthorize_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.approved_Policy = buffer.read_u8()?;
         self.policy_Ref = buffer.read_u8()?;
         self.key_Sign = buffer.read_u8()?;
@@ -7257,13 +7346,12 @@ impl TPM2_PolicyAuthorize_REQUEST {
 
 impl TPM2_PolicyAuthValue_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7271,13 +7359,12 @@ impl TPM2_PolicyAuthValue_REQUEST {
 
 impl TPM2_PolicyPassword_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7285,13 +7372,12 @@ impl TPM2_PolicyPassword_REQUEST {
 
 impl TPM2_PolicyGetDigest_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7299,14 +7385,17 @@ impl TPM2_PolicyGetDigest_REQUEST {
 
 impl PolicyGetDigestResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.policy_Digest)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.policy_Digest = buffer.read_u8()?;
         Ok(())
     }
@@ -7315,14 +7404,17 @@ impl PolicyGetDigestResponse {
 
 impl TPM2_PolicyNvWritten_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.written_Set)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.written_Set = buffer.read_u8()?;
         Ok(())
     }
@@ -7331,14 +7423,17 @@ impl TPM2_PolicyNvWritten_REQUEST {
 
 impl TPM2_PolicyTemplate_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.template_Hash)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.template_Hash = buffer.read_u8()?;
         Ok(())
     }
@@ -7347,13 +7442,12 @@ impl TPM2_PolicyTemplate_REQUEST {
 
 impl TPM2_PolicyAuthorizeNV_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7361,21 +7455,37 @@ impl TPM2_PolicyAuthorizeNV_REQUEST {
 
 impl TPM2_CreatePrimary_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.in_Sensitive.serialize(buffer)?;
         self.in_Public.serialize(buffer)?;
         buffer.write_u8(self.outside_Info)?;
-        buffer.write_sized_array(&self.creation_PCR)?;
+        // List count
+        buffer.write_u32(self.creation_PCR.len() as u32)?;
+        for item in &self.creation_PCR {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.in_Sensitive.deserialize(buffer)?;
         self.in_Public.deserialize(buffer)?;
         self.outside_Info = buffer.read_u8()?;
-        self.creation_PCR = buffer.read_sized_array()?;
+        // List count
+        let creation_PCR_count = buffer.read_u32()? as usize;
+        self.creation_PCR.clear();
+        for _ in 0..creation_PCR_count {
+            let mut item = TPMS_PCR_SELECTION::default();
+            item.deserialize(buffer)?;
+            self.creation_PCR.push(item);
+        }
+
         Ok(())
     }
 
@@ -7383,7 +7493,7 @@ impl TPM2_CreatePrimary_REQUEST {
 
 impl CreatePrimaryResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.out_Public.serialize(buffer)?;
         self.creation_Data.serialize(buffer)?;
@@ -7393,8 +7503,11 @@ impl CreatePrimaryResponse {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.out_Public.deserialize(buffer)?;
         self.creation_Data.deserialize(buffer)?;
         self.creation_Hash = buffer.read_u8()?;
@@ -7407,15 +7520,18 @@ impl CreatePrimaryResponse {
 
 impl TPM2_HierarchyControl_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.enable.serialize(buffer)?;
         buffer.write_u8(self.state)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.enable.deserialize(buffer)?;
         self.state = buffer.read_u8()?;
         Ok(())
@@ -7425,17 +7541,21 @@ impl TPM2_HierarchyControl_REQUEST {
 
 impl TPM2_SetPrimaryPolicy_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.auth_Policy)?;
-        buffer.write_u32(self.hash_Alg as u32)?;
+        buffer.write_u32(self.hash_Alg.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.auth_Policy = buffer.read_u8()?;
-        self.hash_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
+        let hash_Alg_value = buffer.read_u32()?;
+        self.hash_Alg = TPM_ALG_ID::try_from(hash_Alg_value)?;
         Ok(())
     }
 
@@ -7443,13 +7563,12 @@ impl TPM2_SetPrimaryPolicy_REQUEST {
 
 impl TPM2_ChangePPS_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7457,13 +7576,12 @@ impl TPM2_ChangePPS_REQUEST {
 
 impl TPM2_ChangeEPS_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7471,13 +7589,12 @@ impl TPM2_ChangeEPS_REQUEST {
 
 impl TPM2_Clear_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7485,14 +7602,17 @@ impl TPM2_Clear_REQUEST {
 
 impl TPM2_ClearControl_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.disable)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.disable = buffer.read_u8()?;
         Ok(())
     }
@@ -7501,14 +7621,17 @@ impl TPM2_ClearControl_REQUEST {
 
 impl TPM2_HierarchyChangeAuth_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.new_Auth)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.new_Auth = buffer.read_u8()?;
         Ok(())
     }
@@ -7517,13 +7640,12 @@ impl TPM2_HierarchyChangeAuth_REQUEST {
 
 impl TPM2_DictionaryAttackLockReset_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7531,7 +7653,7 @@ impl TPM2_DictionaryAttackLockReset_REQUEST {
 
 impl TPM2_DictionaryAttackParameters_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u32(self.new_Max_Tries)?;
         buffer.write_u32(self.new_Recovery_Time)?;
@@ -7539,8 +7661,11 @@ impl TPM2_DictionaryAttackParameters_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.new_Max_Tries = buffer.read_u32()?;
         self.new_Recovery_Time = buffer.read_u32()?;
         self.lockout_Recovery = buffer.read_u32()?;
@@ -7551,17 +7676,22 @@ impl TPM2_DictionaryAttackParameters_REQUEST {
 
 impl TPM2_PP_Commands_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.set_List as u32)?;
-        buffer.write_u32(self.clear_List as u32)?;
+        buffer.write_u32(self.set_List.get_value())?;
+        buffer.write_u32(self.clear_List.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.set_List = Vec<TPM_CC>::try_from(buffer.read_u32()?)?;
-        self.clear_List = Vec<TPM_CC>::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let set_List_value = buffer.read_u32()?;
+        self.set_List = Vec<TPM_CC>::try_from(set_List_value as i32)?;
+        let clear_List_value = buffer.read_u32()?;
+        self.clear_List = Vec<TPM_CC>::try_from(clear_List_value as i32)?;
         Ok(())
     }
 
@@ -7569,14 +7699,17 @@ impl TPM2_PP_Commands_REQUEST {
 
 impl TPM2_SetAlgorithmSet_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u32(self.algorithm_Set)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.algorithm_Set = buffer.read_u32()?;
         Ok(())
     }
@@ -7585,30 +7718,36 @@ impl TPM2_SetAlgorithmSet_REQUEST {
 
 impl TPM2_FieldUpgradeStart_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.fu_Digest)?;
-        buffer.write_u32(self.manifest_Signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.manifest_Signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.manifest_Signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.fu_Digest = buffer.read_u8()?;
-        self.manifest_Signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.manifest_Signature_Sig_Alg();
-        self.manifest_Signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let manifest_Signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("manifestSignatureSigAlg", manifest_Signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("manifestSignatureSigAlg").unwrap_or(&0);
+        self.manifest_Signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -7618,14 +7757,17 @@ impl TPM2_FieldUpgradeStart_REQUEST {
 
 impl TPM2_FieldUpgradeData_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.fu_Data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.fu_Data = buffer.read_u8()?;
         Ok(())
     }
@@ -7634,15 +7776,18 @@ impl TPM2_FieldUpgradeData_REQUEST {
 
 impl FieldUpgradeDataResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.next_Digest.serialize(buffer)?;
         self.first_Digest.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.next_Digest.deserialize(buffer)?;
         self.first_Digest.deserialize(buffer)?;
         Ok(())
@@ -7652,14 +7797,17 @@ impl FieldUpgradeDataResponse {
 
 impl TPM2_FirmwareRead_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u32(self.sequence_Number)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.sequence_Number = buffer.read_u32()?;
         Ok(())
     }
@@ -7668,14 +7816,17 @@ impl TPM2_FirmwareRead_REQUEST {
 
 impl FirmwareReadResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.fu_Data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.fu_Data = buffer.read_u8()?;
         Ok(())
     }
@@ -7684,13 +7835,12 @@ impl FirmwareReadResponse {
 
 impl TPM2_ContextSave_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7698,14 +7848,17 @@ impl TPM2_ContextSave_REQUEST {
 
 impl ContextSaveResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.context.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.context.deserialize(buffer)?;
         Ok(())
     }
@@ -7714,14 +7867,17 @@ impl ContextSaveResponse {
 
 impl TPM2_ContextLoad_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.context.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.context.deserialize(buffer)?;
         Ok(())
     }
@@ -7730,13 +7886,12 @@ impl TPM2_ContextLoad_REQUEST {
 
 impl ContextLoadResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7744,14 +7899,17 @@ impl ContextLoadResponse {
 
 impl TPM2_FlushContext_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.flush_Handle.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.flush_Handle.deserialize(buffer)?;
         Ok(())
     }
@@ -7760,14 +7918,17 @@ impl TPM2_FlushContext_REQUEST {
 
 impl TPM2_EvictControl_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.persistent_Handle.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.persistent_Handle.deserialize(buffer)?;
         Ok(())
     }
@@ -7776,13 +7937,12 @@ impl TPM2_EvictControl_REQUEST {
 
 impl TPM2_ReadClock_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7790,14 +7950,17 @@ impl TPM2_ReadClock_REQUEST {
 
 impl ReadClockResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.current_Time.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.current_Time.deserialize(buffer)?;
         Ok(())
     }
@@ -7806,14 +7969,17 @@ impl ReadClockResponse {
 
 impl TPM2_ClockSet_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u64(self.new_Time)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.new_Time = buffer.read_u64()?;
         Ok(())
     }
@@ -7822,15 +7988,19 @@ impl TPM2_ClockSet_REQUEST {
 
 impl TPM2_ClockRateAdjust_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.rate_Adjust as u32)?;
+        buffer.write_u32(self.rate_Adjust.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.rate_Adjust = TPM_CLOCK_ADJUST::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let rate_Adjust_value = buffer.read_u32()?;
+        self.rate_Adjust = TPM_CLOCK_ADJUST::try_from(rate_Adjust_value)?;
         Ok(())
     }
 
@@ -7838,17 +8008,21 @@ impl TPM2_ClockRateAdjust_REQUEST {
 
 impl TPM2_GetCapability_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.capability as u32)?;
+        buffer.write_u32(self.capability.get_value())?;
         buffer.write_u32(self.property)?;
         buffer.write_u32(self.property_Count)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.capability = TPM_CAP::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let capability_value = buffer.read_u32()?;
+        self.capability = TPM_CAP::try_from(capability_value as i32)?;
         self.property = buffer.read_u32()?;
         self.property_Count = buffer.read_u32()?;
         Ok(())
@@ -7858,30 +8032,36 @@ impl TPM2_GetCapability_REQUEST {
 
 impl GetCapabilityResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.more_Data)?;
-        buffer.write_u32(self.capability_Data_Capability as u32)?;
+        buffer.write_u32(self.capability_Data_Capability().get_value())?;
         if let Some(union_obj) = &self.capability_Data {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(0)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.more_Data = buffer.read_u8()?;
-        self.capability_Data_Capability = TPM_CAP::try_from(buffer.read_u32()?)?;
-        let selector = self.capability_Data_Capability();
-        self.capability_Data = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_CAPABILITIES>(selector as u32)
+        let capability_Data_Capability_value = buffer.read_u32()?;
+        selector_values.insert("capabilityDataCapability", capability_Data_Capability_value);
+        let selector_value = *selector_values.get("capabilityDataCapability").unwrap_or(&0);
+        self.capability_Data = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_CAPABILITIES>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -7891,28 +8071,34 @@ impl GetCapabilityResponse {
 
 impl TPM2_TestParms_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.parameters_Type as u32)?;
+        buffer.write_u32(self.parameters_Type().get_value())?;
         if let Some(union_obj) = &self.parameters {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(0)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.parameters_Type = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.parameters_Type();
-        self.parameters = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_PUBLIC_PARMS>(selector as u32)
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let parameters_Type_value = buffer.read_u32()?;
+        selector_values.insert("parametersType", parameters_Type_value);
+        let selector_value = *selector_values.get("parametersType").unwrap_or(&0);
+        self.parameters = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_PUBLIC_PARMS>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -7922,15 +8108,18 @@ impl TPM2_TestParms_REQUEST {
 
 impl TPM2_NV_DefineSpace_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.auth)?;
         self.public_Info.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.auth = buffer.read_u8()?;
         self.public_Info.deserialize(buffer)?;
         Ok(())
@@ -7940,13 +8129,12 @@ impl TPM2_NV_DefineSpace_REQUEST {
 
 impl TPM2_NV_UndefineSpace_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7954,13 +8142,12 @@ impl TPM2_NV_UndefineSpace_REQUEST {
 
 impl TPM2_NV_UndefineSpaceSpecial_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7968,13 +8155,12 @@ impl TPM2_NV_UndefineSpaceSpecial_REQUEST {
 
 impl TPM2_NV_ReadPublic_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -7982,15 +8168,18 @@ impl TPM2_NV_ReadPublic_REQUEST {
 
 impl NV_ReadPublicResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.nv_Public.serialize(buffer)?;
         buffer.write_u8(self.nv_Name)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.nv_Public.deserialize(buffer)?;
         self.nv_Name = buffer.read_u8()?;
         Ok(())
@@ -8000,15 +8189,18 @@ impl NV_ReadPublicResponse {
 
 impl TPM2_NV_Write_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.data)?;
         buffer.write_u16(self.offset)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.data = buffer.read_u8()?;
         self.offset = buffer.read_u16()?;
         Ok(())
@@ -8018,13 +8210,12 @@ impl TPM2_NV_Write_REQUEST {
 
 impl TPM2_NV_Increment_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -8032,14 +8223,17 @@ impl TPM2_NV_Increment_REQUEST {
 
 impl TPM2_NV_Extend_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.data = buffer.read_u8()?;
         Ok(())
     }
@@ -8048,14 +8242,17 @@ impl TPM2_NV_Extend_REQUEST {
 
 impl TPM2_NV_SetBits_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u64(self.bits)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.bits = buffer.read_u64()?;
         Ok(())
     }
@@ -8064,13 +8261,12 @@ impl TPM2_NV_SetBits_REQUEST {
 
 impl TPM2_NV_WriteLock_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -8078,13 +8274,12 @@ impl TPM2_NV_WriteLock_REQUEST {
 
 impl TPM2_NV_GlobalWriteLock_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -8092,15 +8287,18 @@ impl TPM2_NV_GlobalWriteLock_REQUEST {
 
 impl TPM2_NV_Read_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u16(self.size)?;
         buffer.write_u16(self.offset)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.size = buffer.read_u16()?;
         self.offset = buffer.read_u16()?;
         Ok(())
@@ -8110,14 +8308,17 @@ impl TPM2_NV_Read_REQUEST {
 
 impl NV_ReadResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.data = buffer.read_u8()?;
         Ok(())
     }
@@ -8126,13 +8327,12 @@ impl NV_ReadResponse {
 
 impl TPM2_NV_ReadLock_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -8140,14 +8340,17 @@ impl TPM2_NV_ReadLock_REQUEST {
 
 impl TPM2_NV_ChangeAuth_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.new_Auth)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.new_Auth = buffer.read_u8()?;
         Ok(())
     }
@@ -8156,12 +8359,15 @@ impl TPM2_NV_ChangeAuth_REQUEST {
 
 impl TPM2_NV_Certify_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.qualifying_Data)?;
-        buffer.write_u32(self.in_Scheme_Scheme as u32)?;
+        buffer.write_u32(self.in_Scheme_Scheme().get_value())?;
         if let Some(union_obj) = &self.in_Scheme {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         buffer.write_u16(self.size)?;
@@ -8169,19 +8375,22 @@ impl TPM2_NV_Certify_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.qualifying_Data = buffer.read_u8()?;
-        self.in_Scheme_Scheme = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.in_Scheme_Scheme();
-        self.in_Scheme = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector as u32)
+        let in_Scheme_Scheme_value = buffer.read_u32()?;
+        selector_values.insert("inSchemeScheme", in_Scheme_Scheme_value);
+        let selector_value = *selector_values.get("inSchemeScheme").unwrap_or(&0);
+        self.in_Scheme = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIG_SCHEME>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         self.size = buffer.read_u16()?;
@@ -8193,30 +8402,36 @@ impl TPM2_NV_Certify_REQUEST {
 
 impl NV_CertifyResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.certify_Info.serialize(buffer)?;
-        buffer.write_u32(self.signature_Sig_Alg as u32)?;
+        buffer.write_u32(self.signature_Sig_Alg().get_value())?;
         if let Some(union_obj) = &self.signature {
-        buffer.write_union(union_obj.as_ref())?;
+            buffer.write_union(union_obj.as_ref())?;
+        } else {
+
+            buffer.write_u32(TPM_ALG_ID::NULL)?;
         }
 
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.certify_Info.deserialize(buffer)?;
-        self.signature_Sig_Alg = TPM_ALG_ID::try_from(buffer.read_u32()?)?;
-        let selector = self.signature_Sig_Alg();
-        self.signature = if selector != 0 {
-        let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector as u32)
+        let signature_Sig_Alg_value = buffer.read_u32()?;
+        selector_values.insert("signatureSigAlg", signature_Sig_Alg_value);
+        let selector_value = *selector_values.get("signatureSigAlg").unwrap_or(&0);
+        self.signature = if selector_value != 0 {
+            let mut obj = UnionFactory::create::<TPMU_SIGNATURE>(selector_value)
             .ok_or(TpmError::InvalidUnion)?;
             buffer.read_union(obj.as_mut())?;
             Some(obj)
         } else {
-
-        None
+            None
         };
 
         Ok(())
@@ -8226,16 +8441,20 @@ impl NV_CertifyResponse {
 
 impl TPM2_AC_GetCapability_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.capability as u32)?;
+        buffer.write_u32(self.capability.get_value())?;
         buffer.write_u32(self.count)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.capability = TPM_AT::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let capability_value = buffer.read_u32()?;
+        self.capability = TPM_AT::try_from(capability_value)?;
         self.count = buffer.read_u32()?;
         Ok(())
     }
@@ -8244,17 +8463,33 @@ impl TPM2_AC_GetCapability_REQUEST {
 
 impl AC_GetCapabilityResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.more_Data)?;
-        buffer.write_sized_array(&self.capabilities_Data)?;
+        // List count
+        buffer.write_u32(self.capabilities_Data.len() as u32)?;
+        for item in &self.capabilities_Data {
+            item.serialize(buffer)?;
+        }
+
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.more_Data = buffer.read_u8()?;
-        self.capabilities_Data = buffer.read_sized_array()?;
+        // List count
+        let capabilities_Data_count = buffer.read_u32()? as usize;
+        self.capabilities_Data.clear();
+        for _ in 0..capabilities_Data_count {
+            let mut item = TPMS_AC_OUTPUT::default();
+            item.deserialize(buffer)?;
+            self.capabilities_Data.push(item);
+        }
+
         Ok(())
     }
 
@@ -8262,14 +8497,17 @@ impl AC_GetCapabilityResponse {
 
 impl TPM2_AC_Send_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.ac_Data_In)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.ac_Data_In = buffer.read_u8()?;
         Ok(())
     }
@@ -8278,14 +8516,17 @@ impl TPM2_AC_Send_REQUEST {
 
 impl AC_SendResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.ac_Data_Out.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.ac_Data_Out.deserialize(buffer)?;
         Ok(())
     }
@@ -8294,7 +8535,7 @@ impl AC_SendResponse {
 
 impl TPM2_Policy_AC_SendSelect_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.object_Name)?;
         buffer.write_u8(self.auth_Handle_Name)?;
@@ -8303,8 +8544,11 @@ impl TPM2_Policy_AC_SendSelect_REQUEST {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.object_Name = buffer.read_u8()?;
         self.auth_Handle_Name = buffer.read_u8()?;
         self.ac_Name = buffer.read_u8()?;
@@ -8316,14 +8560,17 @@ impl TPM2_Policy_AC_SendSelect_REQUEST {
 
 impl TPM2_ACT_SetTimeout_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u32(self.start_Timeout)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.start_Timeout = buffer.read_u32()?;
         Ok(())
     }
@@ -8332,14 +8579,17 @@ impl TPM2_ACT_SetTimeout_REQUEST {
 
 impl TPM2_Vendor_TCG_Test_REQUEST {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.input_Data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.input_Data = buffer.read_u8()?;
         Ok(())
     }
@@ -8348,14 +8598,17 @@ impl TPM2_Vendor_TCG_Test_REQUEST {
 
 impl Vendor_TCG_TestResponse {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.output_Data)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.output_Data = buffer.read_u8()?;
         Ok(())
     }
@@ -8364,7 +8617,7 @@ impl Vendor_TCG_TestResponse {
 
 impl TssObject {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.Public.serialize(buffer)?;
         self.Sensitive.serialize(buffer)?;
@@ -8372,8 +8625,11 @@ impl TssObject {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.Public.deserialize(buffer)?;
         self.Sensitive.deserialize(buffer)?;
         self.Private.deserialize(buffer)?;
@@ -8384,15 +8640,18 @@ impl TssObject {
 
 impl PcrValue {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u32(self.index)?;
         self.value.serialize(buffer)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.index = buffer.read_u32()?;
         self.value.deserialize(buffer)?;
         Ok(())
@@ -8402,20 +8661,24 @@ impl PcrValue {
 
 impl SessionIn {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.handle.serialize(buffer)?;
         buffer.write_u8(self.nonce_Caller)?;
-        buffer.write_u32(self.attributes as u32)?;
+        buffer.write_u32(self.attributes.get_value())?;
         buffer.write_u8(self.auth)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.handle.deserialize(buffer)?;
         self.nonce_Caller = buffer.read_u8()?;
-        self.attributes = TPMA_SESSION::try_from(buffer.read_u32()?)?;
+        let attributes_value = buffer.read_u32()?;
+        self.attributes = TPMA_SESSION::try_from(attributes_value)?;
         self.auth = buffer.read_u8()?;
         Ok(())
     }
@@ -8424,18 +8687,22 @@ impl SessionIn {
 
 impl SessionOut {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buffer.write_u8(self.nonce_Tpm)?;
-        buffer.write_u32(self.attributes as u32)?;
+        buffer.write_u32(self.attributes.get_value())?;
         buffer.write_u8(self.auth)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.nonce_Tpm = buffer.read_u8()?;
-        self.attributes = TPMA_SESSION::try_from(buffer.read_u32()?)?;
+        let attributes_value = buffer.read_u32()?;
+        self.attributes = TPMA_SESSION::try_from(attributes_value)?;
         self.auth = buffer.read_u8()?;
         Ok(())
     }
@@ -8444,19 +8711,24 @@ impl SessionOut {
 
 impl CommandHeader {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
-        buffer.write_u32(self.Tag as u32)?;
+        buffer.write_u32(self.Tag.get_value())?;
         buffer.write_u32(self.Command_Size)?;
-        buffer.write_u32(self.Command_Code as u32)?;
+        buffer.write_u32(self.Command_Code.get_value())?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.Tag = TPM_ST::try_from(buffer.read_u32()?)?;
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
+        let Tag_value = buffer.read_u32()?;
+        self.Tag = TPM_ST::try_from(Tag_value)?;
         self.Command_Size = buffer.read_u32()?;
-        self.Command_Code = TPM_CC::try_from(buffer.read_u32()?)?;
+        let Command_Code_value = buffer.read_u32()?;
+        self.Command_Code = TPM_CC::try_from(Command_Code_value as i32)?;
         Ok(())
     }
 
@@ -8464,15 +8736,18 @@ impl CommandHeader {
 
 impl TSS_KEY {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         self.public_Part.serialize(buffer)?;
         buffer.write_u8(self.private_Part)?;
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+    pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        // Track selector values for unions
+        let mut selector_values = std::collections::HashMap::new();
+
         self.public_Part.deserialize(buffer)?;
         self.private_Part = buffer.read_u8()?;
         Ok(())
@@ -8482,13 +8757,12 @@ impl TSS_KEY {
 
 impl TPM2B_DIGEST_SYMCIPHER {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
@@ -8496,13 +8770,12 @@ impl TPM2B_DIGEST_SYMCIPHER {
 
 impl TPM2B_DIGEST_KEYEDHASH {
     // Implement serialization/deserialization
-    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Serialize fields
+    /// No fields to serialize/deserialize
+    pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 
-    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Deserialize fields
+    pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
         Ok(())
     }
 

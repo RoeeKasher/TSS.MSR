@@ -23,6 +23,7 @@
 use crate::error::TpmError;
 use crate::tpm_buffer::TpmBuffer;
 use crate::tpm_types::*;
+use crate::tpm_types_impl::*;
 
 /// Main TPM2 interface
 #[derive(Debug)]
@@ -655,7 +656,7 @@ impl Tpm2 {
         &mut self,
         key_Handle: TPM_HANDLE,
         message: Vec<u8>,
-        in_Scheme: TPMU_ASYM_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         label: Vec<u8>,
     ) -> Result<Vec<u8>, TpmError> {
         // Create request structure
@@ -690,7 +691,7 @@ impl Tpm2 {
         &mut self,
         key_Handle: TPM_HANDLE,
         cipher_Text: Vec<u8>,
-        in_Scheme: TPMU_ASYM_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         label: Vec<u8>,
     ) -> Result<Vec<u8>, TpmError> {
         // Create request structure
@@ -824,7 +825,7 @@ impl Tpm2 {
         &mut self,
         key_Handle: TPM_HANDLE,
         plain_Text: Vec<u8>,
-        in_Scheme: TPMU_KDF_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<ECC_EncryptResponse, TpmError> {
         // Create request structure
         let req = TPM2_ECC_Encrypt_REQUEST {
@@ -856,7 +857,7 @@ impl Tpm2 {
         C1: TPMS_ECC_POINT,
         C2: Vec<u8>,
         C3: Vec<u8>,
-        in_Scheme: TPMU_KDF_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<Vec<u8>, TpmError> {
         // Create request structure
         let req = TPM2_ECC_Decrypt_REQUEST {
@@ -1246,7 +1247,7 @@ impl Tpm2 {
         object_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<CertifyResponse, TpmError> {
         // Create request structure
         let req = TPM2_Certify_REQUEST {
@@ -1286,7 +1287,7 @@ impl Tpm2 {
         object_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
         creation_Hash: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         creation_Ticket: TPMT_TK_CREATION,
     ) -> Result<CertifyCreationResponse, TpmError> {
         // Create request structure
@@ -1321,7 +1322,7 @@ impl Tpm2 {
         &mut self,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         PCRselect: Vec<TPMS_PCR_SELECTION>,
     ) -> Result<QuoteResponse, TpmError> {
         // Create request structure
@@ -1360,7 +1361,7 @@ impl Tpm2 {
         sign_Handle: TPM_HANDLE,
         session_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<GetSessionAuditDigestResponse, TpmError> {
         // Create request structure
         let req = TPM2_GetSessionAuditDigest_REQUEST {
@@ -1398,7 +1399,7 @@ impl Tpm2 {
         privacy_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<GetCommandAuditDigestResponse, TpmError> {
         // Create request structure
         let req = TPM2_GetCommandAuditDigest_REQUEST {
@@ -1433,7 +1434,7 @@ impl Tpm2 {
         privacy_Admin_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<GetTimeResponse, TpmError> {
         // Create request structure
         let req = TPM2_GetTime_REQUEST {
@@ -1476,7 +1477,7 @@ impl Tpm2 {
         object_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         reserved: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         partial_Certificate: Vec<u8>,
     ) -> Result<CertifyX509Response, TpmError> {
         // Create request structure
@@ -1565,7 +1566,7 @@ impl Tpm2 {
         &mut self,
         key_Handle: TPM_HANDLE,
         digest: Vec<u8>,
-        signature: TPMU_SIGNATURE,
+        signature: Option<Box<dyn TpmUnion>>,
     ) -> Result<TPMT_TK_VERIFIED, TpmError> {
         // Create request structure
         let req = TPM2_VerifySignature_REQUEST {
@@ -1598,9 +1599,9 @@ impl Tpm2 {
         &mut self,
         key_Handle: TPM_HANDLE,
         digest: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         validation: TPMT_TK_HASHCHECK,
-    ) -> Result<TPMU_SIGNATURE, TpmError> {
+    ) -> Result<Option<Box<dyn TpmUnion>>, TpmError> {
         // Create request structure
         let req = TPM2_Sign_REQUEST {
             key_Handle,
@@ -1850,7 +1851,7 @@ impl Tpm2 {
         cp_Hash_A: Vec<u8>,
         policy_Ref: Vec<u8>,
         expiration: i32,
-        auth: TPMU_SIGNATURE,
+        auth: Option<Box<dyn TpmUnion>>,
     ) -> Result<PolicySignedResponse, TpmError> {
         // Create request structure
         let req = TPM2_PolicySigned_REQUEST {
@@ -2698,7 +2699,7 @@ impl Tpm2 {
         authorization: TPM_HANDLE,
         key_Handle: TPM_HANDLE,
         fu_Digest: Vec<u8>,
-        manifest_Signature: TPMU_SIGNATURE,
+        manifest_Signature: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure
         let req = TPM2_FieldUpgradeStart_REQUEST {
@@ -2941,7 +2942,7 @@ impl Tpm2 {
     ///        TPMS_ASYM_PARMS.
     pub fn Test_Parms(
         &mut self,
-        parameters: TPMU_PUBLIC_PARMS,
+        parameters: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure
         let req = TPM2_TestParms_REQUEST {
@@ -3304,7 +3305,7 @@ impl Tpm2 {
         auth_Handle: TPM_HANDLE,
         nv_Index: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         size: u16,
         offset: u16,
     ) -> Result<NV_CertifyResponse, TpmError> {
@@ -3987,7 +3988,7 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         key_Handle: TPM_HANDLE,
         message: Vec<u8>,
-        in_Scheme: TPMU_ASYM_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         label: Vec<u8>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
@@ -4019,7 +4020,7 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         key_Handle: TPM_HANDLE,
         cipher_Text: Vec<u8>,
-        in_Scheme: TPMU_ASYM_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         label: Vec<u8>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
@@ -4138,7 +4139,7 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         key_Handle: TPM_HANDLE,
         plain_Text: Vec<u8>,
-        in_Scheme: TPMU_KDF_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_ECC_Encrypt_REQUEST {
@@ -4167,7 +4168,7 @@ impl<'a> AsyncMethods<'a> {
         C1: TPMS_ECC_POINT,
         C2: Vec<u8>,
         C3: Vec<u8>,
-        in_Scheme: TPMU_KDF_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_ECC_Decrypt_REQUEST {
@@ -4515,7 +4516,7 @@ impl<'a> AsyncMethods<'a> {
         object_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_Certify_REQUEST {
@@ -4552,7 +4553,7 @@ impl<'a> AsyncMethods<'a> {
         object_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
         creation_Hash: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         creation_Ticket: TPMT_TK_CREATION,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
@@ -4584,7 +4585,7 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         PCRselect: Vec<TPMS_PCR_SELECTION>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
@@ -4620,7 +4621,7 @@ impl<'a> AsyncMethods<'a> {
         sign_Handle: TPM_HANDLE,
         session_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_GetSessionAuditDigest_REQUEST {
@@ -4655,7 +4656,7 @@ impl<'a> AsyncMethods<'a> {
         privacy_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_GetCommandAuditDigest_REQUEST {
@@ -4687,7 +4688,7 @@ impl<'a> AsyncMethods<'a> {
         privacy_Admin_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_GetTime_REQUEST {
@@ -4727,7 +4728,7 @@ impl<'a> AsyncMethods<'a> {
         object_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         reserved: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         partial_Certificate: Vec<u8>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
@@ -4807,7 +4808,7 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         key_Handle: TPM_HANDLE,
         digest: Vec<u8>,
-        signature: TPMU_SIGNATURE,
+        signature: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_VerifySignature_REQUEST {
@@ -4837,7 +4838,7 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         key_Handle: TPM_HANDLE,
         digest: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         validation: TPMT_TK_HASHCHECK,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
@@ -5062,7 +5063,7 @@ impl<'a> AsyncMethods<'a> {
         cp_Hash_A: Vec<u8>,
         policy_Ref: Vec<u8>,
         expiration: i32,
-        auth: TPMU_SIGNATURE,
+        auth: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_PolicySigned_REQUEST {
@@ -5814,7 +5815,7 @@ impl<'a> AsyncMethods<'a> {
         authorization: TPM_HANDLE,
         key_Handle: TPM_HANDLE,
         fu_Digest: Vec<u8>,
-        manifest_Signature: TPMU_SIGNATURE,
+        manifest_Signature: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_FieldUpgradeStart_REQUEST {
@@ -6023,7 +6024,7 @@ impl<'a> AsyncMethods<'a> {
     ///        TPMS_ASYM_PARMS.
     pub fn Test_Parms_async(
         &mut self,
-        parameters: TPMU_PUBLIC_PARMS,
+        parameters: Option<Box<dyn TpmUnion>>,
     ) -> Result<(), TpmError> {
         // Create request structure and dispatch async command
         let req = TPM2_TestParms_REQUEST {
@@ -6344,7 +6345,7 @@ impl<'a> AsyncMethods<'a> {
         auth_Handle: TPM_HANDLE,
         nv_Index: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         size: u16,
         offset: u16,
     ) -> Result<(), TpmError> {
@@ -7165,7 +7166,7 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The signature
     pub fn Sign_complete(
         &mut self,
-    ) -> Result<TPMU_SIGNATURE, TpmError> {
+    ) -> Result<Option<Box<dyn TpmUnion>>, TpmError> {
         // Complete async command by receiving and processing response
         let mut resp = SignResponse::default();
         self.tpm.dispatch_async_response(&mut resp)?;

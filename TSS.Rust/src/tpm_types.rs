@@ -25,207 +25,284 @@ use crate::tpm_buffer::TpmBuffer;
 use std::fmt;
 use num_enum::TryFromPrimitive;
 
+/// Common trait for all TPM enumeration types
+pub trait TpmEnum {
+/// Get the numeric value of the enum
+    fn get_value(&self) -> u32;
+}
+
 /// Table 2 is the list of algorithms to which the TCG has assigned an algorithm
 /// identifier along with its numeric identifier.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i16)]
-pub enum TPM_ALG_ID {
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPM_ALG_ID(pub i16);
+
+impl TPM_ALG_ID {
     /// Should not occur
-    ERROR = 0x0, // Original value: 0x0000
+    pub const ERROR: Self = Self(0x0); // Original value: 0x0000
 
     /// An object type that contains an RSA key
-    FIRST = 0x1, // Original value: 0x0001
+    pub const FIRST: Self = Self(0x1); // Original value: 0x0001
 
     /// An object type that contains an RSA key
-    // WARNING: RSA has duplicate value 0x1 - using name + value pattern
-    RSAValue = 0x1, // Original value: 0x0001
+    pub const RSA: Self = Self(0x1); // Original value: 0x0001
 
     /// Block cipher with various key sizes (Triple Data Encryption Algorithm, commonly called
     /// Triple Data Encryption Standard)
-    TDES = 0x3, // Original value: 0x0003
+    pub const TDES: Self = Self(0x3); // Original value: 0x0003
 
     /// Hash algorithm producing a 160-bit digest
-    SHA = 0x4, // Original value: 0x0004
+    pub const SHA: Self = Self(0x4); // Original value: 0x0004
 
     /// Redefinition for documentation consistency
-    // WARNING: SHA1 has duplicate value 0x4 - using name + value pattern
-    SHA1Value = 0x4, // Original value: 0x0004
+    pub const SHA1: Self = Self(0x4); // Original value: 0x0004
 
     /// Hash Message Authentication Code (HMAC) algorithm
-    HMAC = 0x5, // Original value: 0x0005
+    pub const HMAC: Self = Self(0x5); // Original value: 0x0005
 
     /// Block cipher with various key sizes
-    AES = 0x6, // Original value: 0x0006
+    pub const AES: Self = Self(0x6); // Original value: 0x0006
 
     /// Hash-based mask-generation function
-    MGF1 = 0x7, // Original value: 0x0007
+    pub const MGF1: Self = Self(0x7); // Original value: 0x0007
 
     /// An object type that may use XOR for encryption or an HMAC for signing and may also
     /// refer to a data object that is neither signing nor encrypting
-    KEYEDHASH = 0x8, // Original value: 0x0008
+    pub const KEYEDHASH: Self = Self(0x8); // Original value: 0x0008
 
     /// Hash-based stream cipher
-    XOR = 0xA, // Original value: 0x000A
+    pub const XOR: Self = Self(0xA); // Original value: 0x000A
 
     /// Hash algorithm producing a 256-bit digest
-    SHA256 = 0xB, // Original value: 0x000B
+    pub const SHA256: Self = Self(0xB); // Original value: 0x000B
 
     /// Hash algorithm producing a 384-bit digest
-    SHA384 = 0xC, // Original value: 0x000C
+    pub const SHA384: Self = Self(0xC); // Original value: 0x000C
 
     /// Hash algorithm producing a 512-bit digest
-    SHA512 = 0xD, // Original value: 0x000D
+    pub const SHA512: Self = Self(0xD); // Original value: 0x000D
 
     /// Indication that no algorithm is selected
-    NULL = 0x10, // Original value: 0x0010
+    pub const NULL: Self = Self(0x10); // Original value: 0x0010
 
     /// Hash algorithm producing a 256-bit digest
-    SM3_256 = 0x12, // Original value: 0x0012
+    pub const SM3_256: Self = Self(0x12); // Original value: 0x0012
 
     /// Symmetric block cipher with 128 bit key
-    SM4 = 0x13, // Original value: 0x0013
+    pub const SM4: Self = Self(0x13); // Original value: 0x0013
 
     /// A signature algorithm defined in section 8.2 (RSASSA-PKCS1-v1_5)
-    RSASSA = 0x14, // Original value: 0x0014
+    pub const RSASSA: Self = Self(0x14); // Original value: 0x0014
 
     /// A padding algorithm defined in section 7.2 (RSAES-PKCS1-v1_5)
-    RSAES = 0x15, // Original value: 0x0015
+    pub const RSAES: Self = Self(0x15); // Original value: 0x0015
 
     /// A signature algorithm defined in section 8.1 (RSASSA-PSS)
-    RSAPSS = 0x16, // Original value: 0x0016
+    pub const RSAPSS: Self = Self(0x16); // Original value: 0x0016
 
     /// A padding algorithm defined in Section 7.1 (RSAES_OAEP)
-    OAEP = 0x17, // Original value: 0x0017
+    pub const OAEP: Self = Self(0x17); // Original value: 0x0017
 
     /// Signature algorithm using elliptic curve cryptography (ECC)
-    ECDSA = 0x18, // Original value: 0x0018
+    pub const ECDSA: Self = Self(0x18); // Original value: 0x0018
 
     /// Secret sharing using ECC Based on context, this can be either One-Pass Diffie-Hellman,
     /// C(1, 1, ECC CDH) defined in 6.2.2.2 or Full Unified Model C(2, 2, ECC CDH) defined in 6.1.1.2
-    ECDH = 0x19, // Original value: 0x0019
+    pub const ECDH: Self = Self(0x19); // Original value: 0x0019
 
     /// Elliptic-curve based, anonymous signing scheme
-    ECDAA = 0x1A, // Original value: 0x001A
+    pub const ECDAA: Self = Self(0x1A); // Original value: 0x001A
 
     /// Depending on context, either an elliptic-curve-based signature algorithm, encryption
     /// algorithm, or key exchange protocol
-    SM2 = 0x1B, // Original value: 0x001B
+    pub const SM2: Self = Self(0x1B); // Original value: 0x001B
 
     /// Elliptic-curve based Schnorr signature
-    ECSCHNORR = 0x1C, // Original value: 0x001C
+    pub const ECSCHNORR: Self = Self(0x1C); // Original value: 0x001C
 
     /// Two-phase elliptic-curve key exchange C(2, 2, ECC MQV) Section 6.1.1.4
-    ECMQV = 0x1D, // Original value: 0x001D
+    pub const ECMQV: Self = Self(0x1D); // Original value: 0x001D
 
     /// Concatenation key derivation function (approved alternative 1) Section 5.8.1
-    KDF1_SP800_56A = 0x20, // Original value: 0x0020
+    pub const KDF1_SP800_56A: Self = Self(0x20); // Original value: 0x0020
 
     /// Key derivation function KDF2 Section 13.2
-    KDF2 = 0x21, // Original value: 0x0021
+    pub const KDF2: Self = Self(0x21); // Original value: 0x0021
 
     /// A key derivation method SP800-108, Section 5.1 KDF in Counter Mode
-    KDF1_SP800_108 = 0x22, // Original value: 0x0022
+    pub const KDF1_SP800_108: Self = Self(0x22); // Original value: 0x0022
 
     /// Prime field ECC
-    ECC = 0x23, // Original value: 0x0023
+    pub const ECC: Self = Self(0x23); // Original value: 0x0023
 
     /// The object type for a symmetric block cipher key
-    SYMCIPHER = 0x25, // Original value: 0x0025
+    pub const SYMCIPHER: Self = Self(0x25); // Original value: 0x0025
 
     /// Symmetric block cipher with various key sizes
-    CAMELLIA = 0x26, // Original value: 0x0026
+    pub const CAMELLIA: Self = Self(0x26); // Original value: 0x0026
 
     /// Hash algorithm producing a 256-bit digest
-    SHA3_256 = 0x27, // Original value: 0x0027
+    pub const SHA3_256: Self = Self(0x27); // Original value: 0x0027
 
     /// Hash algorithm producing a 384-bit digest
-    SHA3_384 = 0x28, // Original value: 0x0028
+    pub const SHA3_384: Self = Self(0x28); // Original value: 0x0028
 
     /// Hash algorithm producing a 512-bit digest
-    SHA3_512 = 0x29, // Original value: 0x0029
-    CMAC = 0x3F, // Original value: 0x003F
+    pub const SHA3_512: Self = Self(0x29); // Original value: 0x0029
+    pub const CMAC: Self = Self(0x3F); // Original value: 0x003F
 
     /// Counter mode if implemented, all symmetric block ciphers (S type) implemented shall be
     /// capable of using this mode.
-    CTR = 0x40, // Original value: 0x0040
+    pub const CTR: Self = Self(0x40); // Original value: 0x0040
 
     /// Output Feedback mode if implemented, all symmetric block ciphers (S type) implemented
     /// shall be capable of using this mode.
-    OFB = 0x41, // Original value: 0x0041
+    pub const OFB: Self = Self(0x41); // Original value: 0x0041
 
     /// Cipher Block Chaining mode if implemented, all symmetric block ciphers (S type)
     /// implemented shall be capable of using this mode.
-    CBC = 0x42, // Original value: 0x0042
+    pub const CBC: Self = Self(0x42); // Original value: 0x0042
 
     /// Cipher Feedback mode if implemented, all symmetric block ciphers (S type) implemented
     /// shall be capable of using this mode.
-    CFB = 0x43, // Original value: 0x0043
+    pub const CFB: Self = Self(0x43); // Original value: 0x0043
 
     /// Electronic Codebook mode if implemented, all implemented symmetric block ciphers (S
     /// type) shall be capable of using this mode.
     /// NOTE This mode is not recommended for uses unless the key is frequently rotated such
     /// as in video codecs
-    ECB = 0x44, // Original value: 0x0044
-    // WARNING: LAST has duplicate value 0x44 - using name + value pattern
-    LASTValue = 0x44, // Original value: 0x0044
+    pub const ECB: Self = Self(0x44); // Original value: 0x0044
+    pub const LAST: Self = Self(0x44); // Original value: 0x0044
 
     /// Phony alg ID to be used for the first union member with no selector
-    ANY = 0x7FFF,
+    pub const ANY: Self = Self(0x7FFF);
 
     /// Phony alg ID to be used for the second union member with no selector
-    ANY2 = 0x7FFE
+    pub const ANY2: Self = Self(0x7FFE);
+
+    pub fn try_from(value: i16) -> Result<Self, TpmError> {
+        match value {
+            0x0000 => Ok(Self::ERROR),
+            0x0001 => Ok(Self::FIRST),
+            0x0003 => Ok(Self::TDES),
+            0x0004 => Ok(Self::SHA),
+            0x0005 => Ok(Self::HMAC),
+            0x0006 => Ok(Self::AES),
+            0x0007 => Ok(Self::MGF1),
+            0x0008 => Ok(Self::KEYEDHASH),
+            0x000A => Ok(Self::XOR),
+            0x000B => Ok(Self::SHA256),
+            0x000C => Ok(Self::SHA384),
+            0x000D => Ok(Self::SHA512),
+            0x0010 => Ok(Self::NULL),
+            0x0012 => Ok(Self::SM3_256),
+            0x0013 => Ok(Self::SM4),
+            0x0014 => Ok(Self::RSASSA),
+            0x0015 => Ok(Self::RSAES),
+            0x0016 => Ok(Self::RSAPSS),
+            0x0017 => Ok(Self::OAEP),
+            0x0018 => Ok(Self::ECDSA),
+            0x0019 => Ok(Self::ECDH),
+            0x001A => Ok(Self::ECDAA),
+            0x001B => Ok(Self::SM2),
+            0x001C => Ok(Self::ECSCHNORR),
+            0x001D => Ok(Self::ECMQV),
+            0x0020 => Ok(Self::KDF1_SP800_56A),
+            0x0021 => Ok(Self::KDF2),
+            0x0022 => Ok(Self::KDF1_SP800_108),
+            0x0023 => Ok(Self::ECC),
+            0x0025 => Ok(Self::SYMCIPHER),
+            0x0026 => Ok(Self::CAMELLIA),
+            0x0027 => Ok(Self::SHA3_256),
+            0x0028 => Ok(Self::SHA3_384),
+            0x0029 => Ok(Self::SHA3_512),
+            0x003F => Ok(Self::CMAC),
+            0x0040 => Ok(Self::CTR),
+            0x0041 => Ok(Self::OFB),
+            0x0042 => Ok(Self::CBC),
+            0x0043 => Ok(Self::CFB),
+            0x0044 => Ok(Self::ECB),
+            0x7FFF => Ok(Self::ANY),
+            0x7FFE => Ok(Self::ANY2),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPM_ALG_ID {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPM_ALG_ID> for u32 {
+    fn from(value: TPM_ALG_ID) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPM_ALG_ID> for i32 {
+    fn from(value: TPM_ALG_ID) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPM_ALG_ID {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::ERROR => write!(f, "ERROR"),
-            Self::FIRST => write!(f, "FIRST"),
-            Self::RSA => write!(f, "RSA"),
-            Self::TDES => write!(f, "TDES"),
-            Self::SHA => write!(f, "SHA"),
-            Self::SHA1 => write!(f, "SHA1"),
-            Self::HMAC => write!(f, "HMAC"),
-            Self::AES => write!(f, "AES"),
-            Self::MGF1 => write!(f, "MGF1"),
-            Self::KEYEDHASH => write!(f, "KEYEDHASH"),
-            Self::XOR => write!(f, "XOR"),
-            Self::SHA256 => write!(f, "SHA256"),
-            Self::SHA384 => write!(f, "SHA384"),
-            Self::SHA512 => write!(f, "SHA512"),
-            Self::NULL => write!(f, "NULL"),
-            Self::SM3_256 => write!(f, "SM3_256"),
-            Self::SM4 => write!(f, "SM4"),
-            Self::RSASSA => write!(f, "RSASSA"),
-            Self::RSAES => write!(f, "RSAES"),
-            Self::RSAPSS => write!(f, "RSAPSS"),
-            Self::OAEP => write!(f, "OAEP"),
-            Self::ECDSA => write!(f, "ECDSA"),
-            Self::ECDH => write!(f, "ECDH"),
-            Self::ECDAA => write!(f, "ECDAA"),
-            Self::SM2 => write!(f, "SM2"),
-            Self::ECSCHNORR => write!(f, "ECSCHNORR"),
-            Self::ECMQV => write!(f, "ECMQV"),
-            Self::KDF1_SP800_56A => write!(f, "KDF1_SP800_56A"),
-            Self::KDF2 => write!(f, "KDF2"),
-            Self::KDF1_SP800_108 => write!(f, "KDF1_SP800_108"),
-            Self::ECC => write!(f, "ECC"),
-            Self::SYMCIPHER => write!(f, "SYMCIPHER"),
-            Self::CAMELLIA => write!(f, "CAMELLIA"),
-            Self::SHA3_256 => write!(f, "SHA3_256"),
-            Self::SHA3_384 => write!(f, "SHA3_384"),
-            Self::SHA3_512 => write!(f, "SHA3_512"),
-            Self::CMAC => write!(f, "CMAC"),
-            Self::CTR => write!(f, "CTR"),
-            Self::OFB => write!(f, "OFB"),
-            Self::CBC => write!(f, "CBC"),
-            Self::CFB => write!(f, "CFB"),
-            Self::ECB => write!(f, "ECB"),
-            Self::LAST => write!(f, "LAST"),
-            Self::ANY => write!(f, "ANY"),
-            Self::ANY2 => write!(f, "ANY2"),
+        match self.0 {
+            0x0000 => write!(f, "ERROR"),
+            0x0001 => write!(f, "FIRST"),
+            0x0003 => write!(f, "TDES"),
+            0x0004 => write!(f, "SHA"),
+            0x0005 => write!(f, "HMAC"),
+            0x0006 => write!(f, "AES"),
+            0x0007 => write!(f, "MGF1"),
+            0x0008 => write!(f, "KEYEDHASH"),
+            0x000A => write!(f, "XOR"),
+            0x000B => write!(f, "SHA256"),
+            0x000C => write!(f, "SHA384"),
+            0x000D => write!(f, "SHA512"),
+            0x0010 => write!(f, "NULL"),
+            0x0012 => write!(f, "SM3_256"),
+            0x0013 => write!(f, "SM4"),
+            0x0014 => write!(f, "RSASSA"),
+            0x0015 => write!(f, "RSAES"),
+            0x0016 => write!(f, "RSAPSS"),
+            0x0017 => write!(f, "OAEP"),
+            0x0018 => write!(f, "ECDSA"),
+            0x0019 => write!(f, "ECDH"),
+            0x001A => write!(f, "ECDAA"),
+            0x001B => write!(f, "SM2"),
+            0x001C => write!(f, "ECSCHNORR"),
+            0x001D => write!(f, "ECMQV"),
+            0x0020 => write!(f, "KDF1_SP800_56A"),
+            0x0021 => write!(f, "KDF2"),
+            0x0022 => write!(f, "KDF1_SP800_108"),
+            0x0023 => write!(f, "ECC"),
+            0x0025 => write!(f, "SYMCIPHER"),
+            0x0026 => write!(f, "CAMELLIA"),
+            0x0027 => write!(f, "SHA3_256"),
+            0x0028 => write!(f, "SHA3_384"),
+            0x0029 => write!(f, "SHA3_512"),
+            0x003F => write!(f, "CMAC"),
+            0x0040 => write!(f, "CTR"),
+            0x0041 => write!(f, "OFB"),
+            0x0042 => write!(f, "CBC"),
+            0x0043 => write!(f, "CFB"),
+            0x0044 => write!(f, "ECB"),
+            0x7FFF => write!(f, "ANY"),
+            0x7FFE => write!(f, "ANY2"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// Table 4 is the list of identifiers for TCG-registered curve ID values for elliptic
@@ -247,6 +324,27 @@ pub enum TPM_ECC_CURVE {
     BN_P638 = 0x11, // Original value: 0x0011
     SM2_P256 = 0x20, // Original value: 0x0020
     TEST_P192 = 0x21 // Original value: 0x0021
+}
+
+impl TpmEnum for TPM_ECC_CURVE {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_ECC_CURVE> for u32 {
+    fn from(value: TPM_ECC_CURVE) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_ECC_CURVE> for i32 {
+    fn from(value: TPM_ECC_CURVE) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPM_ECC_CURVE {
@@ -277,6 +375,27 @@ pub enum SHA1 {
     BLOCK_SIZE = 0x40 // Original value: 64
 }
 
+impl TpmEnum for SHA1 {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<SHA1> for u32 {
+    fn from(value: SHA1) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<SHA1> for i32 {
+    fn from(value: SHA1) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for SHA1 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -295,6 +414,27 @@ pub enum SHA256 {
 
     /// Size of hash block
     BLOCK_SIZE = 0x40 // Original value: 64
+}
+
+impl TpmEnum for SHA256 {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<SHA256> for u32 {
+    fn from(value: SHA256) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<SHA256> for i32 {
+    fn from(value: SHA256) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for SHA256 {
@@ -317,6 +457,27 @@ pub enum SHA384 {
     BLOCK_SIZE = 0x80 // Original value: 128
 }
 
+impl TpmEnum for SHA384 {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<SHA384> for u32 {
+    fn from(value: SHA384) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<SHA384> for i32 {
+    fn from(value: SHA384) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for SHA384 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -335,6 +496,27 @@ pub enum SHA512 {
 
     /// Size of hash block in octets
     BLOCK_SIZE = 0x80 // Original value: 128
+}
+
+impl TpmEnum for SHA512 {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<SHA512> for u32 {
+    fn from(value: SHA512) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<SHA512> for i32 {
+    fn from(value: SHA512) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for SHA512 {
@@ -357,6 +539,27 @@ pub enum SM3_256 {
     BLOCK_SIZE = 0x40 // Original value: 64
 }
 
+impl TpmEnum for SM3_256 {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<SM3_256> for u32 {
+    fn from(value: SM3_256) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<SM3_256> for i32 {
+    fn from(value: SM3_256) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for SM3_256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -375,6 +578,27 @@ pub enum SHA3_256 {
 
     /// Size of hash block in octets
     BLOCK_SIZE = 0x88 // Original value: 136
+}
+
+impl TpmEnum for SHA3_256 {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<SHA3_256> for u32 {
+    fn from(value: SHA3_256) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<SHA3_256> for i32 {
+    fn from(value: SHA3_256) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for SHA3_256 {
@@ -397,6 +621,27 @@ pub enum SHA3_384 {
     BLOCK_SIZE = 0x68 // Original value: 104
 }
 
+impl TpmEnum for SHA3_384 {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<SHA3_384> for u32 {
+    fn from(value: SHA3_384) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<SHA3_384> for i32 {
+    fn from(value: SHA3_384) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for SHA3_384 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -417,6 +662,27 @@ pub enum SHA3_512 {
     BLOCK_SIZE = 0x48 // Original value: 72
 }
 
+impl TpmEnum for SHA3_512 {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<SHA3_512> for u32 {
+    fn from(value: SHA3_512) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<SHA3_512> for i32 {
+    fn from(value: SHA3_512) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for SHA3_512 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -427,32 +693,61 @@ impl fmt::Display for SHA3_512 {
 }
 
 /// Table 4 Defines for Logic Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i8)]
-pub enum Logic {
-    TRUE = 0x1, // Original value: 1
-    FALSE = 0x0, // Original value: 0
-    // WARNING: YES has duplicate value 0x1 - using name + value pattern
-    YESValue = 0x1, // Original value: 1
-    // WARNING: NO has duplicate value 0x0 - using name + value pattern
-    NOValue = 0x0, // Original value: 0
-    // WARNING: SET has duplicate value 0x1 - using name + value pattern
-    SETValue = 0x1, // Original value: 1
-    // WARNING: CLEAR has duplicate value 0x0 - using name + value pattern
-    CLEARValue = 0x0 // Original value: 0
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Logic(pub i8);
+
+impl Logic {
+    pub const TRUE: Self = Self(0x1); // Original value: 1
+    pub const FALSE: Self = Self(0x0); // Original value: 0
+    pub const YES: Self = Self(0x1); // Original value: 1
+    pub const NO: Self = Self(0x0); // Original value: 0
+    pub const SET: Self = Self(0x1); // Original value: 1
+    pub const CLEAR: Self = Self(0x0); // Original value: 0
+
+    pub fn try_from(value: i8) -> Result<Self, TpmError> {
+        match value {
+            1 => Ok(Self::TRUE),
+            0 => Ok(Self::FALSE),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for Logic {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<Logic> for u32 {
+    fn from(value: Logic) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<Logic> for i32 {
+    fn from(value: Logic) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for Logic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::TRUE => write!(f, "TRUE"),
-            Self::FALSE => write!(f, "FALSE"),
-            Self::YES => write!(f, "YES"),
-            Self::NO => write!(f, "NO"),
-            Self::SET => write!(f, "SET"),
-            Self::CLEAR => write!(f, "CLEAR"),
+        match self.0 {
+            1 => write!(f, "TRUE"),
+            0 => write!(f, "FALSE"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// These values are readable with TPM2_GetCapability() (see 6.13 for the format).
@@ -475,6 +770,27 @@ pub enum TPM_SPEC {
     DAY_OF_YEAR = 0x168 // Original value: 360
 }
 
+impl TpmEnum for TPM_SPEC {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_SPEC> for u32 {
+    fn from(value: TPM_SPEC) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_SPEC> for i32 {
+    fn from(value: TPM_SPEC) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPM_SPEC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -495,6 +811,27 @@ pub enum TPM_GENERATED {
     VALUE = 0xFF544347 // Original value: 0xff544347
 }
 
+impl TpmEnum for TPM_GENERATED {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_GENERATED> for u32 {
+    fn from(value: TPM_GENERATED) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_GENERATED> for i32 {
+    fn from(value: TPM_GENERATED) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPM_GENERATED {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -503,1088 +840,1457 @@ impl fmt::Display for TPM_GENERATED {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum TPM_CC {
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPM_CC(pub i32);
+
+impl TPM_CC {
     /// Compile variable. May decrease based on implementation.
-    FIRST = 0x11F, // Original value: 0x0000011F
-    // WARNING: NV_UndefineSpaceSpecial has duplicate value 0x11F - using name + value pattern
-    NV_UndefineSpaceSpecialValue = 0x11F, // Original value: 0x0000011F
-    EvictControl = 0x120, // Original value: 0x00000120
-    HierarchyControl = 0x121, // Original value: 0x00000121
-    NV_UndefineSpace = 0x122, // Original value: 0x00000122
-    ChangeEPS = 0x124, // Original value: 0x00000124
-    ChangePPS = 0x125, // Original value: 0x00000125
-    Clear = 0x126, // Original value: 0x00000126
-    ClearControl = 0x127, // Original value: 0x00000127
-    ClockSet = 0x128, // Original value: 0x00000128
-    HierarchyChangeAuth = 0x129, // Original value: 0x00000129
-    NV_DefineSpace = 0x12A, // Original value: 0x0000012A
-    PCR_Allocate = 0x12B, // Original value: 0x0000012B
-    PCR_SetAuthPolicy = 0x12C, // Original value: 0x0000012C
-    PP_Commands = 0x12D, // Original value: 0x0000012D
-    SetPrimaryPolicy = 0x12E, // Original value: 0x0000012E
-    FieldUpgradeStart = 0x12F, // Original value: 0x0000012F
-    ClockRateAdjust = 0x130, // Original value: 0x00000130
-    CreatePrimary = 0x131, // Original value: 0x00000131
-    NV_GlobalWriteLock = 0x132, // Original value: 0x00000132
-    GetCommandAuditDigest = 0x133, // Original value: 0x00000133
-    NV_Increment = 0x134, // Original value: 0x00000134
-    NV_SetBits = 0x135, // Original value: 0x00000135
-    NV_Extend = 0x136, // Original value: 0x00000136
-    NV_Write = 0x137, // Original value: 0x00000137
-    NV_WriteLock = 0x138, // Original value: 0x00000138
-    DictionaryAttackLockReset = 0x139, // Original value: 0x00000139
-    DictionaryAttackParameters = 0x13A, // Original value: 0x0000013A
-    NV_ChangeAuth = 0x13B, // Original value: 0x0000013B
+    pub const FIRST: Self = Self(0x11F); // Original value: 0x0000011F
+    pub const NV_UndefineSpaceSpecial: Self = Self(0x11F); // Original value: 0x0000011F
+    pub const EvictControl: Self = Self(0x120); // Original value: 0x00000120
+    pub const HierarchyControl: Self = Self(0x121); // Original value: 0x00000121
+    pub const NV_UndefineSpace: Self = Self(0x122); // Original value: 0x00000122
+    pub const ChangeEPS: Self = Self(0x124); // Original value: 0x00000124
+    pub const ChangePPS: Self = Self(0x125); // Original value: 0x00000125
+    pub const Clear: Self = Self(0x126); // Original value: 0x00000126
+    pub const ClearControl: Self = Self(0x127); // Original value: 0x00000127
+    pub const ClockSet: Self = Self(0x128); // Original value: 0x00000128
+    pub const HierarchyChangeAuth: Self = Self(0x129); // Original value: 0x00000129
+    pub const NV_DefineSpace: Self = Self(0x12A); // Original value: 0x0000012A
+    pub const PCR_Allocate: Self = Self(0x12B); // Original value: 0x0000012B
+    pub const PCR_SetAuthPolicy: Self = Self(0x12C); // Original value: 0x0000012C
+    pub const PP_Commands: Self = Self(0x12D); // Original value: 0x0000012D
+    pub const SetPrimaryPolicy: Self = Self(0x12E); // Original value: 0x0000012E
+    pub const FieldUpgradeStart: Self = Self(0x12F); // Original value: 0x0000012F
+    pub const ClockRateAdjust: Self = Self(0x130); // Original value: 0x00000130
+    pub const CreatePrimary: Self = Self(0x131); // Original value: 0x00000131
+    pub const NV_GlobalWriteLock: Self = Self(0x132); // Original value: 0x00000132
+    pub const GetCommandAuditDigest: Self = Self(0x133); // Original value: 0x00000133
+    pub const NV_Increment: Self = Self(0x134); // Original value: 0x00000134
+    pub const NV_SetBits: Self = Self(0x135); // Original value: 0x00000135
+    pub const NV_Extend: Self = Self(0x136); // Original value: 0x00000136
+    pub const NV_Write: Self = Self(0x137); // Original value: 0x00000137
+    pub const NV_WriteLock: Self = Self(0x138); // Original value: 0x00000138
+    pub const DictionaryAttackLockReset: Self = Self(0x139); // Original value: 0x00000139
+    pub const DictionaryAttackParameters: Self = Self(0x13A); // Original value: 0x0000013A
+    pub const NV_ChangeAuth: Self = Self(0x13B); // Original value: 0x0000013B
 
     /// PCR
-    PCR_Event = 0x13C, // Original value: 0x0000013C
+    pub const PCR_Event: Self = Self(0x13C); // Original value: 0x0000013C
 
     /// PCR
-    PCR_Reset = 0x13D, // Original value: 0x0000013D
-    SequenceComplete = 0x13E, // Original value: 0x0000013E
-    SetAlgorithmSet = 0x13F, // Original value: 0x0000013F
-    SetCommandCodeAuditStatus = 0x140, // Original value: 0x00000140
-    FieldUpgradeData = 0x141, // Original value: 0x00000141
-    IncrementalSelfTest = 0x142, // Original value: 0x00000142
-    SelfTest = 0x143, // Original value: 0x00000143
-    Startup = 0x144, // Original value: 0x00000144
-    Shutdown = 0x145, // Original value: 0x00000145
-    StirRandom = 0x146, // Original value: 0x00000146
-    ActivateCredential = 0x147, // Original value: 0x00000147
-    Certify = 0x148, // Original value: 0x00000148
+    pub const PCR_Reset: Self = Self(0x13D); // Original value: 0x0000013D
+    pub const SequenceComplete: Self = Self(0x13E); // Original value: 0x0000013E
+    pub const SetAlgorithmSet: Self = Self(0x13F); // Original value: 0x0000013F
+    pub const SetCommandCodeAuditStatus: Self = Self(0x140); // Original value: 0x00000140
+    pub const FieldUpgradeData: Self = Self(0x141); // Original value: 0x00000141
+    pub const IncrementalSelfTest: Self = Self(0x142); // Original value: 0x00000142
+    pub const SelfTest: Self = Self(0x143); // Original value: 0x00000143
+    pub const Startup: Self = Self(0x144); // Original value: 0x00000144
+    pub const Shutdown: Self = Self(0x145); // Original value: 0x00000145
+    pub const StirRandom: Self = Self(0x146); // Original value: 0x00000146
+    pub const ActivateCredential: Self = Self(0x147); // Original value: 0x00000147
+    pub const Certify: Self = Self(0x148); // Original value: 0x00000148
 
     /// Policy
-    PolicyNV = 0x149, // Original value: 0x00000149
-    CertifyCreation = 0x14A, // Original value: 0x0000014A
-    Duplicate = 0x14B, // Original value: 0x0000014B
-    GetTime = 0x14C, // Original value: 0x0000014C
-    GetSessionAuditDigest = 0x14D, // Original value: 0x0000014D
-    NV_Read = 0x14E, // Original value: 0x0000014E
-    NV_ReadLock = 0x14F, // Original value: 0x0000014F
-    ObjectChangeAuth = 0x150, // Original value: 0x00000150
+    pub const PolicyNV: Self = Self(0x149); // Original value: 0x00000149
+    pub const CertifyCreation: Self = Self(0x14A); // Original value: 0x0000014A
+    pub const Duplicate: Self = Self(0x14B); // Original value: 0x0000014B
+    pub const GetTime: Self = Self(0x14C); // Original value: 0x0000014C
+    pub const GetSessionAuditDigest: Self = Self(0x14D); // Original value: 0x0000014D
+    pub const NV_Read: Self = Self(0x14E); // Original value: 0x0000014E
+    pub const NV_ReadLock: Self = Self(0x14F); // Original value: 0x0000014F
+    pub const ObjectChangeAuth: Self = Self(0x150); // Original value: 0x00000150
 
     /// Policy
-    PolicySecret = 0x151, // Original value: 0x00000151
-    Rewrap = 0x152, // Original value: 0x00000152
-    Create = 0x153, // Original value: 0x00000153
-    ECDH_ZGen = 0x154, // Original value: 0x00000154
+    pub const PolicySecret: Self = Self(0x151); // Original value: 0x00000151
+    pub const Rewrap: Self = Self(0x152); // Original value: 0x00000152
+    pub const Create: Self = Self(0x153); // Original value: 0x00000153
+    pub const ECDH_ZGen: Self = Self(0x154); // Original value: 0x00000154
 
     /// See NOTE 1
-    HMAC = 0x155, // Original value: 0x00000155
+    pub const HMAC: Self = Self(0x155); // Original value: 0x00000155
 
     /// See NOTE 1
-    // WARNING: MAC has duplicate value 0x155 - using name + value pattern
-    MACValue = 0x155, // Original value: 0x00000155
-    Import = 0x156, // Original value: 0x00000156
-    Load = 0x157, // Original value: 0x00000157
-    Quote = 0x158, // Original value: 0x00000158
-    RSA_Decrypt = 0x159, // Original value: 0x00000159
+    pub const MAC: Self = Self(0x155); // Original value: 0x00000155
+    pub const Import: Self = Self(0x156); // Original value: 0x00000156
+    pub const Load: Self = Self(0x157); // Original value: 0x00000157
+    pub const Quote: Self = Self(0x158); // Original value: 0x00000158
+    pub const RSA_Decrypt: Self = Self(0x159); // Original value: 0x00000159
 
     /// See NOTE 1
-    HMAC_Start = 0x15B, // Original value: 0x0000015B
+    pub const HMAC_Start: Self = Self(0x15B); // Original value: 0x0000015B
 
     /// See NOTE 1
-    // WARNING: MAC_Start has duplicate value 0x15B - using name + value pattern
-    MAC_StartValue = 0x15B, // Original value: 0x0000015B
-    SequenceUpdate = 0x15C, // Original value: 0x0000015C
-    Sign = 0x15D, // Original value: 0x0000015D
-    Unseal = 0x15E, // Original value: 0x0000015E
+    pub const MAC_Start: Self = Self(0x15B); // Original value: 0x0000015B
+    pub const SequenceUpdate: Self = Self(0x15C); // Original value: 0x0000015C
+    pub const Sign: Self = Self(0x15D); // Original value: 0x0000015D
+    pub const Unseal: Self = Self(0x15E); // Original value: 0x0000015E
 
     /// Policy
-    PolicySigned = 0x160, // Original value: 0x00000160
+    pub const PolicySigned: Self = Self(0x160); // Original value: 0x00000160
 
     /// Context
-    ContextLoad = 0x161, // Original value: 0x00000161
+    pub const ContextLoad: Self = Self(0x161); // Original value: 0x00000161
 
     /// Context
-    ContextSave = 0x162, // Original value: 0x00000162
-    ECDH_KeyGen = 0x163, // Original value: 0x00000163
-    EncryptDecrypt = 0x164, // Original value: 0x00000164
+    pub const ContextSave: Self = Self(0x162); // Original value: 0x00000162
+    pub const ECDH_KeyGen: Self = Self(0x163); // Original value: 0x00000163
+    pub const EncryptDecrypt: Self = Self(0x164); // Original value: 0x00000164
 
     /// Context
-    FlushContext = 0x165, // Original value: 0x00000165
-    LoadExternal = 0x167, // Original value: 0x00000167
-    MakeCredential = 0x168, // Original value: 0x00000168
+    pub const FlushContext: Self = Self(0x165); // Original value: 0x00000165
+    pub const LoadExternal: Self = Self(0x167); // Original value: 0x00000167
+    pub const MakeCredential: Self = Self(0x168); // Original value: 0x00000168
 
     /// NV
-    NV_ReadPublic = 0x169, // Original value: 0x00000169
+    pub const NV_ReadPublic: Self = Self(0x169); // Original value: 0x00000169
 
     /// Policy
-    PolicyAuthorize = 0x16A, // Original value: 0x0000016A
+    pub const PolicyAuthorize: Self = Self(0x16A); // Original value: 0x0000016A
 
     /// Policy
-    PolicyAuthValue = 0x16B, // Original value: 0x0000016B
+    pub const PolicyAuthValue: Self = Self(0x16B); // Original value: 0x0000016B
 
     /// Policy
-    PolicyCommandCode = 0x16C, // Original value: 0x0000016C
+    pub const PolicyCommandCode: Self = Self(0x16C); // Original value: 0x0000016C
 
     /// Policy
-    PolicyCounterTimer = 0x16D, // Original value: 0x0000016D
+    pub const PolicyCounterTimer: Self = Self(0x16D); // Original value: 0x0000016D
 
     /// Policy
-    PolicyCpHash = 0x16E, // Original value: 0x0000016E
+    pub const PolicyCpHash: Self = Self(0x16E); // Original value: 0x0000016E
 
     /// Policy
-    PolicyLocality = 0x16F, // Original value: 0x0000016F
+    pub const PolicyLocality: Self = Self(0x16F); // Original value: 0x0000016F
 
     /// Policy
-    PolicyNameHash = 0x170, // Original value: 0x00000170
+    pub const PolicyNameHash: Self = Self(0x170); // Original value: 0x00000170
 
     /// Policy
-    PolicyOR = 0x171, // Original value: 0x00000171
+    pub const PolicyOR: Self = Self(0x171); // Original value: 0x00000171
 
     /// Policy
-    PolicyTicket = 0x172, // Original value: 0x00000172
-    ReadPublic = 0x173, // Original value: 0x00000173
-    RSA_Encrypt = 0x174, // Original value: 0x00000174
-    StartAuthSession = 0x176, // Original value: 0x00000176
-    VerifySignature = 0x177, // Original value: 0x00000177
-    ECC_Parameters = 0x178, // Original value: 0x00000178
-    FirmwareRead = 0x179, // Original value: 0x00000179
-    GetCapability = 0x17A, // Original value: 0x0000017A
-    GetRandom = 0x17B, // Original value: 0x0000017B
-    GetTestResult = 0x17C, // Original value: 0x0000017C
-    Hash = 0x17D, // Original value: 0x0000017D
+    pub const PolicyTicket: Self = Self(0x172); // Original value: 0x00000172
+    pub const ReadPublic: Self = Self(0x173); // Original value: 0x00000173
+    pub const RSA_Encrypt: Self = Self(0x174); // Original value: 0x00000174
+    pub const StartAuthSession: Self = Self(0x176); // Original value: 0x00000176
+    pub const VerifySignature: Self = Self(0x177); // Original value: 0x00000177
+    pub const ECC_Parameters: Self = Self(0x178); // Original value: 0x00000178
+    pub const FirmwareRead: Self = Self(0x179); // Original value: 0x00000179
+    pub const GetCapability: Self = Self(0x17A); // Original value: 0x0000017A
+    pub const GetRandom: Self = Self(0x17B); // Original value: 0x0000017B
+    pub const GetTestResult: Self = Self(0x17C); // Original value: 0x0000017C
+    pub const Hash: Self = Self(0x17D); // Original value: 0x0000017D
 
     /// PCR
-    PCR_Read = 0x17E, // Original value: 0x0000017E
+    pub const PCR_Read: Self = Self(0x17E); // Original value: 0x0000017E
 
     /// Policy
-    PolicyPCR = 0x17F, // Original value: 0x0000017F
-    PolicyRestart = 0x180, // Original value: 0x00000180
-    ReadClock = 0x181, // Original value: 0x00000181
-    PCR_Extend = 0x182, // Original value: 0x00000182
-    PCR_SetAuthValue = 0x183, // Original value: 0x00000183
-    NV_Certify = 0x184, // Original value: 0x00000184
-    EventSequenceComplete = 0x185, // Original value: 0x00000185
-    HashSequenceStart = 0x186, // Original value: 0x00000186
+    pub const PolicyPCR: Self = Self(0x17F); // Original value: 0x0000017F
+    pub const PolicyRestart: Self = Self(0x180); // Original value: 0x00000180
+    pub const ReadClock: Self = Self(0x181); // Original value: 0x00000181
+    pub const PCR_Extend: Self = Self(0x182); // Original value: 0x00000182
+    pub const PCR_SetAuthValue: Self = Self(0x183); // Original value: 0x00000183
+    pub const NV_Certify: Self = Self(0x184); // Original value: 0x00000184
+    pub const EventSequenceComplete: Self = Self(0x185); // Original value: 0x00000185
+    pub const HashSequenceStart: Self = Self(0x186); // Original value: 0x00000186
 
     /// Policy
-    PolicyPhysicalPresence = 0x187, // Original value: 0x00000187
+    pub const PolicyPhysicalPresence: Self = Self(0x187); // Original value: 0x00000187
 
     /// Policy
-    PolicyDuplicationSelect = 0x188, // Original value: 0x00000188
+    pub const PolicyDuplicationSelect: Self = Self(0x188); // Original value: 0x00000188
 
     /// Policy
-    PolicyGetDigest = 0x189, // Original value: 0x00000189
-    TestParms = 0x18A, // Original value: 0x0000018A
-    Commit = 0x18B, // Original value: 0x0000018B
+    pub const PolicyGetDigest: Self = Self(0x189); // Original value: 0x00000189
+    pub const TestParms: Self = Self(0x18A); // Original value: 0x0000018A
+    pub const Commit: Self = Self(0x18B); // Original value: 0x0000018B
 
     /// Policy
-    PolicyPassword = 0x18C, // Original value: 0x0000018C
-    ZGen_2Phase = 0x18D, // Original value: 0x0000018D
-    EC_Ephemeral = 0x18E, // Original value: 0x0000018E
+    pub const PolicyPassword: Self = Self(0x18C); // Original value: 0x0000018C
+    pub const ZGen_2Phase: Self = Self(0x18D); // Original value: 0x0000018D
+    pub const EC_Ephemeral: Self = Self(0x18E); // Original value: 0x0000018E
 
     /// Policy
-    PolicyNvWritten = 0x18F, // Original value: 0x0000018F
+    pub const PolicyNvWritten: Self = Self(0x18F); // Original value: 0x0000018F
 
     /// Policy
-    PolicyTemplate = 0x190, // Original value: 0x00000190
-    CreateLoaded = 0x191, // Original value: 0x00000191
+    pub const PolicyTemplate: Self = Self(0x190); // Original value: 0x00000190
+    pub const CreateLoaded: Self = Self(0x191); // Original value: 0x00000191
 
     /// Policy
-    PolicyAuthorizeNV = 0x192, // Original value: 0x00000192
-    EncryptDecrypt2 = 0x193, // Original value: 0x00000193
-    AC_GetCapability = 0x194, // Original value: 0x00000194
-    AC_Send = 0x195, // Original value: 0x00000195
+    pub const PolicyAuthorizeNV: Self = Self(0x192); // Original value: 0x00000192
+    pub const EncryptDecrypt2: Self = Self(0x193); // Original value: 0x00000193
+    pub const AC_GetCapability: Self = Self(0x194); // Original value: 0x00000194
+    pub const AC_Send: Self = Self(0x195); // Original value: 0x00000195
 
     /// Policy
-    Policy_AC_SendSelect = 0x196, // Original value: 0x00000196
-    CertifyX509 = 0x197, // Original value: 0x00000197
-    ACT_SetTimeout = 0x198, // Original value: 0x00000198
-    ECC_Encrypt = 0x199, // Original value: 0x00000199
-    ECC_Decrypt = 0x19A, // Original value: 0x0000019A
+    pub const Policy_AC_SendSelect: Self = Self(0x196); // Original value: 0x00000196
+    pub const CertifyX509: Self = Self(0x197); // Original value: 0x00000197
+    pub const ACT_SetTimeout: Self = Self(0x198); // Original value: 0x00000198
+    pub const ECC_Encrypt: Self = Self(0x199); // Original value: 0x00000199
+    pub const ECC_Decrypt: Self = Self(0x19A); // Original value: 0x0000019A
 
     /// Compile variable. May increase based on implementation.
-    // WARNING: LAST has duplicate value 0x19A - using name + value pattern
-    LASTValue = 0x19A, // Original value: 0x0000019A
-    CC_VEND = 0x20000000,
+    pub const LAST: Self = Self(0x19A); // Original value: 0x0000019A
+    pub const CC_VEND: Self = Self(0x20000000);
 
     /// Used for testing of command dispatch
-    // WARNING: Vendor_TCG_Test has duplicate value 0x20000000 - using name + value pattern
-    Vendor_TCG_TestValue = 0x20000000 // Original value: CC_VEND+0x0000
+    pub const Vendor_TCG_Test: Self = Self(0x20000000); // Original value: CC_VEND+0x0000
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            0x0000011F => Ok(Self::FIRST),
+            0x00000120 => Ok(Self::EvictControl),
+            0x00000121 => Ok(Self::HierarchyControl),
+            0x00000122 => Ok(Self::NV_UndefineSpace),
+            0x00000124 => Ok(Self::ChangeEPS),
+            0x00000125 => Ok(Self::ChangePPS),
+            0x00000126 => Ok(Self::Clear),
+            0x00000127 => Ok(Self::ClearControl),
+            0x00000128 => Ok(Self::ClockSet),
+            0x00000129 => Ok(Self::HierarchyChangeAuth),
+            0x0000012A => Ok(Self::NV_DefineSpace),
+            0x0000012B => Ok(Self::PCR_Allocate),
+            0x0000012C => Ok(Self::PCR_SetAuthPolicy),
+            0x0000012D => Ok(Self::PP_Commands),
+            0x0000012E => Ok(Self::SetPrimaryPolicy),
+            0x0000012F => Ok(Self::FieldUpgradeStart),
+            0x00000130 => Ok(Self::ClockRateAdjust),
+            0x00000131 => Ok(Self::CreatePrimary),
+            0x00000132 => Ok(Self::NV_GlobalWriteLock),
+            0x00000133 => Ok(Self::GetCommandAuditDigest),
+            0x00000134 => Ok(Self::NV_Increment),
+            0x00000135 => Ok(Self::NV_SetBits),
+            0x00000136 => Ok(Self::NV_Extend),
+            0x00000137 => Ok(Self::NV_Write),
+            0x00000138 => Ok(Self::NV_WriteLock),
+            0x00000139 => Ok(Self::DictionaryAttackLockReset),
+            0x0000013A => Ok(Self::DictionaryAttackParameters),
+            0x0000013B => Ok(Self::NV_ChangeAuth),
+            0x0000013C => Ok(Self::PCR_Event),
+            0x0000013D => Ok(Self::PCR_Reset),
+            0x0000013E => Ok(Self::SequenceComplete),
+            0x0000013F => Ok(Self::SetAlgorithmSet),
+            0x00000140 => Ok(Self::SetCommandCodeAuditStatus),
+            0x00000141 => Ok(Self::FieldUpgradeData),
+            0x00000142 => Ok(Self::IncrementalSelfTest),
+            0x00000143 => Ok(Self::SelfTest),
+            0x00000144 => Ok(Self::Startup),
+            0x00000145 => Ok(Self::Shutdown),
+            0x00000146 => Ok(Self::StirRandom),
+            0x00000147 => Ok(Self::ActivateCredential),
+            0x00000148 => Ok(Self::Certify),
+            0x00000149 => Ok(Self::PolicyNV),
+            0x0000014A => Ok(Self::CertifyCreation),
+            0x0000014B => Ok(Self::Duplicate),
+            0x0000014C => Ok(Self::GetTime),
+            0x0000014D => Ok(Self::GetSessionAuditDigest),
+            0x0000014E => Ok(Self::NV_Read),
+            0x0000014F => Ok(Self::NV_ReadLock),
+            0x00000150 => Ok(Self::ObjectChangeAuth),
+            0x00000151 => Ok(Self::PolicySecret),
+            0x00000152 => Ok(Self::Rewrap),
+            0x00000153 => Ok(Self::Create),
+            0x00000154 => Ok(Self::ECDH_ZGen),
+            0x00000155 => Ok(Self::HMAC),
+            0x00000156 => Ok(Self::Import),
+            0x00000157 => Ok(Self::Load),
+            0x00000158 => Ok(Self::Quote),
+            0x00000159 => Ok(Self::RSA_Decrypt),
+            0x0000015B => Ok(Self::HMAC_Start),
+            0x0000015C => Ok(Self::SequenceUpdate),
+            0x0000015D => Ok(Self::Sign),
+            0x0000015E => Ok(Self::Unseal),
+            0x00000160 => Ok(Self::PolicySigned),
+            0x00000161 => Ok(Self::ContextLoad),
+            0x00000162 => Ok(Self::ContextSave),
+            0x00000163 => Ok(Self::ECDH_KeyGen),
+            0x00000164 => Ok(Self::EncryptDecrypt),
+            0x00000165 => Ok(Self::FlushContext),
+            0x00000167 => Ok(Self::LoadExternal),
+            0x00000168 => Ok(Self::MakeCredential),
+            0x00000169 => Ok(Self::NV_ReadPublic),
+            0x0000016A => Ok(Self::PolicyAuthorize),
+            0x0000016B => Ok(Self::PolicyAuthValue),
+            0x0000016C => Ok(Self::PolicyCommandCode),
+            0x0000016D => Ok(Self::PolicyCounterTimer),
+            0x0000016E => Ok(Self::PolicyCpHash),
+            0x0000016F => Ok(Self::PolicyLocality),
+            0x00000170 => Ok(Self::PolicyNameHash),
+            0x00000171 => Ok(Self::PolicyOR),
+            0x00000172 => Ok(Self::PolicyTicket),
+            0x00000173 => Ok(Self::ReadPublic),
+            0x00000174 => Ok(Self::RSA_Encrypt),
+            0x00000176 => Ok(Self::StartAuthSession),
+            0x00000177 => Ok(Self::VerifySignature),
+            0x00000178 => Ok(Self::ECC_Parameters),
+            0x00000179 => Ok(Self::FirmwareRead),
+            0x0000017A => Ok(Self::GetCapability),
+            0x0000017B => Ok(Self::GetRandom),
+            0x0000017C => Ok(Self::GetTestResult),
+            0x0000017D => Ok(Self::Hash),
+            0x0000017E => Ok(Self::PCR_Read),
+            0x0000017F => Ok(Self::PolicyPCR),
+            0x00000180 => Ok(Self::PolicyRestart),
+            0x00000181 => Ok(Self::ReadClock),
+            0x00000182 => Ok(Self::PCR_Extend),
+            0x00000183 => Ok(Self::PCR_SetAuthValue),
+            0x00000184 => Ok(Self::NV_Certify),
+            0x00000185 => Ok(Self::EventSequenceComplete),
+            0x00000186 => Ok(Self::HashSequenceStart),
+            0x00000187 => Ok(Self::PolicyPhysicalPresence),
+            0x00000188 => Ok(Self::PolicyDuplicationSelect),
+            0x00000189 => Ok(Self::PolicyGetDigest),
+            0x0000018A => Ok(Self::TestParms),
+            0x0000018B => Ok(Self::Commit),
+            0x0000018C => Ok(Self::PolicyPassword),
+            0x0000018D => Ok(Self::ZGen_2Phase),
+            0x0000018E => Ok(Self::EC_Ephemeral),
+            0x0000018F => Ok(Self::PolicyNvWritten),
+            0x00000190 => Ok(Self::PolicyTemplate),
+            0x00000191 => Ok(Self::CreateLoaded),
+            0x00000192 => Ok(Self::PolicyAuthorizeNV),
+            0x00000193 => Ok(Self::EncryptDecrypt2),
+            0x00000194 => Ok(Self::AC_GetCapability),
+            0x00000195 => Ok(Self::AC_Send),
+            0x00000196 => Ok(Self::Policy_AC_SendSelect),
+            0x00000197 => Ok(Self::CertifyX509),
+            0x00000198 => Ok(Self::ACT_SetTimeout),
+            0x00000199 => Ok(Self::ECC_Encrypt),
+            0x0000019A => Ok(Self::ECC_Decrypt),
+            0x20000000 => Ok(Self::CC_VEND),
+            CC_VEND+0x0000 => Ok(Self::Vendor_TCG_Test),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPM_CC {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPM_CC> for u32 {
+    fn from(value: TPM_CC) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPM_CC> for i32 {
+    fn from(value: TPM_CC) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPM_CC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::FIRST => write!(f, "FIRST"),
-            Self::NV_UndefineSpaceSpecial => write!(f, "NV_UndefineSpaceSpecial"),
-            Self::EvictControl => write!(f, "EvictControl"),
-            Self::HierarchyControl => write!(f, "HierarchyControl"),
-            Self::NV_UndefineSpace => write!(f, "NV_UndefineSpace"),
-            Self::ChangeEPS => write!(f, "ChangeEPS"),
-            Self::ChangePPS => write!(f, "ChangePPS"),
-            Self::Clear => write!(f, "Clear"),
-            Self::ClearControl => write!(f, "ClearControl"),
-            Self::ClockSet => write!(f, "ClockSet"),
-            Self::HierarchyChangeAuth => write!(f, "HierarchyChangeAuth"),
-            Self::NV_DefineSpace => write!(f, "NV_DefineSpace"),
-            Self::PCR_Allocate => write!(f, "PCR_Allocate"),
-            Self::PCR_SetAuthPolicy => write!(f, "PCR_SetAuthPolicy"),
-            Self::PP_Commands => write!(f, "PP_Commands"),
-            Self::SetPrimaryPolicy => write!(f, "SetPrimaryPolicy"),
-            Self::FieldUpgradeStart => write!(f, "FieldUpgradeStart"),
-            Self::ClockRateAdjust => write!(f, "ClockRateAdjust"),
-            Self::CreatePrimary => write!(f, "CreatePrimary"),
-            Self::NV_GlobalWriteLock => write!(f, "NV_GlobalWriteLock"),
-            Self::GetCommandAuditDigest => write!(f, "GetCommandAuditDigest"),
-            Self::NV_Increment => write!(f, "NV_Increment"),
-            Self::NV_SetBits => write!(f, "NV_SetBits"),
-            Self::NV_Extend => write!(f, "NV_Extend"),
-            Self::NV_Write => write!(f, "NV_Write"),
-            Self::NV_WriteLock => write!(f, "NV_WriteLock"),
-            Self::DictionaryAttackLockReset => write!(f, "DictionaryAttackLockReset"),
-            Self::DictionaryAttackParameters => write!(f, "DictionaryAttackParameters"),
-            Self::NV_ChangeAuth => write!(f, "NV_ChangeAuth"),
-            Self::PCR_Event => write!(f, "PCR_Event"),
-            Self::PCR_Reset => write!(f, "PCR_Reset"),
-            Self::SequenceComplete => write!(f, "SequenceComplete"),
-            Self::SetAlgorithmSet => write!(f, "SetAlgorithmSet"),
-            Self::SetCommandCodeAuditStatus => write!(f, "SetCommandCodeAuditStatus"),
-            Self::FieldUpgradeData => write!(f, "FieldUpgradeData"),
-            Self::IncrementalSelfTest => write!(f, "IncrementalSelfTest"),
-            Self::SelfTest => write!(f, "SelfTest"),
-            Self::Startup => write!(f, "Startup"),
-            Self::Shutdown => write!(f, "Shutdown"),
-            Self::StirRandom => write!(f, "StirRandom"),
-            Self::ActivateCredential => write!(f, "ActivateCredential"),
-            Self::Certify => write!(f, "Certify"),
-            Self::PolicyNV => write!(f, "PolicyNV"),
-            Self::CertifyCreation => write!(f, "CertifyCreation"),
-            Self::Duplicate => write!(f, "Duplicate"),
-            Self::GetTime => write!(f, "GetTime"),
-            Self::GetSessionAuditDigest => write!(f, "GetSessionAuditDigest"),
-            Self::NV_Read => write!(f, "NV_Read"),
-            Self::NV_ReadLock => write!(f, "NV_ReadLock"),
-            Self::ObjectChangeAuth => write!(f, "ObjectChangeAuth"),
-            Self::PolicySecret => write!(f, "PolicySecret"),
-            Self::Rewrap => write!(f, "Rewrap"),
-            Self::Create => write!(f, "Create"),
-            Self::ECDH_ZGen => write!(f, "ECDH_ZGen"),
-            Self::HMAC => write!(f, "HMAC"),
-            Self::MAC => write!(f, "MAC"),
-            Self::Import => write!(f, "Import"),
-            Self::Load => write!(f, "Load"),
-            Self::Quote => write!(f, "Quote"),
-            Self::RSA_Decrypt => write!(f, "RSA_Decrypt"),
-            Self::HMAC_Start => write!(f, "HMAC_Start"),
-            Self::MAC_Start => write!(f, "MAC_Start"),
-            Self::SequenceUpdate => write!(f, "SequenceUpdate"),
-            Self::Sign => write!(f, "Sign"),
-            Self::Unseal => write!(f, "Unseal"),
-            Self::PolicySigned => write!(f, "PolicySigned"),
-            Self::ContextLoad => write!(f, "ContextLoad"),
-            Self::ContextSave => write!(f, "ContextSave"),
-            Self::ECDH_KeyGen => write!(f, "ECDH_KeyGen"),
-            Self::EncryptDecrypt => write!(f, "EncryptDecrypt"),
-            Self::FlushContext => write!(f, "FlushContext"),
-            Self::LoadExternal => write!(f, "LoadExternal"),
-            Self::MakeCredential => write!(f, "MakeCredential"),
-            Self::NV_ReadPublic => write!(f, "NV_ReadPublic"),
-            Self::PolicyAuthorize => write!(f, "PolicyAuthorize"),
-            Self::PolicyAuthValue => write!(f, "PolicyAuthValue"),
-            Self::PolicyCommandCode => write!(f, "PolicyCommandCode"),
-            Self::PolicyCounterTimer => write!(f, "PolicyCounterTimer"),
-            Self::PolicyCpHash => write!(f, "PolicyCpHash"),
-            Self::PolicyLocality => write!(f, "PolicyLocality"),
-            Self::PolicyNameHash => write!(f, "PolicyNameHash"),
-            Self::PolicyOR => write!(f, "PolicyOR"),
-            Self::PolicyTicket => write!(f, "PolicyTicket"),
-            Self::ReadPublic => write!(f, "ReadPublic"),
-            Self::RSA_Encrypt => write!(f, "RSA_Encrypt"),
-            Self::StartAuthSession => write!(f, "StartAuthSession"),
-            Self::VerifySignature => write!(f, "VerifySignature"),
-            Self::ECC_Parameters => write!(f, "ECC_Parameters"),
-            Self::FirmwareRead => write!(f, "FirmwareRead"),
-            Self::GetCapability => write!(f, "GetCapability"),
-            Self::GetRandom => write!(f, "GetRandom"),
-            Self::GetTestResult => write!(f, "GetTestResult"),
-            Self::Hash => write!(f, "Hash"),
-            Self::PCR_Read => write!(f, "PCR_Read"),
-            Self::PolicyPCR => write!(f, "PolicyPCR"),
-            Self::PolicyRestart => write!(f, "PolicyRestart"),
-            Self::ReadClock => write!(f, "ReadClock"),
-            Self::PCR_Extend => write!(f, "PCR_Extend"),
-            Self::PCR_SetAuthValue => write!(f, "PCR_SetAuthValue"),
-            Self::NV_Certify => write!(f, "NV_Certify"),
-            Self::EventSequenceComplete => write!(f, "EventSequenceComplete"),
-            Self::HashSequenceStart => write!(f, "HashSequenceStart"),
-            Self::PolicyPhysicalPresence => write!(f, "PolicyPhysicalPresence"),
-            Self::PolicyDuplicationSelect => write!(f, "PolicyDuplicationSelect"),
-            Self::PolicyGetDigest => write!(f, "PolicyGetDigest"),
-            Self::TestParms => write!(f, "TestParms"),
-            Self::Commit => write!(f, "Commit"),
-            Self::PolicyPassword => write!(f, "PolicyPassword"),
-            Self::ZGen_2Phase => write!(f, "ZGen_2Phase"),
-            Self::EC_Ephemeral => write!(f, "EC_Ephemeral"),
-            Self::PolicyNvWritten => write!(f, "PolicyNvWritten"),
-            Self::PolicyTemplate => write!(f, "PolicyTemplate"),
-            Self::CreateLoaded => write!(f, "CreateLoaded"),
-            Self::PolicyAuthorizeNV => write!(f, "PolicyAuthorizeNV"),
-            Self::EncryptDecrypt2 => write!(f, "EncryptDecrypt2"),
-            Self::AC_GetCapability => write!(f, "AC_GetCapability"),
-            Self::AC_Send => write!(f, "AC_Send"),
-            Self::Policy_AC_SendSelect => write!(f, "Policy_AC_SendSelect"),
-            Self::CertifyX509 => write!(f, "CertifyX509"),
-            Self::ACT_SetTimeout => write!(f, "ACT_SetTimeout"),
-            Self::ECC_Encrypt => write!(f, "ECC_Encrypt"),
-            Self::ECC_Decrypt => write!(f, "ECC_Decrypt"),
-            Self::LAST => write!(f, "LAST"),
-            Self::CC_VEND => write!(f, "CC_VEND"),
-            Self::Vendor_TCG_Test => write!(f, "Vendor_TCG_Test"),
+        match self.0 {
+            0x0000011F => write!(f, "FIRST"),
+            0x00000120 => write!(f, "EvictControl"),
+            0x00000121 => write!(f, "HierarchyControl"),
+            0x00000122 => write!(f, "NV_UndefineSpace"),
+            0x00000124 => write!(f, "ChangeEPS"),
+            0x00000125 => write!(f, "ChangePPS"),
+            0x00000126 => write!(f, "Clear"),
+            0x00000127 => write!(f, "ClearControl"),
+            0x00000128 => write!(f, "ClockSet"),
+            0x00000129 => write!(f, "HierarchyChangeAuth"),
+            0x0000012A => write!(f, "NV_DefineSpace"),
+            0x0000012B => write!(f, "PCR_Allocate"),
+            0x0000012C => write!(f, "PCR_SetAuthPolicy"),
+            0x0000012D => write!(f, "PP_Commands"),
+            0x0000012E => write!(f, "SetPrimaryPolicy"),
+            0x0000012F => write!(f, "FieldUpgradeStart"),
+            0x00000130 => write!(f, "ClockRateAdjust"),
+            0x00000131 => write!(f, "CreatePrimary"),
+            0x00000132 => write!(f, "NV_GlobalWriteLock"),
+            0x00000133 => write!(f, "GetCommandAuditDigest"),
+            0x00000134 => write!(f, "NV_Increment"),
+            0x00000135 => write!(f, "NV_SetBits"),
+            0x00000136 => write!(f, "NV_Extend"),
+            0x00000137 => write!(f, "NV_Write"),
+            0x00000138 => write!(f, "NV_WriteLock"),
+            0x00000139 => write!(f, "DictionaryAttackLockReset"),
+            0x0000013A => write!(f, "DictionaryAttackParameters"),
+            0x0000013B => write!(f, "NV_ChangeAuth"),
+            0x0000013C => write!(f, "PCR_Event"),
+            0x0000013D => write!(f, "PCR_Reset"),
+            0x0000013E => write!(f, "SequenceComplete"),
+            0x0000013F => write!(f, "SetAlgorithmSet"),
+            0x00000140 => write!(f, "SetCommandCodeAuditStatus"),
+            0x00000141 => write!(f, "FieldUpgradeData"),
+            0x00000142 => write!(f, "IncrementalSelfTest"),
+            0x00000143 => write!(f, "SelfTest"),
+            0x00000144 => write!(f, "Startup"),
+            0x00000145 => write!(f, "Shutdown"),
+            0x00000146 => write!(f, "StirRandom"),
+            0x00000147 => write!(f, "ActivateCredential"),
+            0x00000148 => write!(f, "Certify"),
+            0x00000149 => write!(f, "PolicyNV"),
+            0x0000014A => write!(f, "CertifyCreation"),
+            0x0000014B => write!(f, "Duplicate"),
+            0x0000014C => write!(f, "GetTime"),
+            0x0000014D => write!(f, "GetSessionAuditDigest"),
+            0x0000014E => write!(f, "NV_Read"),
+            0x0000014F => write!(f, "NV_ReadLock"),
+            0x00000150 => write!(f, "ObjectChangeAuth"),
+            0x00000151 => write!(f, "PolicySecret"),
+            0x00000152 => write!(f, "Rewrap"),
+            0x00000153 => write!(f, "Create"),
+            0x00000154 => write!(f, "ECDH_ZGen"),
+            0x00000155 => write!(f, "HMAC"),
+            0x00000156 => write!(f, "Import"),
+            0x00000157 => write!(f, "Load"),
+            0x00000158 => write!(f, "Quote"),
+            0x00000159 => write!(f, "RSA_Decrypt"),
+            0x0000015B => write!(f, "HMAC_Start"),
+            0x0000015C => write!(f, "SequenceUpdate"),
+            0x0000015D => write!(f, "Sign"),
+            0x0000015E => write!(f, "Unseal"),
+            0x00000160 => write!(f, "PolicySigned"),
+            0x00000161 => write!(f, "ContextLoad"),
+            0x00000162 => write!(f, "ContextSave"),
+            0x00000163 => write!(f, "ECDH_KeyGen"),
+            0x00000164 => write!(f, "EncryptDecrypt"),
+            0x00000165 => write!(f, "FlushContext"),
+            0x00000167 => write!(f, "LoadExternal"),
+            0x00000168 => write!(f, "MakeCredential"),
+            0x00000169 => write!(f, "NV_ReadPublic"),
+            0x0000016A => write!(f, "PolicyAuthorize"),
+            0x0000016B => write!(f, "PolicyAuthValue"),
+            0x0000016C => write!(f, "PolicyCommandCode"),
+            0x0000016D => write!(f, "PolicyCounterTimer"),
+            0x0000016E => write!(f, "PolicyCpHash"),
+            0x0000016F => write!(f, "PolicyLocality"),
+            0x00000170 => write!(f, "PolicyNameHash"),
+            0x00000171 => write!(f, "PolicyOR"),
+            0x00000172 => write!(f, "PolicyTicket"),
+            0x00000173 => write!(f, "ReadPublic"),
+            0x00000174 => write!(f, "RSA_Encrypt"),
+            0x00000176 => write!(f, "StartAuthSession"),
+            0x00000177 => write!(f, "VerifySignature"),
+            0x00000178 => write!(f, "ECC_Parameters"),
+            0x00000179 => write!(f, "FirmwareRead"),
+            0x0000017A => write!(f, "GetCapability"),
+            0x0000017B => write!(f, "GetRandom"),
+            0x0000017C => write!(f, "GetTestResult"),
+            0x0000017D => write!(f, "Hash"),
+            0x0000017E => write!(f, "PCR_Read"),
+            0x0000017F => write!(f, "PolicyPCR"),
+            0x00000180 => write!(f, "PolicyRestart"),
+            0x00000181 => write!(f, "ReadClock"),
+            0x00000182 => write!(f, "PCR_Extend"),
+            0x00000183 => write!(f, "PCR_SetAuthValue"),
+            0x00000184 => write!(f, "NV_Certify"),
+            0x00000185 => write!(f, "EventSequenceComplete"),
+            0x00000186 => write!(f, "HashSequenceStart"),
+            0x00000187 => write!(f, "PolicyPhysicalPresence"),
+            0x00000188 => write!(f, "PolicyDuplicationSelect"),
+            0x00000189 => write!(f, "PolicyGetDigest"),
+            0x0000018A => write!(f, "TestParms"),
+            0x0000018B => write!(f, "Commit"),
+            0x0000018C => write!(f, "PolicyPassword"),
+            0x0000018D => write!(f, "ZGen_2Phase"),
+            0x0000018E => write!(f, "EC_Ephemeral"),
+            0x0000018F => write!(f, "PolicyNvWritten"),
+            0x00000190 => write!(f, "PolicyTemplate"),
+            0x00000191 => write!(f, "CreateLoaded"),
+            0x00000192 => write!(f, "PolicyAuthorizeNV"),
+            0x00000193 => write!(f, "EncryptDecrypt2"),
+            0x00000194 => write!(f, "AC_GetCapability"),
+            0x00000195 => write!(f, "AC_Send"),
+            0x00000196 => write!(f, "Policy_AC_SendSelect"),
+            0x00000197 => write!(f, "CertifyX509"),
+            0x00000198 => write!(f, "ACT_SetTimeout"),
+            0x00000199 => write!(f, "ECC_Encrypt"),
+            0x0000019A => write!(f, "ECC_Decrypt"),
+            0x20000000 => write!(f, "CC_VEND"),
+            CC_VEND+0x0000 => write!(f, "Vendor_TCG_Test"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// Architecturally defined constants
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum ImplementationConstants {
-    Ossl = 0x1, // Original value: 1
-    Ltc = 0x2, // Original value: 2
-    Msbn = 0x3, // Original value: 3
-    Symcrypt = 0x4, // Original value: 4
-    // WARNING: HASH_COUNT has duplicate value 0x3 - using name + value pattern
-    HASH_COUNTValue = 0x3, // Original value: 3
-    MAX_SYM_KEY_BITS = 0x100, // Original value: 256
-    MAX_SYM_KEY_BYTES = 0x20, // Original value: ((MAX_SYM_KEY_BITS + 7) / 8)
-    MAX_SYM_BLOCK_SIZE = 0x10, // Original value: 16
-    MAX_CAP_CC = 0x19A, // Original value: TPM_CC::LAST
-    // WARNING: MAX_RSA_KEY_BYTES has duplicate value 0x100 - using name + value pattern
-    MAX_RSA_KEY_BYTESValue = 0x100, // Original value: 256
-    // WARNING: MAX_AES_KEY_BYTES has duplicate value 0x20 - using name + value pattern
-    MAX_AES_KEY_BYTESValue = 0x20, // Original value: 32
-    MAX_ECC_KEY_BYTES = 0x30, // Original value: 48
-    // WARNING: LABEL_MAX_BUFFER has duplicate value 0x20 - using name + value pattern
-    LABEL_MAX_BUFFERValue = 0x20, // Original value: 32
-    // WARNING: _TPM_CAP_SIZE has duplicate value 0x4 - using name + value pattern
-    _TPM_CAP_SIZEValue = 0x4, // Original value: 0x4 /* sizeof(UINT32) */
-    MAX_CAP_DATA = 0x3F8, // Original value: (Implementation::MAX_CAP_BUFFER-_TPM_CAP_SIZE-0x4) /* (MAX_CAP_BUFFER-_TPM_CAP_SIZE-sizeof(UINT32)) */
-    MAX_CAP_ALGS = 0xA9, // Original value: (MAX_CAP_DATA / 0x6) /* (MAX_CAP_DATA / sizeof(TPMS_ALG_PROPERTY)) */
-    MAX_CAP_HANDLES = 0xFE, // Original value: (MAX_CAP_DATA / 0x4) /* (MAX_CAP_DATA / sizeof(TPM_HANDLE)) */
-    MAX_TPM_PROPERTIES = 0x7F, // Original value: (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PROPERTY)) */
-    MAX_PCR_PROPERTIES = 0xCB, // Original value: (MAX_CAP_DATA / 0x5) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PCR_SELECT)) */
-    MAX_ECC_CURVES = 0x1FC, // Original value: (MAX_CAP_DATA / 0x2) /* (MAX_CAP_DATA / sizeof(TPM_ECC_CURVE)) */
-    MAX_TAGGED_POLICIES = 0xE, // Original value: (MAX_CAP_DATA / 0x46) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_POLICY)) */
-    // WARNING: MAX_AC_CAPABILITIES has duplicate value 0x7F - using name + value pattern
-    MAX_AC_CAPABILITIESValue = 0x7F, // Original value: (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_AC_OUTPUT)) */
-    MAX_ACT_DATA = 0x54 // Original value: MAX_CAP_DATA / 0xC /* MAX_CAP_DATA / sizeof(TPMS_ACT_DATA) */
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ImplementationConstants(pub i32);
+
+impl ImplementationConstants {
+    pub const Ossl: Self = Self(0x1); // Original value: 1
+    pub const Ltc: Self = Self(0x2); // Original value: 2
+    pub const Msbn: Self = Self(0x3); // Original value: 3
+    pub const Symcrypt: Self = Self(0x4); // Original value: 4
+    pub const HASH_COUNT: Self = Self(0x3); // Original value: 3
+    pub const MAX_SYM_KEY_BITS: Self = Self(0x100); // Original value: 256
+    pub const MAX_SYM_KEY_BYTES: Self = Self(0x20); // Original value: ((MAX_SYM_KEY_BITS + 7) / 8)
+    pub const MAX_SYM_BLOCK_SIZE: Self = Self(0x10); // Original value: 16
+    pub const MAX_CAP_CC: Self = Self(0x19A); // Original value: TPM_CC::LAST
+    pub const MAX_RSA_KEY_BYTES: Self = Self(0x100); // Original value: 256
+    pub const MAX_AES_KEY_BYTES: Self = Self(0x20); // Original value: 32
+    pub const MAX_ECC_KEY_BYTES: Self = Self(0x30); // Original value: 48
+    pub const LABEL_MAX_BUFFER: Self = Self(0x20); // Original value: 32
+    pub const _TPM_CAP_SIZE: Self = Self(0x4); // Original value: 0x4 /* sizeof(UINT32) */
+    pub const MAX_CAP_DATA: Self = Self(0x3F8); // Original value: (Implementation::MAX_CAP_BUFFER-_TPM_CAP_SIZE-0x4) /* (MAX_CAP_BUFFER-_TPM_CAP_SIZE-sizeof(UINT32)) */
+    pub const MAX_CAP_ALGS: Self = Self(0xA9); // Original value: (MAX_CAP_DATA / 0x6) /* (MAX_CAP_DATA / sizeof(TPMS_ALG_PROPERTY)) */
+    pub const MAX_CAP_HANDLES: Self = Self(0xFE); // Original value: (MAX_CAP_DATA / 0x4) /* (MAX_CAP_DATA / sizeof(TPM_HANDLE)) */
+    pub const MAX_TPM_PROPERTIES: Self = Self(0x7F); // Original value: (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PROPERTY)) */
+    pub const MAX_PCR_PROPERTIES: Self = Self(0xCB); // Original value: (MAX_CAP_DATA / 0x5) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PCR_SELECT)) */
+    pub const MAX_ECC_CURVES: Self = Self(0x1FC); // Original value: (MAX_CAP_DATA / 0x2) /* (MAX_CAP_DATA / sizeof(TPM_ECC_CURVE)) */
+    pub const MAX_TAGGED_POLICIES: Self = Self(0xE); // Original value: (MAX_CAP_DATA / 0x46) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_POLICY)) */
+    pub const MAX_AC_CAPABILITIES: Self = Self(0x7F); // Original value: (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_AC_OUTPUT)) */
+    pub const MAX_ACT_DATA: Self = Self(0x54); // Original value: MAX_CAP_DATA / 0xC /* MAX_CAP_DATA / sizeof(TPMS_ACT_DATA) */
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            1 => Ok(Self::Ossl),
+            2 => Ok(Self::Ltc),
+            3 => Ok(Self::Msbn),
+            4 => Ok(Self::Symcrypt),
+            256 => Ok(Self::MAX_SYM_KEY_BITS),
+            ((MAX_SYM_KEY_BITS + 7) / 8) => Ok(Self::MAX_SYM_KEY_BYTES),
+            16 => Ok(Self::MAX_SYM_BLOCK_SIZE),
+            TPM_CC::LAST => Ok(Self::MAX_CAP_CC),
+            32 => Ok(Self::MAX_AES_KEY_BYTES),
+            48 => Ok(Self::MAX_ECC_KEY_BYTES),
+            0x4 /* sizeof(UINT32) */ => Ok(Self::_TPM_CAP_SIZE),
+            (Implementation::MAX_CAP_BUFFER-_TPM_CAP_SIZE-0x4) /* (MAX_CAP_BUFFER-_TPM_CAP_SIZE-sizeof(UINT32)) */ => Ok(Self::MAX_CAP_DATA),
+            (MAX_CAP_DATA / 0x6) /* (MAX_CAP_DATA / sizeof(TPMS_ALG_PROPERTY)) */ => Ok(Self::MAX_CAP_ALGS),
+            (MAX_CAP_DATA / 0x4) /* (MAX_CAP_DATA / sizeof(TPM_HANDLE)) */ => Ok(Self::MAX_CAP_HANDLES),
+            (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PROPERTY)) */ => Ok(Self::MAX_TPM_PROPERTIES),
+            (MAX_CAP_DATA / 0x5) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PCR_SELECT)) */ => Ok(Self::MAX_PCR_PROPERTIES),
+            (MAX_CAP_DATA / 0x2) /* (MAX_CAP_DATA / sizeof(TPM_ECC_CURVE)) */ => Ok(Self::MAX_ECC_CURVES),
+            (MAX_CAP_DATA / 0x46) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_POLICY)) */ => Ok(Self::MAX_TAGGED_POLICIES),
+            (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_AC_OUTPUT)) */ => Ok(Self::MAX_AC_CAPABILITIES),
+            MAX_CAP_DATA / 0xC /* MAX_CAP_DATA / sizeof(TPMS_ACT_DATA) */ => Ok(Self::MAX_ACT_DATA),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for ImplementationConstants {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<ImplementationConstants> for u32 {
+    fn from(value: ImplementationConstants) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<ImplementationConstants> for i32 {
+    fn from(value: ImplementationConstants) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for ImplementationConstants {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::Ossl => write!(f, "Ossl"),
-            Self::Ltc => write!(f, "Ltc"),
-            Self::Msbn => write!(f, "Msbn"),
-            Self::Symcrypt => write!(f, "Symcrypt"),
-            Self::HASH_COUNT => write!(f, "HASH_COUNT"),
-            Self::MAX_SYM_KEY_BITS => write!(f, "MAX_SYM_KEY_BITS"),
-            Self::MAX_SYM_KEY_BYTES => write!(f, "MAX_SYM_KEY_BYTES"),
-            Self::MAX_SYM_BLOCK_SIZE => write!(f, "MAX_SYM_BLOCK_SIZE"),
-            Self::MAX_CAP_CC => write!(f, "MAX_CAP_CC"),
-            Self::MAX_RSA_KEY_BYTES => write!(f, "MAX_RSA_KEY_BYTES"),
-            Self::MAX_AES_KEY_BYTES => write!(f, "MAX_AES_KEY_BYTES"),
-            Self::MAX_ECC_KEY_BYTES => write!(f, "MAX_ECC_KEY_BYTES"),
-            Self::LABEL_MAX_BUFFER => write!(f, "LABEL_MAX_BUFFER"),
-            Self::_TPM_CAP_SIZE => write!(f, "_TPM_CAP_SIZE"),
-            Self::MAX_CAP_DATA => write!(f, "MAX_CAP_DATA"),
-            Self::MAX_CAP_ALGS => write!(f, "MAX_CAP_ALGS"),
-            Self::MAX_CAP_HANDLES => write!(f, "MAX_CAP_HANDLES"),
-            Self::MAX_TPM_PROPERTIES => write!(f, "MAX_TPM_PROPERTIES"),
-            Self::MAX_PCR_PROPERTIES => write!(f, "MAX_PCR_PROPERTIES"),
-            Self::MAX_ECC_CURVES => write!(f, "MAX_ECC_CURVES"),
-            Self::MAX_TAGGED_POLICIES => write!(f, "MAX_TAGGED_POLICIES"),
-            Self::MAX_AC_CAPABILITIES => write!(f, "MAX_AC_CAPABILITIES"),
-            Self::MAX_ACT_DATA => write!(f, "MAX_ACT_DATA"),
+        match self.0 {
+            1 => write!(f, "Ossl"),
+            2 => write!(f, "Ltc"),
+            3 => write!(f, "Msbn"),
+            4 => write!(f, "Symcrypt"),
+            256 => write!(f, "MAX_SYM_KEY_BITS"),
+            ((MAX_SYM_KEY_BITS + 7) / 8) => write!(f, "MAX_SYM_KEY_BYTES"),
+            16 => write!(f, "MAX_SYM_BLOCK_SIZE"),
+            TPM_CC::LAST => write!(f, "MAX_CAP_CC"),
+            32 => write!(f, "MAX_AES_KEY_BYTES"),
+            48 => write!(f, "MAX_ECC_KEY_BYTES"),
+            0x4 /* sizeof(UINT32) */ => write!(f, "_TPM_CAP_SIZE"),
+            (Implementation::MAX_CAP_BUFFER-_TPM_CAP_SIZE-0x4) /* (MAX_CAP_BUFFER-_TPM_CAP_SIZE-sizeof(UINT32)) */ => write!(f, "MAX_CAP_DATA"),
+            (MAX_CAP_DATA / 0x6) /* (MAX_CAP_DATA / sizeof(TPMS_ALG_PROPERTY)) */ => write!(f, "MAX_CAP_ALGS"),
+            (MAX_CAP_DATA / 0x4) /* (MAX_CAP_DATA / sizeof(TPM_HANDLE)) */ => write!(f, "MAX_CAP_HANDLES"),
+            (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PROPERTY)) */ => write!(f, "MAX_TPM_PROPERTIES"),
+            (MAX_CAP_DATA / 0x5) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PCR_SELECT)) */ => write!(f, "MAX_PCR_PROPERTIES"),
+            (MAX_CAP_DATA / 0x2) /* (MAX_CAP_DATA / sizeof(TPM_ECC_CURVE)) */ => write!(f, "MAX_ECC_CURVES"),
+            (MAX_CAP_DATA / 0x46) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_POLICY)) */ => write!(f, "MAX_TAGGED_POLICIES"),
+            (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_AC_OUTPUT)) */ => write!(f, "MAX_AC_CAPABILITIES"),
+            MAX_CAP_DATA / 0xC /* MAX_CAP_DATA / sizeof(TPMS_ACT_DATA) */ => write!(f, "MAX_ACT_DATA"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// In general, response codes defined in TPM 2.0 Part 2 will be unmarshaling errors and
 /// will have the F (format) bit SET. Codes that are unique to TPM 2.0 Part 3 will have
 /// the F bit CLEAR but the V (version) attribute will be SET to indicate that it is a TPM
 /// 2.0 response code. See Response Code Details in TPM 2.0 Part 1.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum TPM_RC {
-    SUCCESS = 0x0, // Original value: 0x000
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPM_RC(pub i32);
+
+impl TPM_RC {
+    pub const SUCCESS: Self = Self(0x0); // Original value: 0x000
 
     /// Defined for compatibility with TPM 1.2
-    BAD_TAG = 0x1E, // Original value: 0x01E
+    pub const BAD_TAG: Self = Self(0x1E); // Original value: 0x01E
 
     /// Set for all format 0 response codes
-    RC_VER1 = 0x100,
+    pub const RC_VER1: Self = Self(0x100);
 
     /// TPM not initialized by TPM2_Startup or already initialized
-    // WARNING: INITIALIZE has duplicate value 0x100 - using name + value pattern
-    INITIALIZEValue = 0x100, // Original value: RC_VER1 + 0x000
+    pub const INITIALIZE: Self = Self(0x100); // Original value: RC_VER1 + 0x000
 
     /// Commands not being accepted because of a TPM failure
     /// NOTE This may be returned by TPM2_GetTestResult() as the testResult parameter.
-    FAILURE = 0x101, // Original value: RC_VER1 + 0x001
+    pub const FAILURE: Self = Self(0x101); // Original value: RC_VER1 + 0x001
 
     /// Improper use of a sequence handle
-    SEQUENCE = 0x103, // Original value: RC_VER1 + 0x003
+    pub const SEQUENCE: Self = Self(0x103); // Original value: RC_VER1 + 0x003
 
     /// Not currently used
-    PRIVATE = 0x10B, // Original value: RC_VER1 + 0x00B
+    pub const PRIVATE: Self = Self(0x10B); // Original value: RC_VER1 + 0x00B
 
     /// Not currently used
-    HMAC = 0x119, // Original value: RC_VER1 + 0x019
+    pub const HMAC: Self = Self(0x119); // Original value: RC_VER1 + 0x019
 
     /// The command is disabled
-    DISABLED = 0x120, // Original value: RC_VER1 + 0x020
+    pub const DISABLED: Self = Self(0x120); // Original value: RC_VER1 + 0x020
 
     /// Command failed because audit sequence required exclusivity
-    EXCLUSIVE = 0x121, // Original value: RC_VER1 + 0x021
+    pub const EXCLUSIVE: Self = Self(0x121); // Original value: RC_VER1 + 0x021
 
     /// Authorization handle is not correct for command
-    AUTH_TYPE = 0x124, // Original value: RC_VER1 + 0x024
+    pub const AUTH_TYPE: Self = Self(0x124); // Original value: RC_VER1 + 0x024
 
     /// Command requires an authorization session for handle and it is not present.
-    AUTH_MISSING = 0x125, // Original value: RC_VER1 + 0x025
+    pub const AUTH_MISSING: Self = Self(0x125); // Original value: RC_VER1 + 0x025
 
     /// Policy failure in math operation or an invalid authPolicy value
-    POLICY = 0x126, // Original value: RC_VER1 + 0x026
+    pub const POLICY: Self = Self(0x126); // Original value: RC_VER1 + 0x026
 
     /// PCR check fail
-    PCR = 0x127, // Original value: RC_VER1 + 0x027
+    pub const PCR: Self = Self(0x127); // Original value: RC_VER1 + 0x027
 
     /// PCR have changed since checked.
-    PCR_CHANGED = 0x128, // Original value: RC_VER1 + 0x028
+    pub const PCR_CHANGED: Self = Self(0x128); // Original value: RC_VER1 + 0x028
 
     /// For all commands other than TPM2_FieldUpgradeData(), this code indicates that the TPM
     /// is in field upgrade mode; for TPM2_FieldUpgradeData(), this code indicates that the
     /// TPM is not in field upgrade mode
-    UPGRADE = 0x12D, // Original value: RC_VER1 + 0x02D
+    pub const UPGRADE: Self = Self(0x12D); // Original value: RC_VER1 + 0x02D
 
     /// Context ID counter is at maximum.
-    TOO_MANY_CONTEXTS = 0x12E, // Original value: RC_VER1 + 0x02E
+    pub const TOO_MANY_CONTEXTS: Self = Self(0x12E); // Original value: RC_VER1 + 0x02E
 
     /// AuthValue or authPolicy is not available for selected entity.
-    AUTH_UNAVAILABLE = 0x12F, // Original value: RC_VER1 + 0x02F
+    pub const AUTH_UNAVAILABLE: Self = Self(0x12F); // Original value: RC_VER1 + 0x02F
 
     /// A _TPM_Init and Startup(CLEAR) is required before the TPM can resume operation.
-    REBOOT = 0x130, // Original value: RC_VER1 + 0x030
+    pub const REBOOT: Self = Self(0x130); // Original value: RC_VER1 + 0x030
 
     /// The protection algorithms (hash and symmetric) are not reasonably balanced. The digest
     /// size of the hash must be larger than the key size of the symmetric algorithm.
-    UNBALANCED = 0x131, // Original value: RC_VER1 + 0x031
+    pub const UNBALANCED: Self = Self(0x131); // Original value: RC_VER1 + 0x031
 
     /// Command commandSize value is inconsistent with contents of the command buffer; either
     /// the size is not the same as the octets loaded by the hardware interface layer or the
     /// value is not large enough to hold a command header
-    COMMAND_SIZE = 0x142, // Original value: RC_VER1 + 0x042
+    pub const COMMAND_SIZE: Self = Self(0x142); // Original value: RC_VER1 + 0x042
 
     /// Command code not supported
-    COMMAND_CODE = 0x143, // Original value: RC_VER1 + 0x043
+    pub const COMMAND_CODE: Self = Self(0x143); // Original value: RC_VER1 + 0x043
 
     /// The value of authorizationSize is out of range or the number of octets in the
     /// Authorization Area is greater than required
-    AUTHSIZE = 0x144, // Original value: RC_VER1 + 0x044
+    pub const AUTHSIZE: Self = Self(0x144); // Original value: RC_VER1 + 0x044
 
     /// Use of an authorization session with a context command or another command that cannot
     /// have an authorization session.
-    AUTH_CONTEXT = 0x145, // Original value: RC_VER1 + 0x045
+    pub const AUTH_CONTEXT: Self = Self(0x145); // Original value: RC_VER1 + 0x045
 
     /// NV offset+size is out of range.
-    NV_RANGE = 0x146, // Original value: RC_VER1 + 0x046
+    pub const NV_RANGE: Self = Self(0x146); // Original value: RC_VER1 + 0x046
 
     /// Requested allocation size is larger than allowed.
-    NV_SIZE = 0x147, // Original value: RC_VER1 + 0x047
+    pub const NV_SIZE: Self = Self(0x147); // Original value: RC_VER1 + 0x047
 
     /// NV access locked.
-    NV_LOCKED = 0x148, // Original value: RC_VER1 + 0x048
+    pub const NV_LOCKED: Self = Self(0x148); // Original value: RC_VER1 + 0x048
 
     /// NV access authorization fails in command actions (this failure does not affect lockout.action)
-    NV_AUTHORIZATION = 0x149, // Original value: RC_VER1 + 0x049
+    pub const NV_AUTHORIZATION: Self = Self(0x149); // Original value: RC_VER1 + 0x049
 
     /// An NV Index is used before being initialized or the state saved by
     /// TPM2_Shutdown(STATE) could not be restored
-    NV_UNINITIALIZED = 0x14A, // Original value: RC_VER1 + 0x04A
+    pub const NV_UNINITIALIZED: Self = Self(0x14A); // Original value: RC_VER1 + 0x04A
 
     /// Insufficient space for NV allocation
-    NV_SPACE = 0x14B, // Original value: RC_VER1 + 0x04B
+    pub const NV_SPACE: Self = Self(0x14B); // Original value: RC_VER1 + 0x04B
 
     /// NV Index or persistent object already defined
-    NV_DEFINED = 0x14C, // Original value: RC_VER1 + 0x04C
+    pub const NV_DEFINED: Self = Self(0x14C); // Original value: RC_VER1 + 0x04C
 
     /// Context in TPM2_ContextLoad() is not valid
-    BAD_CONTEXT = 0x150, // Original value: RC_VER1 + 0x050
+    pub const BAD_CONTEXT: Self = Self(0x150); // Original value: RC_VER1 + 0x050
 
     /// CpHash value already set or not correct for use
-    CPHASH = 0x151, // Original value: RC_VER1 + 0x051
+    pub const CPHASH: Self = Self(0x151); // Original value: RC_VER1 + 0x051
 
     /// Handle for parent is not a valid parent
-    PARENT = 0x152, // Original value: RC_VER1 + 0x052
+    pub const PARENT: Self = Self(0x152); // Original value: RC_VER1 + 0x052
 
     /// Some function needs testing.
-    NEEDS_TEST = 0x153, // Original value: RC_VER1 + 0x053
+    pub const NEEDS_TEST: Self = Self(0x153); // Original value: RC_VER1 + 0x053
 
     /// Returned when an internal function cannot process a request due to an unspecified
     /// problem. This code is usually related to invalid parameters that are not properly
     /// filtered by the input unmarshaling code.
-    NO_RESULT = 0x154, // Original value: RC_VER1 + 0x054
+    pub const NO_RESULT: Self = Self(0x154); // Original value: RC_VER1 + 0x054
 
     /// The sensitive area did not unmarshal correctly after decryption this code is used in
     /// lieu of the other unmarshaling errors so that an attacker cannot determine where the
     /// unmarshaling error occurred
-    SENSITIVE = 0x155, // Original value: RC_VER1 + 0x055
+    pub const SENSITIVE: Self = Self(0x155); // Original value: RC_VER1 + 0x055
 
     /// Largest version 1 code that is not a warning
-    RC_MAX_FM0 = 0x17F, // Original value: RC_VER1 + 0x07F
+    pub const RC_MAX_FM0: Self = Self(0x17F); // Original value: RC_VER1 + 0x07F
 
     /// This bit is SET in all format 1 response codes
     /// The codes in this group may have a value added to them to indicate the handle,
     /// session, or parameter to which they apply.
-    RC_FMT1 = 0x80, // Original value: 0x080
+    pub const RC_FMT1: Self = Self(0x80); // Original value: 0x080
 
     /// Asymmetric algorithm not supported or not correct
-    ASYMMETRIC = 0x81, // Original value: RC_FMT1 + 0x001
+    pub const ASYMMETRIC: Self = Self(0x81); // Original value: RC_FMT1 + 0x001
 
     /// Inconsistent attributes
-    ATTRIBUTES = 0x82, // Original value: RC_FMT1 + 0x002
+    pub const ATTRIBUTES: Self = Self(0x82); // Original value: RC_FMT1 + 0x002
 
     /// Hash algorithm not supported or not appropriate
-    HASH = 0x83, // Original value: RC_FMT1 + 0x003
+    pub const HASH: Self = Self(0x83); // Original value: RC_FMT1 + 0x003
 
     /// Value is out of range or is not correct for the context
-    VALUE = 0x84, // Original value: RC_FMT1 + 0x004
+    pub const VALUE: Self = Self(0x84); // Original value: RC_FMT1 + 0x004
 
     /// Hierarchy is not enabled or is not correct for the use
-    HIERARCHY = 0x85, // Original value: RC_FMT1 + 0x005
+    pub const HIERARCHY: Self = Self(0x85); // Original value: RC_FMT1 + 0x005
 
     /// Key size is not supported
-    KEY_SIZE = 0x87, // Original value: RC_FMT1 + 0x007
+    pub const KEY_SIZE: Self = Self(0x87); // Original value: RC_FMT1 + 0x007
 
     /// Mask generation function not supported
-    MGF = 0x88, // Original value: RC_FMT1 + 0x008
+    pub const MGF: Self = Self(0x88); // Original value: RC_FMT1 + 0x008
 
     /// Mode of operation not supported
-    MODE = 0x89, // Original value: RC_FMT1 + 0x009
+    pub const MODE: Self = Self(0x89); // Original value: RC_FMT1 + 0x009
 
     /// The type of the value is not appropriate for the use
-    TYPE = 0x8A, // Original value: RC_FMT1 + 0x00A
+    pub const TYPE: Self = Self(0x8A); // Original value: RC_FMT1 + 0x00A
 
     /// The handle is not correct for the use
-    HANDLE = 0x8B, // Original value: RC_FMT1 + 0x00B
+    pub const HANDLE: Self = Self(0x8B); // Original value: RC_FMT1 + 0x00B
 
     /// Unsupported key derivation function or function not appropriate for use
-    KDF = 0x8C, // Original value: RC_FMT1 + 0x00C
+    pub const KDF: Self = Self(0x8C); // Original value: RC_FMT1 + 0x00C
 
     /// Value was out of allowed range.
-    RANGE = 0x8D, // Original value: RC_FMT1 + 0x00D
+    pub const RANGE: Self = Self(0x8D); // Original value: RC_FMT1 + 0x00D
 
     /// The authorization HMAC check failed and DA counter incremented
-    AUTH_FAIL = 0x8E, // Original value: RC_FMT1 + 0x00E
+    pub const AUTH_FAIL: Self = Self(0x8E); // Original value: RC_FMT1 + 0x00E
 
     /// Invalid nonce size or nonce value mismatch
-    NONCE = 0x8F, // Original value: RC_FMT1 + 0x00F
+    pub const NONCE: Self = Self(0x8F); // Original value: RC_FMT1 + 0x00F
 
     /// Authorization requires assertion of PP
-    PP = 0x90, // Original value: RC_FMT1 + 0x010
+    pub const PP: Self = Self(0x90); // Original value: RC_FMT1 + 0x010
 
     /// Unsupported or incompatible scheme
-    SCHEME = 0x92, // Original value: RC_FMT1 + 0x012
+    pub const SCHEME: Self = Self(0x92); // Original value: RC_FMT1 + 0x012
 
     /// Structure is the wrong size
-    SIZE = 0x95, // Original value: RC_FMT1 + 0x015
+    pub const SIZE: Self = Self(0x95); // Original value: RC_FMT1 + 0x015
 
     /// Unsupported symmetric algorithm or key size, or not appropriate for instance
-    SYMMETRIC = 0x96, // Original value: RC_FMT1 + 0x016
+    pub const SYMMETRIC: Self = Self(0x96); // Original value: RC_FMT1 + 0x016
 
     /// Incorrect structure tag
-    TAG = 0x97, // Original value: RC_FMT1 + 0x017
+    pub const TAG: Self = Self(0x97); // Original value: RC_FMT1 + 0x017
 
     /// Union selector is incorrect
-    SELECTOR = 0x98, // Original value: RC_FMT1 + 0x018
+    pub const SELECTOR: Self = Self(0x98); // Original value: RC_FMT1 + 0x018
 
     /// The TPM was unable to unmarshal a value because there were not enough octets in the
     /// input buffer
-    INSUFFICIENT = 0x9A, // Original value: RC_FMT1 + 0x01A
+    pub const INSUFFICIENT: Self = Self(0x9A); // Original value: RC_FMT1 + 0x01A
 
     /// The signature is not valid
-    SIGNATURE = 0x9B, // Original value: RC_FMT1 + 0x01B
+    pub const SIGNATURE: Self = Self(0x9B); // Original value: RC_FMT1 + 0x01B
 
     /// Key fields are not compatible with the selected use
-    KEY = 0x9C, // Original value: RC_FMT1 + 0x01C
+    pub const KEY: Self = Self(0x9C); // Original value: RC_FMT1 + 0x01C
 
     /// A policy check failed
-    POLICY_FAIL = 0x9D, // Original value: RC_FMT1 + 0x01D
+    pub const POLICY_FAIL: Self = Self(0x9D); // Original value: RC_FMT1 + 0x01D
 
     /// Integrity check failed
-    INTEGRITY = 0x9F, // Original value: RC_FMT1 + 0x01F
+    pub const INTEGRITY: Self = Self(0x9F); // Original value: RC_FMT1 + 0x01F
 
     /// Invalid ticket
-    TICKET = 0xA0, // Original value: RC_FMT1 + 0x020
+    pub const TICKET: Self = Self(0xA0); // Original value: RC_FMT1 + 0x020
 
     /// Reserved bits not set to zero as required
-    RESERVED_BITS = 0xA1, // Original value: RC_FMT1 + 0x021
+    pub const RESERVED_BITS: Self = Self(0xA1); // Original value: RC_FMT1 + 0x021
 
     /// Authorization failure without DA implications
-    BAD_AUTH = 0xA2, // Original value: RC_FMT1 + 0x022
+    pub const BAD_AUTH: Self = Self(0xA2); // Original value: RC_FMT1 + 0x022
 
     /// The policy has expired
-    EXPIRED = 0xA3, // Original value: RC_FMT1 + 0x023
+    pub const EXPIRED: Self = Self(0xA3); // Original value: RC_FMT1 + 0x023
 
     /// The commandCode in the policy is not the commandCode of the command or the command
     /// code in a policy command references a command that is not implemented
-    POLICY_CC = 0xA4, // Original value: RC_FMT1 + 0x024
+    pub const POLICY_CC: Self = Self(0xA4); // Original value: RC_FMT1 + 0x024
 
     /// Public and sensitive portions of an object are not cryptographically bound
-    BINDING = 0xA5, // Original value: RC_FMT1 + 0x025
+    pub const BINDING: Self = Self(0xA5); // Original value: RC_FMT1 + 0x025
 
     /// Curve not supported
-    CURVE = 0xA6, // Original value: RC_FMT1 + 0x026
+    pub const CURVE: Self = Self(0xA6); // Original value: RC_FMT1 + 0x026
 
     /// Point is not on the required curve.
-    ECC_POINT = 0xA7, // Original value: RC_FMT1 + 0x027
+    pub const ECC_POINT: Self = Self(0xA7); // Original value: RC_FMT1 + 0x027
 
     /// Set for warning response codes
-    RC_WARN = 0x900,
+    pub const RC_WARN: Self = Self(0x900);
 
     /// Gap for context ID is too large
-    CONTEXT_GAP = 0x901, // Original value: RC_WARN + 0x001
+    pub const CONTEXT_GAP: Self = Self(0x901); // Original value: RC_WARN + 0x001
 
     /// Out of memory for object contexts
-    OBJECT_MEMORY = 0x902, // Original value: RC_WARN + 0x002
+    pub const OBJECT_MEMORY: Self = Self(0x902); // Original value: RC_WARN + 0x002
 
     /// Out of memory for session contexts
-    SESSION_MEMORY = 0x903, // Original value: RC_WARN + 0x003
+    pub const SESSION_MEMORY: Self = Self(0x903); // Original value: RC_WARN + 0x003
 
     /// Out of shared object/session memory or need space for internal operations
-    MEMORY = 0x904, // Original value: RC_WARN + 0x004
+    pub const MEMORY: Self = Self(0x904); // Original value: RC_WARN + 0x004
 
     /// Out of session handles a session must be flushed before a new session may be created
-    SESSION_HANDLES = 0x905, // Original value: RC_WARN + 0x005
+    pub const SESSION_HANDLES: Self = Self(0x905); // Original value: RC_WARN + 0x005
 
     /// Out of object handles the handle space for objects is depleted and a reboot is required
     /// NOTE 1 This cannot occur on the reference implementation.
     /// NOTE 2 There is no reason why an implementation would implement a design that would
     /// deplete handle space. Platform specifications are encouraged to forbid it.
-    OBJECT_HANDLES = 0x906, // Original value: RC_WARN + 0x006
+    pub const OBJECT_HANDLES: Self = Self(0x906); // Original value: RC_WARN + 0x006
 
     /// Bad locality
-    LOCALITY = 0x907, // Original value: RC_WARN + 0x007
+    pub const LOCALITY: Self = Self(0x907); // Original value: RC_WARN + 0x007
 
     /// The TPM has suspended operation on the command; forward progress was made and the
     /// command may be retried
     /// See TPM 2.0 Part 1, Multi-tasking.
     /// NOTE This cannot occur on the reference implementation.
-    YIELDED = 0x908, // Original value: RC_WARN + 0x008
+    pub const YIELDED: Self = Self(0x908); // Original value: RC_WARN + 0x008
 
     /// The command was canceled
-    CANCELED = 0x909, // Original value: RC_WARN + 0x009
+    pub const CANCELED: Self = Self(0x909); // Original value: RC_WARN + 0x009
 
     /// TPM is performing self-tests
-    TESTING = 0x90A, // Original value: RC_WARN + 0x00A
+    pub const TESTING: Self = Self(0x90A); // Original value: RC_WARN + 0x00A
 
     /// The 1st handle in the handle area references a transient object or session that is not
     /// loaded
-    REFERENCE_H0 = 0x910, // Original value: RC_WARN + 0x010
+    pub const REFERENCE_H0: Self = Self(0x910); // Original value: RC_WARN + 0x010
 
     /// The 2nd handle in the handle area references a transient object or session that is not
     /// loaded
-    REFERENCE_H1 = 0x911, // Original value: RC_WARN + 0x011
+    pub const REFERENCE_H1: Self = Self(0x911); // Original value: RC_WARN + 0x011
 
     /// The 3rd handle in the handle area references a transient object or session that is not
     /// loaded
-    REFERENCE_H2 = 0x912, // Original value: RC_WARN + 0x012
+    pub const REFERENCE_H2: Self = Self(0x912); // Original value: RC_WARN + 0x012
 
     /// The 4th handle in the handle area references a transient object or session that is not
     /// loaded
-    REFERENCE_H3 = 0x913, // Original value: RC_WARN + 0x013
+    pub const REFERENCE_H3: Self = Self(0x913); // Original value: RC_WARN + 0x013
 
     /// The 5th handle in the handle area references a transient object or session that is not
     /// loaded
-    REFERENCE_H4 = 0x914, // Original value: RC_WARN + 0x014
+    pub const REFERENCE_H4: Self = Self(0x914); // Original value: RC_WARN + 0x014
 
     /// The 6th handle in the handle area references a transient object or session that is not
     /// loaded
-    REFERENCE_H5 = 0x915, // Original value: RC_WARN + 0x015
+    pub const REFERENCE_H5: Self = Self(0x915); // Original value: RC_WARN + 0x015
 
     /// The 7th handle in the handle area references a transient object or session that is not
     /// loaded
-    REFERENCE_H6 = 0x916, // Original value: RC_WARN + 0x016
+    pub const REFERENCE_H6: Self = Self(0x916); // Original value: RC_WARN + 0x016
 
     /// The 1st authorization session handle references a session that is not loaded
-    REFERENCE_S0 = 0x918, // Original value: RC_WARN + 0x018
+    pub const REFERENCE_S0: Self = Self(0x918); // Original value: RC_WARN + 0x018
 
     /// The 2nd authorization session handle references a session that is not loaded
-    REFERENCE_S1 = 0x919, // Original value: RC_WARN + 0x019
+    pub const REFERENCE_S1: Self = Self(0x919); // Original value: RC_WARN + 0x019
 
     /// The 3rd authorization session handle references a session that is not loaded
-    REFERENCE_S2 = 0x91A, // Original value: RC_WARN + 0x01A
+    pub const REFERENCE_S2: Self = Self(0x91A); // Original value: RC_WARN + 0x01A
 
     /// The 4th authorization session handle references a session that is not loaded
-    REFERENCE_S3 = 0x91B, // Original value: RC_WARN + 0x01B
+    pub const REFERENCE_S3: Self = Self(0x91B); // Original value: RC_WARN + 0x01B
 
     /// The 5th session handle references a session that is not loaded
-    REFERENCE_S4 = 0x91C, // Original value: RC_WARN + 0x01C
+    pub const REFERENCE_S4: Self = Self(0x91C); // Original value: RC_WARN + 0x01C
 
     /// The 6th session handle references a session that is not loaded
-    REFERENCE_S5 = 0x91D, // Original value: RC_WARN + 0x01D
+    pub const REFERENCE_S5: Self = Self(0x91D); // Original value: RC_WARN + 0x01D
 
     /// The 7th authorization session handle references a session that is not loaded
-    REFERENCE_S6 = 0x91E, // Original value: RC_WARN + 0x01E
+    pub const REFERENCE_S6: Self = Self(0x91E); // Original value: RC_WARN + 0x01E
 
     /// The TPM is rate-limiting accesses to prevent wearout of NV
-    NV_RATE = 0x920, // Original value: RC_WARN + 0x020
+    pub const NV_RATE: Self = Self(0x920); // Original value: RC_WARN + 0x020
 
     /// Authorizations for objects subject to DA protection are not allowed at this time
     /// because the TPM is in DA lockout mode
-    LOCKOUT = 0x921, // Original value: RC_WARN + 0x021
+    pub const LOCKOUT: Self = Self(0x921); // Original value: RC_WARN + 0x021
 
     /// The TPM was not able to start the command
-    RETRY = 0x922, // Original value: RC_WARN + 0x022
+    pub const RETRY: Self = Self(0x922); // Original value: RC_WARN + 0x022
 
     /// The command may require writing of NV and NV is not current accessible
-    NV_UNAVAILABLE = 0x923, // Original value: RC_WARN + 0x023
+    pub const NV_UNAVAILABLE: Self = Self(0x923); // Original value: RC_WARN + 0x023
 
     /// This value is reserved and shall not be returned by the TPM
-    NOT_USED = 0x97F, // Original value: RC_WARN + 0x7F
+    pub const NOT_USED: Self = Self(0x97F); // Original value: RC_WARN + 0x7F
 
     /// Add to a handle-related error
-    // WARNING: H has duplicate value 0x0 - using name + value pattern
-    HValue = 0x0, // Original value: 0x000
+    pub const H: Self = Self(0x0); // Original value: 0x000
 
     /// Add to a parameter-related error
-    P = 0x40, // Original value: 0x040
+    pub const P: Self = Self(0x40); // Original value: 0x040
 
     /// Add to a session-related error
-    S = 0x800,
+    pub const S: Self = Self(0x800);
 
     /// Add to a parameter-, handle-, or session-related error
-    // WARNING: _1 has duplicate value 0x100 - using name + value pattern
-    _1Value = 0x100,
+    pub const _1: Self = Self(0x100);
 
     /// Add to a parameter-, handle-, or session-related error
-    _2 = 0x200,
+    pub const _2: Self = Self(0x200);
 
     /// Add to a parameter-, handle-, or session-related error
-    _3 = 0x300,
+    pub const _3: Self = Self(0x300);
 
     /// Add to a parameter-, handle-, or session-related error
-    _4 = 0x400,
+    pub const _4: Self = Self(0x400);
 
     /// Add to a parameter-, handle-, or session-related error
-    _5 = 0x500,
+    pub const _5: Self = Self(0x500);
 
     /// Add to a parameter-, handle-, or session-related error
-    _6 = 0x600,
+    pub const _6: Self = Self(0x600);
 
     /// Add to a parameter-, handle-, or session-related error
-    _7 = 0x700,
+    pub const _7: Self = Self(0x700);
 
     /// Add to a parameter-related error
-    // WARNING: _8 has duplicate value 0x800 - using name + value pattern
-    _8Value = 0x800,
+    pub const _8: Self = Self(0x800);
 
     /// Add to a parameter-related error
-    // WARNING: _9 has duplicate value 0x900 - using name + value pattern
-    _9Value = 0x900,
+    pub const _9: Self = Self(0x900);
 
     /// Add to a parameter-related error
-    A = 0xA00,
+    pub const A: Self = Self(0xA00);
 
     /// Add to a parameter-related error
-    B = 0xB00,
+    pub const B: Self = Self(0xB00);
 
     /// Add to a parameter-related error
-    C = 0xC00,
+    pub const C: Self = Self(0xC00);
 
     /// Add to a parameter-related error
-    D = 0xD00,
+    pub const D: Self = Self(0xD00);
 
     /// Add to a parameter-related error
-    E = 0xE00,
+    pub const E: Self = Self(0xE00);
 
     /// Add to a parameter-related error
-    F = 0xF00,
+    pub const F: Self = Self(0xF00);
 
     /// Number mask
-    // WARNING: N_MASK has duplicate value 0xF00 - using name + value pattern
-    N_MASKValue = 0xF00,
+    pub const N_MASK: Self = Self(0xF00);
 
     /// Response buffer returned by the TPM is too short
-    TSS_TCP_BAD_HANDSHAKE_RESP = 0x40280001,
+    pub const TSS_TCP_BAD_HANDSHAKE_RESP: Self = Self(0x40280001);
 
     /// Too old TCP server version
-    TSS_TCP_SERVER_TOO_OLD = 0x40280002,
+    pub const TSS_TCP_SERVER_TOO_OLD: Self = Self(0x40280002);
 
     /// Bad ack from the TCP end point
-    TSS_TCP_BAD_ACK = 0x40280003,
+    pub const TSS_TCP_BAD_ACK: Self = Self(0x40280003);
 
     /// Wrong length of the response buffer returned by the TPM
-    TSS_TCP_BAD_RESP_LEN = 0x40280004,
+    pub const TSS_TCP_BAD_RESP_LEN: Self = Self(0x40280004);
 
     /// TPM2_Startup returned unexpected response code
-    TSS_TCP_UNEXPECTED_STARTUP_RESP = 0x40280005,
+    pub const TSS_TCP_UNEXPECTED_STARTUP_RESP: Self = Self(0x40280005);
 
     /// Invalid size tag in the TPM response TCP packet
-    TSS_TCP_INVALID_SIZE_TAG = 0x40280006,
+    pub const TSS_TCP_INVALID_SIZE_TAG: Self = Self(0x40280006);
 
     /// TPM over TCP device is not connected
-    TSS_TCP_DISCONNECTED = 0x40280007,
+    pub const TSS_TCP_DISCONNECTED: Self = Self(0x40280007);
 
     /// General TPM command dispatch failure
-    TSS_DISPATCH_FAILED = 0x40280010,
+    pub const TSS_DISPATCH_FAILED: Self = Self(0x40280010);
 
     /// Sending data to TPM failed
-    TSS_SEND_OP_FAILED = 0x40280011,
+    pub const TSS_SEND_OP_FAILED: Self = Self(0x40280011);
 
     /// Response buffer returned by the TPM is too short
-    TSS_RESP_BUF_TOO_SHORT = 0x40280021,
+    pub const TSS_RESP_BUF_TOO_SHORT: Self = Self(0x40280021);
 
     /// Invalid tag in the response buffer returned by the TPM
-    TSS_RESP_BUF_INVALID_SESSION_TAG = 0x40280022,
+    pub const TSS_RESP_BUF_INVALID_SESSION_TAG: Self = Self(0x40280022);
 
     /// Inconsistent TPM response parameters size
-    TSS_RESP_BUF_INVALID_SIZE = 0x40280023,
+    pub const TSS_RESP_BUF_INVALID_SIZE: Self = Self(0x40280023);
 
     /// Windows TBS error TPM_E_COMMAND_BLOCKED
-    TBS_COMMAND_BLOCKED = 0x80280400,
+    pub const TBS_COMMAND_BLOCKED: Self = Self(0x80280400);
 
     /// Windows TBS error TPM_E_INVALID_HANDLE
-    TBS_INVALID_HANDLE = 0x80280401,
+    pub const TBS_INVALID_HANDLE: Self = Self(0x80280401);
 
     /// Windows TBS error TPM_E_DUPLICATE_VHANDLE
-    TBS_DUPLICATE_V_HANDLE = 0x80280402,
+    pub const TBS_DUPLICATE_V_HANDLE: Self = Self(0x80280402);
 
     /// Windows TBS error TPM_E_EMBEDDED_COMMAND_BLOCKED
-    TBS_EMBEDDED_COMMAND_BLOCKED = 0x80280403,
+    pub const TBS_EMBEDDED_COMMAND_BLOCKED: Self = Self(0x80280403);
 
     /// Windows TBS error TPM_E_EMBEDDED_COMMAND_UNSUPPORTED
-    TBS_EMBEDDED_COMMAND_UNSUPPORTED = 0x80280404,
+    pub const TBS_EMBEDDED_COMMAND_UNSUPPORTED: Self = Self(0x80280404);
 
     /// Windows TBS returned success but empty response buffer
-    TBS_UNKNOWN_ERROR = 0x80284000,
+    pub const TBS_UNKNOWN_ERROR: Self = Self(0x80284000);
 
     /// Windows TBS error TBS_E_INTERNAL_ERROR
-    TBS_INTERNAL_ERROR = 0x80284001,
+    pub const TBS_INTERNAL_ERROR: Self = Self(0x80284001);
 
     /// Windows TBS error TBS_E_BAD_PARAMETER
-    TBS_BAD_PARAMETER = 0x80284002,
+    pub const TBS_BAD_PARAMETER: Self = Self(0x80284002);
 
     /// Windows TBS error TBS_E_INVALID_OUTPUT_POINTER
-    TBS_INVALID_OUTPUT_POINTER = 0x80284003,
+    pub const TBS_INVALID_OUTPUT_POINTER: Self = Self(0x80284003);
 
     /// Windows TBS error TBS_E_INVALID_CONTEXT
-    TBS_INVALID_CONTEXT = 0x80284004,
+    pub const TBS_INVALID_CONTEXT: Self = Self(0x80284004);
 
     /// Windows TBS error TBS_E_INSUFFICIENT_BUFFER
-    TBS_INSUFFICIENT_BUFFER = 0x80284005,
+    pub const TBS_INSUFFICIENT_BUFFER: Self = Self(0x80284005);
 
     /// Windows TBS error TBS_E_IOERROR
-    TBS_IO_ERROR = 0x80284006,
+    pub const TBS_IO_ERROR: Self = Self(0x80284006);
 
     /// Windows TBS error TBS_E_INVALID_CONTEXT_PARAM
-    TBS_INVALID_CONTEXT_PARAM = 0x80284007,
+    pub const TBS_INVALID_CONTEXT_PARAM: Self = Self(0x80284007);
 
     /// Windows TBS error TBS_E_SERVICE_NOT_RUNNING
-    TBS_SERVICE_NOT_RUNNING = 0x80284008,
+    pub const TBS_SERVICE_NOT_RUNNING: Self = Self(0x80284008);
 
     /// Windows TBS error TBS_E_TOO_MANY_TBS_CONTEXTS
-    TBS_TOO_MANY_CONTEXTS = 0x80284009,
+    pub const TBS_TOO_MANY_CONTEXTS: Self = Self(0x80284009);
 
     /// Windows TBS error TBS_E_TOO_MANY_TBS_RESOURCES
-    TBS_TOO_MANY_RESOURCES = 0x8028400A,
+    pub const TBS_TOO_MANY_RESOURCES: Self = Self(0x8028400A);
 
     /// Windows TBS error TBS_E_SERVICE_START_PENDING
-    TBS_SERVICE_START_PENDING = 0x8028400B,
+    pub const TBS_SERVICE_START_PENDING: Self = Self(0x8028400B);
 
     /// Windows TBS error TBS_E_PPI_NOT_SUPPORTED
-    TBS_PPI_NOT_SUPPORTED = 0x8028400C,
+    pub const TBS_PPI_NOT_SUPPORTED: Self = Self(0x8028400C);
 
     /// Windows TBS error TBS_E_COMMAND_CANCELED
-    TBS_COMMAND_CANCELED = 0x8028400D,
+    pub const TBS_COMMAND_CANCELED: Self = Self(0x8028400D);
 
     /// Windows TBS error TBS_E_BUFFER_TOO_LARGE
-    TBS_BUFFER_TOO_LARGE = 0x8028400E,
+    pub const TBS_BUFFER_TOO_LARGE: Self = Self(0x8028400E);
 
     /// Windows TBS error TBS_E_TPM_NOT_FOUND
-    TBS_TPM_NOT_FOUND = 0x8028400F,
+    pub const TBS_TPM_NOT_FOUND: Self = Self(0x8028400F);
 
     /// Windows TBS error TBS_E_SERVICE_DISABLED
-    TBS_SERVICE_DISABLED = 0x80284010,
+    pub const TBS_SERVICE_DISABLED: Self = Self(0x80284010);
 
     /// Windows TBS error TBS_E_ACCESS_DENIED
-    TBS_ACCESS_DENIED = 0x80284012,
+    pub const TBS_ACCESS_DENIED: Self = Self(0x80284012);
 
     /// Windows TBS error TBS_E_PPI_FUNCTION_UNSUPPORTED
-    TBS_PPI_FUNCTION_NOT_SUPPORTED = 0x80284014,
+    pub const TBS_PPI_FUNCTION_NOT_SUPPORTED: Self = Self(0x80284014);
 
     /// Windows TBS error TBS_E_OWNERAUTH_NOT_FOUND
-    TBS_OWNER_AUTH_NOT_FOUND = 0x80284015
+    pub const TBS_OWNER_AUTH_NOT_FOUND: Self = Self(0x80284015);
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            0x000 => Ok(Self::SUCCESS),
+            0x01E => Ok(Self::BAD_TAG),
+            0x100 => Ok(Self::RC_VER1),
+            RC_VER1 + 0x000 => Ok(Self::INITIALIZE),
+            RC_VER1 + 0x001 => Ok(Self::FAILURE),
+            RC_VER1 + 0x003 => Ok(Self::SEQUENCE),
+            RC_VER1 + 0x00B => Ok(Self::PRIVATE),
+            RC_VER1 + 0x019 => Ok(Self::HMAC),
+            RC_VER1 + 0x020 => Ok(Self::DISABLED),
+            RC_VER1 + 0x021 => Ok(Self::EXCLUSIVE),
+            RC_VER1 + 0x024 => Ok(Self::AUTH_TYPE),
+            RC_VER1 + 0x025 => Ok(Self::AUTH_MISSING),
+            RC_VER1 + 0x026 => Ok(Self::POLICY),
+            RC_VER1 + 0x027 => Ok(Self::PCR),
+            RC_VER1 + 0x028 => Ok(Self::PCR_CHANGED),
+            RC_VER1 + 0x02D => Ok(Self::UPGRADE),
+            RC_VER1 + 0x02E => Ok(Self::TOO_MANY_CONTEXTS),
+            RC_VER1 + 0x02F => Ok(Self::AUTH_UNAVAILABLE),
+            RC_VER1 + 0x030 => Ok(Self::REBOOT),
+            RC_VER1 + 0x031 => Ok(Self::UNBALANCED),
+            RC_VER1 + 0x042 => Ok(Self::COMMAND_SIZE),
+            RC_VER1 + 0x043 => Ok(Self::COMMAND_CODE),
+            RC_VER1 + 0x044 => Ok(Self::AUTHSIZE),
+            RC_VER1 + 0x045 => Ok(Self::AUTH_CONTEXT),
+            RC_VER1 + 0x046 => Ok(Self::NV_RANGE),
+            RC_VER1 + 0x047 => Ok(Self::NV_SIZE),
+            RC_VER1 + 0x048 => Ok(Self::NV_LOCKED),
+            RC_VER1 + 0x049 => Ok(Self::NV_AUTHORIZATION),
+            RC_VER1 + 0x04A => Ok(Self::NV_UNINITIALIZED),
+            RC_VER1 + 0x04B => Ok(Self::NV_SPACE),
+            RC_VER1 + 0x04C => Ok(Self::NV_DEFINED),
+            RC_VER1 + 0x050 => Ok(Self::BAD_CONTEXT),
+            RC_VER1 + 0x051 => Ok(Self::CPHASH),
+            RC_VER1 + 0x052 => Ok(Self::PARENT),
+            RC_VER1 + 0x053 => Ok(Self::NEEDS_TEST),
+            RC_VER1 + 0x054 => Ok(Self::NO_RESULT),
+            RC_VER1 + 0x055 => Ok(Self::SENSITIVE),
+            RC_VER1 + 0x07F => Ok(Self::RC_MAX_FM0),
+            0x080 => Ok(Self::RC_FMT1),
+            RC_FMT1 + 0x001 => Ok(Self::ASYMMETRIC),
+            RC_FMT1 + 0x002 => Ok(Self::ATTRIBUTES),
+            RC_FMT1 + 0x003 => Ok(Self::HASH),
+            RC_FMT1 + 0x004 => Ok(Self::VALUE),
+            RC_FMT1 + 0x005 => Ok(Self::HIERARCHY),
+            RC_FMT1 + 0x007 => Ok(Self::KEY_SIZE),
+            RC_FMT1 + 0x008 => Ok(Self::MGF),
+            RC_FMT1 + 0x009 => Ok(Self::MODE),
+            RC_FMT1 + 0x00A => Ok(Self::TYPE),
+            RC_FMT1 + 0x00B => Ok(Self::HANDLE),
+            RC_FMT1 + 0x00C => Ok(Self::KDF),
+            RC_FMT1 + 0x00D => Ok(Self::RANGE),
+            RC_FMT1 + 0x00E => Ok(Self::AUTH_FAIL),
+            RC_FMT1 + 0x00F => Ok(Self::NONCE),
+            RC_FMT1 + 0x010 => Ok(Self::PP),
+            RC_FMT1 + 0x012 => Ok(Self::SCHEME),
+            RC_FMT1 + 0x015 => Ok(Self::SIZE),
+            RC_FMT1 + 0x016 => Ok(Self::SYMMETRIC),
+            RC_FMT1 + 0x017 => Ok(Self::TAG),
+            RC_FMT1 + 0x018 => Ok(Self::SELECTOR),
+            RC_FMT1 + 0x01A => Ok(Self::INSUFFICIENT),
+            RC_FMT1 + 0x01B => Ok(Self::SIGNATURE),
+            RC_FMT1 + 0x01C => Ok(Self::KEY),
+            RC_FMT1 + 0x01D => Ok(Self::POLICY_FAIL),
+            RC_FMT1 + 0x01F => Ok(Self::INTEGRITY),
+            RC_FMT1 + 0x020 => Ok(Self::TICKET),
+            RC_FMT1 + 0x021 => Ok(Self::RESERVED_BITS),
+            RC_FMT1 + 0x022 => Ok(Self::BAD_AUTH),
+            RC_FMT1 + 0x023 => Ok(Self::EXPIRED),
+            RC_FMT1 + 0x024 => Ok(Self::POLICY_CC),
+            RC_FMT1 + 0x025 => Ok(Self::BINDING),
+            RC_FMT1 + 0x026 => Ok(Self::CURVE),
+            RC_FMT1 + 0x027 => Ok(Self::ECC_POINT),
+            0x900 => Ok(Self::RC_WARN),
+            RC_WARN + 0x001 => Ok(Self::CONTEXT_GAP),
+            RC_WARN + 0x002 => Ok(Self::OBJECT_MEMORY),
+            RC_WARN + 0x003 => Ok(Self::SESSION_MEMORY),
+            RC_WARN + 0x004 => Ok(Self::MEMORY),
+            RC_WARN + 0x005 => Ok(Self::SESSION_HANDLES),
+            RC_WARN + 0x006 => Ok(Self::OBJECT_HANDLES),
+            RC_WARN + 0x007 => Ok(Self::LOCALITY),
+            RC_WARN + 0x008 => Ok(Self::YIELDED),
+            RC_WARN + 0x009 => Ok(Self::CANCELED),
+            RC_WARN + 0x00A => Ok(Self::TESTING),
+            RC_WARN + 0x010 => Ok(Self::REFERENCE_H0),
+            RC_WARN + 0x011 => Ok(Self::REFERENCE_H1),
+            RC_WARN + 0x012 => Ok(Self::REFERENCE_H2),
+            RC_WARN + 0x013 => Ok(Self::REFERENCE_H3),
+            RC_WARN + 0x014 => Ok(Self::REFERENCE_H4),
+            RC_WARN + 0x015 => Ok(Self::REFERENCE_H5),
+            RC_WARN + 0x016 => Ok(Self::REFERENCE_H6),
+            RC_WARN + 0x018 => Ok(Self::REFERENCE_S0),
+            RC_WARN + 0x019 => Ok(Self::REFERENCE_S1),
+            RC_WARN + 0x01A => Ok(Self::REFERENCE_S2),
+            RC_WARN + 0x01B => Ok(Self::REFERENCE_S3),
+            RC_WARN + 0x01C => Ok(Self::REFERENCE_S4),
+            RC_WARN + 0x01D => Ok(Self::REFERENCE_S5),
+            RC_WARN + 0x01E => Ok(Self::REFERENCE_S6),
+            RC_WARN + 0x020 => Ok(Self::NV_RATE),
+            RC_WARN + 0x021 => Ok(Self::LOCKOUT),
+            RC_WARN + 0x022 => Ok(Self::RETRY),
+            RC_WARN + 0x023 => Ok(Self::NV_UNAVAILABLE),
+            RC_WARN + 0x7F => Ok(Self::NOT_USED),
+            0x040 => Ok(Self::P),
+            0x800 => Ok(Self::S),
+            0x200 => Ok(Self::_2),
+            0x300 => Ok(Self::_3),
+            0x400 => Ok(Self::_4),
+            0x500 => Ok(Self::_5),
+            0x600 => Ok(Self::_6),
+            0x700 => Ok(Self::_7),
+            0xA00 => Ok(Self::A),
+            0xB00 => Ok(Self::B),
+            0xC00 => Ok(Self::C),
+            0xD00 => Ok(Self::D),
+            0xE00 => Ok(Self::E),
+            0xF00 => Ok(Self::F),
+            0x40280001 => Ok(Self::TSS_TCP_BAD_HANDSHAKE_RESP),
+            0x40280002 => Ok(Self::TSS_TCP_SERVER_TOO_OLD),
+            0x40280003 => Ok(Self::TSS_TCP_BAD_ACK),
+            0x40280004 => Ok(Self::TSS_TCP_BAD_RESP_LEN),
+            0x40280005 => Ok(Self::TSS_TCP_UNEXPECTED_STARTUP_RESP),
+            0x40280006 => Ok(Self::TSS_TCP_INVALID_SIZE_TAG),
+            0x40280007 => Ok(Self::TSS_TCP_DISCONNECTED),
+            0x40280010 => Ok(Self::TSS_DISPATCH_FAILED),
+            0x40280011 => Ok(Self::TSS_SEND_OP_FAILED),
+            0x40280021 => Ok(Self::TSS_RESP_BUF_TOO_SHORT),
+            0x40280022 => Ok(Self::TSS_RESP_BUF_INVALID_SESSION_TAG),
+            0x40280023 => Ok(Self::TSS_RESP_BUF_INVALID_SIZE),
+            0x80280400 => Ok(Self::TBS_COMMAND_BLOCKED),
+            0x80280401 => Ok(Self::TBS_INVALID_HANDLE),
+            0x80280402 => Ok(Self::TBS_DUPLICATE_V_HANDLE),
+            0x80280403 => Ok(Self::TBS_EMBEDDED_COMMAND_BLOCKED),
+            0x80280404 => Ok(Self::TBS_EMBEDDED_COMMAND_UNSUPPORTED),
+            0x80284000 => Ok(Self::TBS_UNKNOWN_ERROR),
+            0x80284001 => Ok(Self::TBS_INTERNAL_ERROR),
+            0x80284002 => Ok(Self::TBS_BAD_PARAMETER),
+            0x80284003 => Ok(Self::TBS_INVALID_OUTPUT_POINTER),
+            0x80284004 => Ok(Self::TBS_INVALID_CONTEXT),
+            0x80284005 => Ok(Self::TBS_INSUFFICIENT_BUFFER),
+            0x80284006 => Ok(Self::TBS_IO_ERROR),
+            0x80284007 => Ok(Self::TBS_INVALID_CONTEXT_PARAM),
+            0x80284008 => Ok(Self::TBS_SERVICE_NOT_RUNNING),
+            0x80284009 => Ok(Self::TBS_TOO_MANY_CONTEXTS),
+            0x8028400A => Ok(Self::TBS_TOO_MANY_RESOURCES),
+            0x8028400B => Ok(Self::TBS_SERVICE_START_PENDING),
+            0x8028400C => Ok(Self::TBS_PPI_NOT_SUPPORTED),
+            0x8028400D => Ok(Self::TBS_COMMAND_CANCELED),
+            0x8028400E => Ok(Self::TBS_BUFFER_TOO_LARGE),
+            0x8028400F => Ok(Self::TBS_TPM_NOT_FOUND),
+            0x80284010 => Ok(Self::TBS_SERVICE_DISABLED),
+            0x80284012 => Ok(Self::TBS_ACCESS_DENIED),
+            0x80284014 => Ok(Self::TBS_PPI_FUNCTION_NOT_SUPPORTED),
+            0x80284015 => Ok(Self::TBS_OWNER_AUTH_NOT_FOUND),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPM_RC {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPM_RC> for u32 {
+    fn from(value: TPM_RC) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPM_RC> for i32 {
+    fn from(value: TPM_RC) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPM_RC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::SUCCESS => write!(f, "SUCCESS"),
-            Self::BAD_TAG => write!(f, "BAD_TAG"),
-            Self::RC_VER1 => write!(f, "RC_VER1"),
-            Self::INITIALIZE => write!(f, "INITIALIZE"),
-            Self::FAILURE => write!(f, "FAILURE"),
-            Self::SEQUENCE => write!(f, "SEQUENCE"),
-            Self::PRIVATE => write!(f, "PRIVATE"),
-            Self::HMAC => write!(f, "HMAC"),
-            Self::DISABLED => write!(f, "DISABLED"),
-            Self::EXCLUSIVE => write!(f, "EXCLUSIVE"),
-            Self::AUTH_TYPE => write!(f, "AUTH_TYPE"),
-            Self::AUTH_MISSING => write!(f, "AUTH_MISSING"),
-            Self::POLICY => write!(f, "POLICY"),
-            Self::PCR => write!(f, "PCR"),
-            Self::PCR_CHANGED => write!(f, "PCR_CHANGED"),
-            Self::UPGRADE => write!(f, "UPGRADE"),
-            Self::TOO_MANY_CONTEXTS => write!(f, "TOO_MANY_CONTEXTS"),
-            Self::AUTH_UNAVAILABLE => write!(f, "AUTH_UNAVAILABLE"),
-            Self::REBOOT => write!(f, "REBOOT"),
-            Self::UNBALANCED => write!(f, "UNBALANCED"),
-            Self::COMMAND_SIZE => write!(f, "COMMAND_SIZE"),
-            Self::COMMAND_CODE => write!(f, "COMMAND_CODE"),
-            Self::AUTHSIZE => write!(f, "AUTHSIZE"),
-            Self::AUTH_CONTEXT => write!(f, "AUTH_CONTEXT"),
-            Self::NV_RANGE => write!(f, "NV_RANGE"),
-            Self::NV_SIZE => write!(f, "NV_SIZE"),
-            Self::NV_LOCKED => write!(f, "NV_LOCKED"),
-            Self::NV_AUTHORIZATION => write!(f, "NV_AUTHORIZATION"),
-            Self::NV_UNINITIALIZED => write!(f, "NV_UNINITIALIZED"),
-            Self::NV_SPACE => write!(f, "NV_SPACE"),
-            Self::NV_DEFINED => write!(f, "NV_DEFINED"),
-            Self::BAD_CONTEXT => write!(f, "BAD_CONTEXT"),
-            Self::CPHASH => write!(f, "CPHASH"),
-            Self::PARENT => write!(f, "PARENT"),
-            Self::NEEDS_TEST => write!(f, "NEEDS_TEST"),
-            Self::NO_RESULT => write!(f, "NO_RESULT"),
-            Self::SENSITIVE => write!(f, "SENSITIVE"),
-            Self::RC_MAX_FM0 => write!(f, "RC_MAX_FM0"),
-            Self::RC_FMT1 => write!(f, "RC_FMT1"),
-            Self::ASYMMETRIC => write!(f, "ASYMMETRIC"),
-            Self::ATTRIBUTES => write!(f, "ATTRIBUTES"),
-            Self::HASH => write!(f, "HASH"),
-            Self::VALUE => write!(f, "VALUE"),
-            Self::HIERARCHY => write!(f, "HIERARCHY"),
-            Self::KEY_SIZE => write!(f, "KEY_SIZE"),
-            Self::MGF => write!(f, "MGF"),
-            Self::MODE => write!(f, "MODE"),
-            Self::TYPE => write!(f, "TYPE"),
-            Self::HANDLE => write!(f, "HANDLE"),
-            Self::KDF => write!(f, "KDF"),
-            Self::RANGE => write!(f, "RANGE"),
-            Self::AUTH_FAIL => write!(f, "AUTH_FAIL"),
-            Self::NONCE => write!(f, "NONCE"),
-            Self::PP => write!(f, "PP"),
-            Self::SCHEME => write!(f, "SCHEME"),
-            Self::SIZE => write!(f, "SIZE"),
-            Self::SYMMETRIC => write!(f, "SYMMETRIC"),
-            Self::TAG => write!(f, "TAG"),
-            Self::SELECTOR => write!(f, "SELECTOR"),
-            Self::INSUFFICIENT => write!(f, "INSUFFICIENT"),
-            Self::SIGNATURE => write!(f, "SIGNATURE"),
-            Self::KEY => write!(f, "KEY"),
-            Self::POLICY_FAIL => write!(f, "POLICY_FAIL"),
-            Self::INTEGRITY => write!(f, "INTEGRITY"),
-            Self::TICKET => write!(f, "TICKET"),
-            Self::RESERVED_BITS => write!(f, "RESERVED_BITS"),
-            Self::BAD_AUTH => write!(f, "BAD_AUTH"),
-            Self::EXPIRED => write!(f, "EXPIRED"),
-            Self::POLICY_CC => write!(f, "POLICY_CC"),
-            Self::BINDING => write!(f, "BINDING"),
-            Self::CURVE => write!(f, "CURVE"),
-            Self::ECC_POINT => write!(f, "ECC_POINT"),
-            Self::RC_WARN => write!(f, "RC_WARN"),
-            Self::CONTEXT_GAP => write!(f, "CONTEXT_GAP"),
-            Self::OBJECT_MEMORY => write!(f, "OBJECT_MEMORY"),
-            Self::SESSION_MEMORY => write!(f, "SESSION_MEMORY"),
-            Self::MEMORY => write!(f, "MEMORY"),
-            Self::SESSION_HANDLES => write!(f, "SESSION_HANDLES"),
-            Self::OBJECT_HANDLES => write!(f, "OBJECT_HANDLES"),
-            Self::LOCALITY => write!(f, "LOCALITY"),
-            Self::YIELDED => write!(f, "YIELDED"),
-            Self::CANCELED => write!(f, "CANCELED"),
-            Self::TESTING => write!(f, "TESTING"),
-            Self::REFERENCE_H0 => write!(f, "REFERENCE_H0"),
-            Self::REFERENCE_H1 => write!(f, "REFERENCE_H1"),
-            Self::REFERENCE_H2 => write!(f, "REFERENCE_H2"),
-            Self::REFERENCE_H3 => write!(f, "REFERENCE_H3"),
-            Self::REFERENCE_H4 => write!(f, "REFERENCE_H4"),
-            Self::REFERENCE_H5 => write!(f, "REFERENCE_H5"),
-            Self::REFERENCE_H6 => write!(f, "REFERENCE_H6"),
-            Self::REFERENCE_S0 => write!(f, "REFERENCE_S0"),
-            Self::REFERENCE_S1 => write!(f, "REFERENCE_S1"),
-            Self::REFERENCE_S2 => write!(f, "REFERENCE_S2"),
-            Self::REFERENCE_S3 => write!(f, "REFERENCE_S3"),
-            Self::REFERENCE_S4 => write!(f, "REFERENCE_S4"),
-            Self::REFERENCE_S5 => write!(f, "REFERENCE_S5"),
-            Self::REFERENCE_S6 => write!(f, "REFERENCE_S6"),
-            Self::NV_RATE => write!(f, "NV_RATE"),
-            Self::LOCKOUT => write!(f, "LOCKOUT"),
-            Self::RETRY => write!(f, "RETRY"),
-            Self::NV_UNAVAILABLE => write!(f, "NV_UNAVAILABLE"),
-            Self::NOT_USED => write!(f, "NOT_USED"),
-            Self::H => write!(f, "H"),
-            Self::P => write!(f, "P"),
-            Self::S => write!(f, "S"),
-            Self::_1 => write!(f, "_1"),
-            Self::_2 => write!(f, "_2"),
-            Self::_3 => write!(f, "_3"),
-            Self::_4 => write!(f, "_4"),
-            Self::_5 => write!(f, "_5"),
-            Self::_6 => write!(f, "_6"),
-            Self::_7 => write!(f, "_7"),
-            Self::_8 => write!(f, "_8"),
-            Self::_9 => write!(f, "_9"),
-            Self::A => write!(f, "A"),
-            Self::B => write!(f, "B"),
-            Self::C => write!(f, "C"),
-            Self::D => write!(f, "D"),
-            Self::E => write!(f, "E"),
-            Self::F => write!(f, "F"),
-            Self::N_MASK => write!(f, "N_MASK"),
-            Self::TSS_TCP_BAD_HANDSHAKE_RESP => write!(f, "TSS_TCP_BAD_HANDSHAKE_RESP"),
-            Self::TSS_TCP_SERVER_TOO_OLD => write!(f, "TSS_TCP_SERVER_TOO_OLD"),
-            Self::TSS_TCP_BAD_ACK => write!(f, "TSS_TCP_BAD_ACK"),
-            Self::TSS_TCP_BAD_RESP_LEN => write!(f, "TSS_TCP_BAD_RESP_LEN"),
-            Self::TSS_TCP_UNEXPECTED_STARTUP_RESP => write!(f, "TSS_TCP_UNEXPECTED_STARTUP_RESP"),
-            Self::TSS_TCP_INVALID_SIZE_TAG => write!(f, "TSS_TCP_INVALID_SIZE_TAG"),
-            Self::TSS_TCP_DISCONNECTED => write!(f, "TSS_TCP_DISCONNECTED"),
-            Self::TSS_DISPATCH_FAILED => write!(f, "TSS_DISPATCH_FAILED"),
-            Self::TSS_SEND_OP_FAILED => write!(f, "TSS_SEND_OP_FAILED"),
-            Self::TSS_RESP_BUF_TOO_SHORT => write!(f, "TSS_RESP_BUF_TOO_SHORT"),
-            Self::TSS_RESP_BUF_INVALID_SESSION_TAG => write!(f, "TSS_RESP_BUF_INVALID_SESSION_TAG"),
-            Self::TSS_RESP_BUF_INVALID_SIZE => write!(f, "TSS_RESP_BUF_INVALID_SIZE"),
-            Self::TBS_COMMAND_BLOCKED => write!(f, "TBS_COMMAND_BLOCKED"),
-            Self::TBS_INVALID_HANDLE => write!(f, "TBS_INVALID_HANDLE"),
-            Self::TBS_DUPLICATE_V_HANDLE => write!(f, "TBS_DUPLICATE_V_HANDLE"),
-            Self::TBS_EMBEDDED_COMMAND_BLOCKED => write!(f, "TBS_EMBEDDED_COMMAND_BLOCKED"),
-            Self::TBS_EMBEDDED_COMMAND_UNSUPPORTED => write!(f, "TBS_EMBEDDED_COMMAND_UNSUPPORTED"),
-            Self::TBS_UNKNOWN_ERROR => write!(f, "TBS_UNKNOWN_ERROR"),
-            Self::TBS_INTERNAL_ERROR => write!(f, "TBS_INTERNAL_ERROR"),
-            Self::TBS_BAD_PARAMETER => write!(f, "TBS_BAD_PARAMETER"),
-            Self::TBS_INVALID_OUTPUT_POINTER => write!(f, "TBS_INVALID_OUTPUT_POINTER"),
-            Self::TBS_INVALID_CONTEXT => write!(f, "TBS_INVALID_CONTEXT"),
-            Self::TBS_INSUFFICIENT_BUFFER => write!(f, "TBS_INSUFFICIENT_BUFFER"),
-            Self::TBS_IO_ERROR => write!(f, "TBS_IO_ERROR"),
-            Self::TBS_INVALID_CONTEXT_PARAM => write!(f, "TBS_INVALID_CONTEXT_PARAM"),
-            Self::TBS_SERVICE_NOT_RUNNING => write!(f, "TBS_SERVICE_NOT_RUNNING"),
-            Self::TBS_TOO_MANY_CONTEXTS => write!(f, "TBS_TOO_MANY_CONTEXTS"),
-            Self::TBS_TOO_MANY_RESOURCES => write!(f, "TBS_TOO_MANY_RESOURCES"),
-            Self::TBS_SERVICE_START_PENDING => write!(f, "TBS_SERVICE_START_PENDING"),
-            Self::TBS_PPI_NOT_SUPPORTED => write!(f, "TBS_PPI_NOT_SUPPORTED"),
-            Self::TBS_COMMAND_CANCELED => write!(f, "TBS_COMMAND_CANCELED"),
-            Self::TBS_BUFFER_TOO_LARGE => write!(f, "TBS_BUFFER_TOO_LARGE"),
-            Self::TBS_TPM_NOT_FOUND => write!(f, "TBS_TPM_NOT_FOUND"),
-            Self::TBS_SERVICE_DISABLED => write!(f, "TBS_SERVICE_DISABLED"),
-            Self::TBS_ACCESS_DENIED => write!(f, "TBS_ACCESS_DENIED"),
-            Self::TBS_PPI_FUNCTION_NOT_SUPPORTED => write!(f, "TBS_PPI_FUNCTION_NOT_SUPPORTED"),
-            Self::TBS_OWNER_AUTH_NOT_FOUND => write!(f, "TBS_OWNER_AUTH_NOT_FOUND"),
+        match self.0 {
+            0x000 => write!(f, "SUCCESS"),
+            0x01E => write!(f, "BAD_TAG"),
+            0x100 => write!(f, "RC_VER1"),
+            RC_VER1 + 0x000 => write!(f, "INITIALIZE"),
+            RC_VER1 + 0x001 => write!(f, "FAILURE"),
+            RC_VER1 + 0x003 => write!(f, "SEQUENCE"),
+            RC_VER1 + 0x00B => write!(f, "PRIVATE"),
+            RC_VER1 + 0x019 => write!(f, "HMAC"),
+            RC_VER1 + 0x020 => write!(f, "DISABLED"),
+            RC_VER1 + 0x021 => write!(f, "EXCLUSIVE"),
+            RC_VER1 + 0x024 => write!(f, "AUTH_TYPE"),
+            RC_VER1 + 0x025 => write!(f, "AUTH_MISSING"),
+            RC_VER1 + 0x026 => write!(f, "POLICY"),
+            RC_VER1 + 0x027 => write!(f, "PCR"),
+            RC_VER1 + 0x028 => write!(f, "PCR_CHANGED"),
+            RC_VER1 + 0x02D => write!(f, "UPGRADE"),
+            RC_VER1 + 0x02E => write!(f, "TOO_MANY_CONTEXTS"),
+            RC_VER1 + 0x02F => write!(f, "AUTH_UNAVAILABLE"),
+            RC_VER1 + 0x030 => write!(f, "REBOOT"),
+            RC_VER1 + 0x031 => write!(f, "UNBALANCED"),
+            RC_VER1 + 0x042 => write!(f, "COMMAND_SIZE"),
+            RC_VER1 + 0x043 => write!(f, "COMMAND_CODE"),
+            RC_VER1 + 0x044 => write!(f, "AUTHSIZE"),
+            RC_VER1 + 0x045 => write!(f, "AUTH_CONTEXT"),
+            RC_VER1 + 0x046 => write!(f, "NV_RANGE"),
+            RC_VER1 + 0x047 => write!(f, "NV_SIZE"),
+            RC_VER1 + 0x048 => write!(f, "NV_LOCKED"),
+            RC_VER1 + 0x049 => write!(f, "NV_AUTHORIZATION"),
+            RC_VER1 + 0x04A => write!(f, "NV_UNINITIALIZED"),
+            RC_VER1 + 0x04B => write!(f, "NV_SPACE"),
+            RC_VER1 + 0x04C => write!(f, "NV_DEFINED"),
+            RC_VER1 + 0x050 => write!(f, "BAD_CONTEXT"),
+            RC_VER1 + 0x051 => write!(f, "CPHASH"),
+            RC_VER1 + 0x052 => write!(f, "PARENT"),
+            RC_VER1 + 0x053 => write!(f, "NEEDS_TEST"),
+            RC_VER1 + 0x054 => write!(f, "NO_RESULT"),
+            RC_VER1 + 0x055 => write!(f, "SENSITIVE"),
+            RC_VER1 + 0x07F => write!(f, "RC_MAX_FM0"),
+            0x080 => write!(f, "RC_FMT1"),
+            RC_FMT1 + 0x001 => write!(f, "ASYMMETRIC"),
+            RC_FMT1 + 0x002 => write!(f, "ATTRIBUTES"),
+            RC_FMT1 + 0x003 => write!(f, "HASH"),
+            RC_FMT1 + 0x004 => write!(f, "VALUE"),
+            RC_FMT1 + 0x005 => write!(f, "HIERARCHY"),
+            RC_FMT1 + 0x007 => write!(f, "KEY_SIZE"),
+            RC_FMT1 + 0x008 => write!(f, "MGF"),
+            RC_FMT1 + 0x009 => write!(f, "MODE"),
+            RC_FMT1 + 0x00A => write!(f, "TYPE"),
+            RC_FMT1 + 0x00B => write!(f, "HANDLE"),
+            RC_FMT1 + 0x00C => write!(f, "KDF"),
+            RC_FMT1 + 0x00D => write!(f, "RANGE"),
+            RC_FMT1 + 0x00E => write!(f, "AUTH_FAIL"),
+            RC_FMT1 + 0x00F => write!(f, "NONCE"),
+            RC_FMT1 + 0x010 => write!(f, "PP"),
+            RC_FMT1 + 0x012 => write!(f, "SCHEME"),
+            RC_FMT1 + 0x015 => write!(f, "SIZE"),
+            RC_FMT1 + 0x016 => write!(f, "SYMMETRIC"),
+            RC_FMT1 + 0x017 => write!(f, "TAG"),
+            RC_FMT1 + 0x018 => write!(f, "SELECTOR"),
+            RC_FMT1 + 0x01A => write!(f, "INSUFFICIENT"),
+            RC_FMT1 + 0x01B => write!(f, "SIGNATURE"),
+            RC_FMT1 + 0x01C => write!(f, "KEY"),
+            RC_FMT1 + 0x01D => write!(f, "POLICY_FAIL"),
+            RC_FMT1 + 0x01F => write!(f, "INTEGRITY"),
+            RC_FMT1 + 0x020 => write!(f, "TICKET"),
+            RC_FMT1 + 0x021 => write!(f, "RESERVED_BITS"),
+            RC_FMT1 + 0x022 => write!(f, "BAD_AUTH"),
+            RC_FMT1 + 0x023 => write!(f, "EXPIRED"),
+            RC_FMT1 + 0x024 => write!(f, "POLICY_CC"),
+            RC_FMT1 + 0x025 => write!(f, "BINDING"),
+            RC_FMT1 + 0x026 => write!(f, "CURVE"),
+            RC_FMT1 + 0x027 => write!(f, "ECC_POINT"),
+            0x900 => write!(f, "RC_WARN"),
+            RC_WARN + 0x001 => write!(f, "CONTEXT_GAP"),
+            RC_WARN + 0x002 => write!(f, "OBJECT_MEMORY"),
+            RC_WARN + 0x003 => write!(f, "SESSION_MEMORY"),
+            RC_WARN + 0x004 => write!(f, "MEMORY"),
+            RC_WARN + 0x005 => write!(f, "SESSION_HANDLES"),
+            RC_WARN + 0x006 => write!(f, "OBJECT_HANDLES"),
+            RC_WARN + 0x007 => write!(f, "LOCALITY"),
+            RC_WARN + 0x008 => write!(f, "YIELDED"),
+            RC_WARN + 0x009 => write!(f, "CANCELED"),
+            RC_WARN + 0x00A => write!(f, "TESTING"),
+            RC_WARN + 0x010 => write!(f, "REFERENCE_H0"),
+            RC_WARN + 0x011 => write!(f, "REFERENCE_H1"),
+            RC_WARN + 0x012 => write!(f, "REFERENCE_H2"),
+            RC_WARN + 0x013 => write!(f, "REFERENCE_H3"),
+            RC_WARN + 0x014 => write!(f, "REFERENCE_H4"),
+            RC_WARN + 0x015 => write!(f, "REFERENCE_H5"),
+            RC_WARN + 0x016 => write!(f, "REFERENCE_H6"),
+            RC_WARN + 0x018 => write!(f, "REFERENCE_S0"),
+            RC_WARN + 0x019 => write!(f, "REFERENCE_S1"),
+            RC_WARN + 0x01A => write!(f, "REFERENCE_S2"),
+            RC_WARN + 0x01B => write!(f, "REFERENCE_S3"),
+            RC_WARN + 0x01C => write!(f, "REFERENCE_S4"),
+            RC_WARN + 0x01D => write!(f, "REFERENCE_S5"),
+            RC_WARN + 0x01E => write!(f, "REFERENCE_S6"),
+            RC_WARN + 0x020 => write!(f, "NV_RATE"),
+            RC_WARN + 0x021 => write!(f, "LOCKOUT"),
+            RC_WARN + 0x022 => write!(f, "RETRY"),
+            RC_WARN + 0x023 => write!(f, "NV_UNAVAILABLE"),
+            RC_WARN + 0x7F => write!(f, "NOT_USED"),
+            0x040 => write!(f, "P"),
+            0x800 => write!(f, "S"),
+            0x200 => write!(f, "_2"),
+            0x300 => write!(f, "_3"),
+            0x400 => write!(f, "_4"),
+            0x500 => write!(f, "_5"),
+            0x600 => write!(f, "_6"),
+            0x700 => write!(f, "_7"),
+            0xA00 => write!(f, "A"),
+            0xB00 => write!(f, "B"),
+            0xC00 => write!(f, "C"),
+            0xD00 => write!(f, "D"),
+            0xE00 => write!(f, "E"),
+            0xF00 => write!(f, "F"),
+            0x40280001 => write!(f, "TSS_TCP_BAD_HANDSHAKE_RESP"),
+            0x40280002 => write!(f, "TSS_TCP_SERVER_TOO_OLD"),
+            0x40280003 => write!(f, "TSS_TCP_BAD_ACK"),
+            0x40280004 => write!(f, "TSS_TCP_BAD_RESP_LEN"),
+            0x40280005 => write!(f, "TSS_TCP_UNEXPECTED_STARTUP_RESP"),
+            0x40280006 => write!(f, "TSS_TCP_INVALID_SIZE_TAG"),
+            0x40280007 => write!(f, "TSS_TCP_DISCONNECTED"),
+            0x40280010 => write!(f, "TSS_DISPATCH_FAILED"),
+            0x40280011 => write!(f, "TSS_SEND_OP_FAILED"),
+            0x40280021 => write!(f, "TSS_RESP_BUF_TOO_SHORT"),
+            0x40280022 => write!(f, "TSS_RESP_BUF_INVALID_SESSION_TAG"),
+            0x40280023 => write!(f, "TSS_RESP_BUF_INVALID_SIZE"),
+            0x80280400 => write!(f, "TBS_COMMAND_BLOCKED"),
+            0x80280401 => write!(f, "TBS_INVALID_HANDLE"),
+            0x80280402 => write!(f, "TBS_DUPLICATE_V_HANDLE"),
+            0x80280403 => write!(f, "TBS_EMBEDDED_COMMAND_BLOCKED"),
+            0x80280404 => write!(f, "TBS_EMBEDDED_COMMAND_UNSUPPORTED"),
+            0x80284000 => write!(f, "TBS_UNKNOWN_ERROR"),
+            0x80284001 => write!(f, "TBS_INTERNAL_ERROR"),
+            0x80284002 => write!(f, "TBS_BAD_PARAMETER"),
+            0x80284003 => write!(f, "TBS_INVALID_OUTPUT_POINTER"),
+            0x80284004 => write!(f, "TBS_INVALID_CONTEXT"),
+            0x80284005 => write!(f, "TBS_INSUFFICIENT_BUFFER"),
+            0x80284006 => write!(f, "TBS_IO_ERROR"),
+            0x80284007 => write!(f, "TBS_INVALID_CONTEXT_PARAM"),
+            0x80284008 => write!(f, "TBS_SERVICE_NOT_RUNNING"),
+            0x80284009 => write!(f, "TBS_TOO_MANY_CONTEXTS"),
+            0x8028400A => write!(f, "TBS_TOO_MANY_RESOURCES"),
+            0x8028400B => write!(f, "TBS_SERVICE_START_PENDING"),
+            0x8028400C => write!(f, "TBS_PPI_NOT_SUPPORTED"),
+            0x8028400D => write!(f, "TBS_COMMAND_CANCELED"),
+            0x8028400E => write!(f, "TBS_BUFFER_TOO_LARGE"),
+            0x8028400F => write!(f, "TBS_TPM_NOT_FOUND"),
+            0x80284010 => write!(f, "TBS_SERVICE_DISABLED"),
+            0x80284012 => write!(f, "TBS_ACCESS_DENIED"),
+            0x80284014 => write!(f, "TBS_PPI_FUNCTION_NOT_SUPPORTED"),
+            0x80284015 => write!(f, "TBS_OWNER_AUTH_NOT_FOUND"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// A TPM_CLOCK_ADJUST value is used to change the rate at which the TPM internal
@@ -1613,6 +2319,27 @@ pub enum TPM_CLOCK_ADJUST {
 
     /// Speed the Clock update rate by one coarse adjustment step.
     COARSE_FASTER = 0x3 // Original value: 3
+}
+
+impl TpmEnum for TPM_CLOCK_ADJUST {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_CLOCK_ADJUST> for u32 {
+    fn from(value: TPM_CLOCK_ADJUST) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_CLOCK_ADJUST> for i32 {
+    fn from(value: TPM_CLOCK_ADJUST) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPM_CLOCK_ADJUST {
@@ -1668,6 +2395,27 @@ pub enum TPM_EO {
 
     /// All bits SET in B are CLEAR in A. ((A∧B)=0)
     BITCLEAR = 0xB // Original value: 0x000B
+}
+
+impl TpmEnum for TPM_EO {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_EO> for u32 {
+    fn from(value: TPM_EO) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_EO> for i32 {
+    fn from(value: TPM_EO) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPM_EO {
@@ -1768,6 +2516,27 @@ pub enum TPM_ST {
     FU_MANIFEST = 0x8029
 }
 
+impl TpmEnum for TPM_ST {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_ST> for u32 {
+    fn from(value: TPM_ST) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_ST> for i32 {
+    fn from(value: TPM_ST) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPM_ST {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -1810,6 +2579,27 @@ pub enum TPM_SU {
     STATE = 0x1 // Original value: 0x0001
 }
 
+impl TpmEnum for TPM_SU {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_SU> for u32 {
+    fn from(value: TPM_SU) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_SU> for i32 {
+    fn from(value: TPM_SU) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPM_SU {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -1833,6 +2623,27 @@ pub enum TPM_SE {
     TRIAL = 0x3 // Original value: 0x03
 }
 
+impl TpmEnum for TPM_SE {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_SE> for u32 {
+    fn from(value: TPM_SE) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_SE> for i32 {
+    fn from(value: TPM_SE) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPM_SE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -1845,70 +2656,113 @@ impl fmt::Display for TPM_SE {
 
 /// The TPM_CAP values are used in TPM2_GetCapability() to select the type of the value to
 /// be returned. The format of the response varies according to the type of the value.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum TPM_CAP {
-    FIRST = 0x0, // Original value: 0x00000000
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPM_CAP(pub i32);
+
+impl TPM_CAP {
+    pub const FIRST: Self = Self(0x0); // Original value: 0x00000000
 
     /// TPML_ALG_PROPERTY
-    // WARNING: ALGS has duplicate value 0x0 - using name + value pattern
-    ALGSValue = 0x0, // Original value: 0x00000000
+    pub const ALGS: Self = Self(0x0); // Original value: 0x00000000
 
     /// TPML_HANDLE
-    HANDLES = 0x1, // Original value: 0x00000001
+    pub const HANDLES: Self = Self(0x1); // Original value: 0x00000001
 
     /// TPML_CCA
-    COMMANDS = 0x2, // Original value: 0x00000002
+    pub const COMMANDS: Self = Self(0x2); // Original value: 0x00000002
 
     /// TPML_CC
-    PP_COMMANDS = 0x3, // Original value: 0x00000003
+    pub const PP_COMMANDS: Self = Self(0x3); // Original value: 0x00000003
 
     /// TPML_CC
-    AUDIT_COMMANDS = 0x4, // Original value: 0x00000004
+    pub const AUDIT_COMMANDS: Self = Self(0x4); // Original value: 0x00000004
 
     /// TPML_PCR_SELECTION
-    PCRS = 0x5, // Original value: 0x00000005
+    pub const PCRS: Self = Self(0x5); // Original value: 0x00000005
 
     /// TPML_TAGGED_TPM_PROPERTY
-    TPM_PROPERTIES = 0x6, // Original value: 0x00000006
+    pub const TPM_PROPERTIES: Self = Self(0x6); // Original value: 0x00000006
 
     /// TPML_TAGGED_PCR_PROPERTY
-    PCR_PROPERTIES = 0x7, // Original value: 0x00000007
+    pub const PCR_PROPERTIES: Self = Self(0x7); // Original value: 0x00000007
 
     /// TPML_ECC_CURVE
-    ECC_CURVES = 0x8, // Original value: 0x00000008
+    pub const ECC_CURVES: Self = Self(0x8); // Original value: 0x00000008
 
     /// TPML_TAGGED_POLICY
-    AUTH_POLICIES = 0x9, // Original value: 0x00000009
+    pub const AUTH_POLICIES: Self = Self(0x9); // Original value: 0x00000009
 
     /// TPML_ACT_DATA
-    ACT = 0xA, // Original value: 0x0000000A
-    // WARNING: LAST has duplicate value 0xA - using name + value pattern
-    LASTValue = 0xA, // Original value: 0x0000000A
+    pub const ACT: Self = Self(0xA); // Original value: 0x0000000A
+    pub const LAST: Self = Self(0xA); // Original value: 0x0000000A
 
     /// Manufacturer-specific values
-    VENDOR_PROPERTY = 0x100 // Original value: 0x00000100
+    pub const VENDOR_PROPERTY: Self = Self(0x100); // Original value: 0x00000100
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            0x00000000 => Ok(Self::FIRST),
+            0x00000001 => Ok(Self::HANDLES),
+            0x00000002 => Ok(Self::COMMANDS),
+            0x00000003 => Ok(Self::PP_COMMANDS),
+            0x00000004 => Ok(Self::AUDIT_COMMANDS),
+            0x00000005 => Ok(Self::PCRS),
+            0x00000006 => Ok(Self::TPM_PROPERTIES),
+            0x00000007 => Ok(Self::PCR_PROPERTIES),
+            0x00000008 => Ok(Self::ECC_CURVES),
+            0x00000009 => Ok(Self::AUTH_POLICIES),
+            0x0000000A => Ok(Self::ACT),
+            0x00000100 => Ok(Self::VENDOR_PROPERTY),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPM_CAP {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPM_CAP> for u32 {
+    fn from(value: TPM_CAP) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPM_CAP> for i32 {
+    fn from(value: TPM_CAP) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPM_CAP {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::FIRST => write!(f, "FIRST"),
-            Self::ALGS => write!(f, "ALGS"),
-            Self::HANDLES => write!(f, "HANDLES"),
-            Self::COMMANDS => write!(f, "COMMANDS"),
-            Self::PP_COMMANDS => write!(f, "PP_COMMANDS"),
-            Self::AUDIT_COMMANDS => write!(f, "AUDIT_COMMANDS"),
-            Self::PCRS => write!(f, "PCRS"),
-            Self::TPM_PROPERTIES => write!(f, "TPM_PROPERTIES"),
-            Self::PCR_PROPERTIES => write!(f, "PCR_PROPERTIES"),
-            Self::ECC_CURVES => write!(f, "ECC_CURVES"),
-            Self::AUTH_POLICIES => write!(f, "AUTH_POLICIES"),
-            Self::ACT => write!(f, "ACT"),
-            Self::LAST => write!(f, "LAST"),
-            Self::VENDOR_PROPERTY => write!(f, "VENDOR_PROPERTY"),
+        match self.0 {
+            0x00000000 => write!(f, "FIRST"),
+            0x00000001 => write!(f, "HANDLES"),
+            0x00000002 => write!(f, "COMMANDS"),
+            0x00000003 => write!(f, "PP_COMMANDS"),
+            0x00000004 => write!(f, "AUDIT_COMMANDS"),
+            0x00000005 => write!(f, "PCRS"),
+            0x00000006 => write!(f, "TPM_PROPERTIES"),
+            0x00000007 => write!(f, "PCR_PROPERTIES"),
+            0x00000008 => write!(f, "ECC_CURVES"),
+            0x00000009 => write!(f, "AUTH_POLICIES"),
+            0x0000000A => write!(f, "ACT"),
+            0x00000100 => write!(f, "VENDOR_PROPERTY"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// The TPM_PT constants are used in TPM2_GetCapability(capability =
@@ -1925,12 +2779,10 @@ pub enum TPM_PT {
 
     /// The group of fixed properties returned as TPMS_TAGGED_PROPERTY
     /// The values in this group are only changed due to a firmware change in the TPM.
-    // WARNING: PT_FIXED has duplicate value 0x100 - using name + value pattern
-    PT_FIXEDValue = 0x100, // Original value: PT_GROUP * 1
+    PT_FIXED = 0x100, // Original value: PT_GROUP * 1
 
     /// A 4-octet character string containing the TPM Family value (TPM_SPEC_FAMILY)
-    // WARNING: FAMILY_INDICATOR has duplicate value 0x100 - using name + value pattern
-    FAMILY_INDICATORValue = 0x100, // Original value: PT_FIXED + 0
+    FAMILY_INDICATOR = 0x100, // Original value: PT_FIXED + 0
 
     /// The level of the specification
     /// NOTE 1 For this specification, the level is zero.
@@ -2120,8 +2972,7 @@ pub enum TPM_PT {
     PT_VAR = 0x200, // Original value: PT_GROUP * 2
 
     /// TPMA_PERMANENT
-    // WARNING: PERMANENT has duplicate value 0x200 - using name + value pattern
-    PERMANENTValue = 0x200, // Original value: PT_VAR + 0
+    PERMANENT = 0x200, // Original value: PT_VAR + 0
 
     /// TPMA_STARTUP_CLEAR
     STARTUP_CLEAR = 0x201, // Original value: PT_VAR + 1
@@ -2213,6 +3064,27 @@ pub enum TPM_PT {
     AUDIT_COUNTER_1 = 0x214 // Original value: PT_VAR + 20
 }
 
+impl TpmEnum for TPM_PT {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_PT> for u32 {
+    fn from(value: TPM_PT) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_PT> for i32 {
+    fn from(value: TPM_PT) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPM_PT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -2295,109 +3167,155 @@ impl fmt::Display for TPM_PT {
 /// being selected or returned. The PCR properties can be read when capability ==
 /// TPM_CAP_PCR_PROPERTIES. If there is no property that corresponds to the value of
 /// property, the next higher value is returned, if it exists.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum TPM_PT_PCR {
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPM_PT_PCR(pub i32);
+
+impl TPM_PT_PCR {
     /// Bottom of the range of TPM_PT_PCR properties
-    FIRST = 0x0, // Original value: 0x00000000
+    pub const FIRST: Self = Self(0x0); // Original value: 0x00000000
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR is saved and restored by TPM_SU_STATE
-    // WARNING: SAVE has duplicate value 0x0 - using name + value pattern
-    SAVEValue = 0x0, // Original value: 0x00000000
+    pub const SAVE: Self = Self(0x0); // Original value: 0x00000000
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 0
     /// This property is only present if a locality other than 0 is implemented.
-    EXTEND_L0 = 0x1, // Original value: 0x00000001
+    pub const EXTEND_L0: Self = Self(0x1); // Original value: 0x00000001
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 0
-    RESET_L0 = 0x2, // Original value: 0x00000002
+    pub const RESET_L0: Self = Self(0x2); // Original value: 0x00000002
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 1
     /// This property is only present if locality 1 is implemented.
-    EXTEND_L1 = 0x3, // Original value: 0x00000003
+    pub const EXTEND_L1: Self = Self(0x3); // Original value: 0x00000003
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 1
     /// This property is only present if locality 1 is implemented.
-    RESET_L1 = 0x4, // Original value: 0x00000004
+    pub const RESET_L1: Self = Self(0x4); // Original value: 0x00000004
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 2
     /// This property is only present if localities 1 and 2 are implemented.
-    EXTEND_L2 = 0x5, // Original value: 0x00000005
+    pub const EXTEND_L2: Self = Self(0x5); // Original value: 0x00000005
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 2
     /// This property is only present if localities 1 and 2 are implemented.
-    RESET_L2 = 0x6, // Original value: 0x00000006
+    pub const RESET_L2: Self = Self(0x6); // Original value: 0x00000006
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 3
     /// This property is only present if localities 1, 2, and 3 are implemented.
-    EXTEND_L3 = 0x7, // Original value: 0x00000007
+    pub const EXTEND_L3: Self = Self(0x7); // Original value: 0x00000007
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 3
     /// This property is only present if localities 1, 2, and 3 are implemented.
-    RESET_L3 = 0x8, // Original value: 0x00000008
+    pub const RESET_L3: Self = Self(0x8); // Original value: 0x00000008
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 4
     /// This property is only present if localities 1, 2, 3, and 4 are implemented.
-    EXTEND_L4 = 0x9, // Original value: 0x00000009
+    pub const EXTEND_L4: Self = Self(0x9); // Original value: 0x00000009
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 4
     /// This property is only present if localities 1, 2, 3, and 4 are implemented.
-    RESET_L4 = 0xA, // Original value: 0x0000000A
+    pub const RESET_L4: Self = Self(0xA); // Original value: 0x0000000A
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that modifications to this PCR (reset or
     /// Extend) will not increment the pcrUpdateCounter
-    NO_INCREMENT = 0x11, // Original value: 0x00000011
+    pub const NO_INCREMENT: Self = Self(0x11); // Original value: 0x00000011
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR is reset by a D-RTM event
     /// These PCR are reset to -1 on TPM2_Startup() and reset to 0 on a _TPM_Hash_End event
     /// following a _TPM_Hash_Start event.
-    DRTM_RESET = 0x12, // Original value: 0x00000012
+    pub const DRTM_RESET: Self = Self(0x12); // Original value: 0x00000012
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by policy
     /// This property is only present if the TPM supports policy control of a PCR.
-    POLICY = 0x13, // Original value: 0x00000013
+    pub const POLICY: Self = Self(0x13); // Original value: 0x00000013
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by an
     /// authorization value
     /// This property is only present if the TPM supports authorization control of a PCR.
-    AUTH = 0x14, // Original value: 0x00000014
+    pub const AUTH: Self = Self(0x14); // Original value: 0x00000014
 
     /// Top of the range of TPM_PT_PCR properties of the implementation
     /// If the TPM receives a request for a PCR property with a value larger than this, the
     /// TPM will return a zero length list and set the moreData parameter to NO.
     /// NOTE This is an implementation-specific value. The value shown reflects the reference
     /// code implementation.
-    // WARNING: LAST has duplicate value 0x14 - using name + value pattern
-    LASTValue = 0x14 // Original value: 0x00000014
+    pub const LAST: Self = Self(0x14); // Original value: 0x00000014
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            0x00000000 => Ok(Self::FIRST),
+            0x00000001 => Ok(Self::EXTEND_L0),
+            0x00000002 => Ok(Self::RESET_L0),
+            0x00000003 => Ok(Self::EXTEND_L1),
+            0x00000004 => Ok(Self::RESET_L1),
+            0x00000005 => Ok(Self::EXTEND_L2),
+            0x00000006 => Ok(Self::RESET_L2),
+            0x00000007 => Ok(Self::EXTEND_L3),
+            0x00000008 => Ok(Self::RESET_L3),
+            0x00000009 => Ok(Self::EXTEND_L4),
+            0x0000000A => Ok(Self::RESET_L4),
+            0x00000011 => Ok(Self::NO_INCREMENT),
+            0x00000012 => Ok(Self::DRTM_RESET),
+            0x00000013 => Ok(Self::POLICY),
+            0x00000014 => Ok(Self::AUTH),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPM_PT_PCR {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPM_PT_PCR> for u32 {
+    fn from(value: TPM_PT_PCR) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPM_PT_PCR> for i32 {
+    fn from(value: TPM_PT_PCR) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPM_PT_PCR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::FIRST => write!(f, "FIRST"),
-            Self::SAVE => write!(f, "SAVE"),
-            Self::EXTEND_L0 => write!(f, "EXTEND_L0"),
-            Self::RESET_L0 => write!(f, "RESET_L0"),
-            Self::EXTEND_L1 => write!(f, "EXTEND_L1"),
-            Self::RESET_L1 => write!(f, "RESET_L1"),
-            Self::EXTEND_L2 => write!(f, "EXTEND_L2"),
-            Self::RESET_L2 => write!(f, "RESET_L2"),
-            Self::EXTEND_L3 => write!(f, "EXTEND_L3"),
-            Self::RESET_L3 => write!(f, "RESET_L3"),
-            Self::EXTEND_L4 => write!(f, "EXTEND_L4"),
-            Self::RESET_L4 => write!(f, "RESET_L4"),
-            Self::NO_INCREMENT => write!(f, "NO_INCREMENT"),
-            Self::DRTM_RESET => write!(f, "DRTM_RESET"),
-            Self::POLICY => write!(f, "POLICY"),
-            Self::AUTH => write!(f, "AUTH"),
-            Self::LAST => write!(f, "LAST"),
+        match self.0 {
+            0x00000000 => write!(f, "FIRST"),
+            0x00000001 => write!(f, "EXTEND_L0"),
+            0x00000002 => write!(f, "RESET_L0"),
+            0x00000003 => write!(f, "EXTEND_L1"),
+            0x00000004 => write!(f, "RESET_L1"),
+            0x00000005 => write!(f, "EXTEND_L2"),
+            0x00000006 => write!(f, "RESET_L2"),
+            0x00000007 => write!(f, "EXTEND_L3"),
+            0x00000008 => write!(f, "RESET_L3"),
+            0x00000009 => write!(f, "EXTEND_L4"),
+            0x0000000A => write!(f, "RESET_L4"),
+            0x00000011 => write!(f, "NO_INCREMENT"),
+            0x00000012 => write!(f, "DRTM_RESET"),
+            0x00000013 => write!(f, "POLICY"),
+            0x00000014 => write!(f, "AUTH"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// The platform values in Table 25 are used for the TPM_PT_PS_FAMILY_INDICATOR.
@@ -2453,6 +3371,27 @@ pub enum TPM_PS {
     TC = 0xF // Original value: 0x0000000F
 }
 
+impl TpmEnum for TPM_PS {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_PS> for u32 {
+    fn from(value: TPM_PS) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_PS> for i32 {
+    fn from(value: TPM_PS) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPM_PS {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -2478,164 +3417,252 @@ impl fmt::Display for TPM_PS {
 
 /// The 32-bit handle space is divided into 256 regions of equal size with 224 values in
 /// each. Each of these ranges represents a handle type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i8)]
-pub enum TPM_HT {
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPM_HT(pub i8);
+
+impl TPM_HT {
     /// PCR consecutive numbers, starting at 0, that reference the PCR registers
     /// A platform-specific specification will set the minimum number of PCR and an
     /// implementation may have more.
-    PCR = 0x0, // Original value: 0x00
+    pub const PCR: Self = Self(0x0); // Original value: 0x00
 
     /// NV Index assigned by the caller
-    NV_INDEX = 0x1, // Original value: 0x01
+    pub const NV_INDEX: Self = Self(0x1); // Original value: 0x01
 
     /// HMAC Authorization Session assigned by the TPM when the session is created
-    HMAC_SESSION = 0x2, // Original value: 0x02
+    pub const HMAC_SESSION: Self = Self(0x2); // Original value: 0x02
 
     /// Loaded Authorization Session used only in the context of TPM2_GetCapability
     /// This type references both loaded HMAC and loaded policy authorization sessions.
-    // WARNING: LOADED_SESSION has duplicate value 0x2 - using name + value pattern
-    LOADED_SESSIONValue = 0x2, // Original value: 0x02
+    pub const LOADED_SESSION: Self = Self(0x2); // Original value: 0x02
 
     /// Policy Authorization Session assigned by the TPM when the session is created
-    POLICY_SESSION = 0x3, // Original value: 0x03
+    pub const POLICY_SESSION: Self = Self(0x3); // Original value: 0x03
 
     /// Saved Authorization Session used only in the context of TPM2_GetCapability
     /// This type references saved authorization session contexts for which the TPM is
     /// maintaining tracking information.
-    // WARNING: SAVED_SESSION has duplicate value 0x3 - using name + value pattern
-    SAVED_SESSIONValue = 0x3, // Original value: 0x03
+    pub const SAVED_SESSION: Self = Self(0x3); // Original value: 0x03
 
     /// Permanent Values assigned by this specification in Table 28
-    PERMANENT = 0x40,
+    pub const PERMANENT: Self = Self(0x40);
 
     /// Transient Objects assigned by the TPM when an object is loaded into transient-object
     /// memory or when a persistent object is converted to a transient object
-    TRANSIENT = 0x80,
+    pub const TRANSIENT: Self = Self(0x80);
 
     /// Persistent Objects assigned by the TPM when a loaded transient object is made persistent
-    PERSISTENT = 0x81,
+    pub const PERSISTENT: Self = Self(0x81);
 
     /// Attached Component handle for an Attached Component.
-    AC = 0x90
+    pub const AC: Self = Self(0x90);
+
+    pub fn try_from(value: i8) -> Result<Self, TpmError> {
+        match value {
+            0x00 => Ok(Self::PCR),
+            0x01 => Ok(Self::NV_INDEX),
+            0x02 => Ok(Self::HMAC_SESSION),
+            0x03 => Ok(Self::POLICY_SESSION),
+            0x40 => Ok(Self::PERMANENT),
+            0x80 => Ok(Self::TRANSIENT),
+            0x81 => Ok(Self::PERSISTENT),
+            0x90 => Ok(Self::AC),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPM_HT {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPM_HT> for u32 {
+    fn from(value: TPM_HT) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPM_HT> for i32 {
+    fn from(value: TPM_HT) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPM_HT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::PCR => write!(f, "PCR"),
-            Self::NV_INDEX => write!(f, "NV_INDEX"),
-            Self::HMAC_SESSION => write!(f, "HMAC_SESSION"),
-            Self::LOADED_SESSION => write!(f, "LOADED_SESSION"),
-            Self::POLICY_SESSION => write!(f, "POLICY_SESSION"),
-            Self::SAVED_SESSION => write!(f, "SAVED_SESSION"),
-            Self::PERMANENT => write!(f, "PERMANENT"),
-            Self::TRANSIENT => write!(f, "TRANSIENT"),
-            Self::PERSISTENT => write!(f, "PERSISTENT"),
-            Self::AC => write!(f, "AC"),
+        match self.0 {
+            0x00 => write!(f, "PCR"),
+            0x01 => write!(f, "NV_INDEX"),
+            0x02 => write!(f, "HMAC_SESSION"),
+            0x03 => write!(f, "POLICY_SESSION"),
+            0x40 => write!(f, "PERMANENT"),
+            0x80 => write!(f, "TRANSIENT"),
+            0x81 => write!(f, "PERSISTENT"),
+            0x90 => write!(f, "AC"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// Table 28 lists the architecturally defined handles that cannot be changed. The handles
 /// include authorization handles, and special handles.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum TPM_RH {
-    FIRST = 0x40000000,
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPM_RH(pub i32);
+
+impl TPM_RH {
+    pub const FIRST: Self = Self(0x40000000);
 
     /// Not used1
-    // WARNING: SRK has duplicate value 0x40000000 - using name + value pattern
-    SRKValue = 0x40000000,
+    pub const SRK: Self = Self(0x40000000);
 
     /// Handle references the Storage Primary Seed (SPS), the ownerAuth, and the ownerPolicy
-    OWNER = 0x40000001,
+    pub const OWNER: Self = Self(0x40000001);
 
     /// Not used1
-    REVOKE = 0x40000002,
+    pub const REVOKE: Self = Self(0x40000002);
 
     /// Not used1
-    TRANSPORT = 0x40000003,
+    pub const TRANSPORT: Self = Self(0x40000003);
 
     /// Not used1
-    OPERATOR = 0x40000004,
+    pub const OPERATOR: Self = Self(0x40000004);
 
     /// Not used1
-    ADMIN = 0x40000005,
+    pub const ADMIN: Self = Self(0x40000005);
 
     /// Not used1
-    EK = 0x40000006,
+    pub const EK: Self = Self(0x40000006);
 
     /// A handle associated with the null hierarchy, an EmptyAuth authValue, and an Empty
     /// Policy authPolicy.
-    NULL = 0x40000007,
+    pub const NULL: Self = Self(0x40000007);
 
     /// Value reserved to the TPM to indicate a handle location that has not been initialized
     /// or assigned
-    UNASSIGNED = 0x40000008,
+    pub const UNASSIGNED: Self = Self(0x40000008);
 
     /// Authorization value used to indicate a password authorization session
-    PW = 0x40000009,
+    pub const PW: Self = Self(0x40000009);
 
     /// References the authorization associated with the dictionary attack lockout reset
-    LOCKOUT = 0x4000000A,
+    pub const LOCKOUT: Self = Self(0x4000000A);
 
     /// References the Endorsement Primary Seed (EPS), endorsementAuth, and endorsementPolicy
-    ENDORSEMENT = 0x4000000B,
+    pub const ENDORSEMENT: Self = Self(0x4000000B);
 
     /// References the Platform Primary Seed (PPS), platformAuth, and platformPolicy
-    PLATFORM = 0x4000000C,
+    pub const PLATFORM: Self = Self(0x4000000C);
 
     /// For phEnableNV
-    PLATFORM_NV = 0x4000000D,
+    pub const PLATFORM_NV: Self = Self(0x4000000D);
 
     /// Start of a range of authorization values that are vendor-specific. A TPM may support
     /// any of the values in this range as are needed for vendor-specific purposes.
     /// Disabled if ehEnable is CLEAR.
     /// NOTE Any includes none.
-    AUTH_00 = 0x40000010,
+    pub const AUTH_00: Self = Self(0x40000010);
 
     /// End of the range of vendor-specific authorization values.
-    AUTH_FF = 0x4000010F,
+    pub const AUTH_FF: Self = Self(0x4000010F);
 
     /// Start of the range of authenticated timers
-    ACT_0 = 0x40000110,
+    pub const ACT_0: Self = Self(0x40000110);
 
     /// End of the range of authenticated timers
-    ACT_F = 0x4000011F,
+    pub const ACT_F: Self = Self(0x4000011F);
 
     /// The top of the reserved handle area
     /// This is set to allow TPM2_GetCapability() to know where to stop. It may vary as
     /// implementations add to the permanent handle area.
-    // WARNING: LAST has duplicate value 0x4000011F - using name + value pattern
-    LASTValue = 0x4000011F
+    pub const LAST: Self = Self(0x4000011F);
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            0x40000000 => Ok(Self::FIRST),
+            0x40000001 => Ok(Self::OWNER),
+            0x40000002 => Ok(Self::REVOKE),
+            0x40000003 => Ok(Self::TRANSPORT),
+            0x40000004 => Ok(Self::OPERATOR),
+            0x40000005 => Ok(Self::ADMIN),
+            0x40000006 => Ok(Self::EK),
+            0x40000007 => Ok(Self::NULL),
+            0x40000008 => Ok(Self::UNASSIGNED),
+            0x40000009 => Ok(Self::PW),
+            0x4000000A => Ok(Self::LOCKOUT),
+            0x4000000B => Ok(Self::ENDORSEMENT),
+            0x4000000C => Ok(Self::PLATFORM),
+            0x4000000D => Ok(Self::PLATFORM_NV),
+            0x40000010 => Ok(Self::AUTH_00),
+            0x4000010F => Ok(Self::AUTH_FF),
+            0x40000110 => Ok(Self::ACT_0),
+            0x4000011F => Ok(Self::ACT_F),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPM_RH {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPM_RH> for u32 {
+    fn from(value: TPM_RH) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPM_RH> for i32 {
+    fn from(value: TPM_RH) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPM_RH {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::FIRST => write!(f, "FIRST"),
-            Self::SRK => write!(f, "SRK"),
-            Self::OWNER => write!(f, "OWNER"),
-            Self::REVOKE => write!(f, "REVOKE"),
-            Self::TRANSPORT => write!(f, "TRANSPORT"),
-            Self::OPERATOR => write!(f, "OPERATOR"),
-            Self::ADMIN => write!(f, "ADMIN"),
-            Self::EK => write!(f, "EK"),
-            Self::NULL => write!(f, "NULL"),
-            Self::UNASSIGNED => write!(f, "UNASSIGNED"),
-            Self::PW => write!(f, "PW"),
-            Self::LOCKOUT => write!(f, "LOCKOUT"),
-            Self::ENDORSEMENT => write!(f, "ENDORSEMENT"),
-            Self::PLATFORM => write!(f, "PLATFORM"),
-            Self::PLATFORM_NV => write!(f, "PLATFORM_NV"),
-            Self::AUTH_00 => write!(f, "AUTH_00"),
-            Self::AUTH_FF => write!(f, "AUTH_FF"),
-            Self::ACT_0 => write!(f, "ACT_0"),
-            Self::ACT_F => write!(f, "ACT_F"),
-            Self::LAST => write!(f, "LAST"),
+        match self.0 {
+            0x40000000 => write!(f, "FIRST"),
+            0x40000001 => write!(f, "OWNER"),
+            0x40000002 => write!(f, "REVOKE"),
+            0x40000003 => write!(f, "TRANSPORT"),
+            0x40000004 => write!(f, "OPERATOR"),
+            0x40000005 => write!(f, "ADMIN"),
+            0x40000006 => write!(f, "EK"),
+            0x40000007 => write!(f, "NULL"),
+            0x40000008 => write!(f, "UNASSIGNED"),
+            0x40000009 => write!(f, "PW"),
+            0x4000000A => write!(f, "LOCKOUT"),
+            0x4000000B => write!(f, "ENDORSEMENT"),
+            0x4000000C => write!(f, "PLATFORM"),
+            0x4000000D => write!(f, "PLATFORM_NV"),
+            0x40000010 => write!(f, "AUTH_00"),
+            0x4000010F => write!(f, "AUTH_FF"),
+            0x40000110 => write!(f, "ACT_0"),
+            0x4000011F => write!(f, "ACT_F"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// This table lists the values of the TPM_NT field of a TPMA_NV. See Table 215 for usage.
@@ -2662,6 +3689,27 @@ pub enum TPM_NT {
 
     /// PIN Pass - contains pinCount that increments on a PIN authorization success and a pinLimit
     PIN_PASS = 0x9
+}
+
+impl TpmEnum for TPM_NT {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_NT> for u32 {
+    fn from(value: TPM_NT) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_NT> for i32 {
+    fn from(value: TPM_NT) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPM_NT {
@@ -2696,6 +3744,27 @@ pub enum TPM_AT {
     VEND = 0x80000000
 }
 
+impl TpmEnum for TPM_AT {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_AT> for u32 {
+    fn from(value: TPM_AT) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_AT> for i32 {
+    fn from(value: TPM_AT) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPM_AT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -2714,6 +3783,27 @@ pub enum TPM_AE {
     /// In a command, a non-specific request for AC information; in a response, indicates that
     /// outputData is not meaningful
     NONE = 0x0 // Original value: 0x00000000
+}
+
+impl TpmEnum for TPM_AE {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_AE> for u32 {
+    fn from(value: TPM_AE) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_AE> for i32 {
+    fn from(value: TPM_AE) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPM_AE {
@@ -2735,6 +3825,27 @@ pub enum PLATFORM {
     DAY_OF_YEAR = 0x168 // Original value: TPM_SPEC::DAY_OF_YEAR
 }
 
+impl TpmEnum for PLATFORM {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<PLATFORM> for u32 {
+    fn from(value: PLATFORM) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<PLATFORM> for i32 {
+    fn from(value: PLATFORM) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for PLATFORM {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -2749,222 +3860,247 @@ impl fmt::Display for PLATFORM {
 
 /// This table contains a collection of values used in various parts of the reference
 /// code. The values shown are illustrative.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum Implementation {
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Implementation(pub i32);
+
+impl Implementation {
     /// Temporary define
-    FIELD_UPGRADE_IMPLEMENTED = 0x0, // Original value: Logic::NO
+    pub const FIELD_UPGRADE_IMPLEMENTED: Self = Self(0x0); // Original value: Logic::NO
 
     /// Selection of the library that provides the basic hashing functions.
-    HASH_LIB = 0x1, // Original value: ImplementationConstants::Ossl
+    pub const HASH_LIB: Self = Self(0x1); // Original value: ImplementationConstants::Ossl
 
     /// Selection of the library that provides the low-level symmetric cryptography. Choices
     /// are determined by the vendor (See LibSupport.h for implications).
-    // WARNING: SYM_LIB has duplicate value 0x1 - using name + value pattern
-    SYM_LIBValue = 0x1, // Original value: ImplementationConstants::Ossl
+    pub const SYM_LIB: Self = Self(0x1); // Original value: ImplementationConstants::Ossl
 
     /// Selection of the library that provides the big number math including ECC. Choices are
     /// determined by the vendor (See LibSupport.h for implications).
-    // WARNING: MATH_LIB has duplicate value 0x1 - using name + value pattern
-    MATH_LIBValue = 0x1, // Original value: ImplementationConstants::Ossl
+    pub const MATH_LIB: Self = Self(0x1); // Original value: ImplementationConstants::Ossl
 
     /// The number of PCR in the TPM
-    IMPLEMENTATION_PCR = 0x18, // Original value: 24
-    PCR_SELECT_MAX = 0x3, // Original value: ((IMPLEMENTATION_PCR+7)/8)
+    pub const IMPLEMENTATION_PCR: Self = Self(0x18); // Original value: 24
+    pub const PCR_SELECT_MAX: Self = Self(0x3); // Original value: ((IMPLEMENTATION_PCR+7)/8)
 
     /// The number of PCR required by the relevant platform specification
-    // WARNING: PLATFORM_PCR has duplicate value 0x18 - using name + value pattern
-    PLATFORM_PCRValue = 0x18, // Original value: 24
-    // WARNING: PCR_SELECT_MIN has duplicate value 0x3 - using name + value pattern
-    PCR_SELECT_MINValue = 0x3, // Original value: ((PLATFORM_PCR + 7) / 8)
+    pub const PLATFORM_PCR: Self = Self(0x18); // Original value: 24
+    pub const PCR_SELECT_MIN: Self = Self(0x3); // Original value: ((PLATFORM_PCR + 7) / 8)
 
     /// The D-RTM PCR
     /// NOTE This value is not defined when the TPM does not implement D-RTM
-    DRTM_PCR = 0x11, // Original value: 17
+    pub const DRTM_PCR: Self = Self(0x11); // Original value: 17
 
     /// The PCR that will receive the H-CRTM value at TPM2_Startup. This value should not be changed.
-    // WARNING: HCRTM_PCR has duplicate value 0x0 - using name + value pattern
-    HCRTM_PCRValue = 0x0, // Original value: 0
+    pub const HCRTM_PCR: Self = Self(0x0); // Original value: 0
 
     /// The number of localities supported by the TPM
     /// This is expected to be either 5 for a PC, or 1 for just about everything else.
-    NUM_LOCALITIES = 0x5, // Original value: 5
+    pub const NUM_LOCALITIES: Self = Self(0x5); // Original value: 5
 
     /// The maximum number of handles in the handle area
     /// This should be produced by the Part 3 parser but is here for now.
-    // WARNING: MAX_HANDLE_NUM has duplicate value 0x3 - using name + value pattern
-    MAX_HANDLE_NUMValue = 0x3, // Original value: 3
+    pub const MAX_HANDLE_NUM: Self = Self(0x3); // Original value: 3
 
     /// The number of simultaneously active sessions that are supported by the TPM implementation
-    MAX_ACTIVE_SESSIONS = 0x40, // Original value: 64
+    pub const MAX_ACTIVE_SESSIONS: Self = Self(0x40); // Original value: 64
 
     /// The number of sessions that the TPM may have in memory
-    // WARNING: MAX_LOADED_SESSIONS has duplicate value 0x3 - using name + value pattern
-    MAX_LOADED_SESSIONSValue = 0x3, // Original value: 3
+    pub const MAX_LOADED_SESSIONS: Self = Self(0x3); // Original value: 3
 
     /// This is the current maximum value
-    // WARNING: MAX_SESSION_NUM has duplicate value 0x3 - using name + value pattern
-    MAX_SESSION_NUMValue = 0x3, // Original value: 3
+    pub const MAX_SESSION_NUM: Self = Self(0x3); // Original value: 3
 
     /// The number of simultaneously loaded objects that are supported by the TPM; this number
     /// does not include the objects that may be placed in NV memory by TPM2_EvictControl().
-    // WARNING: MAX_LOADED_OBJECTS has duplicate value 0x3 - using name + value pattern
-    MAX_LOADED_OBJECTSValue = 0x3, // Original value: 3
+    pub const MAX_LOADED_OBJECTS: Self = Self(0x3); // Original value: 3
 
     /// The minimum number of evict objects supported by the TPM
-    MIN_EVICT_OBJECTS = 0x2, // Original value: 2
+    pub const MIN_EVICT_OBJECTS: Self = Self(0x2); // Original value: 2
 
     /// Number of PCR groups that have individual policies
-    // WARNING: NUM_POLICY_PCR_GROUP has duplicate value 0x1 - using name + value pattern
-    NUM_POLICY_PCR_GROUPValue = 0x1, // Original value: 1
+    pub const NUM_POLICY_PCR_GROUP: Self = Self(0x1); // Original value: 1
 
     /// Number of PCR groups that have individual authorization values
-    // WARNING: NUM_AUTHVALUE_PCR_GROUP has duplicate value 0x1 - using name + value pattern
-    NUM_AUTHVALUE_PCR_GROUPValue = 0x1, // Original value: 1
-    MAX_CONTEXT_SIZE = 0x4F0, // Original value: 1264
-    MAX_DIGEST_BUFFER = 0x400, // Original value: 1024
+    pub const NUM_AUTHVALUE_PCR_GROUP: Self = Self(0x1); // Original value: 1
+    pub const MAX_CONTEXT_SIZE: Self = Self(0x4F0); // Original value: 1264
+    pub const MAX_DIGEST_BUFFER: Self = Self(0x400); // Original value: 1024
 
     /// Maximum data size allowed in an NV Index
-    MAX_NV_INDEX_SIZE = 0x800, // Original value: 2048
+    pub const MAX_NV_INDEX_SIZE: Self = Self(0x800); // Original value: 2048
 
     /// Maximum data size in one NV read or write command
-    // WARNING: MAX_NV_BUFFER_SIZE has duplicate value 0x400 - using name + value pattern
-    MAX_NV_BUFFER_SIZEValue = 0x400, // Original value: 1024
+    pub const MAX_NV_BUFFER_SIZE: Self = Self(0x400); // Original value: 1024
 
     /// Maximum size of a capability buffer
-    // WARNING: MAX_CAP_BUFFER has duplicate value 0x400 - using name + value pattern
-    MAX_CAP_BUFFERValue = 0x400, // Original value: 1024
+    pub const MAX_CAP_BUFFER: Self = Self(0x400); // Original value: 1024
 
     /// Size of NV memory in octets
-    NV_MEMORY_SIZE = 0x4000, // Original value: 16384
+    pub const NV_MEMORY_SIZE: Self = Self(0x4000); // Original value: 16384
 
     /// The TPM will not allocate a non-counter index if it would prevent allocation of this
     /// number of indices.
-    MIN_COUNTER_INDICES = 0x8, // Original value: 8
-    NUM_STATIC_PCR = 0x10, // Original value: 16
+    pub const MIN_COUNTER_INDICES: Self = Self(0x8); // Original value: 8
+    pub const NUM_STATIC_PCR: Self = Self(0x10); // Original value: 16
 
     /// Number of algorithms that can be in a list
-    // WARNING: MAX_ALG_LIST_SIZE has duplicate value 0x40 - using name + value pattern
-    MAX_ALG_LIST_SIZEValue = 0x40, // Original value: 64
+    pub const MAX_ALG_LIST_SIZE: Self = Self(0x40); // Original value: 64
 
     /// Size of the Primary Seed in octets
-    PRIMARY_SEED_SIZE = 0x20, // Original value: 32
+    pub const PRIMARY_SEED_SIZE: Self = Self(0x20); // Original value: 32
 
     /// Context encryption algorithm
     /// Just use the root so that the macros in GpMacros.h will work correctly.
-    CONTEXT_ENCRYPT_ALGORITHM = 0x6, // Original value: TPM_ALG_ID::AES
+    pub const CONTEXT_ENCRYPT_ALGORITHM: Self = Self(0x6); // Original value: TPM_ALG_ID::AES
 
     /// The update interval expressed as a power of 2 seconds
     /// A value of 12 is 4,096 seconds (~68 minutes).
-    NV_CLOCK_UPDATE_INTERVAL = 0xC, // Original value: 12
+    pub const NV_CLOCK_UPDATE_INTERVAL: Self = Self(0xC); // Original value: 12
 
     /// Number of PCR groups that allow policy/auth
-    // WARNING: NUM_POLICY_PCR has duplicate value 0x1 - using name + value pattern
-    NUM_POLICY_PCRValue = 0x1, // Original value: 1
+    pub const NUM_POLICY_PCR: Self = Self(0x1); // Original value: 1
 
     /// Maximum size of a command
-    MAX_COMMAND_SIZE = 0x1000, // Original value: 4096
+    pub const MAX_COMMAND_SIZE: Self = Self(0x1000); // Original value: 4096
 
     /// Maximum size of a response
-    // WARNING: MAX_RESPONSE_SIZE has duplicate value 0x1000 - using name + value pattern
-    MAX_RESPONSE_SIZEValue = 0x1000, // Original value: 4096
+    pub const MAX_RESPONSE_SIZE: Self = Self(0x1000); // Original value: 4096
 
     /// Number between 1 and 32 inclusive
-    // WARNING: ORDERLY_BITS has duplicate value 0x8 - using name + value pattern
-    ORDERLY_BITSValue = 0x8, // Original value: 8
+    pub const ORDERLY_BITS: Self = Self(0x8); // Original value: 8
 
     /// The maximum number of octets that may be in a sealed blob; 128 is the minimum allowed value
-    MAX_SYM_DATA = 0x80, // Original value: 128
-    // WARNING: MAX_RNG_ENTROPY_SIZE has duplicate value 0x40 - using name + value pattern
-    MAX_RNG_ENTROPY_SIZEValue = 0x40, // Original value: 64
+    pub const MAX_SYM_DATA: Self = Self(0x80); // Original value: 128
+    pub const MAX_RNG_ENTROPY_SIZE: Self = Self(0x40); // Original value: 64
 
     /// Number of bytes used for the RAM index space. If this is not large enough, it might
     /// not be possible to allocate orderly indices.
-    RAM_INDEX_SPACE = 0x200, // Original value: 512
+    pub const RAM_INDEX_SPACE: Self = Self(0x200); // Original value: 512
 
     /// 216 + 1
-    RSA_DEFAULT_PUBLIC_EXPONENT = 0x10001, // Original value: 0x00010001
+    pub const RSA_DEFAULT_PUBLIC_EXPONENT: Self = Self(0x10001); // Original value: 0x00010001
 
     /// Indicates if the TPM_PT_PCR_NO_INCREMENT group is implemented
-    // WARNING: ENABLE_PCR_NO_INCREMENT has duplicate value 0x1 - using name + value pattern
-    ENABLE_PCR_NO_INCREMENTValue = 0x1, // Original value: Logic::YES
-    // WARNING: CRT_FORMAT_RSA has duplicate value 0x1 - using name + value pattern
-    CRT_FORMAT_RSAValue = 0x1, // Original value: Logic::YES
-    // WARNING: VENDOR_COMMAND_COUNT has duplicate value 0x0 - using name + value pattern
-    VENDOR_COMMAND_COUNTValue = 0x0, // Original value: 0
+    pub const ENABLE_PCR_NO_INCREMENT: Self = Self(0x1); // Original value: Logic::YES
+    pub const CRT_FORMAT_RSA: Self = Self(0x1); // Original value: Logic::YES
+    pub const VENDOR_COMMAND_COUNT: Self = Self(0x0); // Original value: 0
 
     /// Maximum size of the vendor-specific buffer
-    // WARNING: MAX_VENDOR_BUFFER_SIZE has duplicate value 0x400 - using name + value pattern
-    MAX_VENDOR_BUFFER_SIZEValue = 0x400, // Original value: 1024
+    pub const MAX_VENDOR_BUFFER_SIZE: Self = Self(0x400); // Original value: 1024
 
     /// L value for a derivation. This is the
     /// maximum number of bits allowed from an instantiation of a KDF-DRBG. This is size is OK
     /// because RSA keys are never derived keys
-    MAX_DERIVATION_BITS = 0x2000, // Original value: 8192
-    // WARNING: RSA_MAX_PRIME has duplicate value 0x80 - using name + value pattern
-    RSA_MAX_PRIMEValue = 0x80, // Original value: (ImplementationConstants::MAX_RSA_KEY_BYTES/2)
-    RSA_PRIVATE_SIZE = 0x280, // Original value: (RSA_MAX_PRIME * 5)
-    SIZE_OF_X509_SERIAL_NUMBER = 0x14, // Original value: 20
+    pub const MAX_DERIVATION_BITS: Self = Self(0x2000); // Original value: 8192
+    pub const RSA_MAX_PRIME: Self = Self(0x80); // Original value: (ImplementationConstants::MAX_RSA_KEY_BYTES/2)
+    pub const RSA_PRIVATE_SIZE: Self = Self(0x280); // Original value: (RSA_MAX_PRIME * 5)
+    pub const SIZE_OF_X509_SERIAL_NUMBER: Self = Self(0x14); // Original value: 20
 
     /// This is a vendor-specific value so it is in this vendor-speific table. When this is
     /// used, RSA_PRIVATE_SIZE will have been defined
-    // WARNING: PRIVATE_VENDOR_SPECIFIC_BYTES has duplicate value 0x280 - using name + value pattern
-    PRIVATE_VENDOR_SPECIFIC_BYTESValue = 0x280 // Original value: RSA_PRIVATE_SIZE
+    pub const PRIVATE_VENDOR_SPECIFIC_BYTES: Self = Self(0x280); // Original value: RSA_PRIVATE_SIZE
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            Logic::NO => Ok(Self::FIELD_UPGRADE_IMPLEMENTED),
+            ImplementationConstants::Ossl => Ok(Self::HASH_LIB),
+            24 => Ok(Self::IMPLEMENTATION_PCR),
+            ((IMPLEMENTATION_PCR+7)/8) => Ok(Self::PCR_SELECT_MAX),
+            ((PLATFORM_PCR + 7) / 8) => Ok(Self::PCR_SELECT_MIN),
+            17 => Ok(Self::DRTM_PCR),
+            0 => Ok(Self::HCRTM_PCR),
+            5 => Ok(Self::NUM_LOCALITIES),
+            3 => Ok(Self::MAX_HANDLE_NUM),
+            64 => Ok(Self::MAX_ACTIVE_SESSIONS),
+            2 => Ok(Self::MIN_EVICT_OBJECTS),
+            1 => Ok(Self::NUM_POLICY_PCR_GROUP),
+            1264 => Ok(Self::MAX_CONTEXT_SIZE),
+            1024 => Ok(Self::MAX_DIGEST_BUFFER),
+            2048 => Ok(Self::MAX_NV_INDEX_SIZE),
+            16384 => Ok(Self::NV_MEMORY_SIZE),
+            8 => Ok(Self::MIN_COUNTER_INDICES),
+            16 => Ok(Self::NUM_STATIC_PCR),
+            32 => Ok(Self::PRIMARY_SEED_SIZE),
+            TPM_ALG_ID::AES => Ok(Self::CONTEXT_ENCRYPT_ALGORITHM),
+            12 => Ok(Self::NV_CLOCK_UPDATE_INTERVAL),
+            4096 => Ok(Self::MAX_COMMAND_SIZE),
+            128 => Ok(Self::MAX_SYM_DATA),
+            512 => Ok(Self::RAM_INDEX_SPACE),
+            0x00010001 => Ok(Self::RSA_DEFAULT_PUBLIC_EXPONENT),
+            Logic::YES => Ok(Self::ENABLE_PCR_NO_INCREMENT),
+            8192 => Ok(Self::MAX_DERIVATION_BITS),
+            (ImplementationConstants::MAX_RSA_KEY_BYTES/2) => Ok(Self::RSA_MAX_PRIME),
+            (RSA_MAX_PRIME * 5) => Ok(Self::RSA_PRIVATE_SIZE),
+            20 => Ok(Self::SIZE_OF_X509_SERIAL_NUMBER),
+            RSA_PRIVATE_SIZE => Ok(Self::PRIVATE_VENDOR_SPECIFIC_BYTES),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for Implementation {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<Implementation> for u32 {
+    fn from(value: Implementation) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<Implementation> for i32 {
+    fn from(value: Implementation) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for Implementation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::FIELD_UPGRADE_IMPLEMENTED => write!(f, "FIELD_UPGRADE_IMPLEMENTED"),
-            Self::HASH_LIB => write!(f, "HASH_LIB"),
-            Self::SYM_LIB => write!(f, "SYM_LIB"),
-            Self::MATH_LIB => write!(f, "MATH_LIB"),
-            Self::IMPLEMENTATION_PCR => write!(f, "IMPLEMENTATION_PCR"),
-            Self::PCR_SELECT_MAX => write!(f, "PCR_SELECT_MAX"),
-            Self::PLATFORM_PCR => write!(f, "PLATFORM_PCR"),
-            Self::PCR_SELECT_MIN => write!(f, "PCR_SELECT_MIN"),
-            Self::DRTM_PCR => write!(f, "DRTM_PCR"),
-            Self::HCRTM_PCR => write!(f, "HCRTM_PCR"),
-            Self::NUM_LOCALITIES => write!(f, "NUM_LOCALITIES"),
-            Self::MAX_HANDLE_NUM => write!(f, "MAX_HANDLE_NUM"),
-            Self::MAX_ACTIVE_SESSIONS => write!(f, "MAX_ACTIVE_SESSIONS"),
-            Self::MAX_LOADED_SESSIONS => write!(f, "MAX_LOADED_SESSIONS"),
-            Self::MAX_SESSION_NUM => write!(f, "MAX_SESSION_NUM"),
-            Self::MAX_LOADED_OBJECTS => write!(f, "MAX_LOADED_OBJECTS"),
-            Self::MIN_EVICT_OBJECTS => write!(f, "MIN_EVICT_OBJECTS"),
-            Self::NUM_POLICY_PCR_GROUP => write!(f, "NUM_POLICY_PCR_GROUP"),
-            Self::NUM_AUTHVALUE_PCR_GROUP => write!(f, "NUM_AUTHVALUE_PCR_GROUP"),
-            Self::MAX_CONTEXT_SIZE => write!(f, "MAX_CONTEXT_SIZE"),
-            Self::MAX_DIGEST_BUFFER => write!(f, "MAX_DIGEST_BUFFER"),
-            Self::MAX_NV_INDEX_SIZE => write!(f, "MAX_NV_INDEX_SIZE"),
-            Self::MAX_NV_BUFFER_SIZE => write!(f, "MAX_NV_BUFFER_SIZE"),
-            Self::MAX_CAP_BUFFER => write!(f, "MAX_CAP_BUFFER"),
-            Self::NV_MEMORY_SIZE => write!(f, "NV_MEMORY_SIZE"),
-            Self::MIN_COUNTER_INDICES => write!(f, "MIN_COUNTER_INDICES"),
-            Self::NUM_STATIC_PCR => write!(f, "NUM_STATIC_PCR"),
-            Self::MAX_ALG_LIST_SIZE => write!(f, "MAX_ALG_LIST_SIZE"),
-            Self::PRIMARY_SEED_SIZE => write!(f, "PRIMARY_SEED_SIZE"),
-            Self::CONTEXT_ENCRYPT_ALGORITHM => write!(f, "CONTEXT_ENCRYPT_ALGORITHM"),
-            Self::NV_CLOCK_UPDATE_INTERVAL => write!(f, "NV_CLOCK_UPDATE_INTERVAL"),
-            Self::NUM_POLICY_PCR => write!(f, "NUM_POLICY_PCR"),
-            Self::MAX_COMMAND_SIZE => write!(f, "MAX_COMMAND_SIZE"),
-            Self::MAX_RESPONSE_SIZE => write!(f, "MAX_RESPONSE_SIZE"),
-            Self::ORDERLY_BITS => write!(f, "ORDERLY_BITS"),
-            Self::MAX_SYM_DATA => write!(f, "MAX_SYM_DATA"),
-            Self::MAX_RNG_ENTROPY_SIZE => write!(f, "MAX_RNG_ENTROPY_SIZE"),
-            Self::RAM_INDEX_SPACE => write!(f, "RAM_INDEX_SPACE"),
-            Self::RSA_DEFAULT_PUBLIC_EXPONENT => write!(f, "RSA_DEFAULT_PUBLIC_EXPONENT"),
-            Self::ENABLE_PCR_NO_INCREMENT => write!(f, "ENABLE_PCR_NO_INCREMENT"),
-            Self::CRT_FORMAT_RSA => write!(f, "CRT_FORMAT_RSA"),
-            Self::VENDOR_COMMAND_COUNT => write!(f, "VENDOR_COMMAND_COUNT"),
-            Self::MAX_VENDOR_BUFFER_SIZE => write!(f, "MAX_VENDOR_BUFFER_SIZE"),
-            Self::MAX_DERIVATION_BITS => write!(f, "MAX_DERIVATION_BITS"),
-            Self::RSA_MAX_PRIME => write!(f, "RSA_MAX_PRIME"),
-            Self::RSA_PRIVATE_SIZE => write!(f, "RSA_PRIVATE_SIZE"),
-            Self::SIZE_OF_X509_SERIAL_NUMBER => write!(f, "SIZE_OF_X509_SERIAL_NUMBER"),
-            Self::PRIVATE_VENDOR_SPECIFIC_BYTES => write!(f, "PRIVATE_VENDOR_SPECIFIC_BYTES"),
+        match self.0 {
+            Logic::NO => write!(f, "FIELD_UPGRADE_IMPLEMENTED"),
+            ImplementationConstants::Ossl => write!(f, "HASH_LIB"),
+            24 => write!(f, "IMPLEMENTATION_PCR"),
+            ((IMPLEMENTATION_PCR+7)/8) => write!(f, "PCR_SELECT_MAX"),
+            ((PLATFORM_PCR + 7) / 8) => write!(f, "PCR_SELECT_MIN"),
+            17 => write!(f, "DRTM_PCR"),
+            0 => write!(f, "HCRTM_PCR"),
+            5 => write!(f, "NUM_LOCALITIES"),
+            3 => write!(f, "MAX_HANDLE_NUM"),
+            64 => write!(f, "MAX_ACTIVE_SESSIONS"),
+            2 => write!(f, "MIN_EVICT_OBJECTS"),
+            1 => write!(f, "NUM_POLICY_PCR_GROUP"),
+            1264 => write!(f, "MAX_CONTEXT_SIZE"),
+            1024 => write!(f, "MAX_DIGEST_BUFFER"),
+            2048 => write!(f, "MAX_NV_INDEX_SIZE"),
+            16384 => write!(f, "NV_MEMORY_SIZE"),
+            8 => write!(f, "MIN_COUNTER_INDICES"),
+            16 => write!(f, "NUM_STATIC_PCR"),
+            32 => write!(f, "PRIMARY_SEED_SIZE"),
+            TPM_ALG_ID::AES => write!(f, "CONTEXT_ENCRYPT_ALGORITHM"),
+            12 => write!(f, "NV_CLOCK_UPDATE_INTERVAL"),
+            4096 => write!(f, "MAX_COMMAND_SIZE"),
+            128 => write!(f, "MAX_SYM_DATA"),
+            512 => write!(f, "RAM_INDEX_SPACE"),
+            0x00010001 => write!(f, "RSA_DEFAULT_PUBLIC_EXPONENT"),
+            Logic::YES => write!(f, "ENABLE_PCR_NO_INCREMENT"),
+            8192 => write!(f, "MAX_DERIVATION_BITS"),
+            (ImplementationConstants::MAX_RSA_KEY_BYTES/2) => write!(f, "RSA_MAX_PRIME"),
+            (RSA_MAX_PRIME * 5) => write!(f, "RSA_PRIVATE_SIZE"),
+            20 => write!(f, "SIZE_OF_X509_SERIAL_NUMBER"),
+            RSA_PRIVATE_SIZE => write!(f, "PRIVATE_VENDOR_SPECIFIC_BYTES"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 /// The definitions in Table 29 are used to define many of the interface data types.
@@ -2986,52 +4122,43 @@ pub enum TPM_HC {
     HR_PERMANENT = 0x40000000, // Original value: (TPM_HT::PERMANENT  <<  HR_SHIFT)
 
     /// First PCR
-    // WARNING: PCR_FIRST has duplicate value 0x0 - using name + value pattern
-    PCR_FIRSTValue = 0x0, // Original value: (HR_PCR + 0)
+    PCR_FIRST = 0x0, // Original value: (HR_PCR + 0)
 
     /// Last PCR
     PCR_LAST = 0x17, // Original value: (PCR_FIRST + Implementation::IMPLEMENTATION_PCR-1)
 
     /// First HMAC session
-    // WARNING: HMAC_SESSION_FIRST has duplicate value 0x2000000 - using name + value pattern
-    HMAC_SESSION_FIRSTValue = 0x2000000, // Original value: (HR_HMAC_SESSION + 0)
+    HMAC_SESSION_FIRST = 0x2000000, // Original value: (HR_HMAC_SESSION + 0)
 
     /// Last HMAC session
     HMAC_SESSION_LAST = 0x200003F, // Original value: (HMAC_SESSION_FIRST+Implementation::MAX_ACTIVE_SESSIONS-1)
 
     /// Used in GetCapability
-    // WARNING: LOADED_SESSION_FIRST has duplicate value 0x2000000 - using name + value pattern
-    LOADED_SESSION_FIRSTValue = 0x2000000, // Original value: HMAC_SESSION_FIRST
+    LOADED_SESSION_FIRST = 0x2000000, // Original value: HMAC_SESSION_FIRST
 
     /// Used in GetCapability
-    // WARNING: LOADED_SESSION_LAST has duplicate value 0x200003F - using name + value pattern
-    LOADED_SESSION_LASTValue = 0x200003F, // Original value: HMAC_SESSION_LAST
+    LOADED_SESSION_LAST = 0x200003F, // Original value: HMAC_SESSION_LAST
 
     /// First policy session
-    // WARNING: POLICY_SESSION_FIRST has duplicate value 0x3000000 - using name + value pattern
-    POLICY_SESSION_FIRSTValue = 0x3000000, // Original value: (HR_POLICY_SESSION + 0)
+    POLICY_SESSION_FIRST = 0x3000000, // Original value: (HR_POLICY_SESSION + 0)
 
     /// Last policy session
     POLICY_SESSION_LAST = 0x300003F, // Original value: (POLICY_SESSION_FIRST + Implementation::MAX_ACTIVE_SESSIONS-1)
 
     /// First transient object
-    // WARNING: TRANSIENT_FIRST has duplicate value 0x80000000 - using name + value pattern
-    TRANSIENT_FIRSTValue = 0x80000000, // Original value: (HR_TRANSIENT + 0)
+    TRANSIENT_FIRST = 0x80000000, // Original value: (HR_TRANSIENT + 0)
 
     /// Used in GetCapability
-    // WARNING: ACTIVE_SESSION_FIRST has duplicate value 0x3000000 - using name + value pattern
-    ACTIVE_SESSION_FIRSTValue = 0x3000000, // Original value: POLICY_SESSION_FIRST
+    ACTIVE_SESSION_FIRST = 0x3000000, // Original value: POLICY_SESSION_FIRST
 
     /// Used in GetCapability
-    // WARNING: ACTIVE_SESSION_LAST has duplicate value 0x300003F - using name + value pattern
-    ACTIVE_SESSION_LASTValue = 0x300003F, // Original value: POLICY_SESSION_LAST
+    ACTIVE_SESSION_LAST = 0x300003F, // Original value: POLICY_SESSION_LAST
 
     /// Last transient object
     TRANSIENT_LAST = 0x80000002, // Original value: (TRANSIENT_FIRST+Implementation::MAX_LOADED_OBJECTS-1)
 
     /// First persistent object
-    // WARNING: PERSISTENT_FIRST has duplicate value 0x81000000 - using name + value pattern
-    PERSISTENT_FIRSTValue = 0x81000000, // Original value: (HR_PERSISTENT + 0)
+    PERSISTENT_FIRST = 0x81000000, // Original value: (HR_PERSISTENT + 0)
 
     /// Last persistent object
     PERSISTENT_LAST = 0x81FFFFFF, // Original value: (PERSISTENT_FIRST + 0x00FFFFFF)
@@ -3040,21 +4167,18 @@ pub enum TPM_HC {
     PLATFORM_PERSISTENT = 0x81800000, // Original value: (PERSISTENT_FIRST + 0x00800000)
 
     /// First allowed NV Index
-    // WARNING: NV_INDEX_FIRST has duplicate value 0x1000000 - using name + value pattern
-    NV_INDEX_FIRSTValue = 0x1000000, // Original value: (HR_NV_INDEX + 0)
+    NV_INDEX_FIRST = 0x1000000, // Original value: (HR_NV_INDEX + 0)
 
     /// Last allowed NV Index
     NV_INDEX_LAST = 0x1FFFFFF, // Original value: (NV_INDEX_FIRST + 0x00FFFFFF)
-    // WARNING: PERMANENT_FIRST has duplicate value 0x40000000 - using name + value pattern
-    PERMANENT_FIRSTValue = 0x40000000, // Original value: TPM_RH::FIRST
+    PERMANENT_FIRST = 0x40000000, // Original value: TPM_RH::FIRST
     PERMANENT_LAST = 0x4000011F, // Original value: TPM_RH::LAST
 
     /// AC aliased NV Index
     HR_NV_AC = 0x1D00000, // Original value: ((TPM_HT::NV_INDEX  <<  HR_SHIFT) + 0xD00000)
 
     /// First NV Index aliased to Attached Component
-    // WARNING: NV_AC_FIRST has duplicate value 0x1D00000 - using name + value pattern
-    NV_AC_FIRSTValue = 0x1D00000, // Original value: (HR_NV_AC + 0)
+    NV_AC_FIRST = 0x1D00000, // Original value: (HR_NV_AC + 0)
 
     /// Last NV Index aliased to Attached Component
     NV_AC_LAST = 0x1D0FFFF, // Original value: (HR_NV_AC + 0x0000FFFF)
@@ -3063,11 +4187,31 @@ pub enum TPM_HC {
     HR_AC = 0x90000000, // Original value: (TPM_HT::AC  <<  HR_SHIFT)
 
     /// First Attached Component
-    // WARNING: AC_FIRST has duplicate value 0x90000000 - using name + value pattern
-    AC_FIRSTValue = 0x90000000, // Original value: (HR_AC + 0)
+    AC_FIRST = 0x90000000, // Original value: (HR_AC + 0)
 
     /// Last Attached Component
     AC_LAST = 0x9000FFFF // Original value: (HR_AC + 0x0000FFFF)
+}
+
+impl TpmEnum for TPM_HC {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPM_HC> for u32 {
+    fn from(value: TPM_HC) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPM_HC> for i32 {
+    fn from(value: TPM_HC) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPM_HC {
@@ -3147,6 +4291,27 @@ pub enum TPMA_ALGORITHM {
     method = 0x400
 }
 
+impl TpmEnum for TPMA_ALGORITHM {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPMA_ALGORITHM> for u32 {
+    fn from(value: TPMA_ALGORITHM) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPMA_ALGORITHM> for i32 {
+    fn from(value: TPMA_ALGORITHM) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPMA_ALGORITHM {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -3178,109 +4343,154 @@ fn from(value: u32) -> Self {
 
 /// This attribute structure indicates an objects use, its authorization types, and its
 /// relationship to other objects.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum TPMA_OBJECT {
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPMA_OBJECT(pub i32);
+
+impl TPMA_OBJECT {
     /// SET (1): The hierarchy of the object, as indicated by its Qualified Name, may not change.
     /// CLEAR (0): The hierarchy of the object may change as a result of this object or an
     /// ancestor key being duplicated for use in another hierarchy.
     /// NOTE fixedTPM does not indicate that key material resides on a single TPM (see
     /// sensitiveDataOrigin).
-    fixedTPM = 0x2,
+    pub const fixedTPM: Self = Self(0x2);
 
     /// SET (1): Previously saved contexts of this object may not be loaded after Startup(CLEAR).
     /// CLEAR (0): Saved contexts of this object may be used after a Shutdown(STATE) and
     /// subsequent Startup().
-    stClear = 0x4,
+    pub const stClear: Self = Self(0x4);
 
     /// SET (1): The parent of the object may not change.
     /// CLEAR (0): The parent of the object may change as the result of a TPM2_Duplicate() of
     /// the object.
-    fixedParent = 0x10,
+    pub const fixedParent: Self = Self(0x10);
 
     /// SET (1): Indicates that, when the object was created with TPM2_Create() or
     /// TPM2_CreatePrimary(), the TPM generated all of the sensitive data other than the authValue.
     /// CLEAR (0): A portion of the sensitive data, other than the authValue, was provided by
     /// the caller.
-    sensitiveDataOrigin = 0x20,
+    pub const sensitiveDataOrigin: Self = Self(0x20);
 
     /// SET (1): Approval of USER role actions with this object may be with an HMAC session or
     /// with a password using the authValue of the object or a policy session.
     /// CLEAR (0): Approval of USER role actions with this object may only be done with a
     /// policy session.
-    userWithAuth = 0x40,
+    pub const userWithAuth: Self = Self(0x40);
 
     /// SET (1): Approval of ADMIN role actions with this object may only be done with a
     /// policy session.
     /// CLEAR (0): Approval of ADMIN role actions with this object may be with an HMAC session
     /// or with a password using the authValue of the object or a policy session.
-    adminWithPolicy = 0x80,
+    pub const adminWithPolicy: Self = Self(0x80);
 
     /// SET (1): The object is not subject to dictionary attack protections.
     /// CLEAR (0): The object is subject to dictionary attack protections.
-    noDA = 0x400,
+    pub const noDA: Self = Self(0x400);
 
     /// SET (1): If the object is duplicated, then symmetricAlg shall not be TPM_ALG_NULL and
     /// newParentHandle shall not be TPM_RH_NULL.
     /// CLEAR (0): The object may be duplicated without an inner wrapper on the private
     /// portion of the object and the new parent may be TPM_RH_NULL.
-    encryptedDuplication = 0x800,
+    pub const encryptedDuplication: Self = Self(0x800);
 
     /// SET (1): Key usage is restricted to manipulate structures of known format; the parent
     /// of this key shall have restricted SET.
     /// CLEAR (0): Key usage is not restricted to use on special formats.
-    restricted = 0x10000,
+    pub const restricted: Self = Self(0x10000);
 
     /// SET (1): The private portion of the key may be used to decrypt.
     /// CLEAR (0): The private portion of the key may not be used to decrypt.
-    decrypt = 0x20000,
+    pub const decrypt: Self = Self(0x20000);
 
     /// SET (1): For a symmetric cipher object, the private portion of the key may be used to
     /// encrypt. For other objects, the private portion of the key may be used to sign.
     /// CLEAR (0): The private portion of the key may not be used to sign or encrypt.
-    sign = 0x40000,
+    pub const sign: Self = Self(0x40000);
 
     /// Alias to the sign value.
-    // WARNING: encrypt has duplicate value 0x40000 - using name + value pattern
-    encryptValue = 0x40000,
+    pub const encrypt: Self = Self(0x40000);
 
     /// SET (1): An asymmetric key that may not be used to sign with TPM2_Sign()
     /// CLEAR (0): A key that may be used with TPM2_Sign() if sign is SET
     /// NOTE: This attribute only has significance if sign is SET.
-    x509sign = 0x80000
+    pub const x509sign: Self = Self(0x80000);
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            0x2 => Ok(Self::fixedTPM),
+            0x4 => Ok(Self::stClear),
+            0x10 => Ok(Self::fixedParent),
+            0x20 => Ok(Self::sensitiveDataOrigin),
+            0x40 => Ok(Self::userWithAuth),
+            0x80 => Ok(Self::adminWithPolicy),
+            0x400 => Ok(Self::noDA),
+            0x800 => Ok(Self::encryptedDuplication),
+            0x10000 => Ok(Self::restricted),
+            0x20000 => Ok(Self::decrypt),
+            0x40000 => Ok(Self::sign),
+            0x80000 => Ok(Self::x509sign),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPMA_OBJECT {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPMA_OBJECT> for u32 {
+    fn from(value: TPMA_OBJECT) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPMA_OBJECT> for i32 {
+    fn from(value: TPMA_OBJECT) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPMA_OBJECT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::fixedTPM => write!(f, "fixedTPM"),
-            Self::stClear => write!(f, "stClear"),
-            Self::fixedParent => write!(f, "fixedParent"),
-            Self::sensitiveDataOrigin => write!(f, "sensitiveDataOrigin"),
-            Self::userWithAuth => write!(f, "userWithAuth"),
-            Self::adminWithPolicy => write!(f, "adminWithPolicy"),
-            Self::noDA => write!(f, "noDA"),
-            Self::encryptedDuplication => write!(f, "encryptedDuplication"),
-            Self::restricted => write!(f, "restricted"),
-            Self::decrypt => write!(f, "decrypt"),
-            Self::sign => write!(f, "sign"),
-            Self::encrypt => write!(f, "encrypt"),
-            Self::x509sign => write!(f, "x509sign"),
+        match self.0 {
+            0x2 => write!(f, "fixedTPM"),
+            0x4 => write!(f, "stClear"),
+            0x10 => write!(f, "fixedParent"),
+            0x20 => write!(f, "sensitiveDataOrigin"),
+            0x40 => write!(f, "userWithAuth"),
+            0x80 => write!(f, "adminWithPolicy"),
+            0x400 => write!(f, "noDA"),
+            0x800 => write!(f, "encryptedDuplication"),
+            0x10000 => write!(f, "restricted"),
+            0x20000 => write!(f, "decrypt"),
+            0x40000 => write!(f, "sign"),
+            0x80000 => write!(f, "x509sign"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 impl std::ops::BitOr for TPMA_OBJECT {
 type Output = Self;
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+    Self(self.0 | rhs.0)
     }
 
 }
 
-impl From<u32> for TPMA_OBJECT {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+impl From<i32> for TPMA_OBJECT {
+fn from(value: i32) -> Self {
+    Self(value)
     }
 
 }
@@ -3352,6 +4562,27 @@ pub enum TPMA_SESSION {
     audit = 0x80
 }
 
+impl TpmEnum for TPMA_SESSION {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPMA_SESSION> for u32 {
+    fn from(value: TPMA_SESSION) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPMA_SESSION> for i32 {
+    fn from(value: TPMA_SESSION) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPMA_SESSION {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -3396,6 +4627,27 @@ pub enum TPMA_LOCALITY {
     Extended_BIT_MASK = 0xE0,
     Extended_BIT_OFFSET = 0x5, // Original value: 5
     Extended_BIT_LENGTH = 0x3 // Original value: 3
+}
+
+impl TpmEnum for TPMA_LOCALITY {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPMA_LOCALITY> for u32 {
+    fn from(value: TPMA_LOCALITY) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPMA_LOCALITY> for i32 {
+    fn from(value: TPMA_LOCALITY) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPMA_LOCALITY {
@@ -3460,6 +4712,27 @@ pub enum TPMA_PERMANENT {
     /// SET (1): The EPS was created by the TPM.
     /// CLEAR (0): The EPS was created outside of the TPM using a manufacturer-specific process.
     tpmGeneratedEPS = 0x400
+}
+
+impl TpmEnum for TPMA_PERMANENT {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPMA_PERMANENT> for u32 {
+    fn from(value: TPMA_PERMANENT) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPMA_PERMANENT> for i32 {
+    fn from(value: TPMA_PERMANENT) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPMA_PERMANENT {
@@ -3540,6 +4813,27 @@ pub enum TPMA_STARTUP_CLEAR {
     orderly = 0xFFFFFFFF80000000
 }
 
+impl TpmEnum for TPMA_STARTUP_CLEAR {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPMA_STARTUP_CLEAR> for u32 {
+    fn from(value: TPMA_STARTUP_CLEAR) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPMA_STARTUP_CLEAR> for i32 {
+    fn from(value: TPMA_STARTUP_CLEAR) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPMA_STARTUP_CLEAR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -3591,6 +4885,27 @@ pub enum TPMA_MEMORY {
     /// CLEAR (0): indicates that the TPM does not use transient-object slots when persistent
     /// objects are referenced
     objectCopiedToRam = 0x4
+}
+
+impl TpmEnum for TPMA_MEMORY {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPMA_MEMORY> for u32 {
+    fn from(value: TPMA_MEMORY) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPMA_MEMORY> for i32 {
+    fn from(value: TPMA_MEMORY) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPMA_MEMORY {
@@ -3660,6 +4975,27 @@ pub enum TPMA_CC {
     Res_BIT_LENGTH = 0x2 // Original value: 2
 }
 
+impl TpmEnum for TPMA_CC {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPMA_CC> for u32 {
+    fn from(value: TPMA_CC) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPMA_CC> for i32 {
+    fn from(value: TPMA_CC) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPMA_CC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -3707,6 +5043,27 @@ pub enum TPMA_MODES {
     FIPS_140_2 = 0x1
 }
 
+impl TpmEnum for TPMA_MODES {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPMA_MODES> for u32 {
+    fn from(value: TPMA_MODES) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPMA_MODES> for i32 {
+    fn from(value: TPMA_MODES) -> Self {
+        value as i32
+    }
+
+}
+
 impl fmt::Display for TPMA_MODES {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -3735,69 +5092,111 @@ fn from(value: u32) -> Self {
 /// TPM2_CertifyX509, when a caller provides a DER encoded Key Usage in
 /// partialCertificate, the TPM will validate that the key to be certified meets the
 /// requirements of Key Usage.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum TPMA_X509_KEY_USAGE {
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPMA_X509_KEY_USAGE(pub i32);
+
+impl TPMA_X509_KEY_USAGE {
     /// Attributes.Decrypt SET
-    decipherOnly = 0x800000,
+    pub const decipherOnly: Self = Self(0x800000);
 
     /// Attributes.Decrypt SET
-    encipherOnly = 0x1000000,
+    pub const encipherOnly: Self = Self(0x1000000);
 
     /// Attributes.sign SET
-    cRLSign = 0x2000000,
+    pub const cRLSign: Self = Self(0x2000000);
 
     /// Attributes.sign SET
-    keyCertSign = 0x4000000,
+    pub const keyCertSign: Self = Self(0x4000000);
 
     /// Attributes.Decrypt SET
-    keyAgreement = 0x8000000,
+    pub const keyAgreement: Self = Self(0x8000000);
 
     /// Attributes.Decrypt SET
-    dataEncipherment = 0x10000000,
+    pub const dataEncipherment: Self = Self(0x10000000);
 
     /// Asymmetric key with decrypt and restricted SET key has the attributes of a parent key
-    keyEncipherment = 0x20000000,
+    pub const keyEncipherment: Self = Self(0x20000000);
 
     /// FixedTPM SET in Subject Key (objectHandle)
-    nonrepudiation = 0x40000000,
+    pub const nonrepudiation: Self = Self(0x40000000);
 
     /// Alias to the nonrepudiation value.
-    // WARNING: contentCommitment has duplicate value 0x40000000 - using name + value pattern
-    contentCommitmentValue = 0x40000000,
+    pub const contentCommitment: Self = Self(0x40000000);
 
     /// Sign SET in Subject Key (objectHandle)
-    digitalSignature = 0xFFFFFFFF80000000
+    pub const digitalSignature: Self = Self(0xFFFFFFFF80000000);
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            0x800000 => Ok(Self::decipherOnly),
+            0x1000000 => Ok(Self::encipherOnly),
+            0x2000000 => Ok(Self::cRLSign),
+            0x4000000 => Ok(Self::keyCertSign),
+            0x8000000 => Ok(Self::keyAgreement),
+            0x10000000 => Ok(Self::dataEncipherment),
+            0x20000000 => Ok(Self::keyEncipherment),
+            0x40000000 => Ok(Self::nonrepudiation),
+            0xFFFFFFFF80000000 => Ok(Self::digitalSignature),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPMA_X509_KEY_USAGE {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPMA_X509_KEY_USAGE> for u32 {
+    fn from(value: TPMA_X509_KEY_USAGE) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPMA_X509_KEY_USAGE> for i32 {
+    fn from(value: TPMA_X509_KEY_USAGE) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPMA_X509_KEY_USAGE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::decipherOnly => write!(f, "decipherOnly"),
-            Self::encipherOnly => write!(f, "encipherOnly"),
-            Self::cRLSign => write!(f, "cRLSign"),
-            Self::keyCertSign => write!(f, "keyCertSign"),
-            Self::keyAgreement => write!(f, "keyAgreement"),
-            Self::dataEncipherment => write!(f, "dataEncipherment"),
-            Self::keyEncipherment => write!(f, "keyEncipherment"),
-            Self::nonrepudiation => write!(f, "nonrepudiation"),
-            Self::contentCommitment => write!(f, "contentCommitment"),
-            Self::digitalSignature => write!(f, "digitalSignature"),
+        match self.0 {
+            0x800000 => write!(f, "decipherOnly"),
+            0x1000000 => write!(f, "encipherOnly"),
+            0x2000000 => write!(f, "cRLSign"),
+            0x4000000 => write!(f, "keyCertSign"),
+            0x8000000 => write!(f, "keyAgreement"),
+            0x10000000 => write!(f, "dataEncipherment"),
+            0x20000000 => write!(f, "keyEncipherment"),
+            0x40000000 => write!(f, "nonrepudiation"),
+            0xFFFFFFFF80000000 => write!(f, "digitalSignature"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 impl std::ops::BitOr for TPMA_X509_KEY_USAGE {
 type Output = Self;
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+    Self(self.0 | rhs.0)
     }
 
 }
 
-impl From<u32> for TPMA_X509_KEY_USAGE {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+impl From<i32> for TPMA_X509_KEY_USAGE {
+fn from(value: i32) -> Self {
+    Self(value)
     }
 
 }
@@ -3815,6 +5214,27 @@ pub enum TPMA_ACT {
 
     /// Preserves the state of signaled, depending on the power cycle
     preserveSignaled = 0x2
+}
+
+impl TpmEnum for TPMA_ACT {
+    fn get_value(&self) -> u32 {
+        *self as u32
+    }
+
+}
+
+impl From<TPMA_ACT> for u32 {
+    fn from(value: TPMA_ACT) -> Self {
+        value as u32
+    }
+
+}
+
+impl From<TPMA_ACT> for i32 {
+    fn from(value: TPMA_ACT) -> Self {
+        value as i32
+    }
+
 }
 
 impl fmt::Display for TPMA_ACT {
@@ -3845,103 +5265,142 @@ fn from(value: u32) -> Self {
 /// Index is changed from TPM 1.2 in order to include the Index in the reserved handle
 /// space. Handles in this range use the digest of the public area of the Index as the
 /// Name of the entity in authorization computations
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum TPM_NV_INDEX {
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPM_NV_INDEX(pub i32);
+
+impl TPM_NV_INDEX {
     /// The Index of the NV location
-    index_BIT_MASK = 0xFFFFFF,
-    index_BIT_OFFSET = 0x0, // Original value: 0
-    index_BIT_LENGTH = 0x18, // Original value: 24
+    pub const index_BIT_MASK: Self = Self(0xFFFFFF);
+    pub const index_BIT_OFFSET: Self = Self(0x0); // Original value: 0
+    pub const index_BIT_LENGTH: Self = Self(0x18); // Original value: 24
 
     /// Constant value of TPM_HT_NV_INDEX indicating the NV Index range
-    RhNv_BIT_MASK = 0xFFFFFFFFFF000000,
-    // WARNING: RhNv_BIT_OFFSET has duplicate value 0x18 - using name + value pattern
-    RhNv_BIT_OFFSETValue = 0x18, // Original value: 24
-    RhNv_BIT_LENGTH = 0x8 // Original value: 8
+    pub const RhNv_BIT_MASK: Self = Self(0xFFFFFFFFFF000000);
+    pub const RhNv_BIT_OFFSET: Self = Self(0x18); // Original value: 24
+    pub const RhNv_BIT_LENGTH: Self = Self(0x8); // Original value: 8
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            0xFFFFFF => Ok(Self::index_BIT_MASK),
+            0 => Ok(Self::index_BIT_OFFSET),
+            24 => Ok(Self::index_BIT_LENGTH),
+            0xFFFFFFFFFF000000 => Ok(Self::RhNv_BIT_MASK),
+            8 => Ok(Self::RhNv_BIT_LENGTH),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPM_NV_INDEX {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPM_NV_INDEX> for u32 {
+    fn from(value: TPM_NV_INDEX) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPM_NV_INDEX> for i32 {
+    fn from(value: TPM_NV_INDEX) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPM_NV_INDEX {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::index_BIT_MASK => write!(f, "index_BIT_MASK"),
-            Self::index_BIT_OFFSET => write!(f, "index_BIT_OFFSET"),
-            Self::index_BIT_LENGTH => write!(f, "index_BIT_LENGTH"),
-            Self::RhNv_BIT_MASK => write!(f, "RhNv_BIT_MASK"),
-            Self::RhNv_BIT_OFFSET => write!(f, "RhNv_BIT_OFFSET"),
-            Self::RhNv_BIT_LENGTH => write!(f, "RhNv_BIT_LENGTH"),
+        match self.0 {
+            0xFFFFFF => write!(f, "index_BIT_MASK"),
+            0 => write!(f, "index_BIT_OFFSET"),
+            24 => write!(f, "index_BIT_LENGTH"),
+            0xFFFFFFFFFF000000 => write!(f, "RhNv_BIT_MASK"),
+            8 => write!(f, "RhNv_BIT_LENGTH"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 impl std::ops::BitOr for TPM_NV_INDEX {
 type Output = Self;
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+    Self(self.0 | rhs.0)
     }
 
 }
 
-impl From<u32> for TPM_NV_INDEX {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+impl From<i32> for TPM_NV_INDEX {
+fn from(value: i32) -> Self {
+    Self(value)
     }
 
 }
 
 /// This structure allows the TPM to keep track of the data and permissions to manipulate
 /// an NV Index.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
-#[repr(i32)]
-pub enum TPMA_NV {
+
+/// Enum with duplicated values - using struct with constants
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TPMA_NV(pub i32);
+
+impl TPMA_NV {
     /// SET (1): The Index data can be written if Platform Authorization is provided.
     /// CLEAR (0): Writing of the Index data cannot be authorized with Platform Authorization.
-    PPWRITE = 0x1,
+    pub const PPWRITE: Self = Self(0x1);
 
     /// SET (1): The Index data can be written if Owner Authorization is provided.
     /// CLEAR (0): Writing of the Index data cannot be authorized with Owner Authorization.
-    OWNERWRITE = 0x2,
+    pub const OWNERWRITE: Self = Self(0x2);
 
     /// SET (1): Authorizations to change the Index contents that require USER role may be
     /// provided with an HMAC session or password.
     /// CLEAR (0): Authorizations to change the Index contents that require USER role may not
     /// be provided with an HMAC session or password.
-    AUTHWRITE = 0x4,
+    pub const AUTHWRITE: Self = Self(0x4);
 
     /// SET (1): Authorizations to change the Index contents that require USER role may be
     /// provided with a policy session.
     /// CLEAR (0): Authorizations to change the Index contents that require USER role may not
     /// be provided with a policy session.
     /// NOTE TPM2_NV_ChangeAuth() always requires that authorization be provided in a policy session.
-    POLICYWRITE = 0x8,
+    pub const POLICYWRITE: Self = Self(0x8);
 
     /// Ordinary contains data that is opaque to the TPM that can only be modified using TPM2_NV_Write().
-    ORDINARY = 0x0,
+    pub const ORDINARY: Self = Self(0x0);
 
     /// Counter contains an 8-octet value that is to be used as a counter and can only be
     /// modified with TPM2_NV_Increment()
-    COUNTER = 0x10,
+    pub const COUNTER: Self = Self(0x10);
 
     /// Bit Field contains an 8-octet value to be used as a bit field and can only be modified
     /// with TPM2_NV_SetBits().
-    BITS = 0x20,
+    pub const BITS: Self = Self(0x20);
 
     /// Extend contains a digest-sized value used like a PCR. The Index can only be modified
     /// using TPM2_NV_Extend(). The extend will use the nameAlg of the Index.
-    EXTEND = 0x40,
+    pub const EXTEND: Self = Self(0x40);
 
     /// PIN Fail - contains pinCount that increments on a PIN authorization failure and a pinLimit
-    PIN_FAIL = 0x80,
+    pub const PIN_FAIL: Self = Self(0x80);
 
     /// PIN Pass - contains pinCount that increments on a PIN authorization success and a pinLimit
-    PIN_PASS = 0x90,
+    pub const PIN_PASS: Self = Self(0x90);
 
     /// The type of the index.
     /// NOTE A TPM is not required to support all TPM_NT values
-    TpmNt_BIT_MASK = 0xF0,
-    // WARNING: TpmNt_BIT_OFFSET has duplicate value 0x4 - using name + value pattern
-    TpmNt_BIT_OFFSETValue = 0x4, // Original value: 4
-    // WARNING: TpmNt_BIT_LENGTH has duplicate value 0x4 - using name + value pattern
-    TpmNt_BIT_LENGTHValue = 0x4, // Original value: 4
+    pub const TpmNt_BIT_MASK: Self = Self(0xF0);
+    pub const TpmNt_BIT_OFFSET: Self = Self(0x4); // Original value: 4
+    pub const TpmNt_BIT_LENGTH: Self = Self(0x4); // Original value: 4
 
     /// SET (1): Index may not be deleted unless the authPolicy is satisfied using
     /// TPM2_NV_UndefineSpaceSpecial().
@@ -3949,74 +5408,74 @@ pub enum TPMA_NV {
     /// TPM2_NV_UndefineSpace().
     /// NOTE An Index with this attribute and a policy that cannot be satisfied (e.g., an
     /// Empty Policy) cannot be deleted.
-    POLICY_DELETE = 0x400,
+    pub const POLICY_DELETE: Self = Self(0x400);
 
     /// SET (1): Index cannot be written.
     /// CLEAR (0): Index can be written.
-    WRITELOCKED = 0x800,
+    pub const WRITELOCKED: Self = Self(0x800);
 
     /// SET (1): A partial write of the Index data is not allowed. The write size shall match
     /// the defined space size.
     /// CLEAR (0): Partial writes are allowed. This setting is required if the .dataSize of
     /// the Index is larger than NV_MAX_BUFFER_SIZE for the implementation.
-    WRITEALL = 0x1000,
+    pub const WRITEALL: Self = Self(0x1000);
 
     /// SET (1): TPM2_NV_WriteLock() may be used to prevent further writes to this location.
     /// CLEAR (0): TPM2_NV_WriteLock() does not block subsequent writes if
     /// TPMA_NV_WRITE_STCLEAR is also CLEAR.
-    WRITEDEFINE = 0x2000,
+    pub const WRITEDEFINE: Self = Self(0x2000);
 
     /// SET (1): TPM2_NV_WriteLock() may be used to prevent further writes to this location
     /// until the next TPM Reset or TPM Restart.
     /// CLEAR (0): TPM2_NV_WriteLock() does not block subsequent writes if TPMA_NV_WRITEDEFINE
     /// is also CLEAR.
-    WRITE_STCLEAR = 0x4000,
+    pub const WRITE_STCLEAR: Self = Self(0x4000);
 
     /// SET (1): If TPM2_NV_GlobalWriteLock() is successful, TPMA_NV_WRITELOCKED is set.
     /// CLEAR (0): TPM2_NV_GlobalWriteLock() has no effect on the writing of the data at this Index.
-    GLOBALLOCK = 0x8000,
+    pub const GLOBALLOCK: Self = Self(0x8000);
 
     /// SET (1): The Index data can be read if Platform Authorization is provided.
     /// CLEAR (0): Reading of the Index data cannot be authorized with Platform Authorization.
-    PPREAD = 0x10000,
+    pub const PPREAD: Self = Self(0x10000);
 
     /// SET (1): The Index data can be read if Owner Authorization is provided.
     /// CLEAR (0): Reading of the Index data cannot be authorized with Owner Authorization.
-    OWNERREAD = 0x20000,
+    pub const OWNERREAD: Self = Self(0x20000);
 
     /// SET (1): The Index data may be read if the authValue is provided.
     /// CLEAR (0): Reading of the Index data cannot be authorized with the Index authValue.
-    AUTHREAD = 0x40000,
+    pub const AUTHREAD: Self = Self(0x40000);
 
     /// SET (1): The Index data may be read if the authPolicy is satisfied.
     /// CLEAR (0): Reading of the Index data cannot be authorized with the Index authPolicy.
-    POLICYREAD = 0x80000,
+    pub const POLICYREAD: Self = Self(0x80000);
 
     /// SET (1): Authorization failures of the Index do not affect the DA logic and
     /// authorization of the Index is not blocked when the TPM is in Lockout mode.
     /// CLEAR (0): Authorization failures of the Index will increment the authorization
     /// failure counter and authorizations of this Index are not allowed when the TPM is in
     /// Lockout mode.
-    NO_DA = 0x2000000,
+    pub const NO_DA: Self = Self(0x2000000);
 
     /// SET (1): NV Index state is only required to be saved when the TPM performs an orderly
     /// shutdown (TPM2_Shutdown()).
     /// CLEAR (0): NV Index state is required to be persistent after the command to update the
     /// Index completes successfully (that is, the NV update is synchronous with the update command).
-    ORDERLY = 0x4000000,
+    pub const ORDERLY: Self = Self(0x4000000);
 
     /// SET (1): TPMA_NV_WRITTEN for the Index is CLEAR by TPM Reset or TPM Restart.
     /// CLEAR (0): TPMA_NV_WRITTEN is not changed by TPM Restart.
     /// NOTE This attribute may only be SET if TPM_NT is not TPM_NT_COUNTER.
-    CLEAR_STCLEAR = 0x8000000,
+    pub const CLEAR_STCLEAR: Self = Self(0x8000000);
 
     /// SET (1): Reads of the Index are blocked until the next TPM Reset or TPM Restart.
     /// CLEAR (0): Reads of the Index are allowed if proper authorization is provided.
-    READLOCKED = 0x10000000,
+    pub const READLOCKED: Self = Self(0x10000000);
 
     /// SET (1): Index has been written.
     /// CLEAR (0): Index has not been written.
-    WRITTEN = 0x20000000,
+    pub const WRITTEN: Self = Self(0x20000000);
 
     /// SET (1): This Index may be undefined with Platform Authorization but not with Owner
     /// Authorization.
@@ -4025,61 +5484,121 @@ pub enum TPMA_NV {
     /// The TPM will validate that this attribute is SET when the Index is defined using
     /// Platform Authorization and will validate that this attribute is CLEAR when the Index
     /// is defined using Owner Authorization.
-    PLATFORMCREATE = 0x40000000,
+    pub const PLATFORMCREATE: Self = Self(0x40000000);
 
     /// SET (1): TPM2_NV_ReadLock() may be used to SET TPMA_NV_READLOCKED for this Index.
     /// CLEAR (0): TPM2_NV_ReadLock() has no effect on this Index.
-    READ_STCLEAR = 0xFFFFFFFF80000000
+    pub const READ_STCLEAR: Self = Self(0xFFFFFFFF80000000);
+
+    pub fn try_from(value: i32) -> Result<Self, TpmError> {
+        match value {
+            0x1 => Ok(Self::PPWRITE),
+            0x2 => Ok(Self::OWNERWRITE),
+            0x4 => Ok(Self::AUTHWRITE),
+            0x8 => Ok(Self::POLICYWRITE),
+            0x0 => Ok(Self::ORDINARY),
+            0x10 => Ok(Self::COUNTER),
+            0x20 => Ok(Self::BITS),
+            0x40 => Ok(Self::EXTEND),
+            0x80 => Ok(Self::PIN_FAIL),
+            0x90 => Ok(Self::PIN_PASS),
+            0xF0 => Ok(Self::TpmNt_BIT_MASK),
+            4 => Ok(Self::TpmNt_BIT_OFFSET),
+            0x400 => Ok(Self::POLICY_DELETE),
+            0x800 => Ok(Self::WRITELOCKED),
+            0x1000 => Ok(Self::WRITEALL),
+            0x2000 => Ok(Self::WRITEDEFINE),
+            0x4000 => Ok(Self::WRITE_STCLEAR),
+            0x8000 => Ok(Self::GLOBALLOCK),
+            0x10000 => Ok(Self::PPREAD),
+            0x20000 => Ok(Self::OWNERREAD),
+            0x40000 => Ok(Self::AUTHREAD),
+            0x80000 => Ok(Self::POLICYREAD),
+            0x2000000 => Ok(Self::NO_DA),
+            0x4000000 => Ok(Self::ORDERLY),
+            0x8000000 => Ok(Self::CLEAR_STCLEAR),
+            0x10000000 => Ok(Self::READLOCKED),
+            0x20000000 => Ok(Self::WRITTEN),
+            0x40000000 => Ok(Self::PLATFORMCREATE),
+            0xFFFFFFFF80000000 => Ok(Self::READ_STCLEAR),
+            _ => Err(TpmError::InvalidEnumValue),
+        }
+
+    }
+
+}
+
+impl TpmEnum for TPMA_NV {
+    fn get_value(&self) -> u32 {
+        self.0 as u32
+    }
+
+}
+
+impl From<TPMA_NV> for u32 {
+    fn from(value: TPMA_NV) -> Self {
+        value.0 as u32
+    }
+
+}
+
+impl From<TPMA_NV> for i32 {
+    fn from(value: TPMA_NV) -> Self {
+        value.0
+    }
+
 }
 
 impl fmt::Display for TPMA_NV {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::PPWRITE => write!(f, "PPWRITE"),
-            Self::OWNERWRITE => write!(f, "OWNERWRITE"),
-            Self::AUTHWRITE => write!(f, "AUTHWRITE"),
-            Self::POLICYWRITE => write!(f, "POLICYWRITE"),
-            Self::ORDINARY => write!(f, "ORDINARY"),
-            Self::COUNTER => write!(f, "COUNTER"),
-            Self::BITS => write!(f, "BITS"),
-            Self::EXTEND => write!(f, "EXTEND"),
-            Self::PIN_FAIL => write!(f, "PIN_FAIL"),
-            Self::PIN_PASS => write!(f, "PIN_PASS"),
-            Self::TpmNt_BIT_MASK => write!(f, "TpmNt_BIT_MASK"),
-            Self::TpmNt_BIT_OFFSET => write!(f, "TpmNt_BIT_OFFSET"),
-            Self::TpmNt_BIT_LENGTH => write!(f, "TpmNt_BIT_LENGTH"),
-            Self::POLICY_DELETE => write!(f, "POLICY_DELETE"),
-            Self::WRITELOCKED => write!(f, "WRITELOCKED"),
-            Self::WRITEALL => write!(f, "WRITEALL"),
-            Self::WRITEDEFINE => write!(f, "WRITEDEFINE"),
-            Self::WRITE_STCLEAR => write!(f, "WRITE_STCLEAR"),
-            Self::GLOBALLOCK => write!(f, "GLOBALLOCK"),
-            Self::PPREAD => write!(f, "PPREAD"),
-            Self::OWNERREAD => write!(f, "OWNERREAD"),
-            Self::AUTHREAD => write!(f, "AUTHREAD"),
-            Self::POLICYREAD => write!(f, "POLICYREAD"),
-            Self::NO_DA => write!(f, "NO_DA"),
-            Self::ORDERLY => write!(f, "ORDERLY"),
-            Self::CLEAR_STCLEAR => write!(f, "CLEAR_STCLEAR"),
-            Self::READLOCKED => write!(f, "READLOCKED"),
-            Self::WRITTEN => write!(f, "WRITTEN"),
-            Self::PLATFORMCREATE => write!(f, "PLATFORMCREATE"),
-            Self::READ_STCLEAR => write!(f, "READ_STCLEAR"),
+        match self.0 {
+            0x1 => write!(f, "PPWRITE"),
+            0x2 => write!(f, "OWNERWRITE"),
+            0x4 => write!(f, "AUTHWRITE"),
+            0x8 => write!(f, "POLICYWRITE"),
+            0x0 => write!(f, "ORDINARY"),
+            0x10 => write!(f, "COUNTER"),
+            0x20 => write!(f, "BITS"),
+            0x40 => write!(f, "EXTEND"),
+            0x80 => write!(f, "PIN_FAIL"),
+            0x90 => write!(f, "PIN_PASS"),
+            0xF0 => write!(f, "TpmNt_BIT_MASK"),
+            4 => write!(f, "TpmNt_BIT_OFFSET"),
+            0x400 => write!(f, "POLICY_DELETE"),
+            0x800 => write!(f, "WRITELOCKED"),
+            0x1000 => write!(f, "WRITEALL"),
+            0x2000 => write!(f, "WRITEDEFINE"),
+            0x4000 => write!(f, "WRITE_STCLEAR"),
+            0x8000 => write!(f, "GLOBALLOCK"),
+            0x10000 => write!(f, "PPREAD"),
+            0x20000 => write!(f, "OWNERREAD"),
+            0x40000 => write!(f, "AUTHREAD"),
+            0x80000 => write!(f, "POLICYREAD"),
+            0x2000000 => write!(f, "NO_DA"),
+            0x4000000 => write!(f, "ORDERLY"),
+            0x8000000 => write!(f, "CLEAR_STCLEAR"),
+            0x10000000 => write!(f, "READLOCKED"),
+            0x20000000 => write!(f, "WRITTEN"),
+            0x40000000 => write!(f, "PLATFORMCREATE"),
+            0xFFFFFFFF80000000 => write!(f, "READ_STCLEAR"),
+            _ => write!(f, "Unknown({:?})", self.0),
         }
+
     }
+
 }
 
 impl std::ops::BitOr for TPMA_NV {
 type Output = Self;
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+    Self(self.0 | rhs.0)
     }
 
 }
 
-impl From<u32> for TPMA_NV {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+impl From<i32> for TPMA_NV {
+fn from(value: i32) -> Self {
+    Self(value)
     }
 
 }
@@ -4111,17 +5630,17 @@ pub enum TPMU_CAPABILITIES {
 impl TpmUnion for TPMU_CAPABILITIES {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::algorithms(_) => TPM_CAP:ALGS as u32,
-            Self::handles(_) => TPM_CAP:HANDLES as u32,
-            Self::command(_) => TPM_CAP:COMMANDS as u32,
-            Self::ppCommands(_) => TPM_CAP:PP_COMMANDS as u32,
-            Self::auditCommands(_) => TPM_CAP:AUDIT_COMMANDS as u32,
-            Self::assignedPCR(_) => TPM_CAP:PCRS as u32,
-            Self::tpmProperties(_) => TPM_CAP:TPM_PROPERTIES as u32,
-            Self::pcrProperties(_) => TPM_CAP:PCR_PROPERTIES as u32,
-            Self::eccCurves(_) => TPM_CAP:ECC_CURVES as u32,
-            Self::authPolicies(_) => TPM_CAP:AUTH_POLICIES as u32,
-            Self::actData(_) => TPM_CAP:ACT as u32,
+            Self::algorithms(_) => TPM_CAP::ALGS.get_value(),
+            Self::handles(_) => TPM_CAP::HANDLES.get_value(),
+            Self::command(_) => TPM_CAP::COMMANDS.get_value(),
+            Self::ppCommands(_) => TPM_CAP::PP_COMMANDS.get_value(),
+            Self::auditCommands(_) => TPM_CAP::AUDIT_COMMANDS.get_value(),
+            Self::assignedPCR(_) => TPM_CAP::PCRS.get_value(),
+            Self::tpmProperties(_) => TPM_CAP::TPM_PROPERTIES.get_value(),
+            Self::pcrProperties(_) => TPM_CAP::PCR_PROPERTIES.get_value(),
+            Self::eccCurves(_) => TPM_CAP::ECC_CURVES.get_value(),
+            Self::authPolicies(_) => TPM_CAP::AUTH_POLICIES.get_value(),
+            Self::actData(_) => TPM_CAP::ACT.get_value(),
         }
     }
 }
@@ -4162,14 +5681,14 @@ pub enum TPMU_ATTEST {
 impl TpmUnion for TPMU_ATTEST {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::certify(_) => TPM_ST:ATTEST_CERTIFY as u32,
-            Self::creation(_) => TPM_ST:ATTEST_CREATION as u32,
-            Self::quote(_) => TPM_ST:ATTEST_QUOTE as u32,
-            Self::commandAudit(_) => TPM_ST:ATTEST_COMMAND_AUDIT as u32,
-            Self::sessionAudit(_) => TPM_ST:ATTEST_SESSION_AUDIT as u32,
-            Self::time(_) => TPM_ST:ATTEST_TIME as u32,
-            Self::nv(_) => TPM_ST:ATTEST_NV as u32,
-            Self::nvDigest(_) => TPM_ST:ATTEST_NV_DIGEST as u32,
+            Self::certify(_) => TPM_ST::ATTEST_CERTIFY.get_value(),
+            Self::creation(_) => TPM_ST::ATTEST_CREATION.get_value(),
+            Self::quote(_) => TPM_ST::ATTEST_QUOTE.get_value(),
+            Self::commandAudit(_) => TPM_ST::ATTEST_COMMAND_AUDIT.get_value(),
+            Self::sessionAudit(_) => TPM_ST::ATTEST_SESSION_AUDIT.get_value(),
+            Self::time(_) => TPM_ST::ATTEST_TIME.get_value(),
+            Self::nv(_) => TPM_ST::ATTEST_NV.get_value(),
+            Self::nvDigest(_) => TPM_ST::ATTEST_NV_DIGEST.get_value(),
         }
     }
 }
@@ -4206,13 +5725,13 @@ pub enum TPMU_SYM_DETAILS {
 impl TpmUnion for TPMU_SYM_DETAILS {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::tdes(_) => TPM_ALG_ID:TDES as u32,
-            Self::aes(_) => TPM_ALG_ID:AES as u32,
-            Self::sm4(_) => TPM_ALG_ID:SM4 as u32,
-            Self::camellia(_) => TPM_ALG_ID:CAMELLIA as u32,
-            Self::sym(_) => TPM_ALG_ID:ANY as u32,
-            Self::xor(_) => TPM_ALG_ID:XOR as u32,
-            Self::null(_) => TPM_ALG_ID:NULL as u32,
+            Self::tdes(_) => TPM_ALG_ID::TDES.get_value(),
+            Self::aes(_) => TPM_ALG_ID::AES.get_value(),
+            Self::sm4(_) => TPM_ALG_ID::SM4.get_value(),
+            Self::camellia(_) => TPM_ALG_ID::CAMELLIA.get_value(),
+            Self::sym(_) => TPM_ALG_ID::ANY.get_value(),
+            Self::xor(_) => TPM_ALG_ID::XOR.get_value(),
+            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
         }
     }
 }
@@ -4243,8 +5762,8 @@ pub enum TPMU_SENSITIVE_CREATE {
 impl TpmUnion for TPMU_SENSITIVE_CREATE {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::create => TPM_ALG_ID:ANY as u32,
-            Self::derive(_) => TPM_ALG_ID:ANY2 as u32,
+            Self::create => TPM_ALG_ID::ANY.get_value(),
+            Self::derive(_) => TPM_ALG_ID::ANY2.get_value(),
         }
     }
 }
@@ -4269,9 +5788,9 @@ pub enum TPMU_SCHEME_KEYEDHASH {
 impl TpmUnion for TPMU_SCHEME_KEYEDHASH {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::hmac(_) => TPM_ALG_ID:HMAC as u32,
-            Self::xor(_) => TPM_ALG_ID:XOR as u32,
-            Self::null(_) => TPM_ALG_ID:NULL as u32,
+            Self::hmac(_) => TPM_ALG_ID::HMAC.get_value(),
+            Self::xor(_) => TPM_ALG_ID::XOR.get_value(),
+            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
         }
     }
 }
@@ -4305,15 +5824,15 @@ pub enum TPMU_SIG_SCHEME {
 impl TpmUnion for TPMU_SIG_SCHEME {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::rsassa(_) => TPM_ALG_ID:RSASSA as u32,
-            Self::rsapss(_) => TPM_ALG_ID:RSAPSS as u32,
-            Self::ecdsa(_) => TPM_ALG_ID:ECDSA as u32,
-            Self::ecdaa(_) => TPM_ALG_ID:ECDAA as u32,
-            Self::sm2(_) => TPM_ALG_ID:SM2 as u32,
-            Self::ecschnorr(_) => TPM_ALG_ID:ECSCHNORR as u32,
-            Self::hmac(_) => TPM_ALG_ID:HMAC as u32,
-            Self::any(_) => TPM_ALG_ID:ANY as u32,
-            Self::null(_) => TPM_ALG_ID:NULL as u32,
+            Self::rsassa(_) => TPM_ALG_ID::RSASSA.get_value(),
+            Self::rsapss(_) => TPM_ALG_ID::RSAPSS.get_value(),
+            Self::ecdsa(_) => TPM_ALG_ID::ECDSA.get_value(),
+            Self::ecdaa(_) => TPM_ALG_ID::ECDAA.get_value(),
+            Self::sm2(_) => TPM_ALG_ID::SM2.get_value(),
+            Self::ecschnorr(_) => TPM_ALG_ID::ECSCHNORR.get_value(),
+            Self::hmac(_) => TPM_ALG_ID::HMAC.get_value(),
+            Self::any(_) => TPM_ALG_ID::ANY.get_value(),
+            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
         }
     }
 }
@@ -4349,12 +5868,12 @@ pub enum TPMU_KDF_SCHEME {
 impl TpmUnion for TPMU_KDF_SCHEME {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::mgf1(_) => TPM_ALG_ID:MGF1 as u32,
-            Self::kdf1_sp800_56a(_) => TPM_ALG_ID:KDF1_SP800_56A as u32,
-            Self::kdf2(_) => TPM_ALG_ID:KDF2 as u32,
-            Self::kdf1_sp800_108(_) => TPM_ALG_ID:KDF1_SP800_108 as u32,
-            Self::anyKdf(_) => TPM_ALG_ID:ANY as u32,
-            Self::null(_) => TPM_ALG_ID:NULL as u32,
+            Self::mgf1(_) => TPM_ALG_ID::MGF1.get_value(),
+            Self::kdf1_sp800_56a(_) => TPM_ALG_ID::KDF1_SP800_56A.get_value(),
+            Self::kdf2(_) => TPM_ALG_ID::KDF2.get_value(),
+            Self::kdf1_sp800_108(_) => TPM_ALG_ID::KDF1_SP800_108.get_value(),
+            Self::anyKdf(_) => TPM_ALG_ID::ANY.get_value(),
+            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
         }
     }
 }
@@ -4397,18 +5916,18 @@ pub enum TPMU_ASYM_SCHEME {
 impl TpmUnion for TPMU_ASYM_SCHEME {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::ecdh(_) => TPM_ALG_ID:ECDH as u32,
-            Self::ecmqv(_) => TPM_ALG_ID:ECMQV as u32,
-            Self::rsassa(_) => TPM_ALG_ID:RSASSA as u32,
-            Self::rsapss(_) => TPM_ALG_ID:RSAPSS as u32,
-            Self::ecdsa(_) => TPM_ALG_ID:ECDSA as u32,
-            Self::ecdaa(_) => TPM_ALG_ID:ECDAA as u32,
-            Self::sm2(_) => TPM_ALG_ID:SM2 as u32,
-            Self::ecschnorr(_) => TPM_ALG_ID:ECSCHNORR as u32,
-            Self::rsaes(_) => TPM_ALG_ID:RSAES as u32,
-            Self::oaep(_) => TPM_ALG_ID:OAEP as u32,
-            Self::anySig(_) => TPM_ALG_ID:ANY as u32,
-            Self::null(_) => TPM_ALG_ID:NULL as u32,
+            Self::ecdh(_) => TPM_ALG_ID::ECDH.get_value(),
+            Self::ecmqv(_) => TPM_ALG_ID::ECMQV.get_value(),
+            Self::rsassa(_) => TPM_ALG_ID::RSASSA.get_value(),
+            Self::rsapss(_) => TPM_ALG_ID::RSAPSS.get_value(),
+            Self::ecdsa(_) => TPM_ALG_ID::ECDSA.get_value(),
+            Self::ecdaa(_) => TPM_ALG_ID::ECDAA.get_value(),
+            Self::sm2(_) => TPM_ALG_ID::SM2.get_value(),
+            Self::ecschnorr(_) => TPM_ALG_ID::ECSCHNORR.get_value(),
+            Self::rsaes(_) => TPM_ALG_ID::RSAES.get_value(),
+            Self::oaep(_) => TPM_ALG_ID::OAEP.get_value(),
+            Self::anySig(_) => TPM_ALG_ID::ANY.get_value(),
+            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
         }
     }
 }
@@ -4453,15 +5972,15 @@ pub enum TPMU_SIGNATURE {
 impl TpmUnion for TPMU_SIGNATURE {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::rsassa(_) => TPM_ALG_ID:RSASSA as u32,
-            Self::rsapss(_) => TPM_ALG_ID:RSAPSS as u32,
-            Self::ecdsa(_) => TPM_ALG_ID:ECDSA as u32,
-            Self::ecdaa(_) => TPM_ALG_ID:ECDAA as u32,
-            Self::sm2(_) => TPM_ALG_ID:SM2 as u32,
-            Self::ecschnorr(_) => TPM_ALG_ID:ECSCHNORR as u32,
-            Self::hmac(_) => TPM_ALG_ID:HMAC as u32,
-            Self::any(_) => TPM_ALG_ID:ANY as u32,
-            Self::null(_) => TPM_ALG_ID:NULL as u32,
+            Self::rsassa(_) => TPM_ALG_ID::RSASSA.get_value(),
+            Self::rsapss(_) => TPM_ALG_ID::RSAPSS.get_value(),
+            Self::ecdsa(_) => TPM_ALG_ID::ECDSA.get_value(),
+            Self::ecdaa(_) => TPM_ALG_ID::ECDAA.get_value(),
+            Self::sm2(_) => TPM_ALG_ID::SM2.get_value(),
+            Self::ecschnorr(_) => TPM_ALG_ID::ECSCHNORR.get_value(),
+            Self::hmac(_) => TPM_ALG_ID::HMAC.get_value(),
+            Self::any(_) => TPM_ALG_ID::ANY.get_value(),
+            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
         }
     }
 }
@@ -4496,11 +6015,11 @@ pub enum TPMU_PUBLIC_ID {
 impl TpmUnion for TPMU_PUBLIC_ID {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::keyedHash(_) => TPM_ALG_ID:KEYEDHASH as u32,
-            Self::sym(_) => TPM_ALG_ID:SYMCIPHER as u32,
-            Self::rsa(_) => TPM_ALG_ID:RSA as u32,
-            Self::ecc(_) => TPM_ALG_ID:ECC as u32,
-            Self::derive(_) => TPM_ALG_ID:ANY as u32,
+            Self::keyedHash(_) => TPM_ALG_ID::KEYEDHASH.get_value(),
+            Self::sym(_) => TPM_ALG_ID::SYMCIPHER.get_value(),
+            Self::rsa(_) => TPM_ALG_ID::RSA.get_value(),
+            Self::ecc(_) => TPM_ALG_ID::ECC.get_value(),
+            Self::derive(_) => TPM_ALG_ID::ANY.get_value(),
         }
     }
 }
@@ -4533,11 +6052,11 @@ pub enum TPMU_PUBLIC_PARMS {
 impl TpmUnion for TPMU_PUBLIC_PARMS {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::keyedHashDetail(_) => TPM_ALG_ID:KEYEDHASH as u32,
-            Self::symDetail(_) => TPM_ALG_ID:SYMCIPHER as u32,
-            Self::rsaDetail(_) => TPM_ALG_ID:RSA as u32,
-            Self::eccDetail(_) => TPM_ALG_ID:ECC as u32,
-            Self::asymDetail(_) => TPM_ALG_ID:ANY as u32,
+            Self::keyedHashDetail(_) => TPM_ALG_ID::KEYEDHASH.get_value(),
+            Self::symDetail(_) => TPM_ALG_ID::SYMCIPHER.get_value(),
+            Self::rsaDetail(_) => TPM_ALG_ID::RSA.get_value(),
+            Self::eccDetail(_) => TPM_ALG_ID::ECC.get_value(),
+            Self::asymDetail(_) => TPM_ALG_ID::ANY.get_value(),
         }
     }
 }
@@ -4568,11 +6087,11 @@ pub enum TPMU_SENSITIVE_COMPOSITE {
 impl TpmUnion for TPMU_SENSITIVE_COMPOSITE {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::rsa(_) => TPM_ALG_ID:RSA as u32,
-            Self::ecc(_) => TPM_ALG_ID:ECC as u32,
-            Self::bits(_) => TPM_ALG_ID:KEYEDHASH as u32,
-            Self::sym(_) => TPM_ALG_ID:SYMCIPHER as u32,
-            Self::any(_) => TPM_ALG_ID:ANY as u32,
+            Self::rsa(_) => TPM_ALG_ID::RSA.get_value(),
+            Self::ecc(_) => TPM_ALG_ID::ECC.get_value(),
+            Self::bits(_) => TPM_ALG_ID::KEYEDHASH.get_value(),
+            Self::sym(_) => TPM_ALG_ID::SYMCIPHER.get_value(),
+            Self::any(_) => TPM_ALG_ID::ANY.get_value(),
         }
     }
 }
@@ -4616,14 +6135,14 @@ impl TPM_HANDLE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -4643,36 +6162,36 @@ impl Default for TPMS_NULL_UNION {
 }
 
 impl TPMS_NULL_UNION {
-    // Union trait implementations
-    impl TpmUnion for TPMS_NULL_UNION {
-    }
-
-    impl TpmUnion for TPMS_NULL_UNION {
-    }
-
-    impl TpmUnion for TPMS_NULL_UNION {
-    }
-
-    impl TpmUnion for TPMS_NULL_UNION {
-    }
-
-    impl TpmUnion for TPMS_NULL_UNION {
-    }
-
-    impl TpmUnion for TPMS_NULL_UNION {
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_NULL_UNION {
+}
+
+impl TpmUnion for TPMS_NULL_UNION {
+}
+
+impl TpmUnion for TPMS_NULL_UNION {
+}
+
+impl TpmUnion for TPMS_NULL_UNION {
+}
+
+impl TpmUnion for TPMS_NULL_UNION {
+}
+
+impl TpmUnion for TPMS_NULL_UNION {
 }
 
 /// This structure is used as a placeholder. In some cases, a union will have a selector
@@ -4690,21 +6209,21 @@ impl Default for TPMS_EMPTY {
 }
 
 impl TPMS_EMPTY {
-    // Union trait implementations
-    impl TpmUnion for TPMS_EMPTY {
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_EMPTY {
 }
 
 /// This structure is a return value for a TPM2_GetCapability() that reads the installed algorithms.
@@ -4739,14 +6258,14 @@ impl TPMS_ALGORITHM_DESCRIPTION {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -4785,24 +6304,24 @@ impl TPMT_HA {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMT_HA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIGNATURE::HMAC as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMT_HA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIGNATURE::HMAC.get_value()
     }
 }
 
@@ -4831,21 +6350,21 @@ impl TPM2B_DIGEST {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPM2B_DIGEST {
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
+}
+
+// Union trait implementations
+impl TpmUnion for TPM2B_DIGEST {
 }
 
 /// This structure is used for a data buffer that is required to be no larger than the
@@ -4874,14 +6393,14 @@ impl TPM2B_DATA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -4927,14 +6446,14 @@ impl TPM2B_EVENT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -4965,14 +6484,14 @@ impl TPM2B_MAX_BUFFER {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5004,14 +6523,14 @@ impl TPM2B_MAX_NV_BUFFER {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5042,14 +6561,14 @@ impl TPM2B_TIMEOUT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5081,14 +6600,14 @@ impl TPM2B_IV {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5118,14 +6637,14 @@ impl TPM2B_NAME {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5155,14 +6674,14 @@ impl TPMS_PCR_SELECT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5198,14 +6717,14 @@ impl TPMS_PCR_SELECTION {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5242,14 +6761,14 @@ impl TPMT_TK_CREATION {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5287,14 +6806,14 @@ impl TPMT_TK_VERIFIED {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5337,14 +6856,14 @@ impl TPMT_TK_AUTH {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5381,14 +6900,14 @@ impl TPMT_TK_HASHCHECK {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5425,14 +6944,14 @@ impl TPMS_ALG_PROPERTY {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5468,14 +6987,14 @@ impl TPMS_TAGGED_PROPERTY {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5510,14 +7029,14 @@ impl TPMS_TAGGED_PCR_SELECT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5554,14 +7073,14 @@ impl TPMS_TAGGED_POLICY {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5602,14 +7121,14 @@ impl TPMS_ACT_DATA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5640,24 +7159,24 @@ impl TPML_CC {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_CC {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::PP_COMMANDS as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_CC {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::PP_COMMANDS.get_value()
     }
 }
 
@@ -5685,24 +7204,24 @@ impl TPML_CCA {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_CCA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::COMMANDS as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_CCA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::COMMANDS.get_value()
     }
 }
 
@@ -5734,14 +7253,14 @@ impl TPML_ALG {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5770,24 +7289,24 @@ impl TPML_HANDLE {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_HANDLE {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::HANDLES as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_HANDLE {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::HANDLES.get_value()
     }
 }
 
@@ -5821,14 +7340,14 @@ impl TPML_DIGEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5859,14 +7378,14 @@ impl TPML_DIGEST_VALUES {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -5895,24 +7414,24 @@ impl TPML_PCR_SELECTION {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_PCR_SELECTION {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::PCRS as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_PCR_SELECTION {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::PCRS.get_value()
     }
 }
 
@@ -5941,24 +7460,24 @@ impl TPML_ALG_PROPERTY {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_ALG_PROPERTY {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::ALGS as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_ALG_PROPERTY {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::ALGS.get_value()
     }
 }
 
@@ -5987,24 +7506,24 @@ impl TPML_TAGGED_TPM_PROPERTY {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_TAGGED_TPM_PROPERTY {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::TPM_PROPERTIES as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_TAGGED_TPM_PROPERTY {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::TPM_PROPERTIES.get_value()
     }
 }
 
@@ -6033,24 +7552,24 @@ impl TPML_TAGGED_PCR_PROPERTY {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_TAGGED_PCR_PROPERTY {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::PCR_PROPERTIES as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_TAGGED_PCR_PROPERTY {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::PCR_PROPERTIES.get_value()
     }
 }
 
@@ -6079,24 +7598,24 @@ impl TPML_ECC_CURVE {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_ECC_CURVE {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::ECC_CURVES as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_ECC_CURVE {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::ECC_CURVES.get_value()
     }
 }
 
@@ -6126,24 +7645,24 @@ impl TPML_TAGGED_POLICY {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_TAGGED_POLICY {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::AUTH_POLICIES as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_TAGGED_POLICY {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::AUTH_POLICIES.get_value()
     }
 }
 
@@ -6172,24 +7691,24 @@ impl TPML_ACT_DATA {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPML_ACT_DATA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_CAPABILITIES::ACT as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPML_ACT_DATA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_CAPABILITIES::ACT.get_value()
     }
 }
 
@@ -6202,7 +7721,7 @@ pub struct TPMS_CAPABILITY_DATA {
     /// One of: TPML_ALG_PROPERTY, TPML_HANDLE, TPML_CCA, TPML_CC, TPML_PCR_SELECTION,
     /// TPML_TAGGED_TPM_PROPERTY, TPML_TAGGED_PCR_PROPERTY, TPML_ECC_CURVE,
     /// TPML_TAGGED_POLICY, TPML_ACT_DATA.
-    pub data: TPMU_CAPABILITIES,
+    pub data: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMS_CAPABILITY_DATA {
@@ -6215,7 +7734,7 @@ impl Default for TPMS_CAPABILITY_DATA {
 impl TPMS_CAPABILITY_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        data: TPMU_CAPABILITIES,
+        data: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             data,
@@ -6233,14 +7752,14 @@ impl TPMS_CAPABILITY_DATA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -6292,14 +7811,14 @@ impl TPMS_CLOCK_INFO {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -6335,14 +7854,14 @@ impl TPMS_TIME_INFO {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -6375,24 +7894,24 @@ impl TPMS_TIME_ATTEST_INFO {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_TIME_ATTEST_INFO {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ATTEST::ATTEST_TIME as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_TIME_ATTEST_INFO {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ATTEST::ATTEST_TIME.get_value()
     }
 }
 
@@ -6425,24 +7944,24 @@ impl TPMS_CERTIFY_INFO {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_CERTIFY_INFO {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ATTEST::ATTEST_CERTIFY as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_CERTIFY_INFO {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ATTEST::ATTEST_CERTIFY.get_value()
     }
 }
 
@@ -6475,24 +7994,24 @@ impl TPMS_QUOTE_INFO {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_QUOTE_INFO {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ATTEST::ATTEST_QUOTE as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_QUOTE_INFO {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ATTEST::ATTEST_QUOTE.get_value()
     }
 }
 
@@ -6536,24 +8055,24 @@ impl TPMS_COMMAND_AUDIT_INFO {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_COMMAND_AUDIT_INFO {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ATTEST::ATTEST_COMMAND_AUDIT as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_COMMAND_AUDIT_INFO {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ATTEST::ATTEST_COMMAND_AUDIT.get_value()
     }
 }
 
@@ -6588,24 +8107,24 @@ impl TPMS_SESSION_AUDIT_INFO {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_SESSION_AUDIT_INFO {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ATTEST::ATTEST_SESSION_AUDIT as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SESSION_AUDIT_INFO {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ATTEST::ATTEST_SESSION_AUDIT.get_value()
     }
 }
 
@@ -6638,24 +8157,24 @@ impl TPMS_CREATION_INFO {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_CREATION_INFO {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ATTEST::ATTEST_CREATION as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_CREATION_INFO {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ATTEST::ATTEST_CREATION.get_value()
     }
 }
 
@@ -6694,24 +8213,24 @@ impl TPMS_NV_CERTIFY_INFO {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_NV_CERTIFY_INFO {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ATTEST::ATTEST_NV as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_NV_CERTIFY_INFO {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ATTEST::ATTEST_NV.get_value()
     }
 }
 
@@ -6745,24 +8264,24 @@ impl TPMS_NV_DIGEST_CERTIFY_INFO {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_NV_DIGEST_CERTIFY_INFO {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ATTEST::ATTEST_NV_DIGEST as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_NV_DIGEST_CERTIFY_INFO {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ATTEST::ATTEST_NV_DIGEST.get_value()
     }
 }
 
@@ -6794,7 +8313,7 @@ pub struct TPMS_ATTEST {
     /// One of: TPMS_CERTIFY_INFO, TPMS_CREATION_INFO, TPMS_QUOTE_INFO,
     /// TPMS_COMMAND_AUDIT_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO,
     /// TPMS_NV_CERTIFY_INFO, TPMS_NV_DIGEST_CERTIFY_INFO.
-    pub attested: TPMU_ATTEST,
+    pub attested: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMS_ATTEST {
@@ -6812,7 +8331,7 @@ impl TPMS_ATTEST {
         extra_Data: Vec<u8>,
         clock_Info: TPMS_CLOCK_INFO,
         firmware_Version: u64,
-        attested: TPMU_ATTEST,
+        attested: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             magic,
@@ -6835,14 +8354,14 @@ impl TPMS_ATTEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -6873,14 +8392,14 @@ impl TPM2B_ATTEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -6926,14 +8445,14 @@ impl TPMS_AUTH_COMMAND {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -6975,14 +8494,14 @@ impl TPMS_AUTH_RESPONSE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -7000,24 +8519,24 @@ impl Default for TPMS_TDES_SYM_DETAILS {
 }
 
 impl TPMS_TDES_SYM_DETAILS {
-    // Union trait implementations
-    impl TpmUnion for TPMS_TDES_SYM_DETAILS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SYM_DETAILS::TDES as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_TDES_SYM_DETAILS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SYM_DETAILS::TDES.get_value()
     }
 }
 
@@ -7035,24 +8554,24 @@ impl Default for TPMS_AES_SYM_DETAILS {
 }
 
 impl TPMS_AES_SYM_DETAILS {
-    // Union trait implementations
-    impl TpmUnion for TPMS_AES_SYM_DETAILS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SYM_DETAILS::AES as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_AES_SYM_DETAILS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SYM_DETAILS::AES.get_value()
     }
 }
 
@@ -7070,24 +8589,24 @@ impl Default for TPMS_SM4_SYM_DETAILS {
 }
 
 impl TPMS_SM4_SYM_DETAILS {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SM4_SYM_DETAILS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SYM_DETAILS::SM4 as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SM4_SYM_DETAILS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SYM_DETAILS::SM4.get_value()
     }
 }
 
@@ -7105,24 +8624,24 @@ impl Default for TPMS_CAMELLIA_SYM_DETAILS {
 }
 
 impl TPMS_CAMELLIA_SYM_DETAILS {
-    // Union trait implementations
-    impl TpmUnion for TPMS_CAMELLIA_SYM_DETAILS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SYM_DETAILS::CAMELLIA as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_CAMELLIA_SYM_DETAILS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SYM_DETAILS::CAMELLIA.get_value()
     }
 }
 
@@ -7140,24 +8659,24 @@ impl Default for TPMS_ANY_SYM_DETAILS {
 }
 
 impl TPMS_ANY_SYM_DETAILS {
-    // Union trait implementations
-    impl TpmUnion for TPMS_ANY_SYM_DETAILS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SYM_DETAILS::ANY as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_ANY_SYM_DETAILS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SYM_DETAILS::ANY.get_value()
     }
 }
 
@@ -7175,24 +8694,24 @@ impl Default for TPMS_XOR_SYM_DETAILS {
 }
 
 impl TPMS_XOR_SYM_DETAILS {
-    // Union trait implementations
-    impl TpmUnion for TPMS_XOR_SYM_DETAILS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SYM_DETAILS::XOR as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_XOR_SYM_DETAILS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SYM_DETAILS::XOR.get_value()
     }
 }
 
@@ -7210,24 +8729,24 @@ impl Default for TPMS_NULL_SYM_DETAILS {
 }
 
 impl TPMS_NULL_SYM_DETAILS {
-    // Union trait implementations
-    impl TpmUnion for TPMS_NULL_SYM_DETAILS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SYM_DETAILS::NULL as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_NULL_SYM_DETAILS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SYM_DETAILS::NULL.get_value()
     }
 }
 
@@ -7270,14 +8789,14 @@ impl TPMT_SYM_DEF {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -7324,14 +8843,14 @@ impl TPMT_SYM_DEF_OBJECT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -7359,24 +8878,24 @@ impl TPM2B_SYM_KEY {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPM2B_SYM_KEY {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SENSITIVE_COMPOSITE::SYMCIPHER as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPM2B_SYM_KEY {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SENSITIVE_COMPOSITE::SYMCIPHER.get_value()
     }
 }
 
@@ -7404,24 +8923,24 @@ impl TPMS_SYMCIPHER_PARMS {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_SYMCIPHER_PARMS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_PUBLIC_PARMS::SYMCIPHER as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SYMCIPHER_PARMS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_PUBLIC_PARMS::SYMCIPHER.get_value()
     }
 }
 
@@ -7453,14 +8972,14 @@ impl TPM2B_LABEL {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -7492,31 +9011,31 @@ impl TPMS_DERIVE {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_DERIVE {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SENSITIVE_CREATE::ANY2 as u32
-        }
-    }
-
-    impl TpmUnion for TPMS_DERIVE {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SENSITIVE_CREATE::ANY2 as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_DERIVE {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SENSITIVE_CREATE::ANY2.get_value()
+    }
+}
+
+impl TpmUnion for TPMS_DERIVE {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SENSITIVE_CREATE::ANY2.get_value()
     }
 }
 
@@ -7546,14 +9065,14 @@ impl TPM2B_DERIVE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -7581,24 +9100,24 @@ impl TPM2B_SENSITIVE_DATA {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPM2B_SENSITIVE_DATA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SENSITIVE_COMPOSITE::KEYEDHASH as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPM2B_SENSITIVE_DATA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SENSITIVE_COMPOSITE::KEYEDHASH.get_value()
     }
 }
 
@@ -7634,14 +9153,14 @@ impl TPMS_SENSITIVE_CREATE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -7673,14 +9192,14 @@ impl TPM2B_SENSITIVE_CREATE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -7710,33 +9229,33 @@ impl TPMS_SCHEME_HASH {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_SCHEME_HASH {
-    }
-
-    impl TpmUnion for TPMS_SCHEME_HASH {
-    }
-
-    impl TpmUnion for TPMS_SCHEME_HASH {
-    }
-
-    impl TpmUnion for TPMS_SCHEME_HASH {
-    }
-
-    impl TpmUnion for TPMS_SCHEME_HASH {
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SCHEME_HASH {
+}
+
+impl TpmUnion for TPMS_SCHEME_HASH {
+}
+
+impl TpmUnion for TPMS_SCHEME_HASH {
+}
+
+impl TpmUnion for TPMS_SCHEME_HASH {
+}
+
+impl TpmUnion for TPMS_SCHEME_HASH {
 }
 
 /// This definition is for split signing schemes that require a commit count.
@@ -7769,24 +9288,24 @@ impl TPMS_SCHEME_ECDAA {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_SCHEME_ECDAA {
-    }
-
-    impl TpmUnion for TPMS_SCHEME_ECDAA {
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SCHEME_ECDAA {
+}
+
+impl TpmUnion for TPMS_SCHEME_ECDAA {
 }
 
 /// Table 155 Definition of Types for HMAC_SIG_SCHEME
@@ -7802,31 +9321,31 @@ impl Default for TPMS_SCHEME_HMAC {
 }
 
 impl TPMS_SCHEME_HMAC {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SCHEME_HMAC {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SCHEME_KEYEDHASH::HMAC as u32
-        }
-    }
-
-    impl TpmUnion for TPMS_SCHEME_HMAC {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SCHEME_KEYEDHASH::HMAC as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SCHEME_HMAC {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SCHEME_KEYEDHASH::HMAC.get_value()
+    }
+}
+
+impl TpmUnion for TPMS_SCHEME_HMAC {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SCHEME_KEYEDHASH::HMAC.get_value()
     }
 }
 
@@ -7861,24 +9380,24 @@ impl TPMS_SCHEME_XOR {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_SCHEME_XOR {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SCHEME_KEYEDHASH::XOR as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SCHEME_XOR {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SCHEME_KEYEDHASH::XOR.get_value()
     }
 }
 
@@ -7896,24 +9415,24 @@ impl Default for TPMS_NULL_SCHEME_KEYEDHASH {
 }
 
 impl TPMS_NULL_SCHEME_KEYEDHASH {
-    // Union trait implementations
-    impl TpmUnion for TPMS_NULL_SCHEME_KEYEDHASH {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SCHEME_KEYEDHASH::NULL as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_NULL_SCHEME_KEYEDHASH {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SCHEME_KEYEDHASH::NULL.get_value()
     }
 }
 
@@ -7924,7 +9443,7 @@ pub struct TPMT_KEYEDHASH_SCHEME {
 
     /// The scheme parameters
     /// One of: TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_NULL_SCHEME_KEYEDHASH.
-    pub details: TPMU_SCHEME_KEYEDHASH,
+    pub details: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_KEYEDHASH_SCHEME {
@@ -7937,7 +9456,7 @@ impl Default for TPMT_KEYEDHASH_SCHEME {
 impl TPMT_KEYEDHASH_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: TPMU_SCHEME_KEYEDHASH,
+        details: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             details,
@@ -7948,21 +9467,21 @@ impl TPMT_KEYEDHASH_SCHEME {
     pub fn scheme(&self) -> TPM_ALG_ID {
         match &self.details {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -7979,31 +9498,31 @@ impl Default for TPMS_SIG_SCHEME_RSASSA {
 }
 
 impl TPMS_SIG_SCHEME_RSASSA {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIG_SCHEME_RSASSA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::RSASSA as u32
-        }
-    }
-
-    impl TpmUnion for TPMS_SIG_SCHEME_RSASSA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::RSASSA as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIG_SCHEME_RSASSA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::RSASSA.get_value()
+    }
+}
+
+impl TpmUnion for TPMS_SIG_SCHEME_RSASSA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::RSASSA.get_value()
     }
 }
 
@@ -8020,31 +9539,31 @@ impl Default for TPMS_SIG_SCHEME_RSAPSS {
 }
 
 impl TPMS_SIG_SCHEME_RSAPSS {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIG_SCHEME_RSAPSS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::RSAPSS as u32
-        }
-    }
-
-    impl TpmUnion for TPMS_SIG_SCHEME_RSAPSS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::RSAPSS as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIG_SCHEME_RSAPSS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::RSAPSS.get_value()
+    }
+}
+
+impl TpmUnion for TPMS_SIG_SCHEME_RSAPSS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::RSAPSS.get_value()
     }
 }
 
@@ -8063,31 +9582,31 @@ impl Default for TPMS_SIG_SCHEME_ECDSA {
 }
 
 impl TPMS_SIG_SCHEME_ECDSA {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIG_SCHEME_ECDSA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::ECDSA as u32
-        }
-    }
-
-    impl TpmUnion for TPMS_SIG_SCHEME_ECDSA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::ECDSA as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIG_SCHEME_ECDSA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::ECDSA.get_value()
+    }
+}
+
+impl TpmUnion for TPMS_SIG_SCHEME_ECDSA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::ECDSA.get_value()
     }
 }
 
@@ -8106,31 +9625,31 @@ impl Default for TPMS_SIG_SCHEME_SM2 {
 }
 
 impl TPMS_SIG_SCHEME_SM2 {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIG_SCHEME_SM2 {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::SM2 as u32
-        }
-    }
-
-    impl TpmUnion for TPMS_SIG_SCHEME_SM2 {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::SM2 as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIG_SCHEME_SM2 {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::SM2.get_value()
+    }
+}
+
+impl TpmUnion for TPMS_SIG_SCHEME_SM2 {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::SM2.get_value()
     }
 }
 
@@ -8149,31 +9668,31 @@ impl Default for TPMS_SIG_SCHEME_ECSCHNORR {
 }
 
 impl TPMS_SIG_SCHEME_ECSCHNORR {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIG_SCHEME_ECSCHNORR {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::ECSCHNORR as u32
-        }
-    }
-
-    impl TpmUnion for TPMS_SIG_SCHEME_ECSCHNORR {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::ECSCHNORR as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIG_SCHEME_ECSCHNORR {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::ECSCHNORR.get_value()
+    }
+}
+
+impl TpmUnion for TPMS_SIG_SCHEME_ECSCHNORR {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::ECSCHNORR.get_value()
     }
 }
 
@@ -8192,31 +9711,31 @@ impl Default for TPMS_SIG_SCHEME_ECDAA {
 }
 
 impl TPMS_SIG_SCHEME_ECDAA {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIG_SCHEME_ECDAA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::ECDAA as u32
-        }
-    }
-
-    impl TpmUnion for TPMS_SIG_SCHEME_ECDAA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::ECDAA as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIG_SCHEME_ECDAA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::ECDAA.get_value()
+    }
+}
+
+impl TpmUnion for TPMS_SIG_SCHEME_ECDAA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::ECDAA.get_value()
     }
 }
 
@@ -8234,24 +9753,24 @@ impl Default for TPMS_NULL_SIG_SCHEME {
 }
 
 impl TPMS_NULL_SIG_SCHEME {
-    // Union trait implementations
-    impl TpmUnion for TPMS_NULL_SIG_SCHEME {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIG_SCHEME::NULL as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_NULL_SIG_SCHEME {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIG_SCHEME::NULL.get_value()
     }
 }
 
@@ -8264,7 +9783,7 @@ pub struct TPMT_SIG_SCHEME {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub details: TPMU_SIG_SCHEME,
+    pub details: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_SIG_SCHEME {
@@ -8277,7 +9796,7 @@ impl Default for TPMT_SIG_SCHEME {
 impl TPMT_SIG_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: TPMU_SIG_SCHEME,
+        details: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             details,
@@ -8288,21 +9807,21 @@ impl TPMT_SIG_SCHEME {
     pub fn scheme(&self) -> TPM_ALG_ID {
         match &self.details {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -8319,24 +9838,24 @@ impl Default for TPMS_ENC_SCHEME_OAEP {
 }
 
 impl TPMS_ENC_SCHEME_OAEP {
-    // Union trait implementations
-    impl TpmUnion for TPMS_ENC_SCHEME_OAEP {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ASYM_SCHEME::OAEP as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_ENC_SCHEME_OAEP {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ASYM_SCHEME::OAEP.get_value()
     }
 }
 
@@ -8353,24 +9872,24 @@ impl Default for TPMS_ENC_SCHEME_RSAES {
 }
 
 impl TPMS_ENC_SCHEME_RSAES {
-    // Union trait implementations
-    impl TpmUnion for TPMS_ENC_SCHEME_RSAES {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ASYM_SCHEME::RSAES as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_ENC_SCHEME_RSAES {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ASYM_SCHEME::RSAES.get_value()
     }
 }
 
@@ -8387,24 +9906,24 @@ impl Default for TPMS_KEY_SCHEME_ECDH {
 }
 
 impl TPMS_KEY_SCHEME_ECDH {
-    // Union trait implementations
-    impl TpmUnion for TPMS_KEY_SCHEME_ECDH {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ASYM_SCHEME::ECDH as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_KEY_SCHEME_ECDH {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ASYM_SCHEME::ECDH.get_value()
     }
 }
 
@@ -8421,24 +9940,24 @@ impl Default for TPMS_KEY_SCHEME_ECMQV {
 }
 
 impl TPMS_KEY_SCHEME_ECMQV {
-    // Union trait implementations
-    impl TpmUnion for TPMS_KEY_SCHEME_ECMQV {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ASYM_SCHEME::ECMQV as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_KEY_SCHEME_ECMQV {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ASYM_SCHEME::ECMQV.get_value()
     }
 }
 
@@ -8457,24 +9976,24 @@ impl Default for TPMS_KDF_SCHEME_MGF1 {
 }
 
 impl TPMS_KDF_SCHEME_MGF1 {
-    // Union trait implementations
-    impl TpmUnion for TPMS_KDF_SCHEME_MGF1 {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_KDF_SCHEME::MGF1 as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_KDF_SCHEME_MGF1 {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_KDF_SCHEME::MGF1.get_value()
     }
 }
 
@@ -8493,24 +10012,24 @@ impl Default for TPMS_KDF_SCHEME_KDF1_SP800_56A {
 }
 
 impl TPMS_KDF_SCHEME_KDF1_SP800_56A {
-    // Union trait implementations
-    impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_56A {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_KDF_SCHEME::KDF1_SP800_56A as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_56A {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_KDF_SCHEME::KDF1_SP800_56A.get_value()
     }
 }
 
@@ -8529,24 +10048,24 @@ impl Default for TPMS_KDF_SCHEME_KDF2 {
 }
 
 impl TPMS_KDF_SCHEME_KDF2 {
-    // Union trait implementations
-    impl TpmUnion for TPMS_KDF_SCHEME_KDF2 {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_KDF_SCHEME::KDF2 as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_KDF_SCHEME_KDF2 {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_KDF_SCHEME::KDF2.get_value()
     }
 }
 
@@ -8565,24 +10084,24 @@ impl Default for TPMS_KDF_SCHEME_KDF1_SP800_108 {
 }
 
 impl TPMS_KDF_SCHEME_KDF1_SP800_108 {
-    // Union trait implementations
-    impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_108 {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_KDF_SCHEME::KDF1_SP800_108 as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_108 {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_KDF_SCHEME::KDF1_SP800_108.get_value()
     }
 }
 
@@ -8600,24 +10119,24 @@ impl Default for TPMS_NULL_KDF_SCHEME {
 }
 
 impl TPMS_NULL_KDF_SCHEME {
-    // Union trait implementations
-    impl TpmUnion for TPMS_NULL_KDF_SCHEME {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_KDF_SCHEME::NULL as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_NULL_KDF_SCHEME {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_KDF_SCHEME::NULL.get_value()
     }
 }
 
@@ -8629,7 +10148,7 @@ pub struct TPMT_KDF_SCHEME {
     /// Scheme parameters
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub details: TPMU_KDF_SCHEME,
+    pub details: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_KDF_SCHEME {
@@ -8642,7 +10161,7 @@ impl Default for TPMT_KDF_SCHEME {
 impl TPMT_KDF_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: TPMU_KDF_SCHEME,
+        details: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             details,
@@ -8653,21 +10172,21 @@ impl TPMT_KDF_SCHEME {
     pub fn scheme(&self) -> TPM_ALG_ID {
         match &self.details {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -8685,24 +10204,24 @@ impl Default for TPMS_NULL_ASYM_SCHEME {
 }
 
 impl TPMS_NULL_ASYM_SCHEME {
-    // Union trait implementations
-    impl TpmUnion for TPMS_NULL_ASYM_SCHEME {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_ASYM_SCHEME::NULL as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_NULL_ASYM_SCHEME {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_ASYM_SCHEME::NULL.get_value()
     }
 }
 
@@ -8718,7 +10237,7 @@ pub struct TPMT_ASYM_SCHEME {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: TPMU_ASYM_SCHEME,
+    pub details: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_ASYM_SCHEME {
@@ -8731,7 +10250,7 @@ impl Default for TPMT_ASYM_SCHEME {
 impl TPMT_ASYM_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: TPMU_ASYM_SCHEME,
+        details: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             details,
@@ -8742,21 +10261,21 @@ impl TPMT_ASYM_SCHEME {
     pub fn scheme(&self) -> TPM_ALG_ID {
         match &self.details {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -8770,7 +10289,7 @@ pub struct TPMT_RSA_SCHEME {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: TPMU_ASYM_SCHEME,
+    pub details: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_RSA_SCHEME {
@@ -8783,7 +10302,7 @@ impl Default for TPMT_RSA_SCHEME {
 impl TPMT_RSA_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: TPMU_ASYM_SCHEME,
+        details: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             details,
@@ -8794,21 +10313,21 @@ impl TPMT_RSA_SCHEME {
     pub fn scheme(&self) -> TPM_ALG_ID {
         match &self.details {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -8822,7 +10341,7 @@ pub struct TPMT_RSA_DECRYPT {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: TPMU_ASYM_SCHEME,
+    pub details: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_RSA_DECRYPT {
@@ -8835,7 +10354,7 @@ impl Default for TPMT_RSA_DECRYPT {
 impl TPMT_RSA_DECRYPT {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: TPMU_ASYM_SCHEME,
+        details: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             details,
@@ -8846,21 +10365,21 @@ impl TPMT_RSA_DECRYPT {
     pub fn scheme(&self) -> TPM_ALG_ID {
         match &self.details {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -8888,24 +10407,24 @@ impl TPM2B_PUBLIC_KEY_RSA {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPM2B_PUBLIC_KEY_RSA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_PUBLIC_ID::RSA as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPM2B_PUBLIC_KEY_RSA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_PUBLIC_ID::RSA.get_value()
     }
 }
 
@@ -8932,24 +10451,24 @@ impl TPM2B_PRIVATE_KEY_RSA {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPM2B_PRIVATE_KEY_RSA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SENSITIVE_COMPOSITE::RSA as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPM2B_PRIVATE_KEY_RSA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SENSITIVE_COMPOSITE::RSA.get_value()
     }
 }
 
@@ -8977,24 +10496,24 @@ impl TPM2B_ECC_PARAMETER {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPM2B_ECC_PARAMETER {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SENSITIVE_COMPOSITE::ECC as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPM2B_ECC_PARAMETER {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SENSITIVE_COMPOSITE::ECC.get_value()
     }
 }
 
@@ -9027,24 +10546,24 @@ impl TPMS_ECC_POINT {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_ECC_POINT {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_PUBLIC_ID::ECC as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_ECC_POINT {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_PUBLIC_ID::ECC.get_value()
     }
 }
 
@@ -9075,14 +10594,14 @@ impl TPM2B_ECC_POINT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -9096,7 +10615,7 @@ pub struct TPMT_ECC_SCHEME {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: TPMU_ASYM_SCHEME,
+    pub details: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_ECC_SCHEME {
@@ -9109,7 +10628,7 @@ impl Default for TPMT_ECC_SCHEME {
 impl TPMT_ECC_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: TPMU_ASYM_SCHEME,
+        details: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             details,
@@ -9120,21 +10639,21 @@ impl TPMT_ECC_SCHEME {
     pub fn scheme(&self) -> TPM_ALG_ID {
         match &self.details {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -9153,7 +10672,7 @@ pub struct TPMS_ALGORITHM_DETAIL_ECC {
     /// If not TPM_ALG_NULL, the required KDF and hash algorithm used in secret sharing operations
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub kdf: TPMU_KDF_SCHEME,
+    pub kdf: Option<Box<dyn TpmUnion>>,
 
     /// Scheme selector
 
@@ -9163,7 +10682,7 @@ pub struct TPMS_ALGORITHM_DETAIL_ECC {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub sign: TPMU_ASYM_SCHEME,
+    pub sign: Option<Box<dyn TpmUnion>>,
 
     /// Fp (the modulus)
     pub p: Vec<u8>,
@@ -9199,8 +10718,8 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
     pub fn new(
         curve_ID: TPM_ECC_CURVE,
         key_Size: u16,
-        kdf: TPMU_KDF_SCHEME,
-        sign: TPMU_ASYM_SCHEME,
+        kdf: Option<Box<dyn TpmUnion>>,
+        sign: Option<Box<dyn TpmUnion>>,
         p: Vec<u8>,
         a: Vec<u8>,
         b: Vec<u8>,
@@ -9228,7 +10747,7 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
     pub fn kdf_Scheme(&self) -> TPM_ALG_ID {
         match &self.kdf {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
@@ -9237,21 +10756,21 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
     pub fn sign_Scheme(&self) -> TPM_ALG_ID {
         match &self.sign {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -9286,21 +10805,21 @@ impl TPMS_SIGNATURE_RSA {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIGNATURE_RSA {
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIGNATURE_RSA {
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
@@ -9316,24 +10835,24 @@ impl Default for TPMS_SIGNATURE_RSASSA {
 }
 
 impl TPMS_SIGNATURE_RSASSA {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIGNATURE_RSASSA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIGNATURE::RSASSA as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIGNATURE_RSASSA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIGNATURE::RSASSA.get_value()
     }
 }
 
@@ -9350,24 +10869,24 @@ impl Default for TPMS_SIGNATURE_RSAPSS {
 }
 
 impl TPMS_SIGNATURE_RSAPSS {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIGNATURE_RSAPSS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIGNATURE::RSAPSS as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIGNATURE_RSAPSS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIGNATURE::RSAPSS.get_value()
     }
 }
 
@@ -9403,21 +10922,21 @@ impl TPMS_SIGNATURE_ECC {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIGNATURE_ECC {
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIGNATURE_ECC {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
@@ -9433,24 +10952,24 @@ impl Default for TPMS_SIGNATURE_ECDSA {
 }
 
 impl TPMS_SIGNATURE_ECDSA {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIGNATURE_ECDSA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIGNATURE::ECDSA as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIGNATURE_ECDSA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIGNATURE::ECDSA.get_value()
     }
 }
 
@@ -9467,24 +10986,24 @@ impl Default for TPMS_SIGNATURE_ECDAA {
 }
 
 impl TPMS_SIGNATURE_ECDAA {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIGNATURE_ECDAA {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIGNATURE::ECDAA as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIGNATURE_ECDAA {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIGNATURE::ECDAA.get_value()
     }
 }
 
@@ -9501,24 +11020,24 @@ impl Default for TPMS_SIGNATURE_SM2 {
 }
 
 impl TPMS_SIGNATURE_SM2 {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIGNATURE_SM2 {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIGNATURE::SM2 as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIGNATURE_SM2 {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIGNATURE::SM2.get_value()
     }
 }
 
@@ -9535,24 +11054,24 @@ impl Default for TPMS_SIGNATURE_ECSCHNORR {
 }
 
 impl TPMS_SIGNATURE_ECSCHNORR {
-    // Union trait implementations
-    impl TpmUnion for TPMS_SIGNATURE_ECSCHNORR {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIGNATURE::ECSCHNORR as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_SIGNATURE_ECSCHNORR {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIGNATURE::ECSCHNORR.get_value()
     }
 }
 
@@ -9570,24 +11089,24 @@ impl Default for TPMS_NULL_SIGNATURE {
 }
 
 impl TPMS_NULL_SIGNATURE {
-    // Union trait implementations
-    impl TpmUnion for TPMS_NULL_SIGNATURE {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SIGNATURE::NULL as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_NULL_SIGNATURE {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SIGNATURE::NULL.get_value()
     }
 }
 
@@ -9604,7 +11123,7 @@ pub struct TPMT_SIGNATURE {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_SIGNATURE {
@@ -9617,7 +11136,7 @@ impl Default for TPMT_SIGNATURE {
 impl TPMT_SIGNATURE {
     /// Creates a new instance with the specified values
     pub fn new(
-        signature: TPMU_SIGNATURE,
+        signature: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             signature,
@@ -9628,21 +11147,21 @@ impl TPMT_SIGNATURE {
     pub fn sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -9672,14 +11191,14 @@ impl TPM2B_ENCRYPTED_SECRET {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -9693,7 +11212,7 @@ pub struct TPMS_KEYEDHASH_PARMS {
     /// determines the size of the data field for a data object created with TPM2_Create() or
     /// TPM2_CreatePrimary().
     /// One of: TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_NULL_SCHEME_KEYEDHASH.
-    pub scheme: TPMU_SCHEME_KEYEDHASH,
+    pub scheme: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMS_KEYEDHASH_PARMS {
@@ -9706,7 +11225,7 @@ impl Default for TPMS_KEYEDHASH_PARMS {
 impl TPMS_KEYEDHASH_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        scheme: TPMU_SCHEME_KEYEDHASH,
+        scheme: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             scheme,
@@ -9717,29 +11236,29 @@ impl TPMS_KEYEDHASH_PARMS {
     pub fn scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
-    }
-
-    // Union trait implementations
-    impl TpmUnion for TPMS_KEYEDHASH_PARMS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_PUBLIC_PARMS::KEYEDHASH as u32
-        }
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_KEYEDHASH_PARMS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_PUBLIC_PARMS::KEYEDHASH.get_value()
     }
 }
 
@@ -9763,7 +11282,7 @@ pub struct TPMS_ASYM_PARMS {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub scheme: TPMU_ASYM_SCHEME,
+    pub scheme: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMS_ASYM_PARMS {
@@ -9777,7 +11296,7 @@ impl TPMS_ASYM_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
         symmetric: TPMT_SYM_DEF_OBJECT,
-        scheme: TPMU_ASYM_SCHEME,
+        scheme: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             symmetric,
@@ -9789,29 +11308,29 @@ impl TPMS_ASYM_PARMS {
     pub fn scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
-    }
-
-    // Union trait implementations
-    impl TpmUnion for TPMS_ASYM_PARMS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_PUBLIC_PARMS::ANY as u32
-        }
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_ASYM_PARMS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_PUBLIC_PARMS::ANY.get_value()
     }
 }
 
@@ -9841,7 +11360,7 @@ pub struct TPMS_RSA_PARMS {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub scheme: TPMU_ASYM_SCHEME,
+    pub scheme: Option<Box<dyn TpmUnion>>,
 
     /// Number of bits in the public modulus
     pub key_Bits: u16,
@@ -9862,7 +11381,7 @@ impl TPMS_RSA_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
         symmetric: TPMT_SYM_DEF_OBJECT,
-        scheme: TPMU_ASYM_SCHEME,
+        scheme: Option<Box<dyn TpmUnion>>,
         key_Bits: u16,
         exponent: u32,
         ) -> Self {
@@ -9878,29 +11397,29 @@ impl TPMS_RSA_PARMS {
     pub fn scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
-    }
-
-    // Union trait implementations
-    impl TpmUnion for TPMS_RSA_PARMS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_PUBLIC_PARMS::RSA as u32
-        }
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_RSA_PARMS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_PUBLIC_PARMS::RSA.get_value()
     }
 }
 
@@ -9924,7 +11443,7 @@ pub struct TPMS_ECC_PARMS {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub scheme: TPMU_ASYM_SCHEME,
+    pub scheme: Option<Box<dyn TpmUnion>>,
 
     /// ECC curve ID
     pub curve_ID: TPM_ECC_CURVE,
@@ -9938,7 +11457,7 @@ pub struct TPMS_ECC_PARMS {
     /// reference code, this field needs to be set to TPM_ALG_NULL.
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub kdf: TPMU_KDF_SCHEME,
+    pub kdf: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMS_ECC_PARMS {
@@ -9952,9 +11471,9 @@ impl TPMS_ECC_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
         symmetric: TPMT_SYM_DEF_OBJECT,
-        scheme: TPMU_ASYM_SCHEME,
+        scheme: Option<Box<dyn TpmUnion>>,
         curve_ID: TPM_ECC_CURVE,
-        kdf: TPMU_KDF_SCHEME,
+        kdf: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             symmetric,
@@ -9968,7 +11487,7 @@ impl TPMS_ECC_PARMS {
     pub fn scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
@@ -9977,29 +11496,29 @@ impl TPMS_ECC_PARMS {
     pub fn kdf_Scheme(&self) -> TPM_ALG_ID {
         match &self.kdf {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
-    }
-
-    // Union trait implementations
-    impl TpmUnion for TPMS_ECC_PARMS {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_PUBLIC_PARMS::ECC as u32
-        }
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPMS_ECC_PARMS {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_PUBLIC_PARMS::ECC.get_value()
     }
 }
 
@@ -10012,7 +11531,7 @@ pub struct TPMT_PUBLIC_PARMS {
     /// The algorithm details
     /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
     /// TPMS_ASYM_PARMS.
-    pub parameters: TPMU_PUBLIC_PARMS,
+    pub parameters: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_PUBLIC_PARMS {
@@ -10025,7 +11544,7 @@ impl Default for TPMT_PUBLIC_PARMS {
 impl TPMT_PUBLIC_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        parameters: TPMU_PUBLIC_PARMS,
+        parameters: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             parameters,
@@ -10043,14 +11562,14 @@ impl TPMT_PUBLIC_PARMS {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10076,13 +11595,13 @@ pub struct TPMT_PUBLIC {
     /// The algorithm or structure details
     /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
     /// TPMS_ASYM_PARMS.
-    pub parameters: TPMU_PUBLIC_PARMS,
+    pub parameters: Option<Box<dyn TpmUnion>>,
 
     /// The unique identifier of the structure
     /// For an asymmetric key, this would be the public key.
     /// One of: TPM2B_DIGEST_KEYEDHASH, TPM2B_DIGEST_SYMCIPHER, TPM2B_PUBLIC_KEY_RSA,
     /// TPMS_ECC_POINT, TPMS_DERIVE.
-    pub unique: TPMU_PUBLIC_ID,
+    pub unique: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_PUBLIC {
@@ -10099,8 +11618,8 @@ impl TPMT_PUBLIC {
         name_Alg: TPM_ALG_ID,
         object_Attributes: TPMA_OBJECT,
         auth_Policy: Vec<u8>,
-        parameters: TPMU_PUBLIC_PARMS,
-        unique: TPMU_PUBLIC_ID,
+        parameters: Option<Box<dyn TpmUnion>>,
+        unique: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             name_Alg,
@@ -10122,14 +11641,14 @@ impl TPMT_PUBLIC {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10162,14 +11681,14 @@ impl TPM2B_PUBLIC {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10199,14 +11718,14 @@ impl TPM2B_TEMPLATE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10238,24 +11757,24 @@ impl TPM2B_PRIVATE_VENDOR_SPECIFIC {
         }
     }
 
-    // Union trait implementations
-    impl TpmUnion for TPM2B_PRIVATE_VENDOR_SPECIFIC {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_SENSITIVE_COMPOSITE::ANY as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPM2B_PRIVATE_VENDOR_SPECIFIC {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_SENSITIVE_COMPOSITE::ANY.get_value()
     }
 }
 
@@ -10276,7 +11795,7 @@ pub struct TPMT_SENSITIVE {
     /// The type-specific private data
     /// One of: TPM2B_PRIVATE_KEY_RSA, TPM2B_ECC_PARAMETER, TPM2B_SENSITIVE_DATA,
     /// TPM2B_SYM_KEY, TPM2B_PRIVATE_VENDOR_SPECIFIC.
-    pub sensitive: TPMU_SENSITIVE_COMPOSITE,
+    pub sensitive: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPMT_SENSITIVE {
@@ -10291,7 +11810,7 @@ impl TPMT_SENSITIVE {
     pub fn new(
         auth_Value: Vec<u8>,
         seed_Value: Vec<u8>,
-        sensitive: TPMU_SENSITIVE_COMPOSITE,
+        sensitive: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             auth_Value,
@@ -10311,14 +11830,14 @@ impl TPMT_SENSITIVE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10349,14 +11868,14 @@ impl TPM2B_SENSITIVE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10396,14 +11915,14 @@ impl _PRIVATE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10434,14 +11953,14 @@ impl TPM2B_PRIVATE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10480,14 +11999,14 @@ impl TPMS_ID_OBJECT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10518,14 +12037,14 @@ impl TPM2B_ID_OBJECT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10565,14 +12084,14 @@ impl TPMS_NV_PIN_COUNTER_PARAMETERS {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10628,14 +12147,14 @@ impl TPMS_NV_PUBLIC {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10665,14 +12184,14 @@ impl TPM2B_NV_PUBLIC {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10703,14 +12222,14 @@ impl TPM2B_CONTEXT_SENSITIVE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10745,14 +12264,14 @@ impl TPMS_CONTEXT_DATA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10781,14 +12300,14 @@ impl TPM2B_CONTEXT_DATA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10839,14 +12358,14 @@ impl TPMS_CONTEXT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10917,14 +12436,14 @@ impl TPMS_CREATION_DATA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10954,14 +12473,14 @@ impl TPM2B_CREATION_DATA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -10997,14 +12516,14 @@ impl TPMS_AC_OUTPUT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11034,14 +12553,14 @@ impl TPML_AC_CAPABILITIES {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11076,14 +12595,14 @@ impl TPM2_Startup_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11114,14 +12633,14 @@ impl TPM2_Shutdown_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11154,14 +12673,14 @@ impl TPM2_SelfTest_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11191,14 +12710,14 @@ impl TPM2_IncrementalSelfTest_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11219,14 +12738,14 @@ impl Default for IncrementalSelfTestResponse {
 impl IncrementalSelfTestResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11246,14 +12765,14 @@ impl Default for TPM2_GetTestResult_REQUEST {
 impl TPM2_GetTestResult_REQUEST {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11277,14 +12796,14 @@ impl Default for GetTestResultResponse {
 impl GetTestResultResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11357,14 +12876,14 @@ impl TPM2_StartAuthSession_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11391,14 +12910,14 @@ impl Default for StartAuthSessionResponse {
 impl StartAuthSessionResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11434,14 +12953,14 @@ impl TPM2_PolicyRestart_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11501,14 +13020,14 @@ impl TPM2_Create_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11548,14 +13067,14 @@ impl Default for CreateResponse {
 impl CreateResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11600,14 +13119,14 @@ impl TPM2_Load_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11634,14 +13153,14 @@ impl Default for LoadResponse {
 impl LoadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11683,14 +13202,14 @@ impl TPM2_LoadExternal_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11716,14 +13235,14 @@ impl Default for LoadExternalResponse {
 impl LoadExternalResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11755,14 +13274,14 @@ impl TPM2_ReadPublic_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11789,14 +13308,14 @@ impl Default for ReadPublicResponse {
 impl ReadPublicResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11848,14 +13367,14 @@ impl TPM2_ActivateCredential_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11879,14 +13398,14 @@ impl Default for ActivateCredentialResponse {
 impl ActivateCredentialResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11929,14 +13448,14 @@ impl TPM2_MakeCredential_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -11961,14 +13480,14 @@ impl Default for MakeCredentialResponse {
 impl MakeCredentialResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12001,14 +13520,14 @@ impl TPM2_Unseal_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12030,14 +13549,14 @@ impl Default for UnsealResponse {
 impl UnsealResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12082,14 +13601,14 @@ impl TPM2_ObjectChangeAuth_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12110,14 +13629,14 @@ impl Default for ObjectChangeAuthResponse {
 impl ObjectChangeAuthResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12165,14 +13684,14 @@ impl TPM2_CreateLoaded_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12207,14 +13726,14 @@ impl Default for CreateLoadedResponse {
 impl CreateLoadedResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12269,14 +13788,14 @@ impl TPM2_Duplicate_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12307,14 +13826,14 @@ impl Default for DuplicateResponse {
 impl DuplicateResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12375,14 +13894,14 @@ impl TPM2_Rewrap_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12411,14 +13930,14 @@ impl Default for RewrapResponse {
 impl RewrapResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12487,14 +14006,14 @@ impl TPM2_Import_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12518,14 +14037,14 @@ impl Default for ImportResponse {
 impl ImportResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12552,7 +14071,7 @@ pub struct TPM2_RSA_Encrypt_REQUEST {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub in_Scheme: TPMU_ASYM_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 
     /// Optional label L to be associated with the message
     /// Size of the buffer is zero if no label is present
@@ -12573,7 +14092,7 @@ impl TPM2_RSA_Encrypt_REQUEST {
     pub fn new(
         key_Handle: TPM_HANDLE,
         message: Vec<u8>,
-        in_Scheme: TPMU_ASYM_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         label: Vec<u8>,
         ) -> Self {
         Self {
@@ -12588,21 +14107,21 @@ impl TPM2_RSA_Encrypt_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12626,14 +14145,14 @@ impl Default for RSA_EncryptResponse {
 impl RSA_EncryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12657,7 +14176,7 @@ pub struct TPM2_RSA_Decrypt_REQUEST {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub in_Scheme: TPMU_ASYM_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 
     /// Label whose association with the message is to be verified
     pub label: Vec<u8>,
@@ -12676,7 +14195,7 @@ impl TPM2_RSA_Decrypt_REQUEST {
     pub fn new(
         key_Handle: TPM_HANDLE,
         cipher_Text: Vec<u8>,
-        in_Scheme: TPMU_ASYM_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         label: Vec<u8>,
         ) -> Self {
         Self {
@@ -12691,21 +14210,21 @@ impl TPM2_RSA_Decrypt_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12727,14 +14246,14 @@ impl Default for RSA_DecryptResponse {
 impl RSA_DecryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12768,14 +14287,14 @@ impl TPM2_ECDH_KeyGen_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12801,14 +14320,14 @@ impl Default for ECDH_KeyGenResponse {
 impl ECDH_KeyGenResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12849,14 +14368,14 @@ impl TPM2_ECDH_ZGen_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12880,14 +14399,14 @@ impl Default for ECDH_ZGenResponse {
 impl ECDH_ZGenResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12917,14 +14436,14 @@ impl TPM2_ECC_Parameters_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -12945,14 +14464,14 @@ impl Default for ECC_ParametersResponse {
 impl ECC_ParametersResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13010,14 +14529,14 @@ impl TPM2_ZGen_2Phase_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13044,14 +14563,14 @@ impl Default for ZGen_2PhaseResponse {
 impl ZGen_2PhaseResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13070,7 +14589,7 @@ pub struct TPM2_ECC_Encrypt_REQUEST {
     /// The KDF to use if scheme associated with keyHandle is TPM_ALG_NULL
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub in_Scheme: TPMU_KDF_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_ECC_Encrypt_REQUEST {
@@ -13086,7 +14605,7 @@ impl TPM2_ECC_Encrypt_REQUEST {
     pub fn new(
         key_Handle: TPM_HANDLE,
         plain_Text: Vec<u8>,
-        in_Scheme: TPMU_KDF_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             key_Handle,
@@ -13099,21 +14618,21 @@ impl TPM2_ECC_Encrypt_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13140,14 +14659,14 @@ impl Default for ECC_EncryptResponse {
 impl ECC_EncryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13173,7 +14692,7 @@ pub struct TPM2_ECC_Decrypt_REQUEST {
     /// The KDF to use if scheme associated with keyHandle is TPM_ALG_NULL
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub in_Scheme: TPMU_KDF_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_ECC_Decrypt_REQUEST {
@@ -13191,7 +14710,7 @@ impl TPM2_ECC_Decrypt_REQUEST {
         C1: TPMS_ECC_POINT,
         C2: Vec<u8>,
         C3: Vec<u8>,
-        in_Scheme: TPMU_KDF_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             key_Handle,
@@ -13206,21 +14725,21 @@ impl TPM2_ECC_Decrypt_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13241,14 +14760,14 @@ impl Default for ECC_DecryptResponse {
 impl ECC_DecryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13304,14 +14823,14 @@ impl TPM2_EncryptDecrypt_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13336,14 +14855,14 @@ impl Default for EncryptDecryptResponse {
 impl EncryptDecryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13399,14 +14918,14 @@ impl TPM2_EncryptDecrypt2_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13431,14 +14950,14 @@ impl Default for EncryptDecrypt2Response {
 impl EncryptDecrypt2Response {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13480,14 +14999,14 @@ impl TPM2_Hash_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13513,14 +15032,14 @@ impl Default for HashResponse {
 impl HashResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13564,14 +15083,14 @@ impl TPM2_HMAC_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13592,14 +15111,14 @@ impl Default for HMACResponse {
 impl HMACResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13644,14 +15163,14 @@ impl TPM2_MAC_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13673,14 +15192,14 @@ impl Default for MACResponse {
 impl MACResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13710,14 +15229,14 @@ impl TPM2_GetRandom_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13738,14 +15257,14 @@ impl Default for GetRandomResponse {
 impl GetRandomResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13775,14 +15294,14 @@ impl TPM2_StirRandom_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13828,14 +15347,14 @@ impl TPM2_HMAC_Start_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13859,14 +15378,14 @@ impl Default for HMAC_StartResponse {
 impl HMAC_StartResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13912,14 +15431,14 @@ impl TPM2_MAC_Start_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13943,14 +15462,14 @@ impl Default for MAC_StartResponse {
 impl MAC_StartResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -13990,14 +15509,14 @@ impl TPM2_HashSequenceStart_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14022,14 +15541,14 @@ impl Default for HashSequenceStartResponse {
 impl HashSequenceStartResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14068,14 +15587,14 @@ impl TPM2_SequenceUpdate_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14120,14 +15639,14 @@ impl TPM2_SequenceComplete_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14154,14 +15673,14 @@ impl Default for SequenceCompleteResponse {
 impl SequenceCompleteResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14211,14 +15730,14 @@ impl TPM2_EventSequenceComplete_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14243,14 +15762,14 @@ impl Default for EventSequenceCompleteResponse {
 impl EventSequenceCompleteResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14280,7 +15799,7 @@ pub struct TPM2_Certify_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_Scheme: TPMU_SIG_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_Certify_REQUEST {
@@ -14298,7 +15817,7 @@ impl TPM2_Certify_REQUEST {
         object_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             object_Handle,
@@ -14312,21 +15831,21 @@ impl TPM2_Certify_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14346,7 +15865,7 @@ pub struct CertifyResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for CertifyResponse {
@@ -14361,21 +15880,21 @@ impl CertifyResponse {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14406,7 +15925,7 @@ pub struct TPM2_CertifyCreation_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_Scheme: TPMU_SIG_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 
     /// Ticket produced by TPM2_Create() or TPM2_CreatePrimary()
     pub creation_Ticket: TPMT_TK_CREATION,
@@ -14428,7 +15947,7 @@ impl TPM2_CertifyCreation_REQUEST {
         object_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
         creation_Hash: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         creation_Ticket: TPMT_TK_CREATION,
         ) -> Self {
         Self {
@@ -14445,21 +15964,21 @@ impl TPM2_CertifyCreation_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14478,7 +15997,7 @@ pub struct CertifyCreationResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for CertifyCreationResponse {
@@ -14493,21 +16012,21 @@ impl CertifyCreationResponse {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14528,7 +16047,7 @@ pub struct TPM2_Quote_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_Scheme: TPMU_SIG_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 
     /// PCR set to quote
     pub PCRselect: Vec<TPMS_PCR_SELECTION>,
@@ -14547,7 +16066,7 @@ impl TPM2_Quote_REQUEST {
     pub fn new(
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         PCRselect: Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
@@ -14562,21 +16081,21 @@ impl TPM2_Quote_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14592,7 +16111,7 @@ pub struct QuoteResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for QuoteResponse {
@@ -14607,21 +16126,21 @@ impl QuoteResponse {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14651,7 +16170,7 @@ pub struct TPM2_GetSessionAuditDigest_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_Scheme: TPMU_SIG_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_GetSessionAuditDigest_REQUEST {
@@ -14671,7 +16190,7 @@ impl TPM2_GetSessionAuditDigest_REQUEST {
         sign_Handle: TPM_HANDLE,
         session_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             privacy_Admin_Handle,
@@ -14686,21 +16205,21 @@ impl TPM2_GetSessionAuditDigest_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14716,7 +16235,7 @@ pub struct GetSessionAuditDigestResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for GetSessionAuditDigestResponse {
@@ -14731,21 +16250,21 @@ impl GetSessionAuditDigestResponse {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14773,7 +16292,7 @@ pub struct TPM2_GetCommandAuditDigest_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_Scheme: TPMU_SIG_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_GetCommandAuditDigest_REQUEST {
@@ -14791,7 +16310,7 @@ impl TPM2_GetCommandAuditDigest_REQUEST {
         privacy_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             privacy_Handle,
@@ -14805,21 +16324,21 @@ impl TPM2_GetCommandAuditDigest_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14837,7 +16356,7 @@ pub struct GetCommandAuditDigestResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for GetCommandAuditDigestResponse {
@@ -14852,21 +16371,21 @@ impl GetCommandAuditDigestResponse {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14892,7 +16411,7 @@ pub struct TPM2_GetTime_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_Scheme: TPMU_SIG_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_GetTime_REQUEST {
@@ -14910,7 +16429,7 @@ impl TPM2_GetTime_REQUEST {
         privacy_Admin_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             privacy_Admin_Handle,
@@ -14924,21 +16443,21 @@ impl TPM2_GetTime_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -14954,7 +16473,7 @@ pub struct GetTimeResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for GetTimeResponse {
@@ -14969,21 +16488,21 @@ impl GetTimeResponse {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15014,7 +16533,7 @@ pub struct TPM2_CertifyX509_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_Scheme: TPMU_SIG_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 
     /// A DER encoded partial certificate
     pub partial_Certificate: Vec<u8>,
@@ -15035,7 +16554,7 @@ impl TPM2_CertifyX509_REQUEST {
         object_Handle: TPM_HANDLE,
         sign_Handle: TPM_HANDLE,
         reserved: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         partial_Certificate: Vec<u8>,
         ) -> Self {
         Self {
@@ -15051,21 +16570,21 @@ impl TPM2_CertifyX509_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15090,7 +16609,7 @@ pub struct CertifyX509Response {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for CertifyX509Response {
@@ -15105,21 +16624,21 @@ impl CertifyX509Response {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15170,14 +16689,14 @@ impl TPM2_Commit_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15210,14 +16729,14 @@ impl Default for CommitResponse {
 impl CommitResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15247,14 +16766,14 @@ impl TPM2_EC_Ephemeral_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15278,14 +16797,14 @@ impl Default for EC_EphemeralResponse {
 impl EC_EphemeralResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15306,7 +16825,7 @@ pub struct TPM2_VerifySignature_REQUEST {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_VerifySignature_REQUEST {
@@ -15322,7 +16841,7 @@ impl TPM2_VerifySignature_REQUEST {
     pub fn new(
         key_Handle: TPM_HANDLE,
         digest: Vec<u8>,
-        signature: TPMU_SIGNATURE,
+        signature: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             key_Handle,
@@ -15335,21 +16854,21 @@ impl TPM2_VerifySignature_REQUEST {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15370,14 +16889,14 @@ impl Default for VerifySignatureResponse {
 impl VerifySignatureResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15399,7 +16918,7 @@ pub struct TPM2_Sign_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_Scheme: TPMU_SIG_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 
     /// Proof that digest was created by the TPM
     /// If keyHandle is not a restricted signing key, then this may be a NULL Ticket with tag
@@ -15420,7 +16939,7 @@ impl TPM2_Sign_REQUEST {
     pub fn new(
         key_Handle: TPM_HANDLE,
         digest: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         validation: TPMT_TK_HASHCHECK,
         ) -> Self {
         Self {
@@ -15435,21 +16954,21 @@ impl TPM2_Sign_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15463,7 +16982,7 @@ pub struct SignResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for SignResponse {
@@ -15478,21 +16997,21 @@ impl SignResponse {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15543,14 +17062,14 @@ impl TPM2_SetCommandCodeAuditStatus_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15591,14 +17110,14 @@ impl TPM2_PCR_Extend_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15636,14 +17155,14 @@ impl TPM2_PCR_Event_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15663,14 +17182,14 @@ impl Default for PCR_EventResponse {
 impl PCR_EventResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15700,14 +17219,14 @@ impl TPM2_PCR_Read_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15734,14 +17253,14 @@ impl Default for PCR_ReadResponse {
 impl PCR_ReadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15780,14 +17299,14 @@ impl TPM2_PCR_Allocate_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15818,14 +17337,14 @@ impl Default for PCR_AllocateResponse {
 impl PCR_AllocateResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15876,14 +17395,14 @@ impl TPM2_PCR_SetAuthPolicy_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15921,14 +17440,14 @@ impl TPM2_PCR_SetAuthValue_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -15963,14 +17482,14 @@ impl TPM2_PCR_Reset_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16010,7 +17529,7 @@ pub struct TPM2_PolicySigned_REQUEST {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub auth: TPMU_SIGNATURE,
+    pub auth: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_PolicySigned_REQUEST {
@@ -16031,7 +17550,7 @@ impl TPM2_PolicySigned_REQUEST {
         cp_Hash_A: Vec<u8>,
         policy_Ref: Vec<u8>,
         expiration: i32,
-        auth: TPMU_SIGNATURE,
+        auth: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             auth_Object,
@@ -16048,21 +17567,21 @@ impl TPM2_PolicySigned_REQUEST {
     pub fn auth_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.auth {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16089,14 +17608,14 @@ impl Default for PolicySignedResponse {
 impl PolicySignedResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16165,14 +17684,14 @@ impl TPM2_PolicySecret_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16200,14 +17719,14 @@ impl Default for PolicySecretResponse {
 impl PolicySecretResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16269,14 +17788,14 @@ impl TPM2_PolicyTicket_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16316,14 +17835,14 @@ impl TPM2_PolicyOR_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16369,14 +17888,14 @@ impl TPM2_PolicyPCR_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16413,14 +17932,14 @@ impl TPM2_PolicyLocality_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16484,14 +18003,14 @@ impl TPM2_PolicyNV_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16539,14 +18058,14 @@ impl TPM2_PolicyCounterTimer_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16583,14 +18102,14 @@ impl TPM2_PolicyCommandCode_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16623,14 +18142,14 @@ impl TPM2_PolicyPhysicalPresence_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16667,14 +18186,14 @@ impl TPM2_PolicyCpHash_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16713,14 +18232,14 @@ impl TPM2_PolicyNameHash_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16768,14 +18287,14 @@ impl TPM2_PolicyDuplicationSelect_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16829,14 +18348,14 @@ impl TPM2_PolicyAuthorize_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16868,14 +18387,14 @@ impl TPM2_PolicyAuthValue_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16907,14 +18426,14 @@ impl TPM2_PolicyPassword_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16947,14 +18466,14 @@ impl TPM2_PolicyGetDigest_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -16976,14 +18495,14 @@ impl Default for PolicyGetDigestResponse {
 impl PolicyGetDigestResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17023,14 +18542,14 @@ impl TPM2_PolicyNvWritten_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17069,14 +18588,14 @@ impl TPM2_PolicyTemplate_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17126,14 +18645,14 @@ impl TPM2_PolicyAuthorizeNV_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17191,14 +18710,14 @@ impl TPM2_CreatePrimary_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17240,14 +18759,14 @@ impl Default for CreatePrimaryResponse {
 impl CreatePrimaryResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17294,14 +18813,14 @@ impl TPM2_HierarchyControl_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17351,14 +18870,14 @@ impl TPM2_SetPrimaryPolicy_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17392,14 +18911,14 @@ impl TPM2_ChangePPS_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17437,14 +18956,14 @@ impl TPM2_ChangeEPS_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17477,14 +18996,14 @@ impl TPM2_Clear_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17522,14 +19041,14 @@ impl TPM2_ClearControl_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17568,14 +19087,14 @@ impl TPM2_HierarchyChangeAuth_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17610,14 +19129,14 @@ impl TPM2_DictionaryAttackLockReset_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17667,14 +19186,14 @@ impl TPM2_DictionaryAttackParameters_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17718,14 +19237,14 @@ impl TPM2_PP_Commands_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17764,14 +19283,14 @@ impl TPM2_SetAlgorithmSet_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17798,7 +19317,7 @@ pub struct TPM2_FieldUpgradeStart_REQUEST {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub manifest_Signature: TPMU_SIGNATURE,
+    pub manifest_Signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_FieldUpgradeStart_REQUEST {
@@ -17816,7 +19335,7 @@ impl TPM2_FieldUpgradeStart_REQUEST {
         authorization: TPM_HANDLE,
         key_Handle: TPM_HANDLE,
         fu_Digest: Vec<u8>,
-        manifest_Signature: TPMU_SIGNATURE,
+        manifest_Signature: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             authorization,
@@ -17830,21 +19349,21 @@ impl TPM2_FieldUpgradeStart_REQUEST {
     pub fn manifest_Signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.manifest_Signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17877,14 +19396,14 @@ impl TPM2_FieldUpgradeData_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17912,14 +19431,14 @@ impl Default for FieldUpgradeDataResponse {
 impl FieldUpgradeDataResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17950,14 +19469,14 @@ impl TPM2_FirmwareRead_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -17978,14 +19497,14 @@ impl Default for FirmwareReadResponse {
 impl FirmwareReadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18018,14 +19537,14 @@ impl TPM2_ContextSave_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18046,14 +19565,14 @@ impl Default for ContextSaveResponse {
 impl ContextSaveResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18083,14 +19602,14 @@ impl TPM2_ContextLoad_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18112,14 +19631,14 @@ impl Default for ContextLoadResponse {
 impl ContextLoadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18152,14 +19671,14 @@ impl TPM2_FlushContext_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18209,14 +19728,14 @@ impl TPM2_EvictControl_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18236,14 +19755,14 @@ impl Default for TPM2_ReadClock_REQUEST {
 impl TPM2_ReadClock_REQUEST {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18264,14 +19783,14 @@ impl Default for ReadClockResponse {
 impl ReadClockResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18312,14 +19831,14 @@ impl TPM2_ClockSet_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18358,14 +19877,14 @@ impl TPM2_ClockRateAdjust_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18405,14 +19924,14 @@ impl TPM2_GetCapability_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18428,7 +19947,7 @@ pub struct GetCapabilityResponse {
     /// One of: TPML_ALG_PROPERTY, TPML_HANDLE, TPML_CCA, TPML_CC, TPML_PCR_SELECTION,
     /// TPML_TAGGED_TPM_PROPERTY, TPML_TAGGED_PCR_PROPERTY, TPML_ECC_CURVE,
     /// TPML_TAGGED_POLICY, TPML_ACT_DATA.
-    pub capability_Data: TPMU_CAPABILITIES,
+    pub capability_Data: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for GetCapabilityResponse {
@@ -18450,14 +19969,14 @@ impl GetCapabilityResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18470,7 +19989,7 @@ pub struct TPM2_TestParms_REQUEST {
     /// Algorithm parameters to be validated
     /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
     /// TPMS_ASYM_PARMS.
-    pub parameters: TPMU_PUBLIC_PARMS,
+    pub parameters: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for TPM2_TestParms_REQUEST {
@@ -18483,7 +20002,7 @@ impl Default for TPM2_TestParms_REQUEST {
 impl TPM2_TestParms_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parameters: TPMU_PUBLIC_PARMS,
+        parameters: Option<Box<dyn TpmUnion>>,
         ) -> Self {
         Self {
             parameters,
@@ -18501,14 +20020,14 @@ impl TPM2_TestParms_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18553,14 +20072,14 @@ impl TPM2_NV_DefineSpace_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18600,14 +20119,14 @@ impl TPM2_NV_UndefineSpace_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18649,14 +20168,14 @@ impl TPM2_NV_UndefineSpaceSpecial_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18689,14 +20208,14 @@ impl TPM2_NV_ReadPublic_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18721,14 +20240,14 @@ impl Default for NV_ReadPublicResponse {
 impl NV_ReadPublicResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18779,14 +20298,14 @@ impl TPM2_NV_Write_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18827,14 +20346,14 @@ impl TPM2_NV_Increment_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18880,14 +20399,14 @@ impl TPM2_NV_Extend_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18934,14 +20453,14 @@ impl TPM2_NV_SetBits_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -18982,14 +20501,14 @@ impl TPM2_NV_WriteLock_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19023,14 +20542,14 @@ impl TPM2_NV_GlobalWriteLock_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19081,14 +20600,14 @@ impl TPM2_NV_Read_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19109,14 +20628,14 @@ impl Default for NV_ReadResponse {
 impl NV_ReadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19157,14 +20676,14 @@ impl TPM2_NV_ReadLock_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19202,14 +20721,14 @@ impl TPM2_NV_ChangeAuth_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19240,7 +20759,7 @@ pub struct TPM2_NV_Certify_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_Scheme: TPMU_SIG_SCHEME,
+    pub in_Scheme: Option<Box<dyn TpmUnion>>,
 
     /// Number of octets to certify
     pub size: u16,
@@ -19267,7 +20786,7 @@ impl TPM2_NV_Certify_REQUEST {
         auth_Handle: TPM_HANDLE,
         nv_Index: TPM_HANDLE,
         qualifying_Data: Vec<u8>,
-        in_Scheme: TPMU_SIG_SCHEME,
+        in_Scheme: Option<Box<dyn TpmUnion>>,
         size: u16,
         offset: u16,
         ) -> Self {
@@ -19286,21 +20805,21 @@ impl TPM2_NV_Certify_REQUEST {
     pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19317,7 +20836,7 @@ pub struct NV_CertifyResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: TPMU_SIGNATURE,
+    pub signature: Option<Box<dyn TpmUnion>>,
 }
 
 impl Default for NV_CertifyResponse {
@@ -19332,21 +20851,21 @@ impl NV_CertifyResponse {
     pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
-            None => TPM_ALG_ID:NULL as _,
+            None => TPM_ALG_ID::NULL as _,
         }
 
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19389,14 +20908,14 @@ impl TPM2_AC_GetCapability_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19421,14 +20940,14 @@ impl Default for AC_GetCapabilityResponse {
 impl AC_GetCapabilityResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19482,14 +21001,14 @@ impl TPM2_AC_Send_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19511,14 +21030,14 @@ impl Default for AC_SendResponse {
 impl AC_SendResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19573,14 +21092,14 @@ impl TPM2_Policy_AC_SendSelect_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19619,14 +21138,14 @@ impl TPM2_ACT_SetTimeout_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19656,14 +21175,14 @@ impl TPM2_Vendor_TCG_Test_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19684,14 +21203,14 @@ impl Default for Vendor_TCG_TestResponse {
 impl Vendor_TCG_TestResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19785,14 +21304,14 @@ impl TssObject {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19827,14 +21346,14 @@ impl PcrValue {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19880,14 +21399,14 @@ impl SessionIn {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19927,14 +21446,14 @@ impl SessionOut {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -19974,14 +21493,14 @@ impl CommandHeader {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -20016,14 +21535,14 @@ impl TSS_KEY {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
     }
 }
 
@@ -20040,24 +21559,24 @@ impl Default for TPM2B_DIGEST_SYMCIPHER {
 }
 
 impl TPM2B_DIGEST_SYMCIPHER {
-    // Union trait implementations
-    impl TpmUnion for TPM2B_DIGEST_SYMCIPHER {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_PUBLIC_ID::SYMCIPHER as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPM2B_DIGEST_SYMCIPHER {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_PUBLIC_ID::SYMCIPHER.get_value()
     }
 }
 
@@ -20074,24 +21593,24 @@ impl Default for TPM2B_DIGEST_KEYEDHASH {
 }
 
 impl TPM2B_DIGEST_KEYEDHASH {
-    // Union trait implementations
-    impl TpmUnion for TPM2B_DIGEST_KEYEDHASH {
-        /// TpmUnion trait implementation
-        fn get_union_selector(&self) -> u32 {
-            TPMU_PUBLIC_ID::KEYEDHASH as u32
-        }
-    }
-
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-        // Implement serialization
-        Ok(())
+        self.serialize(buffer)
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        // Implement deserialization
-        Ok(Self::default())
+        let mut obj = Self::default();
+        obj.deserialize(buffer)?;
+        Ok(obj)
+    }
+}
+
+// Union trait implementations
+impl TpmUnion for TPM2B_DIGEST_KEYEDHASH {
+    /// TpmUnion trait implementation
+    fn get_union_selector(&self) -> u32 {
+        TPMU_PUBLIC_ID::KEYEDHASH.get_value()
     }
 }
 
