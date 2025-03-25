@@ -330,7 +330,7 @@ export enum TPM_CC // UINT32
     /** Compile variable. May decrease based on implementation. */
     FIRST = 0x0000011F,
 
-    NV_UndefineSpaceSpecial = 0x0000011F,
+    NV_UndefineSpaceSpecial =   0x0000011F,
 
     EvictControl = 0x00000120,
 

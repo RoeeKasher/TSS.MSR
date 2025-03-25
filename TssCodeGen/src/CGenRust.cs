@@ -48,9 +48,28 @@ namespace CodeGen
 
         static string TransType(StructField f)
         {
-            if (f.MarshalType == MarshalType.UnionObject)
-                return $"Option<Box<dyn {f.TypeName}>>";
-            return ToSnakeCase(f.TypeName);
+            string typeName = f.TypeName;
+            
+            // Handle union object types
+            // if (f.MarshalType == MarshalType.UnionObject)
+            // {
+            //     return $"Option<Box<dyn {typeName}>>";
+            // }
+            
+            // Handle types with generics (containers like Vec, Option, etc.)
+            if (typeName.Contains("<") && typeName.Contains(">"))
+            {
+                int openBracketIndex = typeName.IndexOf('<');
+                int closeBracketIndex = typeName.LastIndexOf('>');
+                
+                string baseType = typeName.Substring(0, openBracketIndex);
+                string genericParams = typeName.Substring(openBracketIndex + 1, closeBracketIndex - openBracketIndex - 1);
+                
+                return $"{baseType}<{ToSnakeCase(genericParams)}>";
+            }
+            
+            // Standard type conversion
+            return ToSnakeCase(typeName);
         }
 
         string GetCommandReturnType(CommandFlavor gen, TpmStruct resp, string methodName,
@@ -84,8 +103,8 @@ namespace CodeGen
             Write("");
             Write("use crate::error::TpmError;");
             Write("use crate::tpm_buffer::TpmBuffer;");
-            Write("use std::convert::{TryFrom, TryInto};");
             Write("use std::fmt;");
+            Write("use num_enum::TryFromPrimitive;");
             Write("");
 
             foreach (var e in TpmTypes.Get<TpmEnum>())
@@ -111,8 +130,8 @@ namespace CodeGen
         void GenEnum(TpmType e, List<TpmNamedConstant> elements)
         {
             WriteComment(e);
-            Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]");
-            Write($"#[repr(u{e.GetFinalUnderlyingType().GetSize() * 8})]");
+            Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]");
+            Write($"#[repr(i{e.GetFinalUnderlyingType().GetSize() * 8})]");
             Write($"pub enum {e.Name} {{");
             TabIn();
 
@@ -121,7 +140,15 @@ namespace CodeGen
             {
                 WriteComment(AsSummary(elt.Comment));
                 string delimiter = Separator(elt, elements).Replace(",", ",");
-                Write($"{ToRustEnumMemberName(elt.Name)} = {elt.Value}{delimiter}");
+
+                var enumValue = ToRustEnumValue(elt);
+                var originalValueComment = "";
+                if (enumValue != elt.Value)
+                {
+                    originalValueComment = $" // Original value: {elt.Value}";
+                }
+
+                Write($"{ToRustEnumMemberName(elt.Name)} = {enumValue}{delimiter}{originalValueComment}");
 
                 // Do not include artificially added named constants into the name conversion maps
                 if (elt.SpecName != null)
@@ -129,22 +156,31 @@ namespace CodeGen
             }
             TabOut("}");
 
-            // Implement TryFrom for numeric conversion
-            Write("");
-            TabIn($"impl TryFrom<u{e.GetFinalUnderlyingType().GetSize() * 8}> for {e.Name} {{");
-            Write("type Error = TpmError;");
-            Write("");
-            TabIn($"fn try_from(value: u{e.GetFinalUnderlyingType().GetSize() * 8}) -> Result<Self, Self::Error> {{");
-            TabIn("match value {");
-            foreach (var elt in elements)
-            {
-                Write($"{elt.Value} => Ok(Self::{ToRustEnumMemberName(elt.Name)}),");
-            }
-            Write("_ => Err(TpmError::InvalidEnumValue),");
-            TabOut("}");
-            TabOut("}");
-            TabOut("}");
-            Write("");
+            // // Implement TryFrom for numeric conversion
+            // Write("");
+            // TabIn($"impl TryFrom<u{e.GetFinalUnderlyingType().GetSize() * 8}> for {e.Name} {{");
+            // Write("type Error = TpmError;");
+            // Write("");
+            // TabIn($"fn try_from(value: u{e.GetFinalUnderlyingType().GetSize() * 8}) -> Result<Self, Self::Error> {{");
+            // TabIn("match value {");
+            // foreach (var elt in elements)
+            // {
+            //     // For complex expressions like "CC_VEND+0x0000", evaluate them
+            //     string valueToUse = EvaluateEnumValueExpression(elt.Value, elements);
+                
+            //     if (valueToUse != elt.Value)
+            //     {
+            //         // Add a comment explaining the original expression
+            //         Write($"// Original expression: {elt.Value}");
+            //     }
+                
+            //     Write($"{valueToUse} => Ok(Self::{ToRustEnumMemberName(elt.Name)}),");
+            // }
+            // Write("_ => Err(TpmError::InvalidEnumValue),");
+            // TabOut("}");
+            // TabOut("}");
+            // TabOut("}");
+            // Write("");
 
             // Implement Display trait
             TabIn($"impl fmt::Display for {e.Name} {{");
@@ -155,9 +191,9 @@ namespace CodeGen
                 string memberName = ToRustEnumMemberName(elt.Name);
                 Write($"Self::{memberName} => write!(f, \"{memberName}\"),");
             }
-            TabOut("}");
-            TabOut("}");
-            TabOut("}");
+            TabOut("}", false);
+            TabOut("}", false);
+            TabOut("}", false);
             Write("");
             
             EnumMap[e.Name] = enumVals;
@@ -232,9 +268,9 @@ namespace CodeGen
                 }
             }
             
-            TabOut("}");
-            TabOut("}");
-            TabOut("}");
+            TabOut("}", false);
+            TabOut("}", false);
+            TabOut("}", false);
             Write("");
 
             // Implement Debug trait
@@ -253,9 +289,9 @@ namespace CodeGen
                     Write($"Self::{memberName}(inner) => write!(f, \"{u.Name}::{memberName}({{:?}})\", inner),");
                 }
             }
-            TabOut("}");
-            TabOut("}");
-            TabOut("}");
+            TabOut("}", false);
+            TabOut("}", false);
+            TabOut("}", false);
             Write("");
         }
 
@@ -292,9 +328,9 @@ namespace CodeGen
             if (selType != null)
             {
                 WriteComment("TpmUnion trait implementation");
-                Write("fn get_union_selector(&self) -> u32 {");
-                TabIn($"{selVal} as u32");
-                TabOut("}");
+                TabIn("fn get_union_selector(&self) -> u32 {");
+                Write($"{selVal} as u32");
+                TabOut("}", false);
             }
         }
 
@@ -346,7 +382,7 @@ namespace CodeGen
             if (fieldsToInit.Count() != 0)
             {
                 foreach (StructField f in fieldsToInit)
-                    Write($"{f.Name} = {f.GetInitVal()};");
+                    Write($"{f.Name}: {f.GetInitVal()},");
             }
 
             // foreach (var f in s.NonSizeFields)
@@ -358,9 +394,9 @@ namespace CodeGen
             //     Write($"{ToSnakeCase(f.Name)}: {defaultValue},");
             // }
             
-            TabOut("}");
-            TabOut("}");
-            TabOut("}");
+            TabOut("}", false);
+            TabOut("}", false);
+            TabOut("}", false);
             Write("");
             
             // Implement struct methods
@@ -374,16 +410,12 @@ namespace CodeGen
                 Write("pub fn new(");
                 TabIn();
                 
-                bool first = true;
                 foreach (var f in s.NonTagFields)
                 {
                     if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
                         continue;
                         
-                    if (!first)
-                        Write(",");
-                    Write($"{ToSnakeCase(f.Name)}: {TransType(f)}");
-                    first = false;
+                    Write($"{ToSnakeCase(f.Name)}: {TransType(f)},");
                 }
                 
                 Write($") -> Self {{");
@@ -397,8 +429,8 @@ namespace CodeGen
                     Write($"{ToSnakeCase(f.Name)},");
                 }
                 
-                TabOut("}");
-                TabOut("}");
+                TabOut("}", false);
+                TabOut("}", false);
                 Write("");
             }
             
@@ -447,17 +479,17 @@ namespace CodeGen
             
             // Marshaling methods
             Write("/// Serialize this structure to a TPM buffer");
-            Write("pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
-            TabIn("// Implement serialization");
+            TabIn("pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
+            Write("// Implement serialization");
             Write("Ok(())");
             TabOut("}");
             Write("");
             
             Write("/// Deserialize this structure from a TPM buffer");
-            Write("pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {");
-            TabIn("// Implement deserialization");
+            TabIn("pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {");
+            Write("// Implement deserialization");
             Write("Ok(Self::default())");
-            TabOut("}");
+            TabOut("}", false);
 
             TabOut("}");
             Write("");
@@ -470,15 +502,14 @@ namespace CodeGen
             Write("use crate::error::TpmError;");
             Write("use crate::tpm_buffer::TpmBuffer;");
             Write("use crate::tpm_types::*;");
-            Write("use std::convert::TryInto;");
             Write("");
             
             var commands = TpmTypes.Get<TpmStruct>().Where(s => s.Info.IsRequest());
 
             Write("/// Main TPM2 interface");
             Write("#[derive(Debug)]");
-            Write("pub struct Tpm2 {");
-            TabIn("// Implementation details");
+            TabIn("pub struct Tpm2 {");
+            Write("// Implementation details");
             Write("device: crate::device::TpmDevice,");
             TabOut("}");
             Write("");
@@ -489,6 +520,49 @@ namespace CodeGen
             TabIn("Ok(Self {");
             Write("device: crate::device::TpmDevice::new()?,");
             TabOut("})");
+            TabOut("}");
+            Write("");
+
+            Write("/// Main dispatch function for synchronous commands");
+            TabIn("fn dispatch<Req: TpmStructure, Resp: TpmStructure>(&mut self, req: Req, resp: &mut Resp) -> Result<(), TpmError> {");
+            Write("// Create buffer and marshal request");
+            Write("let mut buffer = TpmBuffer::new();");
+            Write("req.serialize(&mut buffer)?;");
+            Write("");
+            Write("// Send command to device");
+            Write("let response_data = self.device.send_command(buffer.to_vec())?;");
+            Write("");
+            Write("// Parse response");
+            Write("let mut resp_buffer = TpmBuffer::from(response_data);");
+            Write("resp.deserialize(&mut resp_buffer)?;");
+            Write("");
+            Write("Ok(())");
+            TabOut("}");
+            Write("");
+            
+            Write("/// Dispatch function for asynchronous command phase");
+            Write("fn dispatch_async_command<Req: TpmStructure>(&mut self, req: Req) -> Result<(), TpmError> {");
+            TabIn("// Create buffer and marshal request");
+            Write("let mut buffer = TpmBuffer::new();");
+            Write("req.serialize(&mut buffer)?;");
+            Write("");
+            Write("// Send command to device");
+            Write("self.device.send_async_command(buffer.to_vec())?;");
+            Write("");
+            Write("Ok(())");
+            TabOut("}");
+            Write("");
+            
+            Write("/// Dispatch function for asynchronous response phase");
+            Write("fn dispatch_async_response<Resp: TpmStructure>(&mut self, resp: &mut Resp) -> Result<(), TpmError> {");
+            TabIn("// Receive response from device");
+            Write("let response_data = self.device.receive_async_response()?;");
+            Write("");
+            Write("// Parse response");
+            Write("let mut resp_buffer = TpmBuffer::from(response_data);");
+            Write("resp.deserialize(&mut resp_buffer)?;");
+            Write("");
+            Write("Ok(())");
             TabOut("}");
             Write("");
             
@@ -617,7 +691,7 @@ namespace CodeGen
             }
             else if (gen == CommandFlavor.AsyncCommand)
             {
-                TabIn("// Create request structure and dispatch async command");
+                Write("// Create request structure and dispatch async command");
                 if (reqFields.Length > 0)
                 {
                     Write($"let req = {req.Name} {{");
@@ -639,7 +713,7 @@ namespace CodeGen
             }
             else // AsyncResponse
             {
-                TabIn("// Complete async command by receiving and processing response");
+                Write("// Complete async command by receiving and processing response");
                 
                 if (respFields.Length > 0)
                 {
@@ -690,8 +764,8 @@ namespace CodeGen
 
         void GenEnumMap()
         {
-            Write("lazy_static::lazy_static! {");
-            TabIn("/// Maps enum type IDs to a map of values to string representations");
+            TabIn("lazy_static::lazy_static! {");
+            Write("/// Maps enum type IDs to a map of values to string representations");
             Write("static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u32, &'static str>> = {");
             TabIn("let mut map = HashMap::new();");
             
@@ -738,8 +812,8 @@ namespace CodeGen
             WriteComment("Factory for creating TPM union types from selector values");
             Write("pub struct UnionFactory;");
             Write("");
-            Write("impl UnionFactory {");
-            TabIn("/// Creates a new union instance based on the selector value");
+            TabIn("impl UnionFactory {");
+            Write("/// Creates a new union instance based on the selector value");
             Write("pub fn create<U: TpmUnion>(selector: u32) -> Option<Box<dyn TpmUnion>> {");
             TabIn("let type_id = std::any::TypeId::of::<U>();");
             Write("");
@@ -893,52 +967,6 @@ namespace CodeGen
         {
             var cmdRequestStructs = TpmTypes.Get<TpmStruct>().Where(s => s.Info.IsRequest());
 
-            Write("impl Tpm2 {");
-            TabIn("/// Main dispatch function for synchronous commands");
-            Write("fn dispatch<Req: TpmStructure, Resp: TpmStructure>(&mut self, req: Req, resp: &mut Resp) -> Result<(), TpmError> {");
-            TabIn("// Create buffer and marshal request");
-            Write("let mut buffer = TpmBuffer::new();");
-            Write("req.serialize(&mut buffer)?;");
-            Write("");
-            Write("// Send command to device");
-            Write("let response_data = self.device.send_command(buffer.to_vec())?;");
-            Write("");
-            Write("// Parse response");
-            Write("let mut resp_buffer = TpmBuffer::from(response_data);");
-            Write("resp.deserialize(&mut resp_buffer)?;");
-            Write("");
-            Write("Ok(())");
-            TabOut("}");
-            Write("");
-            
-            Write("/// Dispatch function for asynchronous command phase");
-            Write("fn dispatch_async_command<Req: TpmStructure>(&mut self, req: Req) -> Result<(), TpmError> {");
-            TabIn("// Create buffer and marshal request");
-            Write("let mut buffer = TpmBuffer::new();");
-            Write("req.serialize(&mut buffer)?;");
-            Write("");
-            Write("// Send command to device");
-            Write("self.device.send_async_command(buffer.to_vec())?;");
-            Write("");
-            Write("Ok(())");
-            TabOut("}");
-            Write("");
-            
-            Write("/// Dispatch function for asynchronous response phase");
-            Write("fn dispatch_async_response<Resp: TpmStructure>(&mut self, resp: &mut Resp) -> Result<(), TpmError> {");
-            TabIn("// Receive response from device");
-            Write("let response_data = self.device.receive_async_response()?;");
-            Write("");
-            Write("// Parse response");
-            Write("let mut resp_buffer = TpmBuffer::from(response_data);");
-            Write("resp.deserialize(&mut resp_buffer)?;");
-            Write("");
-            Write("Ok(())");
-            TabOut("}");
-            
-            TabOut("}");
-            Write("");
-            
             Write("/// Trait for structures that can be marshaled to/from TPM wire format");
             TabIn("pub trait TpmStructure: Sized {");
             Write("/// Serialize the structure to a TPM buffer");
@@ -978,44 +1006,61 @@ namespace CodeGen
                 
             // Special case for single letter followed by uppercase
             if (name.Length >= 2 && char.IsUpper(name[1]))
-                return name.ToLowerInvariant();
+                return name;
                 
             // Insert underscores before uppercase letters
-            var result = Regex.Replace(name, "(?<=[a-z0-9])([A-Z])", "_$1").ToLowerInvariant();
+            var result = Regex.Replace(name, "(?<=[a-z0-9])([A-Z])", "_$1");
             
             // Handle acronyms (sequences of uppercase letters)
-            result = Regex.Replace(result, "([A-Z])([A-Z]+)", "$1$2").ToLowerInvariant();
+            result = Regex.Replace(result, "([A-Z])([A-Z]+)", "$1$2");
             
             return result;
         }
         
+        /// <summary>
+        /// Converts TPM enum values to Rust-compatible format, ensuring hexadecimal values
+        /// are properly formatted according to Rust conventions.
+        /// </summary>
+        /// <returns>A properly formatted Rust-compatible value string</returns>
+        static string ToRustEnumValue(TpmNamedConstant element)
+        {
+            // If no numeric value was caluclated, return the original value
+            // if (element.NumericValue == null)
+            // {
+            //     return element.Value;
+            // }
+
+            return ToHex(element.NumericValue);
+        }
+
         static string ToRustEnumMemberName(string name)
         {
-            // For enum members, we want PascalCase format
-            if (string.IsNullOrEmpty(name))
-                return name;
+            return name;
+            // // For enum members, we want PascalCase format
+            // if (string.IsNullOrEmpty(name))
+            //     return name;
             
-            // First convert to snake_case if needed
-            if (name.Contains("_"))
-            {
-                // Split by underscore and capitalize each segment
-                string[] parts = name.Split('_');
-                for (int i = 0; i < parts.Length; i++)
-                {
-                    if (!string.IsNullOrEmpty(parts[i]))
-                    {
-                        parts[i] = char.ToUpperInvariant(parts[i][0]) + 
-                                  (parts[i].Length > 1 ? parts[i].Substring(1).ToLowerInvariant() : "");
-                    }
-                }
-                return string.Join("", parts);
-            }
-            else
-            {
-                // Just capitalize the first letter
-                return char.ToUpperInvariant(name[0]) + 
-                      (name.Length > 1 ? name.Substring(1) : "");
-            }
+            // // First convert to snake_case if needed
+            // if (name.Contains("_"))
+            // {
+            //     // Split by underscore and capitalize each segment
+            //     string[] parts = name.Split('_');
+            //     for (int i = 0; i < parts.Length; i++)
+            //     {
+            //         if (!string.IsNullOrEmpty(parts[i]))
+            //         {
+            //             parts[i] = char.ToUpperInvariant(parts[i][0]) + 
+            //                       (parts[i].Length > 1 ? parts[i].Substring(1).ToLowerInvariant() : "");
+            //         }
+            //     }
+            //     return string.Join("", parts);
+            // }
+            // else
+            // {
+            //     // Just capitalize the first letter
+            //     return char.ToUpperInvariant(name[0]) + 
+            //           (name.Length > 1 ? name.Substring(1) : "");
+            // }
         }
         
         

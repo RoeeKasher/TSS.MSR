@@ -3,9 +3,8 @@ name = "tss-rust"
 version = "0.1.0"
 edition = "2021"
 
-[lints.rust]
-non_camel_case_types = "allow"
-unused-parens = "allow"
+[build]
+rustflags = ["-A", "clippy::non_camel_case_types"]
 
 [lib]
 crate-type = ["cdylib", "lib"]

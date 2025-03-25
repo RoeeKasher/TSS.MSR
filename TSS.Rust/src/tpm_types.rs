@@ -22,212 +22,158 @@
 
 use crate::error::TpmError;
 use crate::tpm_buffer::TpmBuffer;
-use std::convert::{TryFrom, TryInto};
 use std::fmt;
+use num_enum::TryFromPrimitive;
 
 /// Table 2 is the list of algorithms to which the TCG has assigned an algorithm
 /// identifier along with its numeric identifier.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u16)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i16)]
 pub enum TPM_ALG_ID {
     /// Should not occur
-    ERROR = 0x0000,
+    ERROR = 0x0, // Original value: 0x0000
 
     /// An object type that contains an RSA key
-    FIRST = 0x0001,
+    FIRST = 0x1, // Original value: 0x0001
 
     /// An object type that contains an RSA key
-    RSA = 0x0001,
+    // WARNING: RSA has duplicate value 0x1 - using name + value pattern
+    RSAValue = 0x1, // Original value: 0x0001
 
     /// Block cipher with various key sizes (Triple Data Encryption Algorithm, commonly called
     /// Triple Data Encryption Standard)
-    TDES = 0x0003,
+    TDES = 0x3, // Original value: 0x0003
 
     /// Hash algorithm producing a 160-bit digest
-    SHA = 0x0004,
+    SHA = 0x4, // Original value: 0x0004
 
     /// Redefinition for documentation consistency
-    SHA1 = 0x0004,
+    // WARNING: SHA1 has duplicate value 0x4 - using name + value pattern
+    SHA1Value = 0x4, // Original value: 0x0004
 
     /// Hash Message Authentication Code (HMAC) algorithm
-    HMAC = 0x0005,
+    HMAC = 0x5, // Original value: 0x0005
 
     /// Block cipher with various key sizes
-    AES = 0x0006,
+    AES = 0x6, // Original value: 0x0006
 
     /// Hash-based mask-generation function
-    MGF1 = 0x0007,
+    MGF1 = 0x7, // Original value: 0x0007
 
     /// An object type that may use XOR for encryption or an HMAC for signing and may also
     /// refer to a data object that is neither signing nor encrypting
-    KEYEDHASH = 0x0008,
+    KEYEDHASH = 0x8, // Original value: 0x0008
 
     /// Hash-based stream cipher
-    XOR = 0x000A,
+    XOR = 0xA, // Original value: 0x000A
 
     /// Hash algorithm producing a 256-bit digest
-    SHA256 = 0x000B,
+    SHA256 = 0xB, // Original value: 0x000B
 
     /// Hash algorithm producing a 384-bit digest
-    SHA384 = 0x000C,
+    SHA384 = 0xC, // Original value: 0x000C
 
     /// Hash algorithm producing a 512-bit digest
-    SHA512 = 0x000D,
+    SHA512 = 0xD, // Original value: 0x000D
 
     /// Indication that no algorithm is selected
-    NULL = 0x0010,
+    NULL = 0x10, // Original value: 0x0010
 
     /// Hash algorithm producing a 256-bit digest
-    Sm3256 = 0x0012,
+    SM3_256 = 0x12, // Original value: 0x0012
 
     /// Symmetric block cipher with 128 bit key
-    SM4 = 0x0013,
+    SM4 = 0x13, // Original value: 0x0013
 
     /// A signature algorithm defined in section 8.2 (RSASSA-PKCS1-v1_5)
-    RSASSA = 0x0014,
+    RSASSA = 0x14, // Original value: 0x0014
 
     /// A padding algorithm defined in section 7.2 (RSAES-PKCS1-v1_5)
-    RSAES = 0x0015,
+    RSAES = 0x15, // Original value: 0x0015
 
     /// A signature algorithm defined in section 8.1 (RSASSA-PSS)
-    RSAPSS = 0x0016,
+    RSAPSS = 0x16, // Original value: 0x0016
 
     /// A padding algorithm defined in Section 7.1 (RSAES_OAEP)
-    OAEP = 0x0017,
+    OAEP = 0x17, // Original value: 0x0017
 
     /// Signature algorithm using elliptic curve cryptography (ECC)
-    ECDSA = 0x0018,
+    ECDSA = 0x18, // Original value: 0x0018
 
     /// Secret sharing using ECC Based on context, this can be either One-Pass Diffie-Hellman,
     /// C(1, 1, ECC CDH) defined in 6.2.2.2 or Full Unified Model C(2, 2, ECC CDH) defined in 6.1.1.2
-    ECDH = 0x0019,
+    ECDH = 0x19, // Original value: 0x0019
 
     /// Elliptic-curve based, anonymous signing scheme
-    ECDAA = 0x001A,
+    ECDAA = 0x1A, // Original value: 0x001A
 
     /// Depending on context, either an elliptic-curve-based signature algorithm, encryption
     /// algorithm, or key exchange protocol
-    SM2 = 0x001B,
+    SM2 = 0x1B, // Original value: 0x001B
 
     /// Elliptic-curve based Schnorr signature
-    ECSCHNORR = 0x001C,
+    ECSCHNORR = 0x1C, // Original value: 0x001C
 
     /// Two-phase elliptic-curve key exchange C(2, 2, ECC MQV) Section 6.1.1.4
-    ECMQV = 0x001D,
+    ECMQV = 0x1D, // Original value: 0x001D
 
     /// Concatenation key derivation function (approved alternative 1) Section 5.8.1
-    Kdf1Sp80056a = 0x0020,
+    KDF1_SP800_56A = 0x20, // Original value: 0x0020
 
     /// Key derivation function KDF2 Section 13.2
-    KDF2 = 0x0021,
+    KDF2 = 0x21, // Original value: 0x0021
 
     /// A key derivation method SP800-108, Section 5.1 KDF in Counter Mode
-    Kdf1Sp800108 = 0x0022,
+    KDF1_SP800_108 = 0x22, // Original value: 0x0022
 
     /// Prime field ECC
-    ECC = 0x0023,
+    ECC = 0x23, // Original value: 0x0023
 
     /// The object type for a symmetric block cipher key
-    SYMCIPHER = 0x0025,
+    SYMCIPHER = 0x25, // Original value: 0x0025
 
     /// Symmetric block cipher with various key sizes
-    CAMELLIA = 0x0026,
+    CAMELLIA = 0x26, // Original value: 0x0026
 
     /// Hash algorithm producing a 256-bit digest
-    Sha3256 = 0x0027,
+    SHA3_256 = 0x27, // Original value: 0x0027
 
     /// Hash algorithm producing a 384-bit digest
-    Sha3384 = 0x0028,
+    SHA3_384 = 0x28, // Original value: 0x0028
 
     /// Hash algorithm producing a 512-bit digest
-    Sha3512 = 0x0029,
-    CMAC = 0x003F,
+    SHA3_512 = 0x29, // Original value: 0x0029
+    CMAC = 0x3F, // Original value: 0x003F
 
     /// Counter mode if implemented, all symmetric block ciphers (S type) implemented shall be
     /// capable of using this mode.
-    CTR = 0x0040,
+    CTR = 0x40, // Original value: 0x0040
 
     /// Output Feedback mode if implemented, all symmetric block ciphers (S type) implemented
     /// shall be capable of using this mode.
-    OFB = 0x0041,
+    OFB = 0x41, // Original value: 0x0041
 
     /// Cipher Block Chaining mode if implemented, all symmetric block ciphers (S type)
     /// implemented shall be capable of using this mode.
-    CBC = 0x0042,
+    CBC = 0x42, // Original value: 0x0042
 
     /// Cipher Feedback mode if implemented, all symmetric block ciphers (S type) implemented
     /// shall be capable of using this mode.
-    CFB = 0x0043,
+    CFB = 0x43, // Original value: 0x0043
 
     /// Electronic Codebook mode if implemented, all implemented symmetric block ciphers (S
     /// type) shall be capable of using this mode.
     /// NOTE This mode is not recommended for uses unless the key is frequently rotated such
     /// as in video codecs
-    ECB = 0x0044,
-    LAST = 0x0044,
+    ECB = 0x44, // Original value: 0x0044
+    // WARNING: LAST has duplicate value 0x44 - using name + value pattern
+    LASTValue = 0x44, // Original value: 0x0044
 
     /// Phony alg ID to be used for the first union member with no selector
     ANY = 0x7FFF,
 
     /// Phony alg ID to be used for the second union member with no selector
     ANY2 = 0x7FFE
-}
-
-impl TryFrom<u16> for TPM_ALG_ID {
-    type Error = TpmError;
-
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
-        match value {
-            0x0000 => Ok(Self::ERROR),
-            0x0001 => Ok(Self::FIRST),
-            0x0001 => Ok(Self::RSA),
-            0x0003 => Ok(Self::TDES),
-            0x0004 => Ok(Self::SHA),
-            0x0004 => Ok(Self::SHA1),
-            0x0005 => Ok(Self::HMAC),
-            0x0006 => Ok(Self::AES),
-            0x0007 => Ok(Self::MGF1),
-            0x0008 => Ok(Self::KEYEDHASH),
-            0x000A => Ok(Self::XOR),
-            0x000B => Ok(Self::SHA256),
-            0x000C => Ok(Self::SHA384),
-            0x000D => Ok(Self::SHA512),
-            0x0010 => Ok(Self::NULL),
-            0x0012 => Ok(Self::Sm3256),
-            0x0013 => Ok(Self::SM4),
-            0x0014 => Ok(Self::RSASSA),
-            0x0015 => Ok(Self::RSAES),
-            0x0016 => Ok(Self::RSAPSS),
-            0x0017 => Ok(Self::OAEP),
-            0x0018 => Ok(Self::ECDSA),
-            0x0019 => Ok(Self::ECDH),
-            0x001A => Ok(Self::ECDAA),
-            0x001B => Ok(Self::SM2),
-            0x001C => Ok(Self::ECSCHNORR),
-            0x001D => Ok(Self::ECMQV),
-            0x0020 => Ok(Self::Kdf1Sp80056a),
-            0x0021 => Ok(Self::KDF2),
-            0x0022 => Ok(Self::Kdf1Sp800108),
-            0x0023 => Ok(Self::ECC),
-            0x0025 => Ok(Self::SYMCIPHER),
-            0x0026 => Ok(Self::CAMELLIA),
-            0x0027 => Ok(Self::Sha3256),
-            0x0028 => Ok(Self::Sha3384),
-            0x0029 => Ok(Self::Sha3512),
-            0x003F => Ok(Self::CMAC),
-            0x0040 => Ok(Self::CTR),
-            0x0041 => Ok(Self::OFB),
-            0x0042 => Ok(Self::CBC),
-            0x0043 => Ok(Self::CFB),
-            0x0044 => Ok(Self::ECB),
-            0x0044 => Ok(Self::LAST),
-            0x7FFF => Ok(Self::ANY),
-            0x7FFE => Ok(Self::ANY2),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
 }
 
 impl fmt::Display for TPM_ALG_ID {
@@ -248,7 +194,7 @@ impl fmt::Display for TPM_ALG_ID {
             Self::SHA384 => write!(f, "SHA384"),
             Self::SHA512 => write!(f, "SHA512"),
             Self::NULL => write!(f, "NULL"),
-            Self::Sm3256 => write!(f, "Sm3256"),
+            Self::SM3_256 => write!(f, "SM3_256"),
             Self::SM4 => write!(f, "SM4"),
             Self::RSASSA => write!(f, "RSASSA"),
             Self::RSAES => write!(f, "RSAES"),
@@ -260,15 +206,15 @@ impl fmt::Display for TPM_ALG_ID {
             Self::SM2 => write!(f, "SM2"),
             Self::ECSCHNORR => write!(f, "ECSCHNORR"),
             Self::ECMQV => write!(f, "ECMQV"),
-            Self::Kdf1Sp80056a => write!(f, "Kdf1Sp80056a"),
+            Self::KDF1_SP800_56A => write!(f, "KDF1_SP800_56A"),
             Self::KDF2 => write!(f, "KDF2"),
-            Self::Kdf1Sp800108 => write!(f, "Kdf1Sp800108"),
+            Self::KDF1_SP800_108 => write!(f, "KDF1_SP800_108"),
             Self::ECC => write!(f, "ECC"),
             Self::SYMCIPHER => write!(f, "SYMCIPHER"),
             Self::CAMELLIA => write!(f, "CAMELLIA"),
-            Self::Sha3256 => write!(f, "Sha3256"),
-            Self::Sha3384 => write!(f, "Sha3384"),
-            Self::Sha3512 => write!(f, "Sha3512"),
+            Self::SHA3_256 => write!(f, "SHA3_256"),
+            Self::SHA3_384 => write!(f, "SHA3_384"),
+            Self::SHA3_512 => write!(f, "SHA3_512"),
             Self::CMAC => write!(f, "CMAC"),
             Self::CTR => write!(f, "CTR"),
             Self::OFB => write!(f, "OFB"),
@@ -279,389 +225,221 @@ impl fmt::Display for TPM_ALG_ID {
             Self::ANY => write!(f, "ANY"),
             Self::ANY2 => write!(f, "ANY2"),
         }
-
     }
-
 }
 
 /// Table 4 is the list of identifiers for TCG-registered curve ID values for elliptic
 /// curve cryptography.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u16)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i16)]
 pub enum TPM_ECC_CURVE {
-    NONE = 0x0000,
-    NistP192 = 0x0001,
-    NistP224 = 0x0002,
-    NistP256 = 0x0003,
-    NistP384 = 0x0004,
-    NistP521 = 0x0005,
+    NONE = 0x0, // Original value: 0x0000
+    NIST_P192 = 0x1, // Original value: 0x0001
+    NIST_P224 = 0x2, // Original value: 0x0002
+    NIST_P256 = 0x3, // Original value: 0x0003
+    NIST_P384 = 0x4, // Original value: 0x0004
+    NIST_P521 = 0x5, // Original value: 0x0005
 
     /// Curve to support ECDAA
-    BnP256 = 0x0010,
+    BN_P256 = 0x10, // Original value: 0x0010
 
     /// Curve to support ECDAA
-    BnP638 = 0x0011,
-    Sm2P256 = 0x0020,
-    TestP192 = 0x0021
-}
-
-impl TryFrom<u16> for TPM_ECC_CURVE {
-    type Error = TpmError;
-
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
-        match value {
-            0x0000 => Ok(Self::NONE),
-            0x0001 => Ok(Self::NistP192),
-            0x0002 => Ok(Self::NistP224),
-            0x0003 => Ok(Self::NistP256),
-            0x0004 => Ok(Self::NistP384),
-            0x0005 => Ok(Self::NistP521),
-            0x0010 => Ok(Self::BnP256),
-            0x0011 => Ok(Self::BnP638),
-            0x0020 => Ok(Self::Sm2P256),
-            0x0021 => Ok(Self::TestP192),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BN_P638 = 0x11, // Original value: 0x0011
+    SM2_P256 = 0x20, // Original value: 0x0020
+    TEST_P192 = 0x21 // Original value: 0x0021
 }
 
 impl fmt::Display for TPM_ECC_CURVE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::NONE => write!(f, "NONE"),
-            Self::NistP192 => write!(f, "NistP192"),
-            Self::NistP224 => write!(f, "NistP224"),
-            Self::NistP256 => write!(f, "NistP256"),
-            Self::NistP384 => write!(f, "NistP384"),
-            Self::NistP521 => write!(f, "NistP521"),
-            Self::BnP256 => write!(f, "BnP256"),
-            Self::BnP638 => write!(f, "BnP638"),
-            Self::Sm2P256 => write!(f, "Sm2P256"),
-            Self::TestP192 => write!(f, "TestP192"),
+            Self::NIST_P192 => write!(f, "NIST_P192"),
+            Self::NIST_P224 => write!(f, "NIST_P224"),
+            Self::NIST_P256 => write!(f, "NIST_P256"),
+            Self::NIST_P384 => write!(f, "NIST_P384"),
+            Self::NIST_P521 => write!(f, "NIST_P521"),
+            Self::BN_P256 => write!(f, "BN_P256"),
+            Self::BN_P638 => write!(f, "BN_P638"),
+            Self::SM2_P256 => write!(f, "SM2_P256"),
+            Self::TEST_P192 => write!(f, "TEST_P192"),
         }
-
     }
-
 }
 
 /// Table 13 Defines for SHA1 Hash Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum SHA1 {
     /// Size of digest in octets
-    DigestSize = 20,
+    DIGEST_SIZE = 0x14, // Original value: 20
 
     /// Size of hash block in octets
-    BlockSize = 64
-}
-
-impl TryFrom<u32> for SHA1 {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            20 => Ok(Self::DigestSize),
-            64 => Ok(Self::BlockSize),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BLOCK_SIZE = 0x40 // Original value: 64
 }
 
 impl fmt::Display for SHA1 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::DigestSize => write!(f, "DigestSize"),
-            Self::BlockSize => write!(f, "BlockSize"),
+            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
+            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
         }
-
     }
-
 }
 
 /// Table 14 Defines for SHA256 Hash Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum SHA256 {
     /// Size of digest
-    DigestSize = 32,
+    DIGEST_SIZE = 0x20, // Original value: 32
 
     /// Size of hash block
-    BlockSize = 64
-}
-
-impl TryFrom<u32> for SHA256 {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            32 => Ok(Self::DigestSize),
-            64 => Ok(Self::BlockSize),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BLOCK_SIZE = 0x40 // Original value: 64
 }
 
 impl fmt::Display for SHA256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::DigestSize => write!(f, "DigestSize"),
-            Self::BlockSize => write!(f, "BlockSize"),
+            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
+            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
         }
-
     }
-
 }
 
 /// Table 15 Defines for SHA384 Hash Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum SHA384 {
     /// Size of digest in octets
-    DigestSize = 48,
+    DIGEST_SIZE = 0x30, // Original value: 48
 
     /// Size of hash block in octets
-    BlockSize = 128
-}
-
-impl TryFrom<u32> for SHA384 {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            48 => Ok(Self::DigestSize),
-            128 => Ok(Self::BlockSize),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BLOCK_SIZE = 0x80 // Original value: 128
 }
 
 impl fmt::Display for SHA384 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::DigestSize => write!(f, "DigestSize"),
-            Self::BlockSize => write!(f, "BlockSize"),
+            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
+            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
         }
-
     }
-
 }
 
 /// Table 16 Defines for SHA512 Hash Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum SHA512 {
     /// Size of digest in octets
-    DigestSize = 64,
+    DIGEST_SIZE = 0x40, // Original value: 64
 
     /// Size of hash block in octets
-    BlockSize = 128
-}
-
-impl TryFrom<u32> for SHA512 {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            64 => Ok(Self::DigestSize),
-            128 => Ok(Self::BlockSize),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BLOCK_SIZE = 0x80 // Original value: 128
 }
 
 impl fmt::Display for SHA512 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::DigestSize => write!(f, "DigestSize"),
-            Self::BlockSize => write!(f, "BlockSize"),
+            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
+            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
         }
-
     }
-
 }
 
 /// Table 17 Defines for SM3_256 Hash Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum SM3_256 {
     /// Size of digest in octets
-    DigestSize = 32,
+    DIGEST_SIZE = 0x20, // Original value: 32
 
     /// Size of hash block in octets
-    BlockSize = 64
-}
-
-impl TryFrom<u32> for SM3_256 {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            32 => Ok(Self::DigestSize),
-            64 => Ok(Self::BlockSize),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BLOCK_SIZE = 0x40 // Original value: 64
 }
 
 impl fmt::Display for SM3_256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::DigestSize => write!(f, "DigestSize"),
-            Self::BlockSize => write!(f, "BlockSize"),
+            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
+            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
         }
-
     }
-
 }
 
 /// Table 18 Defines for SHA3_256 Hash Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum SHA3_256 {
     /// Size of digest in octets
-    DigestSize = 32,
+    DIGEST_SIZE = 0x20, // Original value: 32
 
     /// Size of hash block in octets
-    BlockSize = 136
-}
-
-impl TryFrom<u32> for SHA3_256 {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            32 => Ok(Self::DigestSize),
-            136 => Ok(Self::BlockSize),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BLOCK_SIZE = 0x88 // Original value: 136
 }
 
 impl fmt::Display for SHA3_256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::DigestSize => write!(f, "DigestSize"),
-            Self::BlockSize => write!(f, "BlockSize"),
+            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
+            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
         }
-
     }
-
 }
 
 /// Table 19 Defines for SHA3_384 Hash Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum SHA3_384 {
     /// Size of digest in octets
-    DigestSize = 48,
+    DIGEST_SIZE = 0x30, // Original value: 48
 
     /// Size of hash block in octets
-    BlockSize = 104
-}
-
-impl TryFrom<u32> for SHA3_384 {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            48 => Ok(Self::DigestSize),
-            104 => Ok(Self::BlockSize),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BLOCK_SIZE = 0x68 // Original value: 104
 }
 
 impl fmt::Display for SHA3_384 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::DigestSize => write!(f, "DigestSize"),
-            Self::BlockSize => write!(f, "BlockSize"),
+            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
+            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
         }
-
     }
-
 }
 
 /// Table 20 Defines for SHA3_512 Hash Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum SHA3_512 {
     /// Size of digest in octets
-    DigestSize = 64,
+    DIGEST_SIZE = 0x40, // Original value: 64
 
     /// Size of hash block in octets
-    BlockSize = 72
-}
-
-impl TryFrom<u32> for SHA3_512 {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            64 => Ok(Self::DigestSize),
-            72 => Ok(Self::BlockSize),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BLOCK_SIZE = 0x48 // Original value: 72
 }
 
 impl fmt::Display for SHA3_512 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::DigestSize => write!(f, "DigestSize"),
-            Self::BlockSize => write!(f, "BlockSize"),
+            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
+            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
         }
-
     }
-
 }
 
 /// Table 4 Defines for Logic Values
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i8)]
 pub enum Logic {
-    TRUE = 1,
-    FALSE = 0,
-    YES = 1,
-    NO = 0,
-    SET = 1,
-    CLEAR = 0
-}
-
-impl TryFrom<u8> for Logic {
-    type Error = TpmError;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            1 => Ok(Self::TRUE),
-            0 => Ok(Self::FALSE),
-            1 => Ok(Self::YES),
-            0 => Ok(Self::NO),
-            1 => Ok(Self::SET),
-            0 => Ok(Self::CLEAR),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    TRUE = 0x1, // Original value: 1
+    FALSE = 0x0, // Original value: 0
+    // WARNING: YES has duplicate value 0x1 - using name + value pattern
+    YESValue = 0x1, // Original value: 1
+    // WARNING: NO has duplicate value 0x0 - using name + value pattern
+    NOValue = 0x0, // Original value: 0
+    // WARNING: SET has duplicate value 0x1 - using name + value pattern
+    SETValue = 0x1, // Original value: 1
+    // WARNING: CLEAR has duplicate value 0x0 - using name + value pattern
+    CLEARValue = 0x0 // Original value: 0
 }
 
 impl fmt::Display for Logic {
@@ -674,46 +452,27 @@ impl fmt::Display for Logic {
             Self::SET => write!(f, "SET"),
             Self::CLEAR => write!(f, "CLEAR"),
         }
-
     }
-
 }
 
 /// These values are readable with TPM2_GetCapability() (see 6.13 for the format).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_SPEC {
     /// ASCII 2.0 with null terminator
     FAMILY = 0x322E3000,
 
     /// The level number for the specification
-    LEVEL = 0,
+    LEVEL = 0x0, // Original value: 0
 
     /// The version number of the spec (001.62 * 100)
-    VERSION = 162,
+    VERSION = 0xA2, // Original value: 162
 
     /// The year of the version
-    YEAR = 2019,
+    YEAR = 0x7E3, // Original value: 2019
 
     /// The day of the year (December 26)
-    DayOfYear = 360
-}
-
-impl TryFrom<u32> for TPM_SPEC {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x322E3000 => Ok(Self::FAMILY),
-            0 => Ok(Self::LEVEL),
-            162 => Ok(Self::VERSION),
-            2019 => Ok(Self::YEAR),
-            360 => Ok(Self::DayOfYear),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    DAY_OF_YEAR = 0x168 // Original value: 360
 }
 
 impl fmt::Display for TPM_SPEC {
@@ -723,32 +482,17 @@ impl fmt::Display for TPM_SPEC {
             Self::LEVEL => write!(f, "LEVEL"),
             Self::VERSION => write!(f, "VERSION"),
             Self::YEAR => write!(f, "YEAR"),
-            Self::DayOfYear => write!(f, "DayOfYear"),
+            Self::DAY_OF_YEAR => write!(f, "DAY_OF_YEAR"),
         }
-
     }
-
 }
 
 /// This constant value differentiates TPM-generated structures from non-TPM structures.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_GENERATED {
     /// 0xFF TCG (FF 54 43 4716)
-    VALUE = 0xff544347
-}
-
-impl TryFrom<u32> for TPM_GENERATED {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0xff544347 => Ok(Self::VALUE),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    VALUE = 0xFF544347 // Original value: 0xff544347
 }
 
 impl fmt::Display for TPM_GENERATED {
@@ -756,381 +500,247 @@ impl fmt::Display for TPM_GENERATED {
         match self {
             Self::VALUE => write!(f, "VALUE"),
         }
-
     }
-
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_CC {
     /// Compile variable. May decrease based on implementation.
-    FIRST = 0x0000011F,
-    NvUndefinespacespecial = 0x0000011F,
-    EvictControl = 0x00000120,
-    HierarchyControl = 0x00000121,
-    NvUndefinespace = 0x00000122,
-    ChangeEPS = 0x00000124,
-    ChangePPS = 0x00000125,
-    Clear = 0x00000126,
-    ClearControl = 0x00000127,
-    ClockSet = 0x00000128,
-    HierarchyChangeAuth = 0x00000129,
-    NvDefinespace = 0x0000012A,
-    PcrAllocate = 0x0000012B,
-    PcrSetauthpolicy = 0x0000012C,
-    PpCommands = 0x0000012D,
-    SetPrimaryPolicy = 0x0000012E,
-    FieldUpgradeStart = 0x0000012F,
-    ClockRateAdjust = 0x00000130,
-    CreatePrimary = 0x00000131,
-    NvGlobalwritelock = 0x00000132,
-    GetCommandAuditDigest = 0x00000133,
-    NvIncrement = 0x00000134,
-    NvSetbits = 0x00000135,
-    NvExtend = 0x00000136,
-    NvWrite = 0x00000137,
-    NvWritelock = 0x00000138,
-    DictionaryAttackLockReset = 0x00000139,
-    DictionaryAttackParameters = 0x0000013A,
-    NvChangeauth = 0x0000013B,
+    FIRST = 0x11F, // Original value: 0x0000011F
+    // WARNING: NV_UndefineSpaceSpecial has duplicate value 0x11F - using name + value pattern
+    NV_UndefineSpaceSpecialValue = 0x11F, // Original value: 0x0000011F
+    EvictControl = 0x120, // Original value: 0x00000120
+    HierarchyControl = 0x121, // Original value: 0x00000121
+    NV_UndefineSpace = 0x122, // Original value: 0x00000122
+    ChangeEPS = 0x124, // Original value: 0x00000124
+    ChangePPS = 0x125, // Original value: 0x00000125
+    Clear = 0x126, // Original value: 0x00000126
+    ClearControl = 0x127, // Original value: 0x00000127
+    ClockSet = 0x128, // Original value: 0x00000128
+    HierarchyChangeAuth = 0x129, // Original value: 0x00000129
+    NV_DefineSpace = 0x12A, // Original value: 0x0000012A
+    PCR_Allocate = 0x12B, // Original value: 0x0000012B
+    PCR_SetAuthPolicy = 0x12C, // Original value: 0x0000012C
+    PP_Commands = 0x12D, // Original value: 0x0000012D
+    SetPrimaryPolicy = 0x12E, // Original value: 0x0000012E
+    FieldUpgradeStart = 0x12F, // Original value: 0x0000012F
+    ClockRateAdjust = 0x130, // Original value: 0x00000130
+    CreatePrimary = 0x131, // Original value: 0x00000131
+    NV_GlobalWriteLock = 0x132, // Original value: 0x00000132
+    GetCommandAuditDigest = 0x133, // Original value: 0x00000133
+    NV_Increment = 0x134, // Original value: 0x00000134
+    NV_SetBits = 0x135, // Original value: 0x00000135
+    NV_Extend = 0x136, // Original value: 0x00000136
+    NV_Write = 0x137, // Original value: 0x00000137
+    NV_WriteLock = 0x138, // Original value: 0x00000138
+    DictionaryAttackLockReset = 0x139, // Original value: 0x00000139
+    DictionaryAttackParameters = 0x13A, // Original value: 0x0000013A
+    NV_ChangeAuth = 0x13B, // Original value: 0x0000013B
 
     /// PCR
-    PcrEvent = 0x0000013C,
+    PCR_Event = 0x13C, // Original value: 0x0000013C
 
     /// PCR
-    PcrReset = 0x0000013D,
-    SequenceComplete = 0x0000013E,
-    SetAlgorithmSet = 0x0000013F,
-    SetCommandCodeAuditStatus = 0x00000140,
-    FieldUpgradeData = 0x00000141,
-    IncrementalSelfTest = 0x00000142,
-    SelfTest = 0x00000143,
-    Startup = 0x00000144,
-    Shutdown = 0x00000145,
-    StirRandom = 0x00000146,
-    ActivateCredential = 0x00000147,
-    Certify = 0x00000148,
+    PCR_Reset = 0x13D, // Original value: 0x0000013D
+    SequenceComplete = 0x13E, // Original value: 0x0000013E
+    SetAlgorithmSet = 0x13F, // Original value: 0x0000013F
+    SetCommandCodeAuditStatus = 0x140, // Original value: 0x00000140
+    FieldUpgradeData = 0x141, // Original value: 0x00000141
+    IncrementalSelfTest = 0x142, // Original value: 0x00000142
+    SelfTest = 0x143, // Original value: 0x00000143
+    Startup = 0x144, // Original value: 0x00000144
+    Shutdown = 0x145, // Original value: 0x00000145
+    StirRandom = 0x146, // Original value: 0x00000146
+    ActivateCredential = 0x147, // Original value: 0x00000147
+    Certify = 0x148, // Original value: 0x00000148
 
     /// Policy
-    PolicyNV = 0x00000149,
-    CertifyCreation = 0x0000014A,
-    Duplicate = 0x0000014B,
-    GetTime = 0x0000014C,
-    GetSessionAuditDigest = 0x0000014D,
-    NvRead = 0x0000014E,
-    NvReadlock = 0x0000014F,
-    ObjectChangeAuth = 0x00000150,
+    PolicyNV = 0x149, // Original value: 0x00000149
+    CertifyCreation = 0x14A, // Original value: 0x0000014A
+    Duplicate = 0x14B, // Original value: 0x0000014B
+    GetTime = 0x14C, // Original value: 0x0000014C
+    GetSessionAuditDigest = 0x14D, // Original value: 0x0000014D
+    NV_Read = 0x14E, // Original value: 0x0000014E
+    NV_ReadLock = 0x14F, // Original value: 0x0000014F
+    ObjectChangeAuth = 0x150, // Original value: 0x00000150
 
     /// Policy
-    PolicySecret = 0x00000151,
-    Rewrap = 0x00000152,
-    Create = 0x00000153,
-    EcdhZgen = 0x00000154,
+    PolicySecret = 0x151, // Original value: 0x00000151
+    Rewrap = 0x152, // Original value: 0x00000152
+    Create = 0x153, // Original value: 0x00000153
+    ECDH_ZGen = 0x154, // Original value: 0x00000154
 
     /// See NOTE 1
-    HMAC = 0x00000155,
+    HMAC = 0x155, // Original value: 0x00000155
 
     /// See NOTE 1
-    MAC = 0x00000155,
-    Import = 0x00000156,
-    Load = 0x00000157,
-    Quote = 0x00000158,
-    RsaDecrypt = 0x00000159,
+    // WARNING: MAC has duplicate value 0x155 - using name + value pattern
+    MACValue = 0x155, // Original value: 0x00000155
+    Import = 0x156, // Original value: 0x00000156
+    Load = 0x157, // Original value: 0x00000157
+    Quote = 0x158, // Original value: 0x00000158
+    RSA_Decrypt = 0x159, // Original value: 0x00000159
 
     /// See NOTE 1
-    HmacStart = 0x0000015B,
+    HMAC_Start = 0x15B, // Original value: 0x0000015B
 
     /// See NOTE 1
-    MacStart = 0x0000015B,
-    SequenceUpdate = 0x0000015C,
-    Sign = 0x0000015D,
-    Unseal = 0x0000015E,
+    // WARNING: MAC_Start has duplicate value 0x15B - using name + value pattern
+    MAC_StartValue = 0x15B, // Original value: 0x0000015B
+    SequenceUpdate = 0x15C, // Original value: 0x0000015C
+    Sign = 0x15D, // Original value: 0x0000015D
+    Unseal = 0x15E, // Original value: 0x0000015E
 
     /// Policy
-    PolicySigned = 0x00000160,
+    PolicySigned = 0x160, // Original value: 0x00000160
 
     /// Context
-    ContextLoad = 0x00000161,
+    ContextLoad = 0x161, // Original value: 0x00000161
 
     /// Context
-    ContextSave = 0x00000162,
-    EcdhKeygen = 0x00000163,
-    EncryptDecrypt = 0x00000164,
+    ContextSave = 0x162, // Original value: 0x00000162
+    ECDH_KeyGen = 0x163, // Original value: 0x00000163
+    EncryptDecrypt = 0x164, // Original value: 0x00000164
 
     /// Context
-    FlushContext = 0x00000165,
-    LoadExternal = 0x00000167,
-    MakeCredential = 0x00000168,
+    FlushContext = 0x165, // Original value: 0x00000165
+    LoadExternal = 0x167, // Original value: 0x00000167
+    MakeCredential = 0x168, // Original value: 0x00000168
 
     /// NV
-    NvReadpublic = 0x00000169,
+    NV_ReadPublic = 0x169, // Original value: 0x00000169
 
     /// Policy
-    PolicyAuthorize = 0x0000016A,
+    PolicyAuthorize = 0x16A, // Original value: 0x0000016A
 
     /// Policy
-    PolicyAuthValue = 0x0000016B,
+    PolicyAuthValue = 0x16B, // Original value: 0x0000016B
 
     /// Policy
-    PolicyCommandCode = 0x0000016C,
+    PolicyCommandCode = 0x16C, // Original value: 0x0000016C
 
     /// Policy
-    PolicyCounterTimer = 0x0000016D,
+    PolicyCounterTimer = 0x16D, // Original value: 0x0000016D
 
     /// Policy
-    PolicyCpHash = 0x0000016E,
+    PolicyCpHash = 0x16E, // Original value: 0x0000016E
 
     /// Policy
-    PolicyLocality = 0x0000016F,
+    PolicyLocality = 0x16F, // Original value: 0x0000016F
 
     /// Policy
-    PolicyNameHash = 0x00000170,
+    PolicyNameHash = 0x170, // Original value: 0x00000170
 
     /// Policy
-    PolicyOR = 0x00000171,
+    PolicyOR = 0x171, // Original value: 0x00000171
 
     /// Policy
-    PolicyTicket = 0x00000172,
-    ReadPublic = 0x00000173,
-    RsaEncrypt = 0x00000174,
-    StartAuthSession = 0x00000176,
-    VerifySignature = 0x00000177,
-    EccParameters = 0x00000178,
-    FirmwareRead = 0x00000179,
-    GetCapability = 0x0000017A,
-    GetRandom = 0x0000017B,
-    GetTestResult = 0x0000017C,
-    Hash = 0x0000017D,
+    PolicyTicket = 0x172, // Original value: 0x00000172
+    ReadPublic = 0x173, // Original value: 0x00000173
+    RSA_Encrypt = 0x174, // Original value: 0x00000174
+    StartAuthSession = 0x176, // Original value: 0x00000176
+    VerifySignature = 0x177, // Original value: 0x00000177
+    ECC_Parameters = 0x178, // Original value: 0x00000178
+    FirmwareRead = 0x179, // Original value: 0x00000179
+    GetCapability = 0x17A, // Original value: 0x0000017A
+    GetRandom = 0x17B, // Original value: 0x0000017B
+    GetTestResult = 0x17C, // Original value: 0x0000017C
+    Hash = 0x17D, // Original value: 0x0000017D
 
     /// PCR
-    PcrRead = 0x0000017E,
+    PCR_Read = 0x17E, // Original value: 0x0000017E
 
     /// Policy
-    PolicyPCR = 0x0000017F,
-    PolicyRestart = 0x00000180,
-    ReadClock = 0x00000181,
-    PcrExtend = 0x00000182,
-    PcrSetauthvalue = 0x00000183,
-    NvCertify = 0x00000184,
-    EventSequenceComplete = 0x00000185,
-    HashSequenceStart = 0x00000186,
+    PolicyPCR = 0x17F, // Original value: 0x0000017F
+    PolicyRestart = 0x180, // Original value: 0x00000180
+    ReadClock = 0x181, // Original value: 0x00000181
+    PCR_Extend = 0x182, // Original value: 0x00000182
+    PCR_SetAuthValue = 0x183, // Original value: 0x00000183
+    NV_Certify = 0x184, // Original value: 0x00000184
+    EventSequenceComplete = 0x185, // Original value: 0x00000185
+    HashSequenceStart = 0x186, // Original value: 0x00000186
 
     /// Policy
-    PolicyPhysicalPresence = 0x00000187,
+    PolicyPhysicalPresence = 0x187, // Original value: 0x00000187
 
     /// Policy
-    PolicyDuplicationSelect = 0x00000188,
+    PolicyDuplicationSelect = 0x188, // Original value: 0x00000188
 
     /// Policy
-    PolicyGetDigest = 0x00000189,
-    TestParms = 0x0000018A,
-    Commit = 0x0000018B,
+    PolicyGetDigest = 0x189, // Original value: 0x00000189
+    TestParms = 0x18A, // Original value: 0x0000018A
+    Commit = 0x18B, // Original value: 0x0000018B
 
     /// Policy
-    PolicyPassword = 0x0000018C,
-    Zgen2phase = 0x0000018D,
-    EcEphemeral = 0x0000018E,
+    PolicyPassword = 0x18C, // Original value: 0x0000018C
+    ZGen_2Phase = 0x18D, // Original value: 0x0000018D
+    EC_Ephemeral = 0x18E, // Original value: 0x0000018E
 
     /// Policy
-    PolicyNvWritten = 0x0000018F,
+    PolicyNvWritten = 0x18F, // Original value: 0x0000018F
 
     /// Policy
-    PolicyTemplate = 0x00000190,
-    CreateLoaded = 0x00000191,
+    PolicyTemplate = 0x190, // Original value: 0x00000190
+    CreateLoaded = 0x191, // Original value: 0x00000191
 
     /// Policy
-    PolicyAuthorizeNV = 0x00000192,
-    EncryptDecrypt2 = 0x00000193,
-    AcGetcapability = 0x00000194,
-    AcSend = 0x00000195,
+    PolicyAuthorizeNV = 0x192, // Original value: 0x00000192
+    EncryptDecrypt2 = 0x193, // Original value: 0x00000193
+    AC_GetCapability = 0x194, // Original value: 0x00000194
+    AC_Send = 0x195, // Original value: 0x00000195
 
     /// Policy
-    PolicyAcSendselect = 0x00000196,
-    CertifyX509 = 0x00000197,
-    ActSettimeout = 0x00000198,
-    EccEncrypt = 0x00000199,
-    EccDecrypt = 0x0000019A,
+    Policy_AC_SendSelect = 0x196, // Original value: 0x00000196
+    CertifyX509 = 0x197, // Original value: 0x00000197
+    ACT_SetTimeout = 0x198, // Original value: 0x00000198
+    ECC_Encrypt = 0x199, // Original value: 0x00000199
+    ECC_Decrypt = 0x19A, // Original value: 0x0000019A
 
     /// Compile variable. May increase based on implementation.
-    LAST = 0x0000019A,
-    CcVend = 0x20000000,
+    // WARNING: LAST has duplicate value 0x19A - using name + value pattern
+    LASTValue = 0x19A, // Original value: 0x0000019A
+    CC_VEND = 0x20000000,
 
     /// Used for testing of command dispatch
-    VendorTcgTest = CC_VEND+0x0000
-}
-
-impl TryFrom<u32> for TPM_CC {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x0000011F => Ok(Self::FIRST),
-            0x0000011F => Ok(Self::NvUndefinespacespecial),
-            0x00000120 => Ok(Self::EvictControl),
-            0x00000121 => Ok(Self::HierarchyControl),
-            0x00000122 => Ok(Self::NvUndefinespace),
-            0x00000124 => Ok(Self::ChangeEPS),
-            0x00000125 => Ok(Self::ChangePPS),
-            0x00000126 => Ok(Self::Clear),
-            0x00000127 => Ok(Self::ClearControl),
-            0x00000128 => Ok(Self::ClockSet),
-            0x00000129 => Ok(Self::HierarchyChangeAuth),
-            0x0000012A => Ok(Self::NvDefinespace),
-            0x0000012B => Ok(Self::PcrAllocate),
-            0x0000012C => Ok(Self::PcrSetauthpolicy),
-            0x0000012D => Ok(Self::PpCommands),
-            0x0000012E => Ok(Self::SetPrimaryPolicy),
-            0x0000012F => Ok(Self::FieldUpgradeStart),
-            0x00000130 => Ok(Self::ClockRateAdjust),
-            0x00000131 => Ok(Self::CreatePrimary),
-            0x00000132 => Ok(Self::NvGlobalwritelock),
-            0x00000133 => Ok(Self::GetCommandAuditDigest),
-            0x00000134 => Ok(Self::NvIncrement),
-            0x00000135 => Ok(Self::NvSetbits),
-            0x00000136 => Ok(Self::NvExtend),
-            0x00000137 => Ok(Self::NvWrite),
-            0x00000138 => Ok(Self::NvWritelock),
-            0x00000139 => Ok(Self::DictionaryAttackLockReset),
-            0x0000013A => Ok(Self::DictionaryAttackParameters),
-            0x0000013B => Ok(Self::NvChangeauth),
-            0x0000013C => Ok(Self::PcrEvent),
-            0x0000013D => Ok(Self::PcrReset),
-            0x0000013E => Ok(Self::SequenceComplete),
-            0x0000013F => Ok(Self::SetAlgorithmSet),
-            0x00000140 => Ok(Self::SetCommandCodeAuditStatus),
-            0x00000141 => Ok(Self::FieldUpgradeData),
-            0x00000142 => Ok(Self::IncrementalSelfTest),
-            0x00000143 => Ok(Self::SelfTest),
-            0x00000144 => Ok(Self::Startup),
-            0x00000145 => Ok(Self::Shutdown),
-            0x00000146 => Ok(Self::StirRandom),
-            0x00000147 => Ok(Self::ActivateCredential),
-            0x00000148 => Ok(Self::Certify),
-            0x00000149 => Ok(Self::PolicyNV),
-            0x0000014A => Ok(Self::CertifyCreation),
-            0x0000014B => Ok(Self::Duplicate),
-            0x0000014C => Ok(Self::GetTime),
-            0x0000014D => Ok(Self::GetSessionAuditDigest),
-            0x0000014E => Ok(Self::NvRead),
-            0x0000014F => Ok(Self::NvReadlock),
-            0x00000150 => Ok(Self::ObjectChangeAuth),
-            0x00000151 => Ok(Self::PolicySecret),
-            0x00000152 => Ok(Self::Rewrap),
-            0x00000153 => Ok(Self::Create),
-            0x00000154 => Ok(Self::EcdhZgen),
-            0x00000155 => Ok(Self::HMAC),
-            0x00000155 => Ok(Self::MAC),
-            0x00000156 => Ok(Self::Import),
-            0x00000157 => Ok(Self::Load),
-            0x00000158 => Ok(Self::Quote),
-            0x00000159 => Ok(Self::RsaDecrypt),
-            0x0000015B => Ok(Self::HmacStart),
-            0x0000015B => Ok(Self::MacStart),
-            0x0000015C => Ok(Self::SequenceUpdate),
-            0x0000015D => Ok(Self::Sign),
-            0x0000015E => Ok(Self::Unseal),
-            0x00000160 => Ok(Self::PolicySigned),
-            0x00000161 => Ok(Self::ContextLoad),
-            0x00000162 => Ok(Self::ContextSave),
-            0x00000163 => Ok(Self::EcdhKeygen),
-            0x00000164 => Ok(Self::EncryptDecrypt),
-            0x00000165 => Ok(Self::FlushContext),
-            0x00000167 => Ok(Self::LoadExternal),
-            0x00000168 => Ok(Self::MakeCredential),
-            0x00000169 => Ok(Self::NvReadpublic),
-            0x0000016A => Ok(Self::PolicyAuthorize),
-            0x0000016B => Ok(Self::PolicyAuthValue),
-            0x0000016C => Ok(Self::PolicyCommandCode),
-            0x0000016D => Ok(Self::PolicyCounterTimer),
-            0x0000016E => Ok(Self::PolicyCpHash),
-            0x0000016F => Ok(Self::PolicyLocality),
-            0x00000170 => Ok(Self::PolicyNameHash),
-            0x00000171 => Ok(Self::PolicyOR),
-            0x00000172 => Ok(Self::PolicyTicket),
-            0x00000173 => Ok(Self::ReadPublic),
-            0x00000174 => Ok(Self::RsaEncrypt),
-            0x00000176 => Ok(Self::StartAuthSession),
-            0x00000177 => Ok(Self::VerifySignature),
-            0x00000178 => Ok(Self::EccParameters),
-            0x00000179 => Ok(Self::FirmwareRead),
-            0x0000017A => Ok(Self::GetCapability),
-            0x0000017B => Ok(Self::GetRandom),
-            0x0000017C => Ok(Self::GetTestResult),
-            0x0000017D => Ok(Self::Hash),
-            0x0000017E => Ok(Self::PcrRead),
-            0x0000017F => Ok(Self::PolicyPCR),
-            0x00000180 => Ok(Self::PolicyRestart),
-            0x00000181 => Ok(Self::ReadClock),
-            0x00000182 => Ok(Self::PcrExtend),
-            0x00000183 => Ok(Self::PcrSetauthvalue),
-            0x00000184 => Ok(Self::NvCertify),
-            0x00000185 => Ok(Self::EventSequenceComplete),
-            0x00000186 => Ok(Self::HashSequenceStart),
-            0x00000187 => Ok(Self::PolicyPhysicalPresence),
-            0x00000188 => Ok(Self::PolicyDuplicationSelect),
-            0x00000189 => Ok(Self::PolicyGetDigest),
-            0x0000018A => Ok(Self::TestParms),
-            0x0000018B => Ok(Self::Commit),
-            0x0000018C => Ok(Self::PolicyPassword),
-            0x0000018D => Ok(Self::Zgen2phase),
-            0x0000018E => Ok(Self::EcEphemeral),
-            0x0000018F => Ok(Self::PolicyNvWritten),
-            0x00000190 => Ok(Self::PolicyTemplate),
-            0x00000191 => Ok(Self::CreateLoaded),
-            0x00000192 => Ok(Self::PolicyAuthorizeNV),
-            0x00000193 => Ok(Self::EncryptDecrypt2),
-            0x00000194 => Ok(Self::AcGetcapability),
-            0x00000195 => Ok(Self::AcSend),
-            0x00000196 => Ok(Self::PolicyAcSendselect),
-            0x00000197 => Ok(Self::CertifyX509),
-            0x00000198 => Ok(Self::ActSettimeout),
-            0x00000199 => Ok(Self::EccEncrypt),
-            0x0000019A => Ok(Self::EccDecrypt),
-            0x0000019A => Ok(Self::LAST),
-            0x20000000 => Ok(Self::CcVend),
-            CC_VEND+0x0000 => Ok(Self::VendorTcgTest),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    // WARNING: Vendor_TCG_Test has duplicate value 0x20000000 - using name + value pattern
+    Vendor_TCG_TestValue = 0x20000000 // Original value: CC_VEND+0x0000
 }
 
 impl fmt::Display for TPM_CC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::FIRST => write!(f, "FIRST"),
-            Self::NvUndefinespacespecial => write!(f, "NvUndefinespacespecial"),
+            Self::NV_UndefineSpaceSpecial => write!(f, "NV_UndefineSpaceSpecial"),
             Self::EvictControl => write!(f, "EvictControl"),
             Self::HierarchyControl => write!(f, "HierarchyControl"),
-            Self::NvUndefinespace => write!(f, "NvUndefinespace"),
+            Self::NV_UndefineSpace => write!(f, "NV_UndefineSpace"),
             Self::ChangeEPS => write!(f, "ChangeEPS"),
             Self::ChangePPS => write!(f, "ChangePPS"),
             Self::Clear => write!(f, "Clear"),
             Self::ClearControl => write!(f, "ClearControl"),
             Self::ClockSet => write!(f, "ClockSet"),
             Self::HierarchyChangeAuth => write!(f, "HierarchyChangeAuth"),
-            Self::NvDefinespace => write!(f, "NvDefinespace"),
-            Self::PcrAllocate => write!(f, "PcrAllocate"),
-            Self::PcrSetauthpolicy => write!(f, "PcrSetauthpolicy"),
-            Self::PpCommands => write!(f, "PpCommands"),
+            Self::NV_DefineSpace => write!(f, "NV_DefineSpace"),
+            Self::PCR_Allocate => write!(f, "PCR_Allocate"),
+            Self::PCR_SetAuthPolicy => write!(f, "PCR_SetAuthPolicy"),
+            Self::PP_Commands => write!(f, "PP_Commands"),
             Self::SetPrimaryPolicy => write!(f, "SetPrimaryPolicy"),
             Self::FieldUpgradeStart => write!(f, "FieldUpgradeStart"),
             Self::ClockRateAdjust => write!(f, "ClockRateAdjust"),
             Self::CreatePrimary => write!(f, "CreatePrimary"),
-            Self::NvGlobalwritelock => write!(f, "NvGlobalwritelock"),
+            Self::NV_GlobalWriteLock => write!(f, "NV_GlobalWriteLock"),
             Self::GetCommandAuditDigest => write!(f, "GetCommandAuditDigest"),
-            Self::NvIncrement => write!(f, "NvIncrement"),
-            Self::NvSetbits => write!(f, "NvSetbits"),
-            Self::NvExtend => write!(f, "NvExtend"),
-            Self::NvWrite => write!(f, "NvWrite"),
-            Self::NvWritelock => write!(f, "NvWritelock"),
+            Self::NV_Increment => write!(f, "NV_Increment"),
+            Self::NV_SetBits => write!(f, "NV_SetBits"),
+            Self::NV_Extend => write!(f, "NV_Extend"),
+            Self::NV_Write => write!(f, "NV_Write"),
+            Self::NV_WriteLock => write!(f, "NV_WriteLock"),
             Self::DictionaryAttackLockReset => write!(f, "DictionaryAttackLockReset"),
             Self::DictionaryAttackParameters => write!(f, "DictionaryAttackParameters"),
-            Self::NvChangeauth => write!(f, "NvChangeauth"),
-            Self::PcrEvent => write!(f, "PcrEvent"),
-            Self::PcrReset => write!(f, "PcrReset"),
+            Self::NV_ChangeAuth => write!(f, "NV_ChangeAuth"),
+            Self::PCR_Event => write!(f, "PCR_Event"),
+            Self::PCR_Reset => write!(f, "PCR_Reset"),
             Self::SequenceComplete => write!(f, "SequenceComplete"),
             Self::SetAlgorithmSet => write!(f, "SetAlgorithmSet"),
             Self::SetCommandCodeAuditStatus => write!(f, "SetCommandCodeAuditStatus"),
@@ -1147,33 +757,33 @@ impl fmt::Display for TPM_CC {
             Self::Duplicate => write!(f, "Duplicate"),
             Self::GetTime => write!(f, "GetTime"),
             Self::GetSessionAuditDigest => write!(f, "GetSessionAuditDigest"),
-            Self::NvRead => write!(f, "NvRead"),
-            Self::NvReadlock => write!(f, "NvReadlock"),
+            Self::NV_Read => write!(f, "NV_Read"),
+            Self::NV_ReadLock => write!(f, "NV_ReadLock"),
             Self::ObjectChangeAuth => write!(f, "ObjectChangeAuth"),
             Self::PolicySecret => write!(f, "PolicySecret"),
             Self::Rewrap => write!(f, "Rewrap"),
             Self::Create => write!(f, "Create"),
-            Self::EcdhZgen => write!(f, "EcdhZgen"),
+            Self::ECDH_ZGen => write!(f, "ECDH_ZGen"),
             Self::HMAC => write!(f, "HMAC"),
             Self::MAC => write!(f, "MAC"),
             Self::Import => write!(f, "Import"),
             Self::Load => write!(f, "Load"),
             Self::Quote => write!(f, "Quote"),
-            Self::RsaDecrypt => write!(f, "RsaDecrypt"),
-            Self::HmacStart => write!(f, "HmacStart"),
-            Self::MacStart => write!(f, "MacStart"),
+            Self::RSA_Decrypt => write!(f, "RSA_Decrypt"),
+            Self::HMAC_Start => write!(f, "HMAC_Start"),
+            Self::MAC_Start => write!(f, "MAC_Start"),
             Self::SequenceUpdate => write!(f, "SequenceUpdate"),
             Self::Sign => write!(f, "Sign"),
             Self::Unseal => write!(f, "Unseal"),
             Self::PolicySigned => write!(f, "PolicySigned"),
             Self::ContextLoad => write!(f, "ContextLoad"),
             Self::ContextSave => write!(f, "ContextSave"),
-            Self::EcdhKeygen => write!(f, "EcdhKeygen"),
+            Self::ECDH_KeyGen => write!(f, "ECDH_KeyGen"),
             Self::EncryptDecrypt => write!(f, "EncryptDecrypt"),
             Self::FlushContext => write!(f, "FlushContext"),
             Self::LoadExternal => write!(f, "LoadExternal"),
             Self::MakeCredential => write!(f, "MakeCredential"),
-            Self::NvReadpublic => write!(f, "NvReadpublic"),
+            Self::NV_ReadPublic => write!(f, "NV_ReadPublic"),
             Self::PolicyAuthorize => write!(f, "PolicyAuthorize"),
             Self::PolicyAuthValue => write!(f, "PolicyAuthValue"),
             Self::PolicyCommandCode => write!(f, "PolicyCommandCode"),
@@ -1184,22 +794,22 @@ impl fmt::Display for TPM_CC {
             Self::PolicyOR => write!(f, "PolicyOR"),
             Self::PolicyTicket => write!(f, "PolicyTicket"),
             Self::ReadPublic => write!(f, "ReadPublic"),
-            Self::RsaEncrypt => write!(f, "RsaEncrypt"),
+            Self::RSA_Encrypt => write!(f, "RSA_Encrypt"),
             Self::StartAuthSession => write!(f, "StartAuthSession"),
             Self::VerifySignature => write!(f, "VerifySignature"),
-            Self::EccParameters => write!(f, "EccParameters"),
+            Self::ECC_Parameters => write!(f, "ECC_Parameters"),
             Self::FirmwareRead => write!(f, "FirmwareRead"),
             Self::GetCapability => write!(f, "GetCapability"),
             Self::GetRandom => write!(f, "GetRandom"),
             Self::GetTestResult => write!(f, "GetTestResult"),
             Self::Hash => write!(f, "Hash"),
-            Self::PcrRead => write!(f, "PcrRead"),
+            Self::PCR_Read => write!(f, "PCR_Read"),
             Self::PolicyPCR => write!(f, "PolicyPCR"),
             Self::PolicyRestart => write!(f, "PolicyRestart"),
             Self::ReadClock => write!(f, "ReadClock"),
-            Self::PcrExtend => write!(f, "PcrExtend"),
-            Self::PcrSetauthvalue => write!(f, "PcrSetauthvalue"),
-            Self::NvCertify => write!(f, "NvCertify"),
+            Self::PCR_Extend => write!(f, "PCR_Extend"),
+            Self::PCR_SetAuthValue => write!(f, "PCR_SetAuthValue"),
+            Self::NV_Certify => write!(f, "NV_Certify"),
             Self::EventSequenceComplete => write!(f, "EventSequenceComplete"),
             Self::HashSequenceStart => write!(f, "HashSequenceStart"),
             Self::PolicyPhysicalPresence => write!(f, "PolicyPhysicalPresence"),
@@ -1208,91 +818,60 @@ impl fmt::Display for TPM_CC {
             Self::TestParms => write!(f, "TestParms"),
             Self::Commit => write!(f, "Commit"),
             Self::PolicyPassword => write!(f, "PolicyPassword"),
-            Self::Zgen2phase => write!(f, "Zgen2phase"),
-            Self::EcEphemeral => write!(f, "EcEphemeral"),
+            Self::ZGen_2Phase => write!(f, "ZGen_2Phase"),
+            Self::EC_Ephemeral => write!(f, "EC_Ephemeral"),
             Self::PolicyNvWritten => write!(f, "PolicyNvWritten"),
             Self::PolicyTemplate => write!(f, "PolicyTemplate"),
             Self::CreateLoaded => write!(f, "CreateLoaded"),
             Self::PolicyAuthorizeNV => write!(f, "PolicyAuthorizeNV"),
             Self::EncryptDecrypt2 => write!(f, "EncryptDecrypt2"),
-            Self::AcGetcapability => write!(f, "AcGetcapability"),
-            Self::AcSend => write!(f, "AcSend"),
-            Self::PolicyAcSendselect => write!(f, "PolicyAcSendselect"),
+            Self::AC_GetCapability => write!(f, "AC_GetCapability"),
+            Self::AC_Send => write!(f, "AC_Send"),
+            Self::Policy_AC_SendSelect => write!(f, "Policy_AC_SendSelect"),
             Self::CertifyX509 => write!(f, "CertifyX509"),
-            Self::ActSettimeout => write!(f, "ActSettimeout"),
-            Self::EccEncrypt => write!(f, "EccEncrypt"),
-            Self::EccDecrypt => write!(f, "EccDecrypt"),
+            Self::ACT_SetTimeout => write!(f, "ACT_SetTimeout"),
+            Self::ECC_Encrypt => write!(f, "ECC_Encrypt"),
+            Self::ECC_Decrypt => write!(f, "ECC_Decrypt"),
             Self::LAST => write!(f, "LAST"),
-            Self::CcVend => write!(f, "CcVend"),
-            Self::VendorTcgTest => write!(f, "VendorTcgTest"),
+            Self::CC_VEND => write!(f, "CC_VEND"),
+            Self::Vendor_TCG_Test => write!(f, "Vendor_TCG_Test"),
         }
-
     }
-
 }
 
 /// Architecturally defined constants
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum ImplementationConstants {
-    Ossl = 1,
-    Ltc = 2,
-    Msbn = 3,
-    Symcrypt = 4,
-    HashCount = 3,
-    MaxSymKeyBits = 256,
-    MaxSymKeyBytes = ((MAX_SYM_KEY_BITS + 7) / 8),
-    MaxSymBlockSize = 16,
-    MaxCapCc = TPM_CC:LAST,
-    MaxRsaKeyBytes = 256,
-    MaxAesKeyBytes = 32,
-    MaxEccKeyBytes = 48,
-    LabelMaxBuffer = 32,
-    TpmCapSize = 0x4 /* sizeof(UINT32) */,
-    MaxCapData = (Implementation:MAX_CAP_BUFFER-_TPM_CAP_SIZE-0x4) /* (MAX_CAP_BUFFER-_TPM_CAP_SIZE-sizeof(UINT32)) */,
-    MaxCapAlgs = (MAX_CAP_DATA / 0x6) /* (MAX_CAP_DATA / sizeof(TPMS_ALG_PROPERTY)) */,
-    MaxCapHandles = (MAX_CAP_DATA / 0x4) /* (MAX_CAP_DATA / sizeof(TPM_HANDLE)) */,
-    MaxTpmProperties = (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PROPERTY)) */,
-    MaxPcrProperties = (MAX_CAP_DATA / 0x5) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PCR_SELECT)) */,
-    MaxEccCurves = (MAX_CAP_DATA / 0x2) /* (MAX_CAP_DATA / sizeof(TPM_ECC_CURVE)) */,
-    MaxTaggedPolicies = (MAX_CAP_DATA / 0x46) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_POLICY)) */,
-    MaxAcCapabilities = (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_AC_OUTPUT)) */,
-    MaxActData = MAX_CAP_DATA / 0xC /* MAX_CAP_DATA / sizeof(TPMS_ACT_DATA) */
-}
-
-impl TryFrom<u32> for ImplementationConstants {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            1 => Ok(Self::Ossl),
-            2 => Ok(Self::Ltc),
-            3 => Ok(Self::Msbn),
-            4 => Ok(Self::Symcrypt),
-            3 => Ok(Self::HashCount),
-            256 => Ok(Self::MaxSymKeyBits),
-            ((MAX_SYM_KEY_BITS + 7) / 8) => Ok(Self::MaxSymKeyBytes),
-            16 => Ok(Self::MaxSymBlockSize),
-            TPM_CC:LAST => Ok(Self::MaxCapCc),
-            256 => Ok(Self::MaxRsaKeyBytes),
-            32 => Ok(Self::MaxAesKeyBytes),
-            48 => Ok(Self::MaxEccKeyBytes),
-            32 => Ok(Self::LabelMaxBuffer),
-            0x4 /* sizeof(UINT32) */ => Ok(Self::TpmCapSize),
-            (Implementation:MAX_CAP_BUFFER-_TPM_CAP_SIZE-0x4) /* (MAX_CAP_BUFFER-_TPM_CAP_SIZE-sizeof(UINT32)) */ => Ok(Self::MaxCapData),
-            (MAX_CAP_DATA / 0x6) /* (MAX_CAP_DATA / sizeof(TPMS_ALG_PROPERTY)) */ => Ok(Self::MaxCapAlgs),
-            (MAX_CAP_DATA / 0x4) /* (MAX_CAP_DATA / sizeof(TPM_HANDLE)) */ => Ok(Self::MaxCapHandles),
-            (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PROPERTY)) */ => Ok(Self::MaxTpmProperties),
-            (MAX_CAP_DATA / 0x5) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PCR_SELECT)) */ => Ok(Self::MaxPcrProperties),
-            (MAX_CAP_DATA / 0x2) /* (MAX_CAP_DATA / sizeof(TPM_ECC_CURVE)) */ => Ok(Self::MaxEccCurves),
-            (MAX_CAP_DATA / 0x46) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_POLICY)) */ => Ok(Self::MaxTaggedPolicies),
-            (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_AC_OUTPUT)) */ => Ok(Self::MaxAcCapabilities),
-            MAX_CAP_DATA / 0xC /* MAX_CAP_DATA / sizeof(TPMS_ACT_DATA) */ => Ok(Self::MaxActData),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    Ossl = 0x1, // Original value: 1
+    Ltc = 0x2, // Original value: 2
+    Msbn = 0x3, // Original value: 3
+    Symcrypt = 0x4, // Original value: 4
+    // WARNING: HASH_COUNT has duplicate value 0x3 - using name + value pattern
+    HASH_COUNTValue = 0x3, // Original value: 3
+    MAX_SYM_KEY_BITS = 0x100, // Original value: 256
+    MAX_SYM_KEY_BYTES = 0x20, // Original value: ((MAX_SYM_KEY_BITS + 7) / 8)
+    MAX_SYM_BLOCK_SIZE = 0x10, // Original value: 16
+    MAX_CAP_CC = 0x19A, // Original value: TPM_CC::LAST
+    // WARNING: MAX_RSA_KEY_BYTES has duplicate value 0x100 - using name + value pattern
+    MAX_RSA_KEY_BYTESValue = 0x100, // Original value: 256
+    // WARNING: MAX_AES_KEY_BYTES has duplicate value 0x20 - using name + value pattern
+    MAX_AES_KEY_BYTESValue = 0x20, // Original value: 32
+    MAX_ECC_KEY_BYTES = 0x30, // Original value: 48
+    // WARNING: LABEL_MAX_BUFFER has duplicate value 0x20 - using name + value pattern
+    LABEL_MAX_BUFFERValue = 0x20, // Original value: 32
+    // WARNING: _TPM_CAP_SIZE has duplicate value 0x4 - using name + value pattern
+    _TPM_CAP_SIZEValue = 0x4, // Original value: 0x4 /* sizeof(UINT32) */
+    MAX_CAP_DATA = 0x3F8, // Original value: (Implementation::MAX_CAP_BUFFER-_TPM_CAP_SIZE-0x4) /* (MAX_CAP_BUFFER-_TPM_CAP_SIZE-sizeof(UINT32)) */
+    MAX_CAP_ALGS = 0xA9, // Original value: (MAX_CAP_DATA / 0x6) /* (MAX_CAP_DATA / sizeof(TPMS_ALG_PROPERTY)) */
+    MAX_CAP_HANDLES = 0xFE, // Original value: (MAX_CAP_DATA / 0x4) /* (MAX_CAP_DATA / sizeof(TPM_HANDLE)) */
+    MAX_TPM_PROPERTIES = 0x7F, // Original value: (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PROPERTY)) */
+    MAX_PCR_PROPERTIES = 0xCB, // Original value: (MAX_CAP_DATA / 0x5) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PCR_SELECT)) */
+    MAX_ECC_CURVES = 0x1FC, // Original value: (MAX_CAP_DATA / 0x2) /* (MAX_CAP_DATA / sizeof(TPM_ECC_CURVE)) */
+    MAX_TAGGED_POLICIES = 0xE, // Original value: (MAX_CAP_DATA / 0x46) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_POLICY)) */
+    // WARNING: MAX_AC_CAPABILITIES has duplicate value 0x7F - using name + value pattern
+    MAX_AC_CAPABILITIESValue = 0x7F, // Original value: (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_AC_OUTPUT)) */
+    MAX_ACT_DATA = 0x54 // Original value: MAX_CAP_DATA / 0xC /* MAX_CAP_DATA / sizeof(TPMS_ACT_DATA) */
 }
 
 impl fmt::Display for ImplementationConstants {
@@ -1302,409 +881,412 @@ impl fmt::Display for ImplementationConstants {
             Self::Ltc => write!(f, "Ltc"),
             Self::Msbn => write!(f, "Msbn"),
             Self::Symcrypt => write!(f, "Symcrypt"),
-            Self::HashCount => write!(f, "HashCount"),
-            Self::MaxSymKeyBits => write!(f, "MaxSymKeyBits"),
-            Self::MaxSymKeyBytes => write!(f, "MaxSymKeyBytes"),
-            Self::MaxSymBlockSize => write!(f, "MaxSymBlockSize"),
-            Self::MaxCapCc => write!(f, "MaxCapCc"),
-            Self::MaxRsaKeyBytes => write!(f, "MaxRsaKeyBytes"),
-            Self::MaxAesKeyBytes => write!(f, "MaxAesKeyBytes"),
-            Self::MaxEccKeyBytes => write!(f, "MaxEccKeyBytes"),
-            Self::LabelMaxBuffer => write!(f, "LabelMaxBuffer"),
-            Self::TpmCapSize => write!(f, "TpmCapSize"),
-            Self::MaxCapData => write!(f, "MaxCapData"),
-            Self::MaxCapAlgs => write!(f, "MaxCapAlgs"),
-            Self::MaxCapHandles => write!(f, "MaxCapHandles"),
-            Self::MaxTpmProperties => write!(f, "MaxTpmProperties"),
-            Self::MaxPcrProperties => write!(f, "MaxPcrProperties"),
-            Self::MaxEccCurves => write!(f, "MaxEccCurves"),
-            Self::MaxTaggedPolicies => write!(f, "MaxTaggedPolicies"),
-            Self::MaxAcCapabilities => write!(f, "MaxAcCapabilities"),
-            Self::MaxActData => write!(f, "MaxActData"),
+            Self::HASH_COUNT => write!(f, "HASH_COUNT"),
+            Self::MAX_SYM_KEY_BITS => write!(f, "MAX_SYM_KEY_BITS"),
+            Self::MAX_SYM_KEY_BYTES => write!(f, "MAX_SYM_KEY_BYTES"),
+            Self::MAX_SYM_BLOCK_SIZE => write!(f, "MAX_SYM_BLOCK_SIZE"),
+            Self::MAX_CAP_CC => write!(f, "MAX_CAP_CC"),
+            Self::MAX_RSA_KEY_BYTES => write!(f, "MAX_RSA_KEY_BYTES"),
+            Self::MAX_AES_KEY_BYTES => write!(f, "MAX_AES_KEY_BYTES"),
+            Self::MAX_ECC_KEY_BYTES => write!(f, "MAX_ECC_KEY_BYTES"),
+            Self::LABEL_MAX_BUFFER => write!(f, "LABEL_MAX_BUFFER"),
+            Self::_TPM_CAP_SIZE => write!(f, "_TPM_CAP_SIZE"),
+            Self::MAX_CAP_DATA => write!(f, "MAX_CAP_DATA"),
+            Self::MAX_CAP_ALGS => write!(f, "MAX_CAP_ALGS"),
+            Self::MAX_CAP_HANDLES => write!(f, "MAX_CAP_HANDLES"),
+            Self::MAX_TPM_PROPERTIES => write!(f, "MAX_TPM_PROPERTIES"),
+            Self::MAX_PCR_PROPERTIES => write!(f, "MAX_PCR_PROPERTIES"),
+            Self::MAX_ECC_CURVES => write!(f, "MAX_ECC_CURVES"),
+            Self::MAX_TAGGED_POLICIES => write!(f, "MAX_TAGGED_POLICIES"),
+            Self::MAX_AC_CAPABILITIES => write!(f, "MAX_AC_CAPABILITIES"),
+            Self::MAX_ACT_DATA => write!(f, "MAX_ACT_DATA"),
         }
-
     }
-
 }
 
 /// In general, response codes defined in TPM 2.0 Part 2 will be unmarshaling errors and
 /// will have the F (format) bit SET. Codes that are unique to TPM 2.0 Part 3 will have
 /// the F bit CLEAR but the V (version) attribute will be SET to indicate that it is a TPM
 /// 2.0 response code. See Response Code Details in TPM 2.0 Part 1.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_RC {
-    SUCCESS = 0x000,
+    SUCCESS = 0x0, // Original value: 0x000
 
     /// Defined for compatibility with TPM 1.2
-    BadTag = 0x01E,
+    BAD_TAG = 0x1E, // Original value: 0x01E
 
     /// Set for all format 0 response codes
-    RcVer1 = 0x100,
+    RC_VER1 = 0x100,
 
     /// TPM not initialized by TPM2_Startup or already initialized
-    INITIALIZE = RC_VER1 + 0x000,
+    // WARNING: INITIALIZE has duplicate value 0x100 - using name + value pattern
+    INITIALIZEValue = 0x100, // Original value: RC_VER1 + 0x000
 
     /// Commands not being accepted because of a TPM failure
     /// NOTE This may be returned by TPM2_GetTestResult() as the testResult parameter.
-    FAILURE = RC_VER1 + 0x001,
+    FAILURE = 0x101, // Original value: RC_VER1 + 0x001
 
     /// Improper use of a sequence handle
-    SEQUENCE = RC_VER1 + 0x003,
+    SEQUENCE = 0x103, // Original value: RC_VER1 + 0x003
 
     /// Not currently used
-    PRIVATE = RC_VER1 + 0x00B,
+    PRIVATE = 0x10B, // Original value: RC_VER1 + 0x00B
 
     /// Not currently used
-    HMAC = RC_VER1 + 0x019,
+    HMAC = 0x119, // Original value: RC_VER1 + 0x019
 
     /// The command is disabled
-    DISABLED = RC_VER1 + 0x020,
+    DISABLED = 0x120, // Original value: RC_VER1 + 0x020
 
     /// Command failed because audit sequence required exclusivity
-    EXCLUSIVE = RC_VER1 + 0x021,
+    EXCLUSIVE = 0x121, // Original value: RC_VER1 + 0x021
 
     /// Authorization handle is not correct for command
-    AuthType = RC_VER1 + 0x024,
+    AUTH_TYPE = 0x124, // Original value: RC_VER1 + 0x024
 
     /// Command requires an authorization session for handle and it is not present.
-    AuthMissing = RC_VER1 + 0x025,
+    AUTH_MISSING = 0x125, // Original value: RC_VER1 + 0x025
 
     /// Policy failure in math operation or an invalid authPolicy value
-    POLICY = RC_VER1 + 0x026,
+    POLICY = 0x126, // Original value: RC_VER1 + 0x026
 
     /// PCR check fail
-    PCR = RC_VER1 + 0x027,
+    PCR = 0x127, // Original value: RC_VER1 + 0x027
 
     /// PCR have changed since checked.
-    PcrChanged = RC_VER1 + 0x028,
+    PCR_CHANGED = 0x128, // Original value: RC_VER1 + 0x028
 
     /// For all commands other than TPM2_FieldUpgradeData(), this code indicates that the TPM
     /// is in field upgrade mode; for TPM2_FieldUpgradeData(), this code indicates that the
     /// TPM is not in field upgrade mode
-    UPGRADE = RC_VER1 + 0x02D,
+    UPGRADE = 0x12D, // Original value: RC_VER1 + 0x02D
 
     /// Context ID counter is at maximum.
-    TooManyContexts = RC_VER1 + 0x02E,
+    TOO_MANY_CONTEXTS = 0x12E, // Original value: RC_VER1 + 0x02E
 
     /// AuthValue or authPolicy is not available for selected entity.
-    AuthUnavailable = RC_VER1 + 0x02F,
+    AUTH_UNAVAILABLE = 0x12F, // Original value: RC_VER1 + 0x02F
 
     /// A _TPM_Init and Startup(CLEAR) is required before the TPM can resume operation.
-    REBOOT = RC_VER1 + 0x030,
+    REBOOT = 0x130, // Original value: RC_VER1 + 0x030
 
     /// The protection algorithms (hash and symmetric) are not reasonably balanced. The digest
     /// size of the hash must be larger than the key size of the symmetric algorithm.
-    UNBALANCED = RC_VER1 + 0x031,
+    UNBALANCED = 0x131, // Original value: RC_VER1 + 0x031
 
     /// Command commandSize value is inconsistent with contents of the command buffer; either
     /// the size is not the same as the octets loaded by the hardware interface layer or the
     /// value is not large enough to hold a command header
-    CommandSize = RC_VER1 + 0x042,
+    COMMAND_SIZE = 0x142, // Original value: RC_VER1 + 0x042
 
     /// Command code not supported
-    CommandCode = RC_VER1 + 0x043,
+    COMMAND_CODE = 0x143, // Original value: RC_VER1 + 0x043
 
     /// The value of authorizationSize is out of range or the number of octets in the
     /// Authorization Area is greater than required
-    AUTHSIZE = RC_VER1 + 0x044,
+    AUTHSIZE = 0x144, // Original value: RC_VER1 + 0x044
 
     /// Use of an authorization session with a context command or another command that cannot
     /// have an authorization session.
-    AuthContext = RC_VER1 + 0x045,
+    AUTH_CONTEXT = 0x145, // Original value: RC_VER1 + 0x045
 
     /// NV offset+size is out of range.
-    NvRange = RC_VER1 + 0x046,
+    NV_RANGE = 0x146, // Original value: RC_VER1 + 0x046
 
     /// Requested allocation size is larger than allowed.
-    NvSize = RC_VER1 + 0x047,
+    NV_SIZE = 0x147, // Original value: RC_VER1 + 0x047
 
     /// NV access locked.
-    NvLocked = RC_VER1 + 0x048,
+    NV_LOCKED = 0x148, // Original value: RC_VER1 + 0x048
 
     /// NV access authorization fails in command actions (this failure does not affect lockout.action)
-    NvAuthorization = RC_VER1 + 0x049,
+    NV_AUTHORIZATION = 0x149, // Original value: RC_VER1 + 0x049
 
     /// An NV Index is used before being initialized or the state saved by
     /// TPM2_Shutdown(STATE) could not be restored
-    NvUninitialized = RC_VER1 + 0x04A,
+    NV_UNINITIALIZED = 0x14A, // Original value: RC_VER1 + 0x04A
 
     /// Insufficient space for NV allocation
-    NvSpace = RC_VER1 + 0x04B,
+    NV_SPACE = 0x14B, // Original value: RC_VER1 + 0x04B
 
     /// NV Index or persistent object already defined
-    NvDefined = RC_VER1 + 0x04C,
+    NV_DEFINED = 0x14C, // Original value: RC_VER1 + 0x04C
 
     /// Context in TPM2_ContextLoad() is not valid
-    BadContext = RC_VER1 + 0x050,
+    BAD_CONTEXT = 0x150, // Original value: RC_VER1 + 0x050
 
     /// CpHash value already set or not correct for use
-    CPHASH = RC_VER1 + 0x051,
+    CPHASH = 0x151, // Original value: RC_VER1 + 0x051
 
     /// Handle for parent is not a valid parent
-    PARENT = RC_VER1 + 0x052,
+    PARENT = 0x152, // Original value: RC_VER1 + 0x052
 
     /// Some function needs testing.
-    NeedsTest = RC_VER1 + 0x053,
+    NEEDS_TEST = 0x153, // Original value: RC_VER1 + 0x053
 
     /// Returned when an internal function cannot process a request due to an unspecified
     /// problem. This code is usually related to invalid parameters that are not properly
     /// filtered by the input unmarshaling code.
-    NoResult = RC_VER1 + 0x054,
+    NO_RESULT = 0x154, // Original value: RC_VER1 + 0x054
 
     /// The sensitive area did not unmarshal correctly after decryption this code is used in
     /// lieu of the other unmarshaling errors so that an attacker cannot determine where the
     /// unmarshaling error occurred
-    SENSITIVE = RC_VER1 + 0x055,
+    SENSITIVE = 0x155, // Original value: RC_VER1 + 0x055
 
     /// Largest version 1 code that is not a warning
-    RcMaxFm0 = RC_VER1 + 0x07F,
+    RC_MAX_FM0 = 0x17F, // Original value: RC_VER1 + 0x07F
 
     /// This bit is SET in all format 1 response codes
     /// The codes in this group may have a value added to them to indicate the handle,
     /// session, or parameter to which they apply.
-    RcFmt1 = 0x080,
+    RC_FMT1 = 0x80, // Original value: 0x080
 
     /// Asymmetric algorithm not supported or not correct
-    ASYMMETRIC = RC_FMT1 + 0x001,
+    ASYMMETRIC = 0x81, // Original value: RC_FMT1 + 0x001
 
     /// Inconsistent attributes
-    ATTRIBUTES = RC_FMT1 + 0x002,
+    ATTRIBUTES = 0x82, // Original value: RC_FMT1 + 0x002
 
     /// Hash algorithm not supported or not appropriate
-    HASH = RC_FMT1 + 0x003,
+    HASH = 0x83, // Original value: RC_FMT1 + 0x003
 
     /// Value is out of range or is not correct for the context
-    VALUE = RC_FMT1 + 0x004,
+    VALUE = 0x84, // Original value: RC_FMT1 + 0x004
 
     /// Hierarchy is not enabled or is not correct for the use
-    HIERARCHY = RC_FMT1 + 0x005,
+    HIERARCHY = 0x85, // Original value: RC_FMT1 + 0x005
 
     /// Key size is not supported
-    KeySize = RC_FMT1 + 0x007,
+    KEY_SIZE = 0x87, // Original value: RC_FMT1 + 0x007
 
     /// Mask generation function not supported
-    MGF = RC_FMT1 + 0x008,
+    MGF = 0x88, // Original value: RC_FMT1 + 0x008
 
     /// Mode of operation not supported
-    MODE = RC_FMT1 + 0x009,
+    MODE = 0x89, // Original value: RC_FMT1 + 0x009
 
     /// The type of the value is not appropriate for the use
-    TYPE = RC_FMT1 + 0x00A,
+    TYPE = 0x8A, // Original value: RC_FMT1 + 0x00A
 
     /// The handle is not correct for the use
-    HANDLE = RC_FMT1 + 0x00B,
+    HANDLE = 0x8B, // Original value: RC_FMT1 + 0x00B
 
     /// Unsupported key derivation function or function not appropriate for use
-    KDF = RC_FMT1 + 0x00C,
+    KDF = 0x8C, // Original value: RC_FMT1 + 0x00C
 
     /// Value was out of allowed range.
-    RANGE = RC_FMT1 + 0x00D,
+    RANGE = 0x8D, // Original value: RC_FMT1 + 0x00D
 
     /// The authorization HMAC check failed and DA counter incremented
-    AuthFail = RC_FMT1 + 0x00E,
+    AUTH_FAIL = 0x8E, // Original value: RC_FMT1 + 0x00E
 
     /// Invalid nonce size or nonce value mismatch
-    NONCE = RC_FMT1 + 0x00F,
+    NONCE = 0x8F, // Original value: RC_FMT1 + 0x00F
 
     /// Authorization requires assertion of PP
-    PP = RC_FMT1 + 0x010,
+    PP = 0x90, // Original value: RC_FMT1 + 0x010
 
     /// Unsupported or incompatible scheme
-    SCHEME = RC_FMT1 + 0x012,
+    SCHEME = 0x92, // Original value: RC_FMT1 + 0x012
 
     /// Structure is the wrong size
-    SIZE = RC_FMT1 + 0x015,
+    SIZE = 0x95, // Original value: RC_FMT1 + 0x015
 
     /// Unsupported symmetric algorithm or key size, or not appropriate for instance
-    SYMMETRIC = RC_FMT1 + 0x016,
+    SYMMETRIC = 0x96, // Original value: RC_FMT1 + 0x016
 
     /// Incorrect structure tag
-    TAG = RC_FMT1 + 0x017,
+    TAG = 0x97, // Original value: RC_FMT1 + 0x017
 
     /// Union selector is incorrect
-    SELECTOR = RC_FMT1 + 0x018,
+    SELECTOR = 0x98, // Original value: RC_FMT1 + 0x018
 
     /// The TPM was unable to unmarshal a value because there were not enough octets in the
     /// input buffer
-    INSUFFICIENT = RC_FMT1 + 0x01A,
+    INSUFFICIENT = 0x9A, // Original value: RC_FMT1 + 0x01A
 
     /// The signature is not valid
-    SIGNATURE = RC_FMT1 + 0x01B,
+    SIGNATURE = 0x9B, // Original value: RC_FMT1 + 0x01B
 
     /// Key fields are not compatible with the selected use
-    KEY = RC_FMT1 + 0x01C,
+    KEY = 0x9C, // Original value: RC_FMT1 + 0x01C
 
     /// A policy check failed
-    PolicyFail = RC_FMT1 + 0x01D,
+    POLICY_FAIL = 0x9D, // Original value: RC_FMT1 + 0x01D
 
     /// Integrity check failed
-    INTEGRITY = RC_FMT1 + 0x01F,
+    INTEGRITY = 0x9F, // Original value: RC_FMT1 + 0x01F
 
     /// Invalid ticket
-    TICKET = RC_FMT1 + 0x020,
+    TICKET = 0xA0, // Original value: RC_FMT1 + 0x020
 
     /// Reserved bits not set to zero as required
-    ReservedBits = RC_FMT1 + 0x021,
+    RESERVED_BITS = 0xA1, // Original value: RC_FMT1 + 0x021
 
     /// Authorization failure without DA implications
-    BadAuth = RC_FMT1 + 0x022,
+    BAD_AUTH = 0xA2, // Original value: RC_FMT1 + 0x022
 
     /// The policy has expired
-    EXPIRED = RC_FMT1 + 0x023,
+    EXPIRED = 0xA3, // Original value: RC_FMT1 + 0x023
 
     /// The commandCode in the policy is not the commandCode of the command or the command
     /// code in a policy command references a command that is not implemented
-    PolicyCc = RC_FMT1 + 0x024,
+    POLICY_CC = 0xA4, // Original value: RC_FMT1 + 0x024
 
     /// Public and sensitive portions of an object are not cryptographically bound
-    BINDING = RC_FMT1 + 0x025,
+    BINDING = 0xA5, // Original value: RC_FMT1 + 0x025
 
     /// Curve not supported
-    CURVE = RC_FMT1 + 0x026,
+    CURVE = 0xA6, // Original value: RC_FMT1 + 0x026
 
     /// Point is not on the required curve.
-    EccPoint = RC_FMT1 + 0x027,
+    ECC_POINT = 0xA7, // Original value: RC_FMT1 + 0x027
 
     /// Set for warning response codes
-    RcWarn = 0x900,
+    RC_WARN = 0x900,
 
     /// Gap for context ID is too large
-    ContextGap = RC_WARN + 0x001,
+    CONTEXT_GAP = 0x901, // Original value: RC_WARN + 0x001
 
     /// Out of memory for object contexts
-    ObjectMemory = RC_WARN + 0x002,
+    OBJECT_MEMORY = 0x902, // Original value: RC_WARN + 0x002
 
     /// Out of memory for session contexts
-    SessionMemory = RC_WARN + 0x003,
+    SESSION_MEMORY = 0x903, // Original value: RC_WARN + 0x003
 
     /// Out of shared object/session memory or need space for internal operations
-    MEMORY = RC_WARN + 0x004,
+    MEMORY = 0x904, // Original value: RC_WARN + 0x004
 
     /// Out of session handles a session must be flushed before a new session may be created
-    SessionHandles = RC_WARN + 0x005,
+    SESSION_HANDLES = 0x905, // Original value: RC_WARN + 0x005
 
     /// Out of object handles the handle space for objects is depleted and a reboot is required
     /// NOTE 1 This cannot occur on the reference implementation.
     /// NOTE 2 There is no reason why an implementation would implement a design that would
     /// deplete handle space. Platform specifications are encouraged to forbid it.
-    ObjectHandles = RC_WARN + 0x006,
+    OBJECT_HANDLES = 0x906, // Original value: RC_WARN + 0x006
 
     /// Bad locality
-    LOCALITY = RC_WARN + 0x007,
+    LOCALITY = 0x907, // Original value: RC_WARN + 0x007
 
     /// The TPM has suspended operation on the command; forward progress was made and the
     /// command may be retried
     /// See TPM 2.0 Part 1, Multi-tasking.
     /// NOTE This cannot occur on the reference implementation.
-    YIELDED = RC_WARN + 0x008,
+    YIELDED = 0x908, // Original value: RC_WARN + 0x008
 
     /// The command was canceled
-    CANCELED = RC_WARN + 0x009,
+    CANCELED = 0x909, // Original value: RC_WARN + 0x009
 
     /// TPM is performing self-tests
-    TESTING = RC_WARN + 0x00A,
+    TESTING = 0x90A, // Original value: RC_WARN + 0x00A
 
     /// The 1st handle in the handle area references a transient object or session that is not
     /// loaded
-    ReferenceH0 = RC_WARN + 0x010,
+    REFERENCE_H0 = 0x910, // Original value: RC_WARN + 0x010
 
     /// The 2nd handle in the handle area references a transient object or session that is not
     /// loaded
-    ReferenceH1 = RC_WARN + 0x011,
+    REFERENCE_H1 = 0x911, // Original value: RC_WARN + 0x011
 
     /// The 3rd handle in the handle area references a transient object or session that is not
     /// loaded
-    ReferenceH2 = RC_WARN + 0x012,
+    REFERENCE_H2 = 0x912, // Original value: RC_WARN + 0x012
 
     /// The 4th handle in the handle area references a transient object or session that is not
     /// loaded
-    ReferenceH3 = RC_WARN + 0x013,
+    REFERENCE_H3 = 0x913, // Original value: RC_WARN + 0x013
 
     /// The 5th handle in the handle area references a transient object or session that is not
     /// loaded
-    ReferenceH4 = RC_WARN + 0x014,
+    REFERENCE_H4 = 0x914, // Original value: RC_WARN + 0x014
 
     /// The 6th handle in the handle area references a transient object or session that is not
     /// loaded
-    ReferenceH5 = RC_WARN + 0x015,
+    REFERENCE_H5 = 0x915, // Original value: RC_WARN + 0x015
 
     /// The 7th handle in the handle area references a transient object or session that is not
     /// loaded
-    ReferenceH6 = RC_WARN + 0x016,
+    REFERENCE_H6 = 0x916, // Original value: RC_WARN + 0x016
 
     /// The 1st authorization session handle references a session that is not loaded
-    ReferenceS0 = RC_WARN + 0x018,
+    REFERENCE_S0 = 0x918, // Original value: RC_WARN + 0x018
 
     /// The 2nd authorization session handle references a session that is not loaded
-    ReferenceS1 = RC_WARN + 0x019,
+    REFERENCE_S1 = 0x919, // Original value: RC_WARN + 0x019
 
     /// The 3rd authorization session handle references a session that is not loaded
-    ReferenceS2 = RC_WARN + 0x01A,
+    REFERENCE_S2 = 0x91A, // Original value: RC_WARN + 0x01A
 
     /// The 4th authorization session handle references a session that is not loaded
-    ReferenceS3 = RC_WARN + 0x01B,
+    REFERENCE_S3 = 0x91B, // Original value: RC_WARN + 0x01B
 
     /// The 5th session handle references a session that is not loaded
-    ReferenceS4 = RC_WARN + 0x01C,
+    REFERENCE_S4 = 0x91C, // Original value: RC_WARN + 0x01C
 
     /// The 6th session handle references a session that is not loaded
-    ReferenceS5 = RC_WARN + 0x01D,
+    REFERENCE_S5 = 0x91D, // Original value: RC_WARN + 0x01D
 
     /// The 7th authorization session handle references a session that is not loaded
-    ReferenceS6 = RC_WARN + 0x01E,
+    REFERENCE_S6 = 0x91E, // Original value: RC_WARN + 0x01E
 
     /// The TPM is rate-limiting accesses to prevent wearout of NV
-    NvRate = RC_WARN + 0x020,
+    NV_RATE = 0x920, // Original value: RC_WARN + 0x020
 
     /// Authorizations for objects subject to DA protection are not allowed at this time
     /// because the TPM is in DA lockout mode
-    LOCKOUT = RC_WARN + 0x021,
+    LOCKOUT = 0x921, // Original value: RC_WARN + 0x021
 
     /// The TPM was not able to start the command
-    RETRY = RC_WARN + 0x022,
+    RETRY = 0x922, // Original value: RC_WARN + 0x022
 
     /// The command may require writing of NV and NV is not current accessible
-    NvUnavailable = RC_WARN + 0x023,
+    NV_UNAVAILABLE = 0x923, // Original value: RC_WARN + 0x023
 
     /// This value is reserved and shall not be returned by the TPM
-    NotUsed = RC_WARN + 0x7F,
+    NOT_USED = 0x97F, // Original value: RC_WARN + 0x7F
 
     /// Add to a handle-related error
-    H = 0x000,
+    // WARNING: H has duplicate value 0x0 - using name + value pattern
+    HValue = 0x0, // Original value: 0x000
 
     /// Add to a parameter-related error
-    P = 0x040,
+    P = 0x40, // Original value: 0x040
 
     /// Add to a session-related error
     S = 0x800,
 
     /// Add to a parameter-, handle-, or session-related error
-    1 = 0x100,
+    // WARNING: _1 has duplicate value 0x100 - using name + value pattern
+    _1Value = 0x100,
 
     /// Add to a parameter-, handle-, or session-related error
-    2 = 0x200,
+    _2 = 0x200,
 
     /// Add to a parameter-, handle-, or session-related error
-    3 = 0x300,
+    _3 = 0x300,
 
     /// Add to a parameter-, handle-, or session-related error
-    4 = 0x400,
+    _4 = 0x400,
 
     /// Add to a parameter-, handle-, or session-related error
-    5 = 0x500,
+    _5 = 0x500,
 
     /// Add to a parameter-, handle-, or session-related error
-    6 = 0x600,
+    _6 = 0x600,
 
     /// Add to a parameter-, handle-, or session-related error
-    7 = 0x700,
+    _7 = 0x700,
 
     /// Add to a parameter-related error
-    8 = 0x800,
+    // WARNING: _8 has duplicate value 0x800 - using name + value pattern
+    _8Value = 0x800,
 
     /// Add to a parameter-related error
-    9 = 0x900,
+    // WARNING: _9 has duplicate value 0x900 - using name + value pattern
+    _9Value = 0x900,
 
     /// Add to a parameter-related error
     A = 0xA00,
@@ -1725,296 +1307,127 @@ pub enum TPM_RC {
     F = 0xF00,
 
     /// Number mask
-    NMask = 0xF00,
+    // WARNING: N_MASK has duplicate value 0xF00 - using name + value pattern
+    N_MASKValue = 0xF00,
 
     /// Response buffer returned by the TPM is too short
-    TssTcpBadHandshakeResp = 0x40280001,
+    TSS_TCP_BAD_HANDSHAKE_RESP = 0x40280001,
 
     /// Too old TCP server version
-    TssTcpServerTooOld = 0x40280002,
+    TSS_TCP_SERVER_TOO_OLD = 0x40280002,
 
     /// Bad ack from the TCP end point
-    TssTcpBadAck = 0x40280003,
+    TSS_TCP_BAD_ACK = 0x40280003,
 
     /// Wrong length of the response buffer returned by the TPM
-    TssTcpBadRespLen = 0x40280004,
+    TSS_TCP_BAD_RESP_LEN = 0x40280004,
 
     /// TPM2_Startup returned unexpected response code
-    TssTcpUnexpectedStartupResp = 0x40280005,
+    TSS_TCP_UNEXPECTED_STARTUP_RESP = 0x40280005,
 
     /// Invalid size tag in the TPM response TCP packet
-    TssTcpInvalidSizeTag = 0x40280006,
+    TSS_TCP_INVALID_SIZE_TAG = 0x40280006,
 
     /// TPM over TCP device is not connected
-    TssTcpDisconnected = 0x40280007,
+    TSS_TCP_DISCONNECTED = 0x40280007,
 
     /// General TPM command dispatch failure
-    TssDispatchFailed = 0x40280010,
+    TSS_DISPATCH_FAILED = 0x40280010,
 
     /// Sending data to TPM failed
-    TssSendOpFailed = 0x40280011,
+    TSS_SEND_OP_FAILED = 0x40280011,
 
     /// Response buffer returned by the TPM is too short
-    TssRespBufTooShort = 0x40280021,
+    TSS_RESP_BUF_TOO_SHORT = 0x40280021,
 
     /// Invalid tag in the response buffer returned by the TPM
-    TssRespBufInvalidSessionTag = 0x40280022,
+    TSS_RESP_BUF_INVALID_SESSION_TAG = 0x40280022,
 
     /// Inconsistent TPM response parameters size
-    TssRespBufInvalidSize = 0x40280023,
+    TSS_RESP_BUF_INVALID_SIZE = 0x40280023,
 
     /// Windows TBS error TPM_E_COMMAND_BLOCKED
-    TbsCommandBlocked = 0x80280400,
+    TBS_COMMAND_BLOCKED = 0x80280400,
 
     /// Windows TBS error TPM_E_INVALID_HANDLE
-    TbsInvalidHandle = 0x80280401,
+    TBS_INVALID_HANDLE = 0x80280401,
 
     /// Windows TBS error TPM_E_DUPLICATE_VHANDLE
-    TbsDuplicateVHandle = 0x80280402,
+    TBS_DUPLICATE_V_HANDLE = 0x80280402,
 
     /// Windows TBS error TPM_E_EMBEDDED_COMMAND_BLOCKED
-    TbsEmbeddedCommandBlocked = 0x80280403,
+    TBS_EMBEDDED_COMMAND_BLOCKED = 0x80280403,
 
     /// Windows TBS error TPM_E_EMBEDDED_COMMAND_UNSUPPORTED
-    TbsEmbeddedCommandUnsupported = 0x80280404,
+    TBS_EMBEDDED_COMMAND_UNSUPPORTED = 0x80280404,
 
     /// Windows TBS returned success but empty response buffer
-    TbsUnknownError = 0x80284000,
+    TBS_UNKNOWN_ERROR = 0x80284000,
 
     /// Windows TBS error TBS_E_INTERNAL_ERROR
-    TbsInternalError = 0x80284001,
+    TBS_INTERNAL_ERROR = 0x80284001,
 
     /// Windows TBS error TBS_E_BAD_PARAMETER
-    TbsBadParameter = 0x80284002,
+    TBS_BAD_PARAMETER = 0x80284002,
 
     /// Windows TBS error TBS_E_INVALID_OUTPUT_POINTER
-    TbsInvalidOutputPointer = 0x80284003,
+    TBS_INVALID_OUTPUT_POINTER = 0x80284003,
 
     /// Windows TBS error TBS_E_INVALID_CONTEXT
-    TbsInvalidContext = 0x80284004,
+    TBS_INVALID_CONTEXT = 0x80284004,
 
     /// Windows TBS error TBS_E_INSUFFICIENT_BUFFER
-    TbsInsufficientBuffer = 0x80284005,
+    TBS_INSUFFICIENT_BUFFER = 0x80284005,
 
     /// Windows TBS error TBS_E_IOERROR
-    TbsIoError = 0x80284006,
+    TBS_IO_ERROR = 0x80284006,
 
     /// Windows TBS error TBS_E_INVALID_CONTEXT_PARAM
-    TbsInvalidContextParam = 0x80284007,
+    TBS_INVALID_CONTEXT_PARAM = 0x80284007,
 
     /// Windows TBS error TBS_E_SERVICE_NOT_RUNNING
-    TbsServiceNotRunning = 0x80284008,
+    TBS_SERVICE_NOT_RUNNING = 0x80284008,
 
     /// Windows TBS error TBS_E_TOO_MANY_TBS_CONTEXTS
-    TbsTooManyContexts = 0x80284009,
+    TBS_TOO_MANY_CONTEXTS = 0x80284009,
 
     /// Windows TBS error TBS_E_TOO_MANY_TBS_RESOURCES
-    TbsTooManyResources = 0x8028400A,
+    TBS_TOO_MANY_RESOURCES = 0x8028400A,
 
     /// Windows TBS error TBS_E_SERVICE_START_PENDING
-    TbsServiceStartPending = 0x8028400B,
+    TBS_SERVICE_START_PENDING = 0x8028400B,
 
     /// Windows TBS error TBS_E_PPI_NOT_SUPPORTED
-    TbsPpiNotSupported = 0x8028400C,
+    TBS_PPI_NOT_SUPPORTED = 0x8028400C,
 
     /// Windows TBS error TBS_E_COMMAND_CANCELED
-    TbsCommandCanceled = 0x8028400D,
+    TBS_COMMAND_CANCELED = 0x8028400D,
 
     /// Windows TBS error TBS_E_BUFFER_TOO_LARGE
-    TbsBufferTooLarge = 0x8028400E,
+    TBS_BUFFER_TOO_LARGE = 0x8028400E,
 
     /// Windows TBS error TBS_E_TPM_NOT_FOUND
-    TbsTpmNotFound = 0x8028400F,
+    TBS_TPM_NOT_FOUND = 0x8028400F,
 
     /// Windows TBS error TBS_E_SERVICE_DISABLED
-    TbsServiceDisabled = 0x80284010,
+    TBS_SERVICE_DISABLED = 0x80284010,
 
     /// Windows TBS error TBS_E_ACCESS_DENIED
-    TbsAccessDenied = 0x80284012,
+    TBS_ACCESS_DENIED = 0x80284012,
 
     /// Windows TBS error TBS_E_PPI_FUNCTION_UNSUPPORTED
-    TbsPpiFunctionNotSupported = 0x80284014,
+    TBS_PPI_FUNCTION_NOT_SUPPORTED = 0x80284014,
 
     /// Windows TBS error TBS_E_OWNERAUTH_NOT_FOUND
-    TbsOwnerAuthNotFound = 0x80284015
-}
-
-impl TryFrom<u32> for TPM_RC {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x000 => Ok(Self::SUCCESS),
-            0x01E => Ok(Self::BadTag),
-            0x100 => Ok(Self::RcVer1),
-            RC_VER1 + 0x000 => Ok(Self::INITIALIZE),
-            RC_VER1 + 0x001 => Ok(Self::FAILURE),
-            RC_VER1 + 0x003 => Ok(Self::SEQUENCE),
-            RC_VER1 + 0x00B => Ok(Self::PRIVATE),
-            RC_VER1 + 0x019 => Ok(Self::HMAC),
-            RC_VER1 + 0x020 => Ok(Self::DISABLED),
-            RC_VER1 + 0x021 => Ok(Self::EXCLUSIVE),
-            RC_VER1 + 0x024 => Ok(Self::AuthType),
-            RC_VER1 + 0x025 => Ok(Self::AuthMissing),
-            RC_VER1 + 0x026 => Ok(Self::POLICY),
-            RC_VER1 + 0x027 => Ok(Self::PCR),
-            RC_VER1 + 0x028 => Ok(Self::PcrChanged),
-            RC_VER1 + 0x02D => Ok(Self::UPGRADE),
-            RC_VER1 + 0x02E => Ok(Self::TooManyContexts),
-            RC_VER1 + 0x02F => Ok(Self::AuthUnavailable),
-            RC_VER1 + 0x030 => Ok(Self::REBOOT),
-            RC_VER1 + 0x031 => Ok(Self::UNBALANCED),
-            RC_VER1 + 0x042 => Ok(Self::CommandSize),
-            RC_VER1 + 0x043 => Ok(Self::CommandCode),
-            RC_VER1 + 0x044 => Ok(Self::AUTHSIZE),
-            RC_VER1 + 0x045 => Ok(Self::AuthContext),
-            RC_VER1 + 0x046 => Ok(Self::NvRange),
-            RC_VER1 + 0x047 => Ok(Self::NvSize),
-            RC_VER1 + 0x048 => Ok(Self::NvLocked),
-            RC_VER1 + 0x049 => Ok(Self::NvAuthorization),
-            RC_VER1 + 0x04A => Ok(Self::NvUninitialized),
-            RC_VER1 + 0x04B => Ok(Self::NvSpace),
-            RC_VER1 + 0x04C => Ok(Self::NvDefined),
-            RC_VER1 + 0x050 => Ok(Self::BadContext),
-            RC_VER1 + 0x051 => Ok(Self::CPHASH),
-            RC_VER1 + 0x052 => Ok(Self::PARENT),
-            RC_VER1 + 0x053 => Ok(Self::NeedsTest),
-            RC_VER1 + 0x054 => Ok(Self::NoResult),
-            RC_VER1 + 0x055 => Ok(Self::SENSITIVE),
-            RC_VER1 + 0x07F => Ok(Self::RcMaxFm0),
-            0x080 => Ok(Self::RcFmt1),
-            RC_FMT1 + 0x001 => Ok(Self::ASYMMETRIC),
-            RC_FMT1 + 0x002 => Ok(Self::ATTRIBUTES),
-            RC_FMT1 + 0x003 => Ok(Self::HASH),
-            RC_FMT1 + 0x004 => Ok(Self::VALUE),
-            RC_FMT1 + 0x005 => Ok(Self::HIERARCHY),
-            RC_FMT1 + 0x007 => Ok(Self::KeySize),
-            RC_FMT1 + 0x008 => Ok(Self::MGF),
-            RC_FMT1 + 0x009 => Ok(Self::MODE),
-            RC_FMT1 + 0x00A => Ok(Self::TYPE),
-            RC_FMT1 + 0x00B => Ok(Self::HANDLE),
-            RC_FMT1 + 0x00C => Ok(Self::KDF),
-            RC_FMT1 + 0x00D => Ok(Self::RANGE),
-            RC_FMT1 + 0x00E => Ok(Self::AuthFail),
-            RC_FMT1 + 0x00F => Ok(Self::NONCE),
-            RC_FMT1 + 0x010 => Ok(Self::PP),
-            RC_FMT1 + 0x012 => Ok(Self::SCHEME),
-            RC_FMT1 + 0x015 => Ok(Self::SIZE),
-            RC_FMT1 + 0x016 => Ok(Self::SYMMETRIC),
-            RC_FMT1 + 0x017 => Ok(Self::TAG),
-            RC_FMT1 + 0x018 => Ok(Self::SELECTOR),
-            RC_FMT1 + 0x01A => Ok(Self::INSUFFICIENT),
-            RC_FMT1 + 0x01B => Ok(Self::SIGNATURE),
-            RC_FMT1 + 0x01C => Ok(Self::KEY),
-            RC_FMT1 + 0x01D => Ok(Self::PolicyFail),
-            RC_FMT1 + 0x01F => Ok(Self::INTEGRITY),
-            RC_FMT1 + 0x020 => Ok(Self::TICKET),
-            RC_FMT1 + 0x021 => Ok(Self::ReservedBits),
-            RC_FMT1 + 0x022 => Ok(Self::BadAuth),
-            RC_FMT1 + 0x023 => Ok(Self::EXPIRED),
-            RC_FMT1 + 0x024 => Ok(Self::PolicyCc),
-            RC_FMT1 + 0x025 => Ok(Self::BINDING),
-            RC_FMT1 + 0x026 => Ok(Self::CURVE),
-            RC_FMT1 + 0x027 => Ok(Self::EccPoint),
-            0x900 => Ok(Self::RcWarn),
-            RC_WARN + 0x001 => Ok(Self::ContextGap),
-            RC_WARN + 0x002 => Ok(Self::ObjectMemory),
-            RC_WARN + 0x003 => Ok(Self::SessionMemory),
-            RC_WARN + 0x004 => Ok(Self::MEMORY),
-            RC_WARN + 0x005 => Ok(Self::SessionHandles),
-            RC_WARN + 0x006 => Ok(Self::ObjectHandles),
-            RC_WARN + 0x007 => Ok(Self::LOCALITY),
-            RC_WARN + 0x008 => Ok(Self::YIELDED),
-            RC_WARN + 0x009 => Ok(Self::CANCELED),
-            RC_WARN + 0x00A => Ok(Self::TESTING),
-            RC_WARN + 0x010 => Ok(Self::ReferenceH0),
-            RC_WARN + 0x011 => Ok(Self::ReferenceH1),
-            RC_WARN + 0x012 => Ok(Self::ReferenceH2),
-            RC_WARN + 0x013 => Ok(Self::ReferenceH3),
-            RC_WARN + 0x014 => Ok(Self::ReferenceH4),
-            RC_WARN + 0x015 => Ok(Self::ReferenceH5),
-            RC_WARN + 0x016 => Ok(Self::ReferenceH6),
-            RC_WARN + 0x018 => Ok(Self::ReferenceS0),
-            RC_WARN + 0x019 => Ok(Self::ReferenceS1),
-            RC_WARN + 0x01A => Ok(Self::ReferenceS2),
-            RC_WARN + 0x01B => Ok(Self::ReferenceS3),
-            RC_WARN + 0x01C => Ok(Self::ReferenceS4),
-            RC_WARN + 0x01D => Ok(Self::ReferenceS5),
-            RC_WARN + 0x01E => Ok(Self::ReferenceS6),
-            RC_WARN + 0x020 => Ok(Self::NvRate),
-            RC_WARN + 0x021 => Ok(Self::LOCKOUT),
-            RC_WARN + 0x022 => Ok(Self::RETRY),
-            RC_WARN + 0x023 => Ok(Self::NvUnavailable),
-            RC_WARN + 0x7F => Ok(Self::NotUsed),
-            0x000 => Ok(Self::H),
-            0x040 => Ok(Self::P),
-            0x800 => Ok(Self::S),
-            0x100 => Ok(Self::1),
-            0x200 => Ok(Self::2),
-            0x300 => Ok(Self::3),
-            0x400 => Ok(Self::4),
-            0x500 => Ok(Self::5),
-            0x600 => Ok(Self::6),
-            0x700 => Ok(Self::7),
-            0x800 => Ok(Self::8),
-            0x900 => Ok(Self::9),
-            0xA00 => Ok(Self::A),
-            0xB00 => Ok(Self::B),
-            0xC00 => Ok(Self::C),
-            0xD00 => Ok(Self::D),
-            0xE00 => Ok(Self::E),
-            0xF00 => Ok(Self::F),
-            0xF00 => Ok(Self::NMask),
-            0x40280001 => Ok(Self::TssTcpBadHandshakeResp),
-            0x40280002 => Ok(Self::TssTcpServerTooOld),
-            0x40280003 => Ok(Self::TssTcpBadAck),
-            0x40280004 => Ok(Self::TssTcpBadRespLen),
-            0x40280005 => Ok(Self::TssTcpUnexpectedStartupResp),
-            0x40280006 => Ok(Self::TssTcpInvalidSizeTag),
-            0x40280007 => Ok(Self::TssTcpDisconnected),
-            0x40280010 => Ok(Self::TssDispatchFailed),
-            0x40280011 => Ok(Self::TssSendOpFailed),
-            0x40280021 => Ok(Self::TssRespBufTooShort),
-            0x40280022 => Ok(Self::TssRespBufInvalidSessionTag),
-            0x40280023 => Ok(Self::TssRespBufInvalidSize),
-            0x80280400 => Ok(Self::TbsCommandBlocked),
-            0x80280401 => Ok(Self::TbsInvalidHandle),
-            0x80280402 => Ok(Self::TbsDuplicateVHandle),
-            0x80280403 => Ok(Self::TbsEmbeddedCommandBlocked),
-            0x80280404 => Ok(Self::TbsEmbeddedCommandUnsupported),
-            0x80284000 => Ok(Self::TbsUnknownError),
-            0x80284001 => Ok(Self::TbsInternalError),
-            0x80284002 => Ok(Self::TbsBadParameter),
-            0x80284003 => Ok(Self::TbsInvalidOutputPointer),
-            0x80284004 => Ok(Self::TbsInvalidContext),
-            0x80284005 => Ok(Self::TbsInsufficientBuffer),
-            0x80284006 => Ok(Self::TbsIoError),
-            0x80284007 => Ok(Self::TbsInvalidContextParam),
-            0x80284008 => Ok(Self::TbsServiceNotRunning),
-            0x80284009 => Ok(Self::TbsTooManyContexts),
-            0x8028400A => Ok(Self::TbsTooManyResources),
-            0x8028400B => Ok(Self::TbsServiceStartPending),
-            0x8028400C => Ok(Self::TbsPpiNotSupported),
-            0x8028400D => Ok(Self::TbsCommandCanceled),
-            0x8028400E => Ok(Self::TbsBufferTooLarge),
-            0x8028400F => Ok(Self::TbsTpmNotFound),
-            0x80284010 => Ok(Self::TbsServiceDisabled),
-            0x80284012 => Ok(Self::TbsAccessDenied),
-            0x80284014 => Ok(Self::TbsPpiFunctionNotSupported),
-            0x80284015 => Ok(Self::TbsOwnerAuthNotFound),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    TBS_OWNER_AUTH_NOT_FOUND = 0x80284015
 }
 
 impl fmt::Display for TPM_RC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::SUCCESS => write!(f, "SUCCESS"),
-            Self::BadTag => write!(f, "BadTag"),
-            Self::RcVer1 => write!(f, "RcVer1"),
+            Self::BAD_TAG => write!(f, "BAD_TAG"),
+            Self::RC_VER1 => write!(f, "RC_VER1"),
             Self::INITIALIZE => write!(f, "INITIALIZE"),
             Self::FAILURE => write!(f, "FAILURE"),
             Self::SEQUENCE => write!(f, "SEQUENCE"),
@@ -2022,48 +1435,48 @@ impl fmt::Display for TPM_RC {
             Self::HMAC => write!(f, "HMAC"),
             Self::DISABLED => write!(f, "DISABLED"),
             Self::EXCLUSIVE => write!(f, "EXCLUSIVE"),
-            Self::AuthType => write!(f, "AuthType"),
-            Self::AuthMissing => write!(f, "AuthMissing"),
+            Self::AUTH_TYPE => write!(f, "AUTH_TYPE"),
+            Self::AUTH_MISSING => write!(f, "AUTH_MISSING"),
             Self::POLICY => write!(f, "POLICY"),
             Self::PCR => write!(f, "PCR"),
-            Self::PcrChanged => write!(f, "PcrChanged"),
+            Self::PCR_CHANGED => write!(f, "PCR_CHANGED"),
             Self::UPGRADE => write!(f, "UPGRADE"),
-            Self::TooManyContexts => write!(f, "TooManyContexts"),
-            Self::AuthUnavailable => write!(f, "AuthUnavailable"),
+            Self::TOO_MANY_CONTEXTS => write!(f, "TOO_MANY_CONTEXTS"),
+            Self::AUTH_UNAVAILABLE => write!(f, "AUTH_UNAVAILABLE"),
             Self::REBOOT => write!(f, "REBOOT"),
             Self::UNBALANCED => write!(f, "UNBALANCED"),
-            Self::CommandSize => write!(f, "CommandSize"),
-            Self::CommandCode => write!(f, "CommandCode"),
+            Self::COMMAND_SIZE => write!(f, "COMMAND_SIZE"),
+            Self::COMMAND_CODE => write!(f, "COMMAND_CODE"),
             Self::AUTHSIZE => write!(f, "AUTHSIZE"),
-            Self::AuthContext => write!(f, "AuthContext"),
-            Self::NvRange => write!(f, "NvRange"),
-            Self::NvSize => write!(f, "NvSize"),
-            Self::NvLocked => write!(f, "NvLocked"),
-            Self::NvAuthorization => write!(f, "NvAuthorization"),
-            Self::NvUninitialized => write!(f, "NvUninitialized"),
-            Self::NvSpace => write!(f, "NvSpace"),
-            Self::NvDefined => write!(f, "NvDefined"),
-            Self::BadContext => write!(f, "BadContext"),
+            Self::AUTH_CONTEXT => write!(f, "AUTH_CONTEXT"),
+            Self::NV_RANGE => write!(f, "NV_RANGE"),
+            Self::NV_SIZE => write!(f, "NV_SIZE"),
+            Self::NV_LOCKED => write!(f, "NV_LOCKED"),
+            Self::NV_AUTHORIZATION => write!(f, "NV_AUTHORIZATION"),
+            Self::NV_UNINITIALIZED => write!(f, "NV_UNINITIALIZED"),
+            Self::NV_SPACE => write!(f, "NV_SPACE"),
+            Self::NV_DEFINED => write!(f, "NV_DEFINED"),
+            Self::BAD_CONTEXT => write!(f, "BAD_CONTEXT"),
             Self::CPHASH => write!(f, "CPHASH"),
             Self::PARENT => write!(f, "PARENT"),
-            Self::NeedsTest => write!(f, "NeedsTest"),
-            Self::NoResult => write!(f, "NoResult"),
+            Self::NEEDS_TEST => write!(f, "NEEDS_TEST"),
+            Self::NO_RESULT => write!(f, "NO_RESULT"),
             Self::SENSITIVE => write!(f, "SENSITIVE"),
-            Self::RcMaxFm0 => write!(f, "RcMaxFm0"),
-            Self::RcFmt1 => write!(f, "RcFmt1"),
+            Self::RC_MAX_FM0 => write!(f, "RC_MAX_FM0"),
+            Self::RC_FMT1 => write!(f, "RC_FMT1"),
             Self::ASYMMETRIC => write!(f, "ASYMMETRIC"),
             Self::ATTRIBUTES => write!(f, "ATTRIBUTES"),
             Self::HASH => write!(f, "HASH"),
             Self::VALUE => write!(f, "VALUE"),
             Self::HIERARCHY => write!(f, "HIERARCHY"),
-            Self::KeySize => write!(f, "KeySize"),
+            Self::KEY_SIZE => write!(f, "KEY_SIZE"),
             Self::MGF => write!(f, "MGF"),
             Self::MODE => write!(f, "MODE"),
             Self::TYPE => write!(f, "TYPE"),
             Self::HANDLE => write!(f, "HANDLE"),
             Self::KDF => write!(f, "KDF"),
             Self::RANGE => write!(f, "RANGE"),
-            Self::AuthFail => write!(f, "AuthFail"),
+            Self::AUTH_FAIL => write!(f, "AUTH_FAIL"),
             Self::NONCE => write!(f, "NONCE"),
             Self::PP => write!(f, "PP"),
             Self::SCHEME => write!(f, "SCHEME"),
@@ -2074,234 +1487,187 @@ impl fmt::Display for TPM_RC {
             Self::INSUFFICIENT => write!(f, "INSUFFICIENT"),
             Self::SIGNATURE => write!(f, "SIGNATURE"),
             Self::KEY => write!(f, "KEY"),
-            Self::PolicyFail => write!(f, "PolicyFail"),
+            Self::POLICY_FAIL => write!(f, "POLICY_FAIL"),
             Self::INTEGRITY => write!(f, "INTEGRITY"),
             Self::TICKET => write!(f, "TICKET"),
-            Self::ReservedBits => write!(f, "ReservedBits"),
-            Self::BadAuth => write!(f, "BadAuth"),
+            Self::RESERVED_BITS => write!(f, "RESERVED_BITS"),
+            Self::BAD_AUTH => write!(f, "BAD_AUTH"),
             Self::EXPIRED => write!(f, "EXPIRED"),
-            Self::PolicyCc => write!(f, "PolicyCc"),
+            Self::POLICY_CC => write!(f, "POLICY_CC"),
             Self::BINDING => write!(f, "BINDING"),
             Self::CURVE => write!(f, "CURVE"),
-            Self::EccPoint => write!(f, "EccPoint"),
-            Self::RcWarn => write!(f, "RcWarn"),
-            Self::ContextGap => write!(f, "ContextGap"),
-            Self::ObjectMemory => write!(f, "ObjectMemory"),
-            Self::SessionMemory => write!(f, "SessionMemory"),
+            Self::ECC_POINT => write!(f, "ECC_POINT"),
+            Self::RC_WARN => write!(f, "RC_WARN"),
+            Self::CONTEXT_GAP => write!(f, "CONTEXT_GAP"),
+            Self::OBJECT_MEMORY => write!(f, "OBJECT_MEMORY"),
+            Self::SESSION_MEMORY => write!(f, "SESSION_MEMORY"),
             Self::MEMORY => write!(f, "MEMORY"),
-            Self::SessionHandles => write!(f, "SessionHandles"),
-            Self::ObjectHandles => write!(f, "ObjectHandles"),
+            Self::SESSION_HANDLES => write!(f, "SESSION_HANDLES"),
+            Self::OBJECT_HANDLES => write!(f, "OBJECT_HANDLES"),
             Self::LOCALITY => write!(f, "LOCALITY"),
             Self::YIELDED => write!(f, "YIELDED"),
             Self::CANCELED => write!(f, "CANCELED"),
             Self::TESTING => write!(f, "TESTING"),
-            Self::ReferenceH0 => write!(f, "ReferenceH0"),
-            Self::ReferenceH1 => write!(f, "ReferenceH1"),
-            Self::ReferenceH2 => write!(f, "ReferenceH2"),
-            Self::ReferenceH3 => write!(f, "ReferenceH3"),
-            Self::ReferenceH4 => write!(f, "ReferenceH4"),
-            Self::ReferenceH5 => write!(f, "ReferenceH5"),
-            Self::ReferenceH6 => write!(f, "ReferenceH6"),
-            Self::ReferenceS0 => write!(f, "ReferenceS0"),
-            Self::ReferenceS1 => write!(f, "ReferenceS1"),
-            Self::ReferenceS2 => write!(f, "ReferenceS2"),
-            Self::ReferenceS3 => write!(f, "ReferenceS3"),
-            Self::ReferenceS4 => write!(f, "ReferenceS4"),
-            Self::ReferenceS5 => write!(f, "ReferenceS5"),
-            Self::ReferenceS6 => write!(f, "ReferenceS6"),
-            Self::NvRate => write!(f, "NvRate"),
+            Self::REFERENCE_H0 => write!(f, "REFERENCE_H0"),
+            Self::REFERENCE_H1 => write!(f, "REFERENCE_H1"),
+            Self::REFERENCE_H2 => write!(f, "REFERENCE_H2"),
+            Self::REFERENCE_H3 => write!(f, "REFERENCE_H3"),
+            Self::REFERENCE_H4 => write!(f, "REFERENCE_H4"),
+            Self::REFERENCE_H5 => write!(f, "REFERENCE_H5"),
+            Self::REFERENCE_H6 => write!(f, "REFERENCE_H6"),
+            Self::REFERENCE_S0 => write!(f, "REFERENCE_S0"),
+            Self::REFERENCE_S1 => write!(f, "REFERENCE_S1"),
+            Self::REFERENCE_S2 => write!(f, "REFERENCE_S2"),
+            Self::REFERENCE_S3 => write!(f, "REFERENCE_S3"),
+            Self::REFERENCE_S4 => write!(f, "REFERENCE_S4"),
+            Self::REFERENCE_S5 => write!(f, "REFERENCE_S5"),
+            Self::REFERENCE_S6 => write!(f, "REFERENCE_S6"),
+            Self::NV_RATE => write!(f, "NV_RATE"),
             Self::LOCKOUT => write!(f, "LOCKOUT"),
             Self::RETRY => write!(f, "RETRY"),
-            Self::NvUnavailable => write!(f, "NvUnavailable"),
-            Self::NotUsed => write!(f, "NotUsed"),
+            Self::NV_UNAVAILABLE => write!(f, "NV_UNAVAILABLE"),
+            Self::NOT_USED => write!(f, "NOT_USED"),
             Self::H => write!(f, "H"),
             Self::P => write!(f, "P"),
             Self::S => write!(f, "S"),
-            Self::1 => write!(f, "1"),
-            Self::2 => write!(f, "2"),
-            Self::3 => write!(f, "3"),
-            Self::4 => write!(f, "4"),
-            Self::5 => write!(f, "5"),
-            Self::6 => write!(f, "6"),
-            Self::7 => write!(f, "7"),
-            Self::8 => write!(f, "8"),
-            Self::9 => write!(f, "9"),
+            Self::_1 => write!(f, "_1"),
+            Self::_2 => write!(f, "_2"),
+            Self::_3 => write!(f, "_3"),
+            Self::_4 => write!(f, "_4"),
+            Self::_5 => write!(f, "_5"),
+            Self::_6 => write!(f, "_6"),
+            Self::_7 => write!(f, "_7"),
+            Self::_8 => write!(f, "_8"),
+            Self::_9 => write!(f, "_9"),
             Self::A => write!(f, "A"),
             Self::B => write!(f, "B"),
             Self::C => write!(f, "C"),
             Self::D => write!(f, "D"),
             Self::E => write!(f, "E"),
             Self::F => write!(f, "F"),
-            Self::NMask => write!(f, "NMask"),
-            Self::TssTcpBadHandshakeResp => write!(f, "TssTcpBadHandshakeResp"),
-            Self::TssTcpServerTooOld => write!(f, "TssTcpServerTooOld"),
-            Self::TssTcpBadAck => write!(f, "TssTcpBadAck"),
-            Self::TssTcpBadRespLen => write!(f, "TssTcpBadRespLen"),
-            Self::TssTcpUnexpectedStartupResp => write!(f, "TssTcpUnexpectedStartupResp"),
-            Self::TssTcpInvalidSizeTag => write!(f, "TssTcpInvalidSizeTag"),
-            Self::TssTcpDisconnected => write!(f, "TssTcpDisconnected"),
-            Self::TssDispatchFailed => write!(f, "TssDispatchFailed"),
-            Self::TssSendOpFailed => write!(f, "TssSendOpFailed"),
-            Self::TssRespBufTooShort => write!(f, "TssRespBufTooShort"),
-            Self::TssRespBufInvalidSessionTag => write!(f, "TssRespBufInvalidSessionTag"),
-            Self::TssRespBufInvalidSize => write!(f, "TssRespBufInvalidSize"),
-            Self::TbsCommandBlocked => write!(f, "TbsCommandBlocked"),
-            Self::TbsInvalidHandle => write!(f, "TbsInvalidHandle"),
-            Self::TbsDuplicateVHandle => write!(f, "TbsDuplicateVHandle"),
-            Self::TbsEmbeddedCommandBlocked => write!(f, "TbsEmbeddedCommandBlocked"),
-            Self::TbsEmbeddedCommandUnsupported => write!(f, "TbsEmbeddedCommandUnsupported"),
-            Self::TbsUnknownError => write!(f, "TbsUnknownError"),
-            Self::TbsInternalError => write!(f, "TbsInternalError"),
-            Self::TbsBadParameter => write!(f, "TbsBadParameter"),
-            Self::TbsInvalidOutputPointer => write!(f, "TbsInvalidOutputPointer"),
-            Self::TbsInvalidContext => write!(f, "TbsInvalidContext"),
-            Self::TbsInsufficientBuffer => write!(f, "TbsInsufficientBuffer"),
-            Self::TbsIoError => write!(f, "TbsIoError"),
-            Self::TbsInvalidContextParam => write!(f, "TbsInvalidContextParam"),
-            Self::TbsServiceNotRunning => write!(f, "TbsServiceNotRunning"),
-            Self::TbsTooManyContexts => write!(f, "TbsTooManyContexts"),
-            Self::TbsTooManyResources => write!(f, "TbsTooManyResources"),
-            Self::TbsServiceStartPending => write!(f, "TbsServiceStartPending"),
-            Self::TbsPpiNotSupported => write!(f, "TbsPpiNotSupported"),
-            Self::TbsCommandCanceled => write!(f, "TbsCommandCanceled"),
-            Self::TbsBufferTooLarge => write!(f, "TbsBufferTooLarge"),
-            Self::TbsTpmNotFound => write!(f, "TbsTpmNotFound"),
-            Self::TbsServiceDisabled => write!(f, "TbsServiceDisabled"),
-            Self::TbsAccessDenied => write!(f, "TbsAccessDenied"),
-            Self::TbsPpiFunctionNotSupported => write!(f, "TbsPpiFunctionNotSupported"),
-            Self::TbsOwnerAuthNotFound => write!(f, "TbsOwnerAuthNotFound"),
+            Self::N_MASK => write!(f, "N_MASK"),
+            Self::TSS_TCP_BAD_HANDSHAKE_RESP => write!(f, "TSS_TCP_BAD_HANDSHAKE_RESP"),
+            Self::TSS_TCP_SERVER_TOO_OLD => write!(f, "TSS_TCP_SERVER_TOO_OLD"),
+            Self::TSS_TCP_BAD_ACK => write!(f, "TSS_TCP_BAD_ACK"),
+            Self::TSS_TCP_BAD_RESP_LEN => write!(f, "TSS_TCP_BAD_RESP_LEN"),
+            Self::TSS_TCP_UNEXPECTED_STARTUP_RESP => write!(f, "TSS_TCP_UNEXPECTED_STARTUP_RESP"),
+            Self::TSS_TCP_INVALID_SIZE_TAG => write!(f, "TSS_TCP_INVALID_SIZE_TAG"),
+            Self::TSS_TCP_DISCONNECTED => write!(f, "TSS_TCP_DISCONNECTED"),
+            Self::TSS_DISPATCH_FAILED => write!(f, "TSS_DISPATCH_FAILED"),
+            Self::TSS_SEND_OP_FAILED => write!(f, "TSS_SEND_OP_FAILED"),
+            Self::TSS_RESP_BUF_TOO_SHORT => write!(f, "TSS_RESP_BUF_TOO_SHORT"),
+            Self::TSS_RESP_BUF_INVALID_SESSION_TAG => write!(f, "TSS_RESP_BUF_INVALID_SESSION_TAG"),
+            Self::TSS_RESP_BUF_INVALID_SIZE => write!(f, "TSS_RESP_BUF_INVALID_SIZE"),
+            Self::TBS_COMMAND_BLOCKED => write!(f, "TBS_COMMAND_BLOCKED"),
+            Self::TBS_INVALID_HANDLE => write!(f, "TBS_INVALID_HANDLE"),
+            Self::TBS_DUPLICATE_V_HANDLE => write!(f, "TBS_DUPLICATE_V_HANDLE"),
+            Self::TBS_EMBEDDED_COMMAND_BLOCKED => write!(f, "TBS_EMBEDDED_COMMAND_BLOCKED"),
+            Self::TBS_EMBEDDED_COMMAND_UNSUPPORTED => write!(f, "TBS_EMBEDDED_COMMAND_UNSUPPORTED"),
+            Self::TBS_UNKNOWN_ERROR => write!(f, "TBS_UNKNOWN_ERROR"),
+            Self::TBS_INTERNAL_ERROR => write!(f, "TBS_INTERNAL_ERROR"),
+            Self::TBS_BAD_PARAMETER => write!(f, "TBS_BAD_PARAMETER"),
+            Self::TBS_INVALID_OUTPUT_POINTER => write!(f, "TBS_INVALID_OUTPUT_POINTER"),
+            Self::TBS_INVALID_CONTEXT => write!(f, "TBS_INVALID_CONTEXT"),
+            Self::TBS_INSUFFICIENT_BUFFER => write!(f, "TBS_INSUFFICIENT_BUFFER"),
+            Self::TBS_IO_ERROR => write!(f, "TBS_IO_ERROR"),
+            Self::TBS_INVALID_CONTEXT_PARAM => write!(f, "TBS_INVALID_CONTEXT_PARAM"),
+            Self::TBS_SERVICE_NOT_RUNNING => write!(f, "TBS_SERVICE_NOT_RUNNING"),
+            Self::TBS_TOO_MANY_CONTEXTS => write!(f, "TBS_TOO_MANY_CONTEXTS"),
+            Self::TBS_TOO_MANY_RESOURCES => write!(f, "TBS_TOO_MANY_RESOURCES"),
+            Self::TBS_SERVICE_START_PENDING => write!(f, "TBS_SERVICE_START_PENDING"),
+            Self::TBS_PPI_NOT_SUPPORTED => write!(f, "TBS_PPI_NOT_SUPPORTED"),
+            Self::TBS_COMMAND_CANCELED => write!(f, "TBS_COMMAND_CANCELED"),
+            Self::TBS_BUFFER_TOO_LARGE => write!(f, "TBS_BUFFER_TOO_LARGE"),
+            Self::TBS_TPM_NOT_FOUND => write!(f, "TBS_TPM_NOT_FOUND"),
+            Self::TBS_SERVICE_DISABLED => write!(f, "TBS_SERVICE_DISABLED"),
+            Self::TBS_ACCESS_DENIED => write!(f, "TBS_ACCESS_DENIED"),
+            Self::TBS_PPI_FUNCTION_NOT_SUPPORTED => write!(f, "TBS_PPI_FUNCTION_NOT_SUPPORTED"),
+            Self::TBS_OWNER_AUTH_NOT_FOUND => write!(f, "TBS_OWNER_AUTH_NOT_FOUND"),
         }
-
     }
-
 }
 
 /// A TPM_CLOCK_ADJUST value is used to change the rate at which the TPM internal
 /// oscillator is divided. A change to the divider will change the rate at which Clock and
 /// Time change.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i8)]
 pub enum TPM_CLOCK_ADJUST {
     /// Slow the Clock update rate by one coarse adjustment step.
-    CoarseSlower = -3,
+    COARSE_SLOWER = 0xFFFFFFFFFFFFFFFD, // Original value: -3
 
     /// Slow the Clock update rate by one medium adjustment step.
-    MediumSlower = -2,
+    MEDIUM_SLOWER = 0xFFFFFFFFFFFFFFFE, // Original value: -2
 
     /// Slow the Clock update rate by one fine adjustment step.
-    FineSlower = -1,
+    FINE_SLOWER = 0xFFFFFFFFFFFFFFFF, // Original value: -1
 
     /// No change to the Clock update rate.
-    NoChange = 0,
+    NO_CHANGE = 0x0, // Original value: 0
 
     /// Speed the Clock update rate by one fine adjustment step.
-    FineFaster = 1,
+    FINE_FASTER = 0x1, // Original value: 1
 
     /// Speed the Clock update rate by one medium adjustment step.
-    MediumFaster = 2,
+    MEDIUM_FASTER = 0x2, // Original value: 2
 
     /// Speed the Clock update rate by one coarse adjustment step.
-    CoarseFaster = 3
-}
-
-impl TryFrom<u8> for TPM_CLOCK_ADJUST {
-    type Error = TpmError;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            -3 => Ok(Self::CoarseSlower),
-            -2 => Ok(Self::MediumSlower),
-            -1 => Ok(Self::FineSlower),
-            0 => Ok(Self::NoChange),
-            1 => Ok(Self::FineFaster),
-            2 => Ok(Self::MediumFaster),
-            3 => Ok(Self::CoarseFaster),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    COARSE_FASTER = 0x3 // Original value: 3
 }
 
 impl fmt::Display for TPM_CLOCK_ADJUST {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::CoarseSlower => write!(f, "CoarseSlower"),
-            Self::MediumSlower => write!(f, "MediumSlower"),
-            Self::FineSlower => write!(f, "FineSlower"),
-            Self::NoChange => write!(f, "NoChange"),
-            Self::FineFaster => write!(f, "FineFaster"),
-            Self::MediumFaster => write!(f, "MediumFaster"),
-            Self::CoarseFaster => write!(f, "CoarseFaster"),
+            Self::COARSE_SLOWER => write!(f, "COARSE_SLOWER"),
+            Self::MEDIUM_SLOWER => write!(f, "MEDIUM_SLOWER"),
+            Self::FINE_SLOWER => write!(f, "FINE_SLOWER"),
+            Self::NO_CHANGE => write!(f, "NO_CHANGE"),
+            Self::FINE_FASTER => write!(f, "FINE_FASTER"),
+            Self::MEDIUM_FASTER => write!(f, "MEDIUM_FASTER"),
+            Self::COARSE_FASTER => write!(f, "COARSE_FASTER"),
         }
-
     }
-
 }
 
 /// Table 18 Definition of (UINT16) TPM_EO Constants [IN/OUT]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u16)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i16)]
 pub enum TPM_EO {
     /// A = B
-    EQ = 0x0000,
+    EQ = 0x0, // Original value: 0x0000
 
     /// A B
-    NEQ = 0x0001,
+    NEQ = 0x1, // Original value: 0x0001
 
     /// A ˃ B signed
-    SignedGt = 0x0002,
+    SIGNED_GT = 0x2, // Original value: 0x0002
 
     /// A ˃ B unsigned
-    UnsignedGt = 0x0003,
+    UNSIGNED_GT = 0x3, // Original value: 0x0003
 
     /// A ˂ B signed
-    SignedLt = 0x0004,
+    SIGNED_LT = 0x4, // Original value: 0x0004
 
     /// A ˂ B unsigned
-    UnsignedLt = 0x0005,
+    UNSIGNED_LT = 0x5, // Original value: 0x0005
 
     /// A B signed
-    SignedGe = 0x0006,
+    SIGNED_GE = 0x6, // Original value: 0x0006
 
     /// A B unsigned
-    UnsignedGe = 0x0007,
+    UNSIGNED_GE = 0x7, // Original value: 0x0007
 
     /// A B signed
-    SignedLe = 0x0008,
+    SIGNED_LE = 0x8, // Original value: 0x0008
 
     /// A B unsigned
-    UnsignedLe = 0x0009,
+    UNSIGNED_LE = 0x9, // Original value: 0x0009
 
     /// All bits SET in B are SET in A. ((A∧B)=B)
-    BITSET = 0x000A,
+    BITSET = 0xA, // Original value: 0x000A
 
     /// All bits SET in B are CLEAR in A. ((A∧B)=0)
-    BITCLEAR = 0x000B
-}
-
-impl TryFrom<u16> for TPM_EO {
-    type Error = TpmError;
-
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
-        match value {
-            0x0000 => Ok(Self::EQ),
-            0x0001 => Ok(Self::NEQ),
-            0x0002 => Ok(Self::SignedGt),
-            0x0003 => Ok(Self::UnsignedGt),
-            0x0004 => Ok(Self::SignedLt),
-            0x0005 => Ok(Self::UnsignedLt),
-            0x0006 => Ok(Self::SignedGe),
-            0x0007 => Ok(Self::UnsignedGe),
-            0x0008 => Ok(Self::SignedLe),
-            0x0009 => Ok(Self::UnsignedLe),
-            0x000A => Ok(Self::BITSET),
-            0x000B => Ok(Self::BITCLEAR),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    BITCLEAR = 0xB // Original value: 0x000B
 }
 
 impl fmt::Display for TPM_EO {
@@ -2309,20 +1675,18 @@ impl fmt::Display for TPM_EO {
         match self {
             Self::EQ => write!(f, "EQ"),
             Self::NEQ => write!(f, "NEQ"),
-            Self::SignedGt => write!(f, "SignedGt"),
-            Self::UnsignedGt => write!(f, "UnsignedGt"),
-            Self::SignedLt => write!(f, "SignedLt"),
-            Self::UnsignedLt => write!(f, "UnsignedLt"),
-            Self::SignedGe => write!(f, "SignedGe"),
-            Self::UnsignedGe => write!(f, "UnsignedGe"),
-            Self::SignedLe => write!(f, "SignedLe"),
-            Self::UnsignedLe => write!(f, "UnsignedLe"),
+            Self::SIGNED_GT => write!(f, "SIGNED_GT"),
+            Self::UNSIGNED_GT => write!(f, "UNSIGNED_GT"),
+            Self::SIGNED_LT => write!(f, "SIGNED_LT"),
+            Self::UNSIGNED_LT => write!(f, "UNSIGNED_LT"),
+            Self::SIGNED_GE => write!(f, "SIGNED_GE"),
+            Self::UNSIGNED_GE => write!(f, "UNSIGNED_GE"),
+            Self::SIGNED_LE => write!(f, "SIGNED_LE"),
+            Self::UNSIGNED_LE => write!(f, "UNSIGNED_LE"),
             Self::BITSET => write!(f, "BITSET"),
             Self::BITCLEAR => write!(f, "BITCLEAR"),
         }
-
     }
-
 }
 
 /// Structure tags are used to disambiguate structures. They are 16-bit values with the
@@ -2332,8 +1696,8 @@ impl fmt::Display for TPM_EO {
 /// specification. This value is used when the TPM is compatible with a previous TPM
 /// specification and the TPM cannot determine which family of response code to return
 /// because the command tag is not valid.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u16)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i16)]
 pub enum TPM_ST {
     /// Tag value for a response; used when there is an error in the tag. This is also the
     /// value returned from a TPM 1.2 when an error occurs. This value is used in this
@@ -2344,17 +1708,17 @@ pub enum TPM_ST {
     /// NOTE In a previously published version of this specification, TPM_RC_BAD_TAG was
     /// incorrectly assigned a value of 0x030 instead of 30 (0x01e). Some implementations my
     /// return the old value instead of the new value.
-    RspCommand = 0x00C4,
+    RSP_COMMAND = 0xC4, // Original value: 0x00C4
 
     /// No structure type specified
-    NULL = 0X8000,
+    NULL = 0x8000, // Original value: 0X8000
 
     /// Tag value for a command/response for a command defined in this specification;
     /// indicating that the command/response has no attached sessions and no
     /// authorizationSize/parameterSize value is present
     /// If the responseCode from the TPM is not TPM_RC_SUCCESS, then the response tag shall
     /// have this value.
-    NoSessions = 0x8001,
+    NO_SESSIONS = 0x8001,
 
     /// Tag value for a command/response for a command defined in this specification;
     /// indicating that the command/response has one or more attached sessions and the
@@ -2362,28 +1726,28 @@ pub enum TPM_ST {
     SESSIONS = 0x8002,
 
     /// Tag for an attestation structure
-    AttestNv = 0x8014,
+    ATTEST_NV = 0x8014,
 
     /// Tag for an attestation structure
-    AttestCommandAudit = 0x8015,
+    ATTEST_COMMAND_AUDIT = 0x8015,
 
     /// Tag for an attestation structure
-    AttestSessionAudit = 0x8016,
+    ATTEST_SESSION_AUDIT = 0x8016,
 
     /// Tag for an attestation structure
-    AttestCertify = 0x8017,
+    ATTEST_CERTIFY = 0x8017,
 
     /// Tag for an attestation structure
-    AttestQuote = 0x8018,
+    ATTEST_QUOTE = 0x8018,
 
     /// Tag for an attestation structure
-    AttestTime = 0x8019,
+    ATTEST_TIME = 0x8019,
 
     /// Tag for an attestation structure
-    AttestCreation = 0x801A,
+    ATTEST_CREATION = 0x801A,
 
     /// Tag for an attestation structure
-    AttestNvDigest = 0x801C,
+    ATTEST_NV_DIGEST = 0x801C,
 
     /// Tag for a ticket type
     CREATION = 0x8021,
@@ -2392,104 +1756,58 @@ pub enum TPM_ST {
     VERIFIED = 0x8022,
 
     /// Tag for a ticket type
-    AuthSecret = 0x8023,
+    AUTH_SECRET = 0x8023,
 
     /// Tag for a ticket type
     HASHCHECK = 0x8024,
 
     /// Tag for a ticket type
-    AuthSigned = 0x8025,
+    AUTH_SIGNED = 0x8025,
 
     /// Tag for a structure describing a Field Upgrade Policy
-    FuManifest = 0x8029
-}
-
-impl TryFrom<u16> for TPM_ST {
-    type Error = TpmError;
-
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
-        match value {
-            0x00C4 => Ok(Self::RspCommand),
-            0X8000 => Ok(Self::NULL),
-            0x8001 => Ok(Self::NoSessions),
-            0x8002 => Ok(Self::SESSIONS),
-            0x8014 => Ok(Self::AttestNv),
-            0x8015 => Ok(Self::AttestCommandAudit),
-            0x8016 => Ok(Self::AttestSessionAudit),
-            0x8017 => Ok(Self::AttestCertify),
-            0x8018 => Ok(Self::AttestQuote),
-            0x8019 => Ok(Self::AttestTime),
-            0x801A => Ok(Self::AttestCreation),
-            0x801C => Ok(Self::AttestNvDigest),
-            0x8021 => Ok(Self::CREATION),
-            0x8022 => Ok(Self::VERIFIED),
-            0x8023 => Ok(Self::AuthSecret),
-            0x8024 => Ok(Self::HASHCHECK),
-            0x8025 => Ok(Self::AuthSigned),
-            0x8029 => Ok(Self::FuManifest),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    FU_MANIFEST = 0x8029
 }
 
 impl fmt::Display for TPM_ST {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::RspCommand => write!(f, "RspCommand"),
+            Self::RSP_COMMAND => write!(f, "RSP_COMMAND"),
             Self::NULL => write!(f, "NULL"),
-            Self::NoSessions => write!(f, "NoSessions"),
+            Self::NO_SESSIONS => write!(f, "NO_SESSIONS"),
             Self::SESSIONS => write!(f, "SESSIONS"),
-            Self::AttestNv => write!(f, "AttestNv"),
-            Self::AttestCommandAudit => write!(f, "AttestCommandAudit"),
-            Self::AttestSessionAudit => write!(f, "AttestSessionAudit"),
-            Self::AttestCertify => write!(f, "AttestCertify"),
-            Self::AttestQuote => write!(f, "AttestQuote"),
-            Self::AttestTime => write!(f, "AttestTime"),
-            Self::AttestCreation => write!(f, "AttestCreation"),
-            Self::AttestNvDigest => write!(f, "AttestNvDigest"),
+            Self::ATTEST_NV => write!(f, "ATTEST_NV"),
+            Self::ATTEST_COMMAND_AUDIT => write!(f, "ATTEST_COMMAND_AUDIT"),
+            Self::ATTEST_SESSION_AUDIT => write!(f, "ATTEST_SESSION_AUDIT"),
+            Self::ATTEST_CERTIFY => write!(f, "ATTEST_CERTIFY"),
+            Self::ATTEST_QUOTE => write!(f, "ATTEST_QUOTE"),
+            Self::ATTEST_TIME => write!(f, "ATTEST_TIME"),
+            Self::ATTEST_CREATION => write!(f, "ATTEST_CREATION"),
+            Self::ATTEST_NV_DIGEST => write!(f, "ATTEST_NV_DIGEST"),
             Self::CREATION => write!(f, "CREATION"),
             Self::VERIFIED => write!(f, "VERIFIED"),
-            Self::AuthSecret => write!(f, "AuthSecret"),
+            Self::AUTH_SECRET => write!(f, "AUTH_SECRET"),
             Self::HASHCHECK => write!(f, "HASHCHECK"),
-            Self::AuthSigned => write!(f, "AuthSigned"),
-            Self::FuManifest => write!(f, "FuManifest"),
+            Self::AUTH_SIGNED => write!(f, "AUTH_SIGNED"),
+            Self::FU_MANIFEST => write!(f, "FU_MANIFEST"),
         }
-
     }
-
 }
 
 /// These values are used in TPM2_Startup() to indicate the shutdown and startup mode. The
 /// defined startup sequences are:
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u16)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i16)]
 pub enum TPM_SU {
     /// On TPM2_Shutdown(), indicates that the TPM should prepare for loss of power and save
     /// state required for an orderly startup (TPM Reset).
     /// on TPM2_Startup(), indicates that the TPM should perform TPM Reset or TPM Restart
-    CLEAR = 0x0000,
+    CLEAR = 0x0, // Original value: 0x0000
 
     /// On TPM2_Shutdown(), indicates that the TPM should prepare for loss of power and save
     /// state required for an orderly startup (TPM Restart or TPM Resume)
     /// on TPM2_Startup(), indicates that the TPM should restore the state saved by
     /// TPM2_Shutdown(TPM_SU_STATE)
-    STATE = 0x0001
-}
-
-impl TryFrom<u16> for TPM_SU {
-    type Error = TpmError;
-
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
-        match value {
-            0x0000 => Ok(Self::CLEAR),
-            0x0001 => Ok(Self::STATE),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    STATE = 0x1 // Original value: 0x0001
 }
 
 impl fmt::Display for TPM_SU {
@@ -2498,38 +1816,21 @@ impl fmt::Display for TPM_SU {
             Self::CLEAR => write!(f, "CLEAR"),
             Self::STATE => write!(f, "STATE"),
         }
-
     }
-
 }
 
 /// This type is used in TPM2_StartAuthSession() to indicate the type of the session to be
 /// created.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i8)]
 pub enum TPM_SE {
-    HMAC = 0x00,
-    POLICY = 0x01,
+    HMAC = 0x0, // Original value: 0x00
+    POLICY = 0x1, // Original value: 0x01
 
     /// The policy session is being used to compute the policyHash and not for command authorization.
     /// This setting modifies some policy commands and prevents session from being used to
     /// authorize a command.
-    TRIAL = 0x03
-}
-
-impl TryFrom<u8> for TPM_SE {
-    type Error = TpmError;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            0x00 => Ok(Self::HMAC),
-            0x01 => Ok(Self::POLICY),
-            0x03 => Ok(Self::TRIAL),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    TRIAL = 0x3 // Original value: 0x03
 }
 
 impl fmt::Display for TPM_SE {
@@ -2539,80 +1840,54 @@ impl fmt::Display for TPM_SE {
             Self::POLICY => write!(f, "POLICY"),
             Self::TRIAL => write!(f, "TRIAL"),
         }
-
     }
-
 }
 
 /// The TPM_CAP values are used in TPM2_GetCapability() to select the type of the value to
 /// be returned. The format of the response varies according to the type of the value.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_CAP {
-    FIRST = 0x00000000,
+    FIRST = 0x0, // Original value: 0x00000000
 
     /// TPML_ALG_PROPERTY
-    ALGS = 0x00000000,
+    // WARNING: ALGS has duplicate value 0x0 - using name + value pattern
+    ALGSValue = 0x0, // Original value: 0x00000000
 
     /// TPML_HANDLE
-    HANDLES = 0x00000001,
+    HANDLES = 0x1, // Original value: 0x00000001
 
     /// TPML_CCA
-    COMMANDS = 0x00000002,
+    COMMANDS = 0x2, // Original value: 0x00000002
 
     /// TPML_CC
-    PpCommands = 0x00000003,
+    PP_COMMANDS = 0x3, // Original value: 0x00000003
 
     /// TPML_CC
-    AuditCommands = 0x00000004,
+    AUDIT_COMMANDS = 0x4, // Original value: 0x00000004
 
     /// TPML_PCR_SELECTION
-    PCRS = 0x00000005,
+    PCRS = 0x5, // Original value: 0x00000005
 
     /// TPML_TAGGED_TPM_PROPERTY
-    TpmProperties = 0x00000006,
+    TPM_PROPERTIES = 0x6, // Original value: 0x00000006
 
     /// TPML_TAGGED_PCR_PROPERTY
-    PcrProperties = 0x00000007,
+    PCR_PROPERTIES = 0x7, // Original value: 0x00000007
 
     /// TPML_ECC_CURVE
-    EccCurves = 0x00000008,
+    ECC_CURVES = 0x8, // Original value: 0x00000008
 
     /// TPML_TAGGED_POLICY
-    AuthPolicies = 0x00000009,
+    AUTH_POLICIES = 0x9, // Original value: 0x00000009
 
     /// TPML_ACT_DATA
-    ACT = 0x0000000A,
-    LAST = 0x0000000A,
+    ACT = 0xA, // Original value: 0x0000000A
+    // WARNING: LAST has duplicate value 0xA - using name + value pattern
+    LASTValue = 0xA, // Original value: 0x0000000A
 
     /// Manufacturer-specific values
-    VendorProperty = 0x00000100
-}
-
-impl TryFrom<u32> for TPM_CAP {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x00000000 => Ok(Self::FIRST),
-            0x00000000 => Ok(Self::ALGS),
-            0x00000001 => Ok(Self::HANDLES),
-            0x00000002 => Ok(Self::COMMANDS),
-            0x00000003 => Ok(Self::PpCommands),
-            0x00000004 => Ok(Self::AuditCommands),
-            0x00000005 => Ok(Self::PCRS),
-            0x00000006 => Ok(Self::TpmProperties),
-            0x00000007 => Ok(Self::PcrProperties),
-            0x00000008 => Ok(Self::EccCurves),
-            0x00000009 => Ok(Self::AuthPolicies),
-            0x0000000A => Ok(Self::ACT),
-            0x0000000A => Ok(Self::LAST),
-            0x00000100 => Ok(Self::VendorProperty),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    VENDOR_PROPERTY = 0x100 // Original value: 0x00000100
 }
 
 impl fmt::Display for TPM_CAP {
@@ -2622,130 +1897,130 @@ impl fmt::Display for TPM_CAP {
             Self::ALGS => write!(f, "ALGS"),
             Self::HANDLES => write!(f, "HANDLES"),
             Self::COMMANDS => write!(f, "COMMANDS"),
-            Self::PpCommands => write!(f, "PpCommands"),
-            Self::AuditCommands => write!(f, "AuditCommands"),
+            Self::PP_COMMANDS => write!(f, "PP_COMMANDS"),
+            Self::AUDIT_COMMANDS => write!(f, "AUDIT_COMMANDS"),
             Self::PCRS => write!(f, "PCRS"),
-            Self::TpmProperties => write!(f, "TpmProperties"),
-            Self::PcrProperties => write!(f, "PcrProperties"),
-            Self::EccCurves => write!(f, "EccCurves"),
-            Self::AuthPolicies => write!(f, "AuthPolicies"),
+            Self::TPM_PROPERTIES => write!(f, "TPM_PROPERTIES"),
+            Self::PCR_PROPERTIES => write!(f, "PCR_PROPERTIES"),
+            Self::ECC_CURVES => write!(f, "ECC_CURVES"),
+            Self::AUTH_POLICIES => write!(f, "AUTH_POLICIES"),
             Self::ACT => write!(f, "ACT"),
             Self::LAST => write!(f, "LAST"),
-            Self::VendorProperty => write!(f, "VendorProperty"),
+            Self::VENDOR_PROPERTY => write!(f, "VENDOR_PROPERTY"),
         }
-
     }
-
 }
 
 /// The TPM_PT constants are used in TPM2_GetCapability(capability =
 /// TPM_CAP_TPM_PROPERTIES) to indicate the property being selected or returned.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_PT {
     /// Indicates no property type
-    NONE = 0x00000000,
+    NONE = 0x0, // Original value: 0x00000000
 
     /// The number of properties in each group.
     /// NOTE The first group with any properties is group 1 (PT_GROUP * 1). Group 0 is reserved.
-    PtGroup = 0x00000100,
+    PT_GROUP = 0x100, // Original value: 0x00000100
 
     /// The group of fixed properties returned as TPMS_TAGGED_PROPERTY
     /// The values in this group are only changed due to a firmware change in the TPM.
-    PtFixed = PT_GROUP * 1,
+    // WARNING: PT_FIXED has duplicate value 0x100 - using name + value pattern
+    PT_FIXEDValue = 0x100, // Original value: PT_GROUP * 1
 
     /// A 4-octet character string containing the TPM Family value (TPM_SPEC_FAMILY)
-    FamilyIndicator = PT_FIXED + 0,
+    // WARNING: FAMILY_INDICATOR has duplicate value 0x100 - using name + value pattern
+    FAMILY_INDICATORValue = 0x100, // Original value: PT_FIXED + 0
 
     /// The level of the specification
     /// NOTE 1 For this specification, the level is zero.
     /// NOTE 2 The level is on the title page of the specification.
-    LEVEL = PT_FIXED + 1,
+    LEVEL = 0x101, // Original value: PT_FIXED + 1
 
     /// The specification Revision times 100
     /// EXAMPLE Revision 01.01 would have a value of 101.
     /// NOTE The Revision value is on the title page of the specification.
-    REVISION = PT_FIXED + 2,
+    REVISION = 0x102, // Original value: PT_FIXED + 2
 
     /// The specification day of year using TCG calendar
     /// EXAMPLE November 15, 2010, has a day of year value of 319 (0000013F16).
     /// NOTE The specification date is on the title page of the specification or errata (see 6.1).
-    DayOfYear = PT_FIXED + 3,
+    DAY_OF_YEAR = 0x103, // Original value: PT_FIXED + 3
 
     /// The specification year using the CE
     /// EXAMPLE The year 2010 has a value of 000007DA16.
     /// NOTE The specification date is on the title page of the specification or errata (see 6.1).
-    YEAR = PT_FIXED + 4,
+    YEAR = 0x104, // Original value: PT_FIXED + 4
 
     /// The vendor ID unique to each TPM manufacturer
-    MANUFACTURER = PT_FIXED + 5,
+    MANUFACTURER = 0x105, // Original value: PT_FIXED + 5
 
     /// The first four characters of the vendor ID string
     /// NOTE When the vendor string is fewer than 16 octets, the additional property values do
     /// not have to be present. A vendor string of 4 octets can be represented in one 32-bit
     /// value and no null terminating character is required.
-    VendorString1 = PT_FIXED + 6,
+    VENDOR_STRING_1 = 0x106, // Original value: PT_FIXED + 6
 
     /// The second four characters of the vendor ID string
-    VendorString2 = PT_FIXED + 7,
+    VENDOR_STRING_2 = 0x107, // Original value: PT_FIXED + 7
 
     /// The third four characters of the vendor ID string
-    VendorString3 = PT_FIXED + 8,
+    VENDOR_STRING_3 = 0x108, // Original value: PT_FIXED + 8
 
     /// The fourth four characters of the vendor ID sting
-    VendorString4 = PT_FIXED + 9,
+    VENDOR_STRING_4 = 0x109, // Original value: PT_FIXED + 9
 
     /// Vendor-defined value indicating the TPM model
-    VendorTpmType = PT_FIXED + 10,
+    VENDOR_TPM_TYPE = 0x10A, // Original value: PT_FIXED + 10
 
     /// The most-significant 32 bits of a TPM vendor-specific value indicating the version
     /// number of the firmware. See 10.12.2 and 10.12.12.
-    FirmwareVersion1 = PT_FIXED + 11,
+    FIRMWARE_VERSION_1 = 0x10B, // Original value: PT_FIXED + 11
 
     /// The least-significant 32 bits of a TPM vendor-specific value indicating the version
     /// number of the firmware. See 10.12.2 and 10.12.12.
-    FirmwareVersion2 = PT_FIXED + 12,
+    FIRMWARE_VERSION_2 = 0x10C, // Original value: PT_FIXED + 12
 
     /// The maximum size of a parameter (typically, a TPM2B_MAX_BUFFER)
-    InputBuffer = PT_FIXED + 13,
+    INPUT_BUFFER = 0x10D, // Original value: PT_FIXED + 13
 
     /// The minimum number of transient objects that can be held in TPM RAM
     /// NOTE This minimum shall be no less than the minimum value required by the
     /// platform-specific specification to which the TPM is built.
-    HrTransientMin = PT_FIXED + 14,
+    HR_TRANSIENT_MIN = 0x10E, // Original value: PT_FIXED + 14
 
     /// The minimum number of persistent objects that can be held in TPM NV memory
     /// NOTE This minimum shall be no less than the minimum value required by the
     /// platform-specific specification to which the TPM is built.
-    HrPersistentMin = PT_FIXED + 15,
+    HR_PERSISTENT_MIN = 0x10F, // Original value: PT_FIXED + 15
 
     /// The minimum number of authorization sessions that can be held in TPM RAM
     /// NOTE This minimum shall be no less than the minimum value required by the
     /// platform-specific specification to which the TPM is built.
-    HrLoadedMin = PT_FIXED + 16,
+    HR_LOADED_MIN = 0x110, // Original value: PT_FIXED + 16
 
     /// The number of authorization sessions that may be active at a time
     /// A session is active when it has a context associated with its handle. The context may
     /// either be in TPM RAM or be context saved.
     /// NOTE This value shall be no less than the minimum value required by the
     /// platform-specific specification to which the TPM is built.
-    ActiveSessionsMax = PT_FIXED + 17,
+    ACTIVE_SESSIONS_MAX = 0x111, // Original value: PT_FIXED + 17
 
     /// The number of PCR implemented
     /// NOTE This number is determined by the defined attributes, not the number of PCR that
     /// are populated.
-    PcrCount = PT_FIXED + 18,
+    PCR_COUNT = 0x112, // Original value: PT_FIXED + 18
 
     /// The minimum number of octets in a TPMS_PCR_SELECT.sizeOfSelect
     /// NOTE This value is not determined by the number of PCR implemented but by the number
     /// of PCR required by the platform-specific specification with which the TPM is compliant
     /// or by the implementer if not adhering to a platform-specific specification.
-    PcrSelectMin = PT_FIXED + 19,
+    PCR_SELECT_MIN = 0x113, // Original value: PT_FIXED + 19
 
     /// The maximum allowed difference (unsigned) between the contextID values of two saved
     /// session contexts
     /// This value shall be 2n-1, where n is at least 16.
-    ContextGapMax = PT_FIXED + 20,
+    CONTEXT_GAP_MAX = 0x114, // Original value: PT_FIXED + 20
 
     /// The maximum number of NV Indexes that are allowed to have the TPM_NT_COUNTER attribute
     /// NOTE 1 It is allowed for this value to be larger than the number of NV Indexes that
@@ -2753,26 +2028,26 @@ pub enum TPM_PT {
     /// different implementation technology for different NV Index types.
     /// NOTE 2 The value zero indicates that there is no fixed maximum. The number of counter
     /// indexes is determined by the available NV memory pool.
-    NvCountersMax = PT_FIXED + 22,
+    NV_COUNTERS_MAX = 0x116, // Original value: PT_FIXED + 22
 
     /// The maximum size of an NV Index data area
-    NvIndexMax = PT_FIXED + 23,
+    NV_INDEX_MAX = 0x117, // Original value: PT_FIXED + 23
 
     /// A TPMA_MEMORY indicating the memory management method for the TPM
-    MEMORY = PT_FIXED + 24,
+    MEMORY = 0x118, // Original value: PT_FIXED + 24
 
     /// Interval, in milliseconds, between updates to the copy of TPMS_CLOCK_INFO.clock in NV
-    ClockUpdate = PT_FIXED + 25,
+    CLOCK_UPDATE = 0x119, // Original value: PT_FIXED + 25
 
     /// The algorithm used for the integrity HMAC on saved contexts and for hashing the fuData
     /// of TPM2_FirmwareRead()
-    ContextHash = PT_FIXED + 26,
+    CONTEXT_HASH = 0x11A, // Original value: PT_FIXED + 26
 
     /// TPM_ALG_ID, the algorithm used for encryption of saved contexts
-    ContextSym = PT_FIXED + 27,
+    CONTEXT_SYM = 0x11B, // Original value: PT_FIXED + 27
 
     /// TPM_KEY_BITS, the size of the key used for encryption of saved contexts
-    ContextSymSize = PT_FIXED + 28,
+    CONTEXT_SYM_SIZE = 0x11C, // Original value: PT_FIXED + 28
 
     /// The modulus - 1 of the count for NV update of an orderly counter
     /// The returned value is MAX_ORDERLY_COUNT.
@@ -2781,80 +2056,81 @@ pub enum TPM_PT {
     /// TPMA_NV_ORDERLY SET.
     /// NOTE 2 When the low-order bits of a counter equal this value, an NV write occurs on
     /// the next increment.
-    OrderlyCount = PT_FIXED + 29,
+    ORDERLY_COUNT = 0x11D, // Original value: PT_FIXED + 29
 
     /// The maximum value for commandSize in a command
-    MaxCommandSize = PT_FIXED + 30,
+    MAX_COMMAND_SIZE = 0x11E, // Original value: PT_FIXED + 30
 
     /// The maximum value for responseSize in a response
-    MaxResponseSize = PT_FIXED + 31,
+    MAX_RESPONSE_SIZE = 0x11F, // Original value: PT_FIXED + 31
 
     /// The maximum size of a digest that can be produced by the TPM
-    MaxDigest = PT_FIXED + 32,
+    MAX_DIGEST = 0x120, // Original value: PT_FIXED + 32
 
     /// The maximum size of an object context that will be returned by TPM2_ContextSave
-    MaxObjectContext = PT_FIXED + 33,
+    MAX_OBJECT_CONTEXT = 0x121, // Original value: PT_FIXED + 33
 
     /// The maximum size of a session context that will be returned by TPM2_ContextSave
-    MaxSessionContext = PT_FIXED + 34,
+    MAX_SESSION_CONTEXT = 0x122, // Original value: PT_FIXED + 34
 
     /// Platform-specific family (a TPM_PS value)(see Table 25)
     /// NOTE The platform-specific values for the TPM_PT_PS parameters are in the relevant
     /// platform-specific specification. In the reference implementation, all of these values
     /// are 0.
-    PsFamilyIndicator = PT_FIXED + 35,
+    PS_FAMILY_INDICATOR = 0x123, // Original value: PT_FIXED + 35
 
     /// The level of the platform-specific specification
-    PsLevel = PT_FIXED + 36,
+    PS_LEVEL = 0x124, // Original value: PT_FIXED + 36
 
     /// A platform specific value
-    PsRevision = PT_FIXED + 37,
+    PS_REVISION = 0x125, // Original value: PT_FIXED + 37
 
     /// The platform-specific TPM specification day of year using TCG calendar
     /// EXAMPLE November 15, 2010, has a day of year value of 319 (0000013F16).
-    PsDayOfYear = PT_FIXED + 38,
+    PS_DAY_OF_YEAR = 0x126, // Original value: PT_FIXED + 38
 
     /// The platform-specific TPM specification year using the CE
     /// EXAMPLE The year 2010 has a value of 000007DA16.
-    PsYear = PT_FIXED + 39,
+    PS_YEAR = 0x127, // Original value: PT_FIXED + 39
 
     /// The number of split signing operations supported by the TPM
-    SplitMax = PT_FIXED + 40,
+    SPLIT_MAX = 0x128, // Original value: PT_FIXED + 40
 
     /// Total number of commands implemented in the TPM
-    TotalCommands = PT_FIXED + 41,
+    TOTAL_COMMANDS = 0x129, // Original value: PT_FIXED + 41
 
     /// Number of commands from the TPM library that are implemented
-    LibraryCommands = PT_FIXED + 42,
+    LIBRARY_COMMANDS = 0x12A, // Original value: PT_FIXED + 42
 
     /// Number of vendor commands that are implemented
-    VendorCommands = PT_FIXED + 43,
+    VENDOR_COMMANDS = 0x12B, // Original value: PT_FIXED + 43
 
     /// The maximum data size in one NV write, NV read, NV extend, or NV certify command
-    NvBufferMax = PT_FIXED + 44,
+    NV_BUFFER_MAX = 0x12C, // Original value: PT_FIXED + 44
 
     /// A TPMA_MODES value, indicating that the TPM is designed for these modes.
-    MODES = PT_FIXED + 45,
+    MODES = 0x12D, // Original value: PT_FIXED + 45
 
     /// The maximum size of a TPMS_CAPABILITY_DATA structure returned in TPM2_GetCapability().
-    MaxCapBuffer = PT_FIXED + 46,
+    MAX_CAP_BUFFER = 0x12E, // Original value: PT_FIXED + 46
 
     /// The group of variable properties returned as TPMS_TAGGED_PROPERTY
     /// The properties in this group change because of a Protected Capability other than a
     /// firmware update. The values are not necessarily persistent across all power transitions.
-    PtVar = PT_GROUP * 2,
+    PT_VAR = 0x200, // Original value: PT_GROUP * 2
 
     /// TPMA_PERMANENT
-    PERMANENT = PT_VAR + 0,
+    // WARNING: PERMANENT has duplicate value 0x200 - using name + value pattern
+    PERMANENTValue = 0x200, // Original value: PT_VAR + 0
 
     /// TPMA_STARTUP_CLEAR
-    StartupClear = PT_VAR + 1,
+    STARTUP_CLEAR = 0x201, // Original value: PT_VAR + 1
 
     /// The number of NV Indexes currently defined
-    HrNvIndex = PT_VAR + 2,
+    HR_NV_INDEX = 0x202, // Original value: PT_VAR + 2
 
     /// The number of authorization sessions currently loaded into TPM RAM
-    HrLoaded = PT_VAR + 3,
+    HR_LOADED = 0x203, // Original value: PT_VAR + 3
 
     /// The number of additional authorization sessions, of any type, that could be loaded
     /// into TPM RAM
@@ -2863,11 +2139,11 @@ pub enum TPM_PT {
     /// memory allocation can make this estimate invalid.
     /// NOTE A valid implementation may return 1 even if more than one authorization session
     /// would fit into RAM.
-    HrLoadedAvail = PT_VAR + 4,
+    HR_LOADED_AVAIL = 0x204, // Original value: PT_VAR + 4
 
     /// The number of active authorization sessions currently being tracked by the TPM
     /// This is the sum of the loaded and saved sessions.
-    HrActive = PT_VAR + 5,
+    HR_ACTIVE = 0x205, // Original value: PT_VAR + 5
 
     /// The number of additional authorization sessions, of any type, that could be created
     /// This value is an estimate. If this value is at least 1, then at least one
@@ -2875,7 +2151,7 @@ pub enum TPM_PT {
     /// memory allocation can make this estimate invalid.
     /// NOTE A valid implementation may return 1 even if more than one authorization session
     /// could be created.
-    HrActiveAvail = PT_VAR + 6,
+    HR_ACTIVE_AVAIL = 0x206, // Original value: PT_VAR + 6
 
     /// Estimate of the number of additional transient objects that could be loaded into TPM RAM
     /// This value is an estimate. If this value is at least 1, then at least one object of
@@ -2883,10 +2159,10 @@ pub enum TPM_PT {
     /// estimate invalid.
     /// NOTE A valid implementation may return 1 even if more than one transient object would
     /// fit into RAM.
-    HrTransientAvail = PT_VAR + 7,
+    HR_TRANSIENT_AVAIL = 0x207, // Original value: PT_VAR + 7
 
     /// The number of persistent objects currently loaded into TPM NV memory
-    HrPersistent = PT_VAR + 8,
+    HR_PERSISTENT = 0x208, // Original value: PT_VAR + 8
 
     /// The number of additional persistent objects that could be loaded into NV memory
     /// This value is an estimate. If this value is at least 1, then at least one object of
@@ -2894,10 +2170,10 @@ pub enum TPM_PT {
     /// make this estimate invalid.
     /// NOTE A valid implementation may return 1 even if more than one persistent object would
     /// fit into NV memory.
-    HrPersistentAvail = PT_VAR + 9,
+    HR_PERSISTENT_AVAIL = 0x209, // Original value: PT_VAR + 9
 
     /// The number of defined NV Indexes that have NV the TPM_NT_COUNTER attribute
-    NvCounters = PT_VAR + 10,
+    NV_COUNTERS = 0x20A, // Original value: PT_VAR + 10
 
     /// The number of additional NV Indexes that can be defined with their TPM_NT of
     /// TPM_NV_COUNTER and the TPMA_NV_ORDERLY attribute SET
@@ -2905,311 +2181,199 @@ pub enum TPM_PT {
     /// be created with a TPM_NT of TPM_NV_COUNTER and the TPMA_NV_ORDERLY attributes. Any
     /// command that changes the NV memory allocation can make this estimate invalid.
     /// NOTE A valid implementation may return 1 even if more than one NV counter could be defined.
-    NvCountersAvail = PT_VAR + 11,
+    NV_COUNTERS_AVAIL = 0x20B, // Original value: PT_VAR + 11
 
     /// Code that limits the algorithms that may be used with the TPM
-    AlgorithmSet = PT_VAR + 12,
+    ALGORITHM_SET = 0x20C, // Original value: PT_VAR + 12
 
     /// The number of loaded ECC curves
-    LoadedCurves = PT_VAR + 13,
+    LOADED_CURVES = 0x20D, // Original value: PT_VAR + 13
 
     /// The current value of the lockout counter (failedTries)
-    LockoutCounter = PT_VAR + 14,
+    LOCKOUT_COUNTER = 0x20E, // Original value: PT_VAR + 14
 
     /// The number of authorization failures before DA lockout is invoked
-    MaxAuthFail = PT_VAR + 15,
+    MAX_AUTH_FAIL = 0x20F, // Original value: PT_VAR + 15
 
     /// The number of seconds before the value reported by TPM_PT_LOCKOUT_COUNTER is decremented
-    LockoutInterval = PT_VAR + 16,
+    LOCKOUT_INTERVAL = 0x210, // Original value: PT_VAR + 16
 
     /// The number of seconds after a lockoutAuth failure before use of lockoutAuth may be
     /// attempted again
-    LockoutRecovery = PT_VAR + 17,
+    LOCKOUT_RECOVERY = 0x211, // Original value: PT_VAR + 17
 
     /// Number of milliseconds before the TPM will accept another command that will modify NV
     /// This value is an approximation and may go up or down over time.
-    NvWriteRecovery = PT_VAR + 18,
+    NV_WRITE_RECOVERY = 0x212, // Original value: PT_VAR + 18
 
     /// The high-order 32 bits of the command audit counter
-    AuditCounter0 = PT_VAR + 19,
+    AUDIT_COUNTER_0 = 0x213, // Original value: PT_VAR + 19
 
     /// The low-order 32 bits of the command audit counter
-    AuditCounter1 = PT_VAR + 20
-}
-
-impl TryFrom<u32> for TPM_PT {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x00000000 => Ok(Self::NONE),
-            0x00000100 => Ok(Self::PtGroup),
-            PT_GROUP * 1 => Ok(Self::PtFixed),
-            PT_FIXED + 0 => Ok(Self::FamilyIndicator),
-            PT_FIXED + 1 => Ok(Self::LEVEL),
-            PT_FIXED + 2 => Ok(Self::REVISION),
-            PT_FIXED + 3 => Ok(Self::DayOfYear),
-            PT_FIXED + 4 => Ok(Self::YEAR),
-            PT_FIXED + 5 => Ok(Self::MANUFACTURER),
-            PT_FIXED + 6 => Ok(Self::VendorString1),
-            PT_FIXED + 7 => Ok(Self::VendorString2),
-            PT_FIXED + 8 => Ok(Self::VendorString3),
-            PT_FIXED + 9 => Ok(Self::VendorString4),
-            PT_FIXED + 10 => Ok(Self::VendorTpmType),
-            PT_FIXED + 11 => Ok(Self::FirmwareVersion1),
-            PT_FIXED + 12 => Ok(Self::FirmwareVersion2),
-            PT_FIXED + 13 => Ok(Self::InputBuffer),
-            PT_FIXED + 14 => Ok(Self::HrTransientMin),
-            PT_FIXED + 15 => Ok(Self::HrPersistentMin),
-            PT_FIXED + 16 => Ok(Self::HrLoadedMin),
-            PT_FIXED + 17 => Ok(Self::ActiveSessionsMax),
-            PT_FIXED + 18 => Ok(Self::PcrCount),
-            PT_FIXED + 19 => Ok(Self::PcrSelectMin),
-            PT_FIXED + 20 => Ok(Self::ContextGapMax),
-            PT_FIXED + 22 => Ok(Self::NvCountersMax),
-            PT_FIXED + 23 => Ok(Self::NvIndexMax),
-            PT_FIXED + 24 => Ok(Self::MEMORY),
-            PT_FIXED + 25 => Ok(Self::ClockUpdate),
-            PT_FIXED + 26 => Ok(Self::ContextHash),
-            PT_FIXED + 27 => Ok(Self::ContextSym),
-            PT_FIXED + 28 => Ok(Self::ContextSymSize),
-            PT_FIXED + 29 => Ok(Self::OrderlyCount),
-            PT_FIXED + 30 => Ok(Self::MaxCommandSize),
-            PT_FIXED + 31 => Ok(Self::MaxResponseSize),
-            PT_FIXED + 32 => Ok(Self::MaxDigest),
-            PT_FIXED + 33 => Ok(Self::MaxObjectContext),
-            PT_FIXED + 34 => Ok(Self::MaxSessionContext),
-            PT_FIXED + 35 => Ok(Self::PsFamilyIndicator),
-            PT_FIXED + 36 => Ok(Self::PsLevel),
-            PT_FIXED + 37 => Ok(Self::PsRevision),
-            PT_FIXED + 38 => Ok(Self::PsDayOfYear),
-            PT_FIXED + 39 => Ok(Self::PsYear),
-            PT_FIXED + 40 => Ok(Self::SplitMax),
-            PT_FIXED + 41 => Ok(Self::TotalCommands),
-            PT_FIXED + 42 => Ok(Self::LibraryCommands),
-            PT_FIXED + 43 => Ok(Self::VendorCommands),
-            PT_FIXED + 44 => Ok(Self::NvBufferMax),
-            PT_FIXED + 45 => Ok(Self::MODES),
-            PT_FIXED + 46 => Ok(Self::MaxCapBuffer),
-            PT_GROUP * 2 => Ok(Self::PtVar),
-            PT_VAR + 0 => Ok(Self::PERMANENT),
-            PT_VAR + 1 => Ok(Self::StartupClear),
-            PT_VAR + 2 => Ok(Self::HrNvIndex),
-            PT_VAR + 3 => Ok(Self::HrLoaded),
-            PT_VAR + 4 => Ok(Self::HrLoadedAvail),
-            PT_VAR + 5 => Ok(Self::HrActive),
-            PT_VAR + 6 => Ok(Self::HrActiveAvail),
-            PT_VAR + 7 => Ok(Self::HrTransientAvail),
-            PT_VAR + 8 => Ok(Self::HrPersistent),
-            PT_VAR + 9 => Ok(Self::HrPersistentAvail),
-            PT_VAR + 10 => Ok(Self::NvCounters),
-            PT_VAR + 11 => Ok(Self::NvCountersAvail),
-            PT_VAR + 12 => Ok(Self::AlgorithmSet),
-            PT_VAR + 13 => Ok(Self::LoadedCurves),
-            PT_VAR + 14 => Ok(Self::LockoutCounter),
-            PT_VAR + 15 => Ok(Self::MaxAuthFail),
-            PT_VAR + 16 => Ok(Self::LockoutInterval),
-            PT_VAR + 17 => Ok(Self::LockoutRecovery),
-            PT_VAR + 18 => Ok(Self::NvWriteRecovery),
-            PT_VAR + 19 => Ok(Self::AuditCounter0),
-            PT_VAR + 20 => Ok(Self::AuditCounter1),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    AUDIT_COUNTER_1 = 0x214 // Original value: PT_VAR + 20
 }
 
 impl fmt::Display for TPM_PT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::NONE => write!(f, "NONE"),
-            Self::PtGroup => write!(f, "PtGroup"),
-            Self::PtFixed => write!(f, "PtFixed"),
-            Self::FamilyIndicator => write!(f, "FamilyIndicator"),
+            Self::PT_GROUP => write!(f, "PT_GROUP"),
+            Self::PT_FIXED => write!(f, "PT_FIXED"),
+            Self::FAMILY_INDICATOR => write!(f, "FAMILY_INDICATOR"),
             Self::LEVEL => write!(f, "LEVEL"),
             Self::REVISION => write!(f, "REVISION"),
-            Self::DayOfYear => write!(f, "DayOfYear"),
+            Self::DAY_OF_YEAR => write!(f, "DAY_OF_YEAR"),
             Self::YEAR => write!(f, "YEAR"),
             Self::MANUFACTURER => write!(f, "MANUFACTURER"),
-            Self::VendorString1 => write!(f, "VendorString1"),
-            Self::VendorString2 => write!(f, "VendorString2"),
-            Self::VendorString3 => write!(f, "VendorString3"),
-            Self::VendorString4 => write!(f, "VendorString4"),
-            Self::VendorTpmType => write!(f, "VendorTpmType"),
-            Self::FirmwareVersion1 => write!(f, "FirmwareVersion1"),
-            Self::FirmwareVersion2 => write!(f, "FirmwareVersion2"),
-            Self::InputBuffer => write!(f, "InputBuffer"),
-            Self::HrTransientMin => write!(f, "HrTransientMin"),
-            Self::HrPersistentMin => write!(f, "HrPersistentMin"),
-            Self::HrLoadedMin => write!(f, "HrLoadedMin"),
-            Self::ActiveSessionsMax => write!(f, "ActiveSessionsMax"),
-            Self::PcrCount => write!(f, "PcrCount"),
-            Self::PcrSelectMin => write!(f, "PcrSelectMin"),
-            Self::ContextGapMax => write!(f, "ContextGapMax"),
-            Self::NvCountersMax => write!(f, "NvCountersMax"),
-            Self::NvIndexMax => write!(f, "NvIndexMax"),
+            Self::VENDOR_STRING_1 => write!(f, "VENDOR_STRING_1"),
+            Self::VENDOR_STRING_2 => write!(f, "VENDOR_STRING_2"),
+            Self::VENDOR_STRING_3 => write!(f, "VENDOR_STRING_3"),
+            Self::VENDOR_STRING_4 => write!(f, "VENDOR_STRING_4"),
+            Self::VENDOR_TPM_TYPE => write!(f, "VENDOR_TPM_TYPE"),
+            Self::FIRMWARE_VERSION_1 => write!(f, "FIRMWARE_VERSION_1"),
+            Self::FIRMWARE_VERSION_2 => write!(f, "FIRMWARE_VERSION_2"),
+            Self::INPUT_BUFFER => write!(f, "INPUT_BUFFER"),
+            Self::HR_TRANSIENT_MIN => write!(f, "HR_TRANSIENT_MIN"),
+            Self::HR_PERSISTENT_MIN => write!(f, "HR_PERSISTENT_MIN"),
+            Self::HR_LOADED_MIN => write!(f, "HR_LOADED_MIN"),
+            Self::ACTIVE_SESSIONS_MAX => write!(f, "ACTIVE_SESSIONS_MAX"),
+            Self::PCR_COUNT => write!(f, "PCR_COUNT"),
+            Self::PCR_SELECT_MIN => write!(f, "PCR_SELECT_MIN"),
+            Self::CONTEXT_GAP_MAX => write!(f, "CONTEXT_GAP_MAX"),
+            Self::NV_COUNTERS_MAX => write!(f, "NV_COUNTERS_MAX"),
+            Self::NV_INDEX_MAX => write!(f, "NV_INDEX_MAX"),
             Self::MEMORY => write!(f, "MEMORY"),
-            Self::ClockUpdate => write!(f, "ClockUpdate"),
-            Self::ContextHash => write!(f, "ContextHash"),
-            Self::ContextSym => write!(f, "ContextSym"),
-            Self::ContextSymSize => write!(f, "ContextSymSize"),
-            Self::OrderlyCount => write!(f, "OrderlyCount"),
-            Self::MaxCommandSize => write!(f, "MaxCommandSize"),
-            Self::MaxResponseSize => write!(f, "MaxResponseSize"),
-            Self::MaxDigest => write!(f, "MaxDigest"),
-            Self::MaxObjectContext => write!(f, "MaxObjectContext"),
-            Self::MaxSessionContext => write!(f, "MaxSessionContext"),
-            Self::PsFamilyIndicator => write!(f, "PsFamilyIndicator"),
-            Self::PsLevel => write!(f, "PsLevel"),
-            Self::PsRevision => write!(f, "PsRevision"),
-            Self::PsDayOfYear => write!(f, "PsDayOfYear"),
-            Self::PsYear => write!(f, "PsYear"),
-            Self::SplitMax => write!(f, "SplitMax"),
-            Self::TotalCommands => write!(f, "TotalCommands"),
-            Self::LibraryCommands => write!(f, "LibraryCommands"),
-            Self::VendorCommands => write!(f, "VendorCommands"),
-            Self::NvBufferMax => write!(f, "NvBufferMax"),
+            Self::CLOCK_UPDATE => write!(f, "CLOCK_UPDATE"),
+            Self::CONTEXT_HASH => write!(f, "CONTEXT_HASH"),
+            Self::CONTEXT_SYM => write!(f, "CONTEXT_SYM"),
+            Self::CONTEXT_SYM_SIZE => write!(f, "CONTEXT_SYM_SIZE"),
+            Self::ORDERLY_COUNT => write!(f, "ORDERLY_COUNT"),
+            Self::MAX_COMMAND_SIZE => write!(f, "MAX_COMMAND_SIZE"),
+            Self::MAX_RESPONSE_SIZE => write!(f, "MAX_RESPONSE_SIZE"),
+            Self::MAX_DIGEST => write!(f, "MAX_DIGEST"),
+            Self::MAX_OBJECT_CONTEXT => write!(f, "MAX_OBJECT_CONTEXT"),
+            Self::MAX_SESSION_CONTEXT => write!(f, "MAX_SESSION_CONTEXT"),
+            Self::PS_FAMILY_INDICATOR => write!(f, "PS_FAMILY_INDICATOR"),
+            Self::PS_LEVEL => write!(f, "PS_LEVEL"),
+            Self::PS_REVISION => write!(f, "PS_REVISION"),
+            Self::PS_DAY_OF_YEAR => write!(f, "PS_DAY_OF_YEAR"),
+            Self::PS_YEAR => write!(f, "PS_YEAR"),
+            Self::SPLIT_MAX => write!(f, "SPLIT_MAX"),
+            Self::TOTAL_COMMANDS => write!(f, "TOTAL_COMMANDS"),
+            Self::LIBRARY_COMMANDS => write!(f, "LIBRARY_COMMANDS"),
+            Self::VENDOR_COMMANDS => write!(f, "VENDOR_COMMANDS"),
+            Self::NV_BUFFER_MAX => write!(f, "NV_BUFFER_MAX"),
             Self::MODES => write!(f, "MODES"),
-            Self::MaxCapBuffer => write!(f, "MaxCapBuffer"),
-            Self::PtVar => write!(f, "PtVar"),
+            Self::MAX_CAP_BUFFER => write!(f, "MAX_CAP_BUFFER"),
+            Self::PT_VAR => write!(f, "PT_VAR"),
             Self::PERMANENT => write!(f, "PERMANENT"),
-            Self::StartupClear => write!(f, "StartupClear"),
-            Self::HrNvIndex => write!(f, "HrNvIndex"),
-            Self::HrLoaded => write!(f, "HrLoaded"),
-            Self::HrLoadedAvail => write!(f, "HrLoadedAvail"),
-            Self::HrActive => write!(f, "HrActive"),
-            Self::HrActiveAvail => write!(f, "HrActiveAvail"),
-            Self::HrTransientAvail => write!(f, "HrTransientAvail"),
-            Self::HrPersistent => write!(f, "HrPersistent"),
-            Self::HrPersistentAvail => write!(f, "HrPersistentAvail"),
-            Self::NvCounters => write!(f, "NvCounters"),
-            Self::NvCountersAvail => write!(f, "NvCountersAvail"),
-            Self::AlgorithmSet => write!(f, "AlgorithmSet"),
-            Self::LoadedCurves => write!(f, "LoadedCurves"),
-            Self::LockoutCounter => write!(f, "LockoutCounter"),
-            Self::MaxAuthFail => write!(f, "MaxAuthFail"),
-            Self::LockoutInterval => write!(f, "LockoutInterval"),
-            Self::LockoutRecovery => write!(f, "LockoutRecovery"),
-            Self::NvWriteRecovery => write!(f, "NvWriteRecovery"),
-            Self::AuditCounter0 => write!(f, "AuditCounter0"),
-            Self::AuditCounter1 => write!(f, "AuditCounter1"),
+            Self::STARTUP_CLEAR => write!(f, "STARTUP_CLEAR"),
+            Self::HR_NV_INDEX => write!(f, "HR_NV_INDEX"),
+            Self::HR_LOADED => write!(f, "HR_LOADED"),
+            Self::HR_LOADED_AVAIL => write!(f, "HR_LOADED_AVAIL"),
+            Self::HR_ACTIVE => write!(f, "HR_ACTIVE"),
+            Self::HR_ACTIVE_AVAIL => write!(f, "HR_ACTIVE_AVAIL"),
+            Self::HR_TRANSIENT_AVAIL => write!(f, "HR_TRANSIENT_AVAIL"),
+            Self::HR_PERSISTENT => write!(f, "HR_PERSISTENT"),
+            Self::HR_PERSISTENT_AVAIL => write!(f, "HR_PERSISTENT_AVAIL"),
+            Self::NV_COUNTERS => write!(f, "NV_COUNTERS"),
+            Self::NV_COUNTERS_AVAIL => write!(f, "NV_COUNTERS_AVAIL"),
+            Self::ALGORITHM_SET => write!(f, "ALGORITHM_SET"),
+            Self::LOADED_CURVES => write!(f, "LOADED_CURVES"),
+            Self::LOCKOUT_COUNTER => write!(f, "LOCKOUT_COUNTER"),
+            Self::MAX_AUTH_FAIL => write!(f, "MAX_AUTH_FAIL"),
+            Self::LOCKOUT_INTERVAL => write!(f, "LOCKOUT_INTERVAL"),
+            Self::LOCKOUT_RECOVERY => write!(f, "LOCKOUT_RECOVERY"),
+            Self::NV_WRITE_RECOVERY => write!(f, "NV_WRITE_RECOVERY"),
+            Self::AUDIT_COUNTER_0 => write!(f, "AUDIT_COUNTER_0"),
+            Self::AUDIT_COUNTER_1 => write!(f, "AUDIT_COUNTER_1"),
         }
-
     }
-
 }
 
 /// The TPM_PT_PCR constants are used in TPM2_GetCapability() to indicate the property
 /// being selected or returned. The PCR properties can be read when capability ==
 /// TPM_CAP_PCR_PROPERTIES. If there is no property that corresponds to the value of
 /// property, the next higher value is returned, if it exists.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_PT_PCR {
     /// Bottom of the range of TPM_PT_PCR properties
-    FIRST = 0x00000000,
+    FIRST = 0x0, // Original value: 0x00000000
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR is saved and restored by TPM_SU_STATE
-    SAVE = 0x00000000,
+    // WARNING: SAVE has duplicate value 0x0 - using name + value pattern
+    SAVEValue = 0x0, // Original value: 0x00000000
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 0
     /// This property is only present if a locality other than 0 is implemented.
-    ExtendL0 = 0x00000001,
+    EXTEND_L0 = 0x1, // Original value: 0x00000001
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 0
-    ResetL0 = 0x00000002,
+    RESET_L0 = 0x2, // Original value: 0x00000002
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 1
     /// This property is only present if locality 1 is implemented.
-    ExtendL1 = 0x00000003,
+    EXTEND_L1 = 0x3, // Original value: 0x00000003
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 1
     /// This property is only present if locality 1 is implemented.
-    ResetL1 = 0x00000004,
+    RESET_L1 = 0x4, // Original value: 0x00000004
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 2
     /// This property is only present if localities 1 and 2 are implemented.
-    ExtendL2 = 0x00000005,
+    EXTEND_L2 = 0x5, // Original value: 0x00000005
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 2
     /// This property is only present if localities 1 and 2 are implemented.
-    ResetL2 = 0x00000006,
+    RESET_L2 = 0x6, // Original value: 0x00000006
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 3
     /// This property is only present if localities 1, 2, and 3 are implemented.
-    ExtendL3 = 0x00000007,
+    EXTEND_L3 = 0x7, // Original value: 0x00000007
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 3
     /// This property is only present if localities 1, 2, and 3 are implemented.
-    ResetL3 = 0x00000008,
+    RESET_L3 = 0x8, // Original value: 0x00000008
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be extended from locality 4
     /// This property is only present if localities 1, 2, 3, and 4 are implemented.
-    ExtendL4 = 0x00000009,
+    EXTEND_L4 = 0x9, // Original value: 0x00000009
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR may be reset by
     /// TPM2_PCR_Reset() from locality 4
     /// This property is only present if localities 1, 2, 3, and 4 are implemented.
-    ResetL4 = 0x0000000A,
+    RESET_L4 = 0xA, // Original value: 0x0000000A
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that modifications to this PCR (reset or
     /// Extend) will not increment the pcrUpdateCounter
-    NoIncrement = 0x00000011,
+    NO_INCREMENT = 0x11, // Original value: 0x00000011
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR is reset by a D-RTM event
     /// These PCR are reset to -1 on TPM2_Startup() and reset to 0 on a _TPM_Hash_End event
     /// following a _TPM_Hash_Start event.
-    DrtmReset = 0x00000012,
+    DRTM_RESET = 0x12, // Original value: 0x00000012
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by policy
     /// This property is only present if the TPM supports policy control of a PCR.
-    POLICY = 0x00000013,
+    POLICY = 0x13, // Original value: 0x00000013
 
     /// A SET bit in the TPMS_PCR_SELECT indicates that the PCR is controlled by an
     /// authorization value
     /// This property is only present if the TPM supports authorization control of a PCR.
-    AUTH = 0x00000014,
+    AUTH = 0x14, // Original value: 0x00000014
 
     /// Top of the range of TPM_PT_PCR properties of the implementation
     /// If the TPM receives a request for a PCR property with a value larger than this, the
     /// TPM will return a zero length list and set the moreData parameter to NO.
     /// NOTE This is an implementation-specific value. The value shown reflects the reference
     /// code implementation.
-    LAST = 0x00000014
-}
-
-impl TryFrom<u32> for TPM_PT_PCR {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x00000000 => Ok(Self::FIRST),
-            0x00000000 => Ok(Self::SAVE),
-            0x00000001 => Ok(Self::ExtendL0),
-            0x00000002 => Ok(Self::ResetL0),
-            0x00000003 => Ok(Self::ExtendL1),
-            0x00000004 => Ok(Self::ResetL1),
-            0x00000005 => Ok(Self::ExtendL2),
-            0x00000006 => Ok(Self::ResetL2),
-            0x00000007 => Ok(Self::ExtendL3),
-            0x00000008 => Ok(Self::ResetL3),
-            0x00000009 => Ok(Self::ExtendL4),
-            0x0000000A => Ok(Self::ResetL4),
-            0x00000011 => Ok(Self::NoIncrement),
-            0x00000012 => Ok(Self::DrtmReset),
-            0x00000013 => Ok(Self::POLICY),
-            0x00000014 => Ok(Self::AUTH),
-            0x00000014 => Ok(Self::LAST),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    // WARNING: LAST has duplicate value 0x14 - using name + value pattern
+    LASTValue = 0x14 // Original value: 0x00000014
 }
 
 impl fmt::Display for TPM_PT_PCR {
@@ -3217,106 +2381,76 @@ impl fmt::Display for TPM_PT_PCR {
         match self {
             Self::FIRST => write!(f, "FIRST"),
             Self::SAVE => write!(f, "SAVE"),
-            Self::ExtendL0 => write!(f, "ExtendL0"),
-            Self::ResetL0 => write!(f, "ResetL0"),
-            Self::ExtendL1 => write!(f, "ExtendL1"),
-            Self::ResetL1 => write!(f, "ResetL1"),
-            Self::ExtendL2 => write!(f, "ExtendL2"),
-            Self::ResetL2 => write!(f, "ResetL2"),
-            Self::ExtendL3 => write!(f, "ExtendL3"),
-            Self::ResetL3 => write!(f, "ResetL3"),
-            Self::ExtendL4 => write!(f, "ExtendL4"),
-            Self::ResetL4 => write!(f, "ResetL4"),
-            Self::NoIncrement => write!(f, "NoIncrement"),
-            Self::DrtmReset => write!(f, "DrtmReset"),
+            Self::EXTEND_L0 => write!(f, "EXTEND_L0"),
+            Self::RESET_L0 => write!(f, "RESET_L0"),
+            Self::EXTEND_L1 => write!(f, "EXTEND_L1"),
+            Self::RESET_L1 => write!(f, "RESET_L1"),
+            Self::EXTEND_L2 => write!(f, "EXTEND_L2"),
+            Self::RESET_L2 => write!(f, "RESET_L2"),
+            Self::EXTEND_L3 => write!(f, "EXTEND_L3"),
+            Self::RESET_L3 => write!(f, "RESET_L3"),
+            Self::EXTEND_L4 => write!(f, "EXTEND_L4"),
+            Self::RESET_L4 => write!(f, "RESET_L4"),
+            Self::NO_INCREMENT => write!(f, "NO_INCREMENT"),
+            Self::DRTM_RESET => write!(f, "DRTM_RESET"),
             Self::POLICY => write!(f, "POLICY"),
             Self::AUTH => write!(f, "AUTH"),
             Self::LAST => write!(f, "LAST"),
         }
-
     }
-
 }
 
 /// The platform values in Table 25 are used for the TPM_PT_PS_FAMILY_INDICATOR.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_PS {
     /// Not platform specific
-    MAIN = 0x00000000,
+    MAIN = 0x0, // Original value: 0x00000000
 
     /// PC Client
-    PC = 0x00000001,
+    PC = 0x1, // Original value: 0x00000001
 
     /// PDA (includes all mobile devices that are not specifically cell phones)
-    PDA = 0x00000002,
+    PDA = 0x2, // Original value: 0x00000002
 
     /// Cell Phone
-    CellPhone = 0x00000003,
+    CELL_PHONE = 0x3, // Original value: 0x00000003
 
     /// Server WG
-    SERVER = 0x00000004,
+    SERVER = 0x4, // Original value: 0x00000004
 
     /// Peripheral WG
-    PERIPHERAL = 0x00000005,
+    PERIPHERAL = 0x5, // Original value: 0x00000005
 
     /// TSS WG (deprecated)
-    TSS = 0x00000006,
+    TSS = 0x6, // Original value: 0x00000006
 
     /// Storage WG
-    STORAGE = 0x00000007,
+    STORAGE = 0x7, // Original value: 0x00000007
 
     /// Authentication WG
-    AUTHENTICATION = 0x00000008,
+    AUTHENTICATION = 0x8, // Original value: 0x00000008
 
     /// Embedded WG
-    EMBEDDED = 0x00000009,
+    EMBEDDED = 0x9, // Original value: 0x00000009
 
     /// Hardcopy WG
-    HARDCOPY = 0x0000000A,
+    HARDCOPY = 0xA, // Original value: 0x0000000A
 
     /// Infrastructure WG (deprecated)
-    INFRASTRUCTURE = 0x0000000B,
+    INFRASTRUCTURE = 0xB, // Original value: 0x0000000B
 
     /// Virtualization WG
-    VIRTUALIZATION = 0x0000000C,
+    VIRTUALIZATION = 0xC, // Original value: 0x0000000C
 
     /// Trusted Network Connect WG (deprecated)
-    TNC = 0x0000000D,
+    TNC = 0xD, // Original value: 0x0000000D
 
     /// Multi-tenant WG (deprecated)
-    MultiTenant = 0x0000000E,
+    MULTI_TENANT = 0xE, // Original value: 0x0000000E
 
     /// Technical Committee (deprecated)
-    TC = 0x0000000F
-}
-
-impl TryFrom<u32> for TPM_PS {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x00000000 => Ok(Self::MAIN),
-            0x00000001 => Ok(Self::PC),
-            0x00000002 => Ok(Self::PDA),
-            0x00000003 => Ok(Self::CellPhone),
-            0x00000004 => Ok(Self::SERVER),
-            0x00000005 => Ok(Self::PERIPHERAL),
-            0x00000006 => Ok(Self::TSS),
-            0x00000007 => Ok(Self::STORAGE),
-            0x00000008 => Ok(Self::AUTHENTICATION),
-            0x00000009 => Ok(Self::EMBEDDED),
-            0x0000000A => Ok(Self::HARDCOPY),
-            0x0000000B => Ok(Self::INFRASTRUCTURE),
-            0x0000000C => Ok(Self::VIRTUALIZATION),
-            0x0000000D => Ok(Self::TNC),
-            0x0000000E => Ok(Self::MultiTenant),
-            0x0000000F => Ok(Self::TC),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    TC = 0xF // Original value: 0x0000000F
 }
 
 impl fmt::Display for TPM_PS {
@@ -3325,7 +2459,7 @@ impl fmt::Display for TPM_PS {
             Self::MAIN => write!(f, "MAIN"),
             Self::PC => write!(f, "PC"),
             Self::PDA => write!(f, "PDA"),
-            Self::CellPhone => write!(f, "CellPhone"),
+            Self::CELL_PHONE => write!(f, "CELL_PHONE"),
             Self::SERVER => write!(f, "SERVER"),
             Self::PERIPHERAL => write!(f, "PERIPHERAL"),
             Self::TSS => write!(f, "TSS"),
@@ -3336,41 +2470,41 @@ impl fmt::Display for TPM_PS {
             Self::INFRASTRUCTURE => write!(f, "INFRASTRUCTURE"),
             Self::VIRTUALIZATION => write!(f, "VIRTUALIZATION"),
             Self::TNC => write!(f, "TNC"),
-            Self::MultiTenant => write!(f, "MultiTenant"),
+            Self::MULTI_TENANT => write!(f, "MULTI_TENANT"),
             Self::TC => write!(f, "TC"),
         }
-
     }
-
 }
 
 /// The 32-bit handle space is divided into 256 regions of equal size with 224 values in
 /// each. Each of these ranges represents a handle type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i8)]
 pub enum TPM_HT {
     /// PCR consecutive numbers, starting at 0, that reference the PCR registers
     /// A platform-specific specification will set the minimum number of PCR and an
     /// implementation may have more.
-    PCR = 0x00,
+    PCR = 0x0, // Original value: 0x00
 
     /// NV Index assigned by the caller
-    NvIndex = 0x01,
+    NV_INDEX = 0x1, // Original value: 0x01
 
     /// HMAC Authorization Session assigned by the TPM when the session is created
-    HmacSession = 0x02,
+    HMAC_SESSION = 0x2, // Original value: 0x02
 
     /// Loaded Authorization Session used only in the context of TPM2_GetCapability
     /// This type references both loaded HMAC and loaded policy authorization sessions.
-    LoadedSession = 0x02,
+    // WARNING: LOADED_SESSION has duplicate value 0x2 - using name + value pattern
+    LOADED_SESSIONValue = 0x2, // Original value: 0x02
 
     /// Policy Authorization Session assigned by the TPM when the session is created
-    PolicySession = 0x03,
+    POLICY_SESSION = 0x3, // Original value: 0x03
 
     /// Saved Authorization Session used only in the context of TPM2_GetCapability
     /// This type references saved authorization session contexts for which the TPM is
     /// maintaining tracking information.
-    SavedSession = 0x03,
+    // WARNING: SAVED_SESSION has duplicate value 0x3 - using name + value pattern
+    SAVED_SESSIONValue = 0x3, // Original value: 0x03
 
     /// Permanent Values assigned by this specification in Table 28
     PERMANENT = 0x40,
@@ -3386,56 +2520,33 @@ pub enum TPM_HT {
     AC = 0x90
 }
 
-impl TryFrom<u8> for TPM_HT {
-    type Error = TpmError;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            0x00 => Ok(Self::PCR),
-            0x01 => Ok(Self::NvIndex),
-            0x02 => Ok(Self::HmacSession),
-            0x02 => Ok(Self::LoadedSession),
-            0x03 => Ok(Self::PolicySession),
-            0x03 => Ok(Self::SavedSession),
-            0x40 => Ok(Self::PERMANENT),
-            0x80 => Ok(Self::TRANSIENT),
-            0x81 => Ok(Self::PERSISTENT),
-            0x90 => Ok(Self::AC),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
-}
-
 impl fmt::Display for TPM_HT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::PCR => write!(f, "PCR"),
-            Self::NvIndex => write!(f, "NvIndex"),
-            Self::HmacSession => write!(f, "HmacSession"),
-            Self::LoadedSession => write!(f, "LoadedSession"),
-            Self::PolicySession => write!(f, "PolicySession"),
-            Self::SavedSession => write!(f, "SavedSession"),
+            Self::NV_INDEX => write!(f, "NV_INDEX"),
+            Self::HMAC_SESSION => write!(f, "HMAC_SESSION"),
+            Self::LOADED_SESSION => write!(f, "LOADED_SESSION"),
+            Self::POLICY_SESSION => write!(f, "POLICY_SESSION"),
+            Self::SAVED_SESSION => write!(f, "SAVED_SESSION"),
             Self::PERMANENT => write!(f, "PERMANENT"),
             Self::TRANSIENT => write!(f, "TRANSIENT"),
             Self::PERSISTENT => write!(f, "PERSISTENT"),
             Self::AC => write!(f, "AC"),
         }
-
     }
-
 }
 
 /// Table 28 lists the architecturally defined handles that cannot be changed. The handles
 /// include authorization handles, and special handles.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_RH {
     FIRST = 0x40000000,
 
     /// Not used1
-    SRK = 0x40000000,
+    // WARNING: SRK has duplicate value 0x40000000 - using name + value pattern
+    SRKValue = 0x40000000,
 
     /// Handle references the Storage Primary Seed (SPS), the ownerAuth, and the ownerPolicy
     OWNER = 0x40000001,
@@ -3476,59 +2587,28 @@ pub enum TPM_RH {
     PLATFORM = 0x4000000C,
 
     /// For phEnableNV
-    PlatformNv = 0x4000000D,
+    PLATFORM_NV = 0x4000000D,
 
     /// Start of a range of authorization values that are vendor-specific. A TPM may support
     /// any of the values in this range as are needed for vendor-specific purposes.
     /// Disabled if ehEnable is CLEAR.
     /// NOTE Any includes none.
-    Auth00 = 0x40000010,
+    AUTH_00 = 0x40000010,
 
     /// End of the range of vendor-specific authorization values.
-    AuthFf = 0x4000010F,
+    AUTH_FF = 0x4000010F,
 
     /// Start of the range of authenticated timers
-    Act0 = 0x40000110,
+    ACT_0 = 0x40000110,
 
     /// End of the range of authenticated timers
-    ActF = 0x4000011F,
+    ACT_F = 0x4000011F,
 
     /// The top of the reserved handle area
     /// This is set to allow TPM2_GetCapability() to know where to stop. It may vary as
     /// implementations add to the permanent handle area.
-    LAST = 0x4000011F
-}
-
-impl TryFrom<u32> for TPM_RH {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x40000000 => Ok(Self::FIRST),
-            0x40000000 => Ok(Self::SRK),
-            0x40000001 => Ok(Self::OWNER),
-            0x40000002 => Ok(Self::REVOKE),
-            0x40000003 => Ok(Self::TRANSPORT),
-            0x40000004 => Ok(Self::OPERATOR),
-            0x40000005 => Ok(Self::ADMIN),
-            0x40000006 => Ok(Self::EK),
-            0x40000007 => Ok(Self::NULL),
-            0x40000008 => Ok(Self::UNASSIGNED),
-            0x40000009 => Ok(Self::PW),
-            0x4000000A => Ok(Self::LOCKOUT),
-            0x4000000B => Ok(Self::ENDORSEMENT),
-            0x4000000C => Ok(Self::PLATFORM),
-            0x4000000D => Ok(Self::PlatformNv),
-            0x40000010 => Ok(Self::Auth00),
-            0x4000010F => Ok(Self::AuthFf),
-            0x40000110 => Ok(Self::Act0),
-            0x4000011F => Ok(Self::ActF),
-            0x4000011F => Ok(Self::LAST),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    // WARNING: LAST has duplicate value 0x4000011F - using name + value pattern
+    LASTValue = 0x4000011F
 }
 
 impl fmt::Display for TPM_RH {
@@ -3548,21 +2628,19 @@ impl fmt::Display for TPM_RH {
             Self::LOCKOUT => write!(f, "LOCKOUT"),
             Self::ENDORSEMENT => write!(f, "ENDORSEMENT"),
             Self::PLATFORM => write!(f, "PLATFORM"),
-            Self::PlatformNv => write!(f, "PlatformNv"),
-            Self::Auth00 => write!(f, "Auth00"),
-            Self::AuthFf => write!(f, "AuthFf"),
-            Self::Act0 => write!(f, "Act0"),
-            Self::ActF => write!(f, "ActF"),
+            Self::PLATFORM_NV => write!(f, "PLATFORM_NV"),
+            Self::AUTH_00 => write!(f, "AUTH_00"),
+            Self::AUTH_FF => write!(f, "AUTH_FF"),
+            Self::ACT_0 => write!(f, "ACT_0"),
+            Self::ACT_F => write!(f, "ACT_F"),
             Self::LAST => write!(f, "LAST"),
         }
-
     }
-
 }
 
 /// This table lists the values of the TPM_NT field of a TPMA_NV. See Table 215 for usage.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_NT {
     /// Ordinary contains data that is opaque to the TPM that can only be modified using TPM2_NV_Write().
     ORDINARY = 0x0,
@@ -3580,28 +2658,10 @@ pub enum TPM_NT {
     EXTEND = 0x4,
 
     /// PIN Fail - contains pinCount that increments on a PIN authorization failure and a pinLimit
-    PinFail = 0x8,
+    PIN_FAIL = 0x8,
 
     /// PIN Pass - contains pinCount that increments on a PIN authorization success and a pinLimit
-    PinPass = 0x9
-}
-
-impl TryFrom<u32> for TPM_NT {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x0 => Ok(Self::ORDINARY),
-            0x1 => Ok(Self::COUNTER),
-            0x2 => Ok(Self::BITS),
-            0x4 => Ok(Self::EXTEND),
-            0x8 => Ok(Self::PinFail),
-            0x9 => Ok(Self::PinPass),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    PIN_PASS = 0x9
 }
 
 impl fmt::Display for TPM_NT {
@@ -3611,47 +2671,29 @@ impl fmt::Display for TPM_NT {
             Self::COUNTER => write!(f, "COUNTER"),
             Self::BITS => write!(f, "BITS"),
             Self::EXTEND => write!(f, "EXTEND"),
-            Self::PinFail => write!(f, "PinFail"),
-            Self::PinPass => write!(f, "PinPass"),
+            Self::PIN_FAIL => write!(f, "PIN_FAIL"),
+            Self::PIN_PASS => write!(f, "PIN_PASS"),
         }
-
     }
-
 }
 
 /// These constants are used in TPM2_AC_GetCapability() to indicate the first tagged value
 /// returned from an attached component.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_AT {
     /// In a command, a non-specific request for AC information; in a response, indicates that
     /// outputData is not meaningful
-    ANY = 0x00000000,
+    ANY = 0x0, // Original value: 0x00000000
 
     /// Indicates a TCG defined, device-specific error
-    ERROR = 0x00000001,
+    ERROR = 0x1, // Original value: 0x00000001
 
     /// Indicates the most significant 32 bits of a pairing value for the AC
-    PV1 = 0x00000002,
+    PV1 = 0x2, // Original value: 0x00000002
 
     /// Value added to a TPM_AT to indicate a vendor-specific tag value
     VEND = 0x80000000
-}
-
-impl TryFrom<u32> for TPM_AT {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x00000000 => Ok(Self::ANY),
-            0x00000001 => Ok(Self::ERROR),
-            0x00000002 => Ok(Self::PV1),
-            0x80000000 => Ok(Self::VEND),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
 }
 
 impl fmt::Display for TPM_AT {
@@ -3662,31 +2704,16 @@ impl fmt::Display for TPM_AT {
             Self::PV1 => write!(f, "PV1"),
             Self::VEND => write!(f, "VEND"),
         }
-
     }
-
 }
 
 /// These constants are the TCG-defined error values returned by an AC.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_AE {
     /// In a command, a non-specific request for AC information; in a response, indicates that
     /// outputData is not meaningful
-    NONE = 0x00000000
-}
-
-impl TryFrom<u32> for TPM_AE {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x00000000 => Ok(Self::NONE),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    NONE = 0x0 // Original value: 0x00000000
 }
 
 impl fmt::Display for TPM_AE {
@@ -3694,37 +2721,18 @@ impl fmt::Display for TPM_AE {
         match self {
             Self::NONE => write!(f, "NONE"),
         }
-
     }
-
 }
 
 /// These values are readable with TPM2_GetCapability(). They are the TPM_PT_PS_xxx values.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum PLATFORM {
-    FAMILY = TPM_SPEC:FAMILY,
-    LEVEL = TPM_SPEC:LEVEL,
-    VERSION = TPM_SPEC:VERSION,
-    YEAR = TPM_SPEC:YEAR,
-    DayOfYear = TPM_SPEC:DAY_OF_YEAR
-}
-
-impl TryFrom<u32> for PLATFORM {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            TPM_SPEC:FAMILY => Ok(Self::FAMILY),
-            TPM_SPEC:LEVEL => Ok(Self::LEVEL),
-            TPM_SPEC:VERSION => Ok(Self::VERSION),
-            TPM_SPEC:YEAR => Ok(Self::YEAR),
-            TPM_SPEC:DAY_OF_YEAR => Ok(Self::DayOfYear),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    FAMILY = 0x322E3000, // Original value: TPM_SPEC::FAMILY
+    LEVEL = 0x0, // Original value: TPM_SPEC::LEVEL
+    VERSION = 0xA2, // Original value: TPM_SPEC::VERSION
+    YEAR = 0x7E3, // Original value: TPM_SPEC::YEAR
+    DAY_OF_YEAR = 0x168 // Original value: TPM_SPEC::DAY_OF_YEAR
 }
 
 impl fmt::Display for PLATFORM {
@@ -3734,520 +2742,423 @@ impl fmt::Display for PLATFORM {
             Self::LEVEL => write!(f, "LEVEL"),
             Self::VERSION => write!(f, "VERSION"),
             Self::YEAR => write!(f, "YEAR"),
-            Self::DayOfYear => write!(f, "DayOfYear"),
+            Self::DAY_OF_YEAR => write!(f, "DAY_OF_YEAR"),
         }
-
     }
-
 }
 
 /// This table contains a collection of values used in various parts of the reference
 /// code. The values shown are illustrative.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum Implementation {
     /// Temporary define
-    FieldUpgradeImplemented = Logic:NO,
+    FIELD_UPGRADE_IMPLEMENTED = 0x0, // Original value: Logic::NO
 
     /// Selection of the library that provides the basic hashing functions.
-    HashLib = ImplementationConstants:Ossl,
+    HASH_LIB = 0x1, // Original value: ImplementationConstants::Ossl
 
     /// Selection of the library that provides the low-level symmetric cryptography. Choices
     /// are determined by the vendor (See LibSupport.h for implications).
-    SymLib = ImplementationConstants:Ossl,
+    // WARNING: SYM_LIB has duplicate value 0x1 - using name + value pattern
+    SYM_LIBValue = 0x1, // Original value: ImplementationConstants::Ossl
 
     /// Selection of the library that provides the big number math including ECC. Choices are
     /// determined by the vendor (See LibSupport.h for implications).
-    MathLib = ImplementationConstants:Ossl,
+    // WARNING: MATH_LIB has duplicate value 0x1 - using name + value pattern
+    MATH_LIBValue = 0x1, // Original value: ImplementationConstants::Ossl
 
     /// The number of PCR in the TPM
-    ImplementationPcr = 24,
-    PcrSelectMax = ((IMPLEMENTATION_PCR+7)/8),
+    IMPLEMENTATION_PCR = 0x18, // Original value: 24
+    PCR_SELECT_MAX = 0x3, // Original value: ((IMPLEMENTATION_PCR+7)/8)
 
     /// The number of PCR required by the relevant platform specification
-    PlatformPcr = 24,
-    PcrSelectMin = ((PLATFORM_PCR + 7) / 8),
+    // WARNING: PLATFORM_PCR has duplicate value 0x18 - using name + value pattern
+    PLATFORM_PCRValue = 0x18, // Original value: 24
+    // WARNING: PCR_SELECT_MIN has duplicate value 0x3 - using name + value pattern
+    PCR_SELECT_MINValue = 0x3, // Original value: ((PLATFORM_PCR + 7) / 8)
 
     /// The D-RTM PCR
     /// NOTE This value is not defined when the TPM does not implement D-RTM
-    DrtmPcr = 17,
+    DRTM_PCR = 0x11, // Original value: 17
 
     /// The PCR that will receive the H-CRTM value at TPM2_Startup. This value should not be changed.
-    HcrtmPcr = 0,
+    // WARNING: HCRTM_PCR has duplicate value 0x0 - using name + value pattern
+    HCRTM_PCRValue = 0x0, // Original value: 0
 
     /// The number of localities supported by the TPM
     /// This is expected to be either 5 for a PC, or 1 for just about everything else.
-    NumLocalities = 5,
+    NUM_LOCALITIES = 0x5, // Original value: 5
 
     /// The maximum number of handles in the handle area
     /// This should be produced by the Part 3 parser but is here for now.
-    MaxHandleNum = 3,
+    // WARNING: MAX_HANDLE_NUM has duplicate value 0x3 - using name + value pattern
+    MAX_HANDLE_NUMValue = 0x3, // Original value: 3
 
     /// The number of simultaneously active sessions that are supported by the TPM implementation
-    MaxActiveSessions = 64,
+    MAX_ACTIVE_SESSIONS = 0x40, // Original value: 64
 
     /// The number of sessions that the TPM may have in memory
-    MaxLoadedSessions = 3,
+    // WARNING: MAX_LOADED_SESSIONS has duplicate value 0x3 - using name + value pattern
+    MAX_LOADED_SESSIONSValue = 0x3, // Original value: 3
 
     /// This is the current maximum value
-    MaxSessionNum = 3,
+    // WARNING: MAX_SESSION_NUM has duplicate value 0x3 - using name + value pattern
+    MAX_SESSION_NUMValue = 0x3, // Original value: 3
 
     /// The number of simultaneously loaded objects that are supported by the TPM; this number
     /// does not include the objects that may be placed in NV memory by TPM2_EvictControl().
-    MaxLoadedObjects = 3,
+    // WARNING: MAX_LOADED_OBJECTS has duplicate value 0x3 - using name + value pattern
+    MAX_LOADED_OBJECTSValue = 0x3, // Original value: 3
 
     /// The minimum number of evict objects supported by the TPM
-    MinEvictObjects = 2,
+    MIN_EVICT_OBJECTS = 0x2, // Original value: 2
 
     /// Number of PCR groups that have individual policies
-    NumPolicyPcrGroup = 1,
+    // WARNING: NUM_POLICY_PCR_GROUP has duplicate value 0x1 - using name + value pattern
+    NUM_POLICY_PCR_GROUPValue = 0x1, // Original value: 1
 
     /// Number of PCR groups that have individual authorization values
-    NumAuthvaluePcrGroup = 1,
-    MaxContextSize = 1264,
-    MaxDigestBuffer = 1024,
+    // WARNING: NUM_AUTHVALUE_PCR_GROUP has duplicate value 0x1 - using name + value pattern
+    NUM_AUTHVALUE_PCR_GROUPValue = 0x1, // Original value: 1
+    MAX_CONTEXT_SIZE = 0x4F0, // Original value: 1264
+    MAX_DIGEST_BUFFER = 0x400, // Original value: 1024
 
     /// Maximum data size allowed in an NV Index
-    MaxNvIndexSize = 2048,
+    MAX_NV_INDEX_SIZE = 0x800, // Original value: 2048
 
     /// Maximum data size in one NV read or write command
-    MaxNvBufferSize = 1024,
+    // WARNING: MAX_NV_BUFFER_SIZE has duplicate value 0x400 - using name + value pattern
+    MAX_NV_BUFFER_SIZEValue = 0x400, // Original value: 1024
 
     /// Maximum size of a capability buffer
-    MaxCapBuffer = 1024,
+    // WARNING: MAX_CAP_BUFFER has duplicate value 0x400 - using name + value pattern
+    MAX_CAP_BUFFERValue = 0x400, // Original value: 1024
 
     /// Size of NV memory in octets
-    NvMemorySize = 16384,
+    NV_MEMORY_SIZE = 0x4000, // Original value: 16384
 
     /// The TPM will not allocate a non-counter index if it would prevent allocation of this
     /// number of indices.
-    MinCounterIndices = 8,
-    NumStaticPcr = 16,
+    MIN_COUNTER_INDICES = 0x8, // Original value: 8
+    NUM_STATIC_PCR = 0x10, // Original value: 16
 
     /// Number of algorithms that can be in a list
-    MaxAlgListSize = 64,
+    // WARNING: MAX_ALG_LIST_SIZE has duplicate value 0x40 - using name + value pattern
+    MAX_ALG_LIST_SIZEValue = 0x40, // Original value: 64
 
     /// Size of the Primary Seed in octets
-    PrimarySeedSize = 32,
+    PRIMARY_SEED_SIZE = 0x20, // Original value: 32
 
     /// Context encryption algorithm
     /// Just use the root so that the macros in GpMacros.h will work correctly.
-    ContextEncryptAlgorithm = TPM_ALG_ID:AES,
+    CONTEXT_ENCRYPT_ALGORITHM = 0x6, // Original value: TPM_ALG_ID::AES
 
     /// The update interval expressed as a power of 2 seconds
     /// A value of 12 is 4,096 seconds (~68 minutes).
-    NvClockUpdateInterval = 12,
+    NV_CLOCK_UPDATE_INTERVAL = 0xC, // Original value: 12
 
     /// Number of PCR groups that allow policy/auth
-    NumPolicyPcr = 1,
+    // WARNING: NUM_POLICY_PCR has duplicate value 0x1 - using name + value pattern
+    NUM_POLICY_PCRValue = 0x1, // Original value: 1
 
     /// Maximum size of a command
-    MaxCommandSize = 4096,
+    MAX_COMMAND_SIZE = 0x1000, // Original value: 4096
 
     /// Maximum size of a response
-    MaxResponseSize = 4096,
+    // WARNING: MAX_RESPONSE_SIZE has duplicate value 0x1000 - using name + value pattern
+    MAX_RESPONSE_SIZEValue = 0x1000, // Original value: 4096
 
     /// Number between 1 and 32 inclusive
-    OrderlyBits = 8,
+    // WARNING: ORDERLY_BITS has duplicate value 0x8 - using name + value pattern
+    ORDERLY_BITSValue = 0x8, // Original value: 8
 
     /// The maximum number of octets that may be in a sealed blob; 128 is the minimum allowed value
-    MaxSymData = 128,
-    MaxRngEntropySize = 64,
+    MAX_SYM_DATA = 0x80, // Original value: 128
+    // WARNING: MAX_RNG_ENTROPY_SIZE has duplicate value 0x40 - using name + value pattern
+    MAX_RNG_ENTROPY_SIZEValue = 0x40, // Original value: 64
 
     /// Number of bytes used for the RAM index space. If this is not large enough, it might
     /// not be possible to allocate orderly indices.
-    RamIndexSpace = 512,
+    RAM_INDEX_SPACE = 0x200, // Original value: 512
 
     /// 216 + 1
-    RsaDefaultPublicExponent = 0x00010001,
+    RSA_DEFAULT_PUBLIC_EXPONENT = 0x10001, // Original value: 0x00010001
 
     /// Indicates if the TPM_PT_PCR_NO_INCREMENT group is implemented
-    EnablePcrNoIncrement = Logic:YES,
-    CrtFormatRsa = Logic:YES,
-    VendorCommandCount = 0,
+    // WARNING: ENABLE_PCR_NO_INCREMENT has duplicate value 0x1 - using name + value pattern
+    ENABLE_PCR_NO_INCREMENTValue = 0x1, // Original value: Logic::YES
+    // WARNING: CRT_FORMAT_RSA has duplicate value 0x1 - using name + value pattern
+    CRT_FORMAT_RSAValue = 0x1, // Original value: Logic::YES
+    // WARNING: VENDOR_COMMAND_COUNT has duplicate value 0x0 - using name + value pattern
+    VENDOR_COMMAND_COUNTValue = 0x0, // Original value: 0
 
     /// Maximum size of the vendor-specific buffer
-    MaxVendorBufferSize = 1024,
+    // WARNING: MAX_VENDOR_BUFFER_SIZE has duplicate value 0x400 - using name + value pattern
+    MAX_VENDOR_BUFFER_SIZEValue = 0x400, // Original value: 1024
 
     /// L value for a derivation. This is the
     /// maximum number of bits allowed from an instantiation of a KDF-DRBG. This is size is OK
     /// because RSA keys are never derived keys
-    MaxDerivationBits = 8192,
-    RsaMaxPrime = (ImplementationConstants:MAX_RSA_KEY_BYTES/2),
-    RsaPrivateSize = (RSA_MAX_PRIME * 5),
-    SizeOfX509SerialNumber = 20,
+    MAX_DERIVATION_BITS = 0x2000, // Original value: 8192
+    // WARNING: RSA_MAX_PRIME has duplicate value 0x80 - using name + value pattern
+    RSA_MAX_PRIMEValue = 0x80, // Original value: (ImplementationConstants::MAX_RSA_KEY_BYTES/2)
+    RSA_PRIVATE_SIZE = 0x280, // Original value: (RSA_MAX_PRIME * 5)
+    SIZE_OF_X509_SERIAL_NUMBER = 0x14, // Original value: 20
 
     /// This is a vendor-specific value so it is in this vendor-speific table. When this is
     /// used, RSA_PRIVATE_SIZE will have been defined
-    PrivateVendorSpecificBytes = RSA_PRIVATE_SIZE
-}
-
-impl TryFrom<u32> for Implementation {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            Logic:NO => Ok(Self::FieldUpgradeImplemented),
-            ImplementationConstants:Ossl => Ok(Self::HashLib),
-            ImplementationConstants:Ossl => Ok(Self::SymLib),
-            ImplementationConstants:Ossl => Ok(Self::MathLib),
-            24 => Ok(Self::ImplementationPcr),
-            ((IMPLEMENTATION_PCR+7)/8) => Ok(Self::PcrSelectMax),
-            24 => Ok(Self::PlatformPcr),
-            ((PLATFORM_PCR + 7) / 8) => Ok(Self::PcrSelectMin),
-            17 => Ok(Self::DrtmPcr),
-            0 => Ok(Self::HcrtmPcr),
-            5 => Ok(Self::NumLocalities),
-            3 => Ok(Self::MaxHandleNum),
-            64 => Ok(Self::MaxActiveSessions),
-            3 => Ok(Self::MaxLoadedSessions),
-            3 => Ok(Self::MaxSessionNum),
-            3 => Ok(Self::MaxLoadedObjects),
-            2 => Ok(Self::MinEvictObjects),
-            1 => Ok(Self::NumPolicyPcrGroup),
-            1 => Ok(Self::NumAuthvaluePcrGroup),
-            1264 => Ok(Self::MaxContextSize),
-            1024 => Ok(Self::MaxDigestBuffer),
-            2048 => Ok(Self::MaxNvIndexSize),
-            1024 => Ok(Self::MaxNvBufferSize),
-            1024 => Ok(Self::MaxCapBuffer),
-            16384 => Ok(Self::NvMemorySize),
-            8 => Ok(Self::MinCounterIndices),
-            16 => Ok(Self::NumStaticPcr),
-            64 => Ok(Self::MaxAlgListSize),
-            32 => Ok(Self::PrimarySeedSize),
-            TPM_ALG_ID:AES => Ok(Self::ContextEncryptAlgorithm),
-            12 => Ok(Self::NvClockUpdateInterval),
-            1 => Ok(Self::NumPolicyPcr),
-            4096 => Ok(Self::MaxCommandSize),
-            4096 => Ok(Self::MaxResponseSize),
-            8 => Ok(Self::OrderlyBits),
-            128 => Ok(Self::MaxSymData),
-            64 => Ok(Self::MaxRngEntropySize),
-            512 => Ok(Self::RamIndexSpace),
-            0x00010001 => Ok(Self::RsaDefaultPublicExponent),
-            Logic:YES => Ok(Self::EnablePcrNoIncrement),
-            Logic:YES => Ok(Self::CrtFormatRsa),
-            0 => Ok(Self::VendorCommandCount),
-            1024 => Ok(Self::MaxVendorBufferSize),
-            8192 => Ok(Self::MaxDerivationBits),
-            (ImplementationConstants:MAX_RSA_KEY_BYTES/2) => Ok(Self::RsaMaxPrime),
-            (RSA_MAX_PRIME * 5) => Ok(Self::RsaPrivateSize),
-            20 => Ok(Self::SizeOfX509SerialNumber),
-            RSA_PRIVATE_SIZE => Ok(Self::PrivateVendorSpecificBytes),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    // WARNING: PRIVATE_VENDOR_SPECIFIC_BYTES has duplicate value 0x280 - using name + value pattern
+    PRIVATE_VENDOR_SPECIFIC_BYTESValue = 0x280 // Original value: RSA_PRIVATE_SIZE
 }
 
 impl fmt::Display for Implementation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::FieldUpgradeImplemented => write!(f, "FieldUpgradeImplemented"),
-            Self::HashLib => write!(f, "HashLib"),
-            Self::SymLib => write!(f, "SymLib"),
-            Self::MathLib => write!(f, "MathLib"),
-            Self::ImplementationPcr => write!(f, "ImplementationPcr"),
-            Self::PcrSelectMax => write!(f, "PcrSelectMax"),
-            Self::PlatformPcr => write!(f, "PlatformPcr"),
-            Self::PcrSelectMin => write!(f, "PcrSelectMin"),
-            Self::DrtmPcr => write!(f, "DrtmPcr"),
-            Self::HcrtmPcr => write!(f, "HcrtmPcr"),
-            Self::NumLocalities => write!(f, "NumLocalities"),
-            Self::MaxHandleNum => write!(f, "MaxHandleNum"),
-            Self::MaxActiveSessions => write!(f, "MaxActiveSessions"),
-            Self::MaxLoadedSessions => write!(f, "MaxLoadedSessions"),
-            Self::MaxSessionNum => write!(f, "MaxSessionNum"),
-            Self::MaxLoadedObjects => write!(f, "MaxLoadedObjects"),
-            Self::MinEvictObjects => write!(f, "MinEvictObjects"),
-            Self::NumPolicyPcrGroup => write!(f, "NumPolicyPcrGroup"),
-            Self::NumAuthvaluePcrGroup => write!(f, "NumAuthvaluePcrGroup"),
-            Self::MaxContextSize => write!(f, "MaxContextSize"),
-            Self::MaxDigestBuffer => write!(f, "MaxDigestBuffer"),
-            Self::MaxNvIndexSize => write!(f, "MaxNvIndexSize"),
-            Self::MaxNvBufferSize => write!(f, "MaxNvBufferSize"),
-            Self::MaxCapBuffer => write!(f, "MaxCapBuffer"),
-            Self::NvMemorySize => write!(f, "NvMemorySize"),
-            Self::MinCounterIndices => write!(f, "MinCounterIndices"),
-            Self::NumStaticPcr => write!(f, "NumStaticPcr"),
-            Self::MaxAlgListSize => write!(f, "MaxAlgListSize"),
-            Self::PrimarySeedSize => write!(f, "PrimarySeedSize"),
-            Self::ContextEncryptAlgorithm => write!(f, "ContextEncryptAlgorithm"),
-            Self::NvClockUpdateInterval => write!(f, "NvClockUpdateInterval"),
-            Self::NumPolicyPcr => write!(f, "NumPolicyPcr"),
-            Self::MaxCommandSize => write!(f, "MaxCommandSize"),
-            Self::MaxResponseSize => write!(f, "MaxResponseSize"),
-            Self::OrderlyBits => write!(f, "OrderlyBits"),
-            Self::MaxSymData => write!(f, "MaxSymData"),
-            Self::MaxRngEntropySize => write!(f, "MaxRngEntropySize"),
-            Self::RamIndexSpace => write!(f, "RamIndexSpace"),
-            Self::RsaDefaultPublicExponent => write!(f, "RsaDefaultPublicExponent"),
-            Self::EnablePcrNoIncrement => write!(f, "EnablePcrNoIncrement"),
-            Self::CrtFormatRsa => write!(f, "CrtFormatRsa"),
-            Self::VendorCommandCount => write!(f, "VendorCommandCount"),
-            Self::MaxVendorBufferSize => write!(f, "MaxVendorBufferSize"),
-            Self::MaxDerivationBits => write!(f, "MaxDerivationBits"),
-            Self::RsaMaxPrime => write!(f, "RsaMaxPrime"),
-            Self::RsaPrivateSize => write!(f, "RsaPrivateSize"),
-            Self::SizeOfX509SerialNumber => write!(f, "SizeOfX509SerialNumber"),
-            Self::PrivateVendorSpecificBytes => write!(f, "PrivateVendorSpecificBytes"),
+            Self::FIELD_UPGRADE_IMPLEMENTED => write!(f, "FIELD_UPGRADE_IMPLEMENTED"),
+            Self::HASH_LIB => write!(f, "HASH_LIB"),
+            Self::SYM_LIB => write!(f, "SYM_LIB"),
+            Self::MATH_LIB => write!(f, "MATH_LIB"),
+            Self::IMPLEMENTATION_PCR => write!(f, "IMPLEMENTATION_PCR"),
+            Self::PCR_SELECT_MAX => write!(f, "PCR_SELECT_MAX"),
+            Self::PLATFORM_PCR => write!(f, "PLATFORM_PCR"),
+            Self::PCR_SELECT_MIN => write!(f, "PCR_SELECT_MIN"),
+            Self::DRTM_PCR => write!(f, "DRTM_PCR"),
+            Self::HCRTM_PCR => write!(f, "HCRTM_PCR"),
+            Self::NUM_LOCALITIES => write!(f, "NUM_LOCALITIES"),
+            Self::MAX_HANDLE_NUM => write!(f, "MAX_HANDLE_NUM"),
+            Self::MAX_ACTIVE_SESSIONS => write!(f, "MAX_ACTIVE_SESSIONS"),
+            Self::MAX_LOADED_SESSIONS => write!(f, "MAX_LOADED_SESSIONS"),
+            Self::MAX_SESSION_NUM => write!(f, "MAX_SESSION_NUM"),
+            Self::MAX_LOADED_OBJECTS => write!(f, "MAX_LOADED_OBJECTS"),
+            Self::MIN_EVICT_OBJECTS => write!(f, "MIN_EVICT_OBJECTS"),
+            Self::NUM_POLICY_PCR_GROUP => write!(f, "NUM_POLICY_PCR_GROUP"),
+            Self::NUM_AUTHVALUE_PCR_GROUP => write!(f, "NUM_AUTHVALUE_PCR_GROUP"),
+            Self::MAX_CONTEXT_SIZE => write!(f, "MAX_CONTEXT_SIZE"),
+            Self::MAX_DIGEST_BUFFER => write!(f, "MAX_DIGEST_BUFFER"),
+            Self::MAX_NV_INDEX_SIZE => write!(f, "MAX_NV_INDEX_SIZE"),
+            Self::MAX_NV_BUFFER_SIZE => write!(f, "MAX_NV_BUFFER_SIZE"),
+            Self::MAX_CAP_BUFFER => write!(f, "MAX_CAP_BUFFER"),
+            Self::NV_MEMORY_SIZE => write!(f, "NV_MEMORY_SIZE"),
+            Self::MIN_COUNTER_INDICES => write!(f, "MIN_COUNTER_INDICES"),
+            Self::NUM_STATIC_PCR => write!(f, "NUM_STATIC_PCR"),
+            Self::MAX_ALG_LIST_SIZE => write!(f, "MAX_ALG_LIST_SIZE"),
+            Self::PRIMARY_SEED_SIZE => write!(f, "PRIMARY_SEED_SIZE"),
+            Self::CONTEXT_ENCRYPT_ALGORITHM => write!(f, "CONTEXT_ENCRYPT_ALGORITHM"),
+            Self::NV_CLOCK_UPDATE_INTERVAL => write!(f, "NV_CLOCK_UPDATE_INTERVAL"),
+            Self::NUM_POLICY_PCR => write!(f, "NUM_POLICY_PCR"),
+            Self::MAX_COMMAND_SIZE => write!(f, "MAX_COMMAND_SIZE"),
+            Self::MAX_RESPONSE_SIZE => write!(f, "MAX_RESPONSE_SIZE"),
+            Self::ORDERLY_BITS => write!(f, "ORDERLY_BITS"),
+            Self::MAX_SYM_DATA => write!(f, "MAX_SYM_DATA"),
+            Self::MAX_RNG_ENTROPY_SIZE => write!(f, "MAX_RNG_ENTROPY_SIZE"),
+            Self::RAM_INDEX_SPACE => write!(f, "RAM_INDEX_SPACE"),
+            Self::RSA_DEFAULT_PUBLIC_EXPONENT => write!(f, "RSA_DEFAULT_PUBLIC_EXPONENT"),
+            Self::ENABLE_PCR_NO_INCREMENT => write!(f, "ENABLE_PCR_NO_INCREMENT"),
+            Self::CRT_FORMAT_RSA => write!(f, "CRT_FORMAT_RSA"),
+            Self::VENDOR_COMMAND_COUNT => write!(f, "VENDOR_COMMAND_COUNT"),
+            Self::MAX_VENDOR_BUFFER_SIZE => write!(f, "MAX_VENDOR_BUFFER_SIZE"),
+            Self::MAX_DERIVATION_BITS => write!(f, "MAX_DERIVATION_BITS"),
+            Self::RSA_MAX_PRIME => write!(f, "RSA_MAX_PRIME"),
+            Self::RSA_PRIVATE_SIZE => write!(f, "RSA_PRIVATE_SIZE"),
+            Self::SIZE_OF_X509_SERIAL_NUMBER => write!(f, "SIZE_OF_X509_SERIAL_NUMBER"),
+            Self::PRIVATE_VENDOR_SPECIFIC_BYTES => write!(f, "PRIVATE_VENDOR_SPECIFIC_BYTES"),
         }
-
     }
-
 }
 
 /// The definitions in Table 29 are used to define many of the interface data types.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_HC {
     /// To mask off the HR
-    HrHandleMask = 0x00FFFFFF,
+    HR_HANDLE_MASK = 0xFFFFFF, // Original value: 0x00FFFFFF
 
     /// To mask off the variable part
-    HrRangeMask = 0xFF000000,
-    HrShift = 24,
-    HrPcr = (TPM_HT:PCR  <<  HR_SHIFT),
-    HrHmacSession = (TPM_HT:HMAC_SESSION  <<  HR_SHIFT),
-    HrPolicySession = (TPM_HT:POLICY_SESSION  <<  HR_SHIFT),
-    HrTransient = (TPM_HT:TRANSIENT  <<  HR_SHIFT),
-    HrPersistent = (TPM_HT:PERSISTENT  <<  HR_SHIFT),
-    HrNvIndex = (TPM_HT:NV_INDEX  <<  HR_SHIFT),
-    HrPermanent = (TPM_HT:PERMANENT  <<  HR_SHIFT),
+    HR_RANGE_MASK = 0xFF000000,
+    HR_SHIFT = 0x18, // Original value: 24
+    HR_PCR = 0x0, // Original value: (TPM_HT::PCR  <<  HR_SHIFT)
+    HR_HMAC_SESSION = 0x2000000, // Original value: (TPM_HT::HMAC_SESSION  <<  HR_SHIFT)
+    HR_POLICY_SESSION = 0x3000000, // Original value: (TPM_HT::POLICY_SESSION  <<  HR_SHIFT)
+    HR_TRANSIENT = 0x80000000, // Original value: (TPM_HT::TRANSIENT  <<  HR_SHIFT)
+    HR_PERSISTENT = 0x81000000, // Original value: (TPM_HT::PERSISTENT  <<  HR_SHIFT)
+    HR_NV_INDEX = 0x1000000, // Original value: (TPM_HT::NV_INDEX  <<  HR_SHIFT)
+    HR_PERMANENT = 0x40000000, // Original value: (TPM_HT::PERMANENT  <<  HR_SHIFT)
 
     /// First PCR
-    PcrFirst = (HR_PCR + 0),
+    // WARNING: PCR_FIRST has duplicate value 0x0 - using name + value pattern
+    PCR_FIRSTValue = 0x0, // Original value: (HR_PCR + 0)
 
     /// Last PCR
-    PcrLast = (PCR_FIRST + Implementation:IMPLEMENTATION_PCR-1),
+    PCR_LAST = 0x17, // Original value: (PCR_FIRST + Implementation::IMPLEMENTATION_PCR-1)
 
     /// First HMAC session
-    HmacSessionFirst = (HR_HMAC_SESSION + 0),
+    // WARNING: HMAC_SESSION_FIRST has duplicate value 0x2000000 - using name + value pattern
+    HMAC_SESSION_FIRSTValue = 0x2000000, // Original value: (HR_HMAC_SESSION + 0)
 
     /// Last HMAC session
-    HmacSessionLast = (HMAC_SESSION_FIRST+Implementation:MAX_ACTIVE_SESSIONS-1),
+    HMAC_SESSION_LAST = 0x200003F, // Original value: (HMAC_SESSION_FIRST+Implementation::MAX_ACTIVE_SESSIONS-1)
 
     /// Used in GetCapability
-    LoadedSessionFirst = HMAC_SESSION_FIRST,
+    // WARNING: LOADED_SESSION_FIRST has duplicate value 0x2000000 - using name + value pattern
+    LOADED_SESSION_FIRSTValue = 0x2000000, // Original value: HMAC_SESSION_FIRST
 
     /// Used in GetCapability
-    LoadedSessionLast = HMAC_SESSION_LAST,
+    // WARNING: LOADED_SESSION_LAST has duplicate value 0x200003F - using name + value pattern
+    LOADED_SESSION_LASTValue = 0x200003F, // Original value: HMAC_SESSION_LAST
 
     /// First policy session
-    PolicySessionFirst = (HR_POLICY_SESSION + 0),
+    // WARNING: POLICY_SESSION_FIRST has duplicate value 0x3000000 - using name + value pattern
+    POLICY_SESSION_FIRSTValue = 0x3000000, // Original value: (HR_POLICY_SESSION + 0)
 
     /// Last policy session
-    PolicySessionLast = (POLICY_SESSION_FIRST + Implementation:MAX_ACTIVE_SESSIONS-1),
+    POLICY_SESSION_LAST = 0x300003F, // Original value: (POLICY_SESSION_FIRST + Implementation::MAX_ACTIVE_SESSIONS-1)
 
     /// First transient object
-    TransientFirst = (HR_TRANSIENT + 0),
+    // WARNING: TRANSIENT_FIRST has duplicate value 0x80000000 - using name + value pattern
+    TRANSIENT_FIRSTValue = 0x80000000, // Original value: (HR_TRANSIENT + 0)
 
     /// Used in GetCapability
-    ActiveSessionFirst = POLICY_SESSION_FIRST,
+    // WARNING: ACTIVE_SESSION_FIRST has duplicate value 0x3000000 - using name + value pattern
+    ACTIVE_SESSION_FIRSTValue = 0x3000000, // Original value: POLICY_SESSION_FIRST
 
     /// Used in GetCapability
-    ActiveSessionLast = POLICY_SESSION_LAST,
+    // WARNING: ACTIVE_SESSION_LAST has duplicate value 0x300003F - using name + value pattern
+    ACTIVE_SESSION_LASTValue = 0x300003F, // Original value: POLICY_SESSION_LAST
 
     /// Last transient object
-    TransientLast = (TRANSIENT_FIRST+Implementation:MAX_LOADED_OBJECTS-1),
+    TRANSIENT_LAST = 0x80000002, // Original value: (TRANSIENT_FIRST+Implementation::MAX_LOADED_OBJECTS-1)
 
     /// First persistent object
-    PersistentFirst = (HR_PERSISTENT + 0),
+    // WARNING: PERSISTENT_FIRST has duplicate value 0x81000000 - using name + value pattern
+    PERSISTENT_FIRSTValue = 0x81000000, // Original value: (HR_PERSISTENT + 0)
 
     /// Last persistent object
-    PersistentLast = (PERSISTENT_FIRST + 0x00FFFFFF),
+    PERSISTENT_LAST = 0x81FFFFFF, // Original value: (PERSISTENT_FIRST + 0x00FFFFFF)
 
     /// First platform persistent object
-    PlatformPersistent = (PERSISTENT_FIRST + 0x00800000),
+    PLATFORM_PERSISTENT = 0x81800000, // Original value: (PERSISTENT_FIRST + 0x00800000)
 
     /// First allowed NV Index
-    NvIndexFirst = (HR_NV_INDEX + 0),
+    // WARNING: NV_INDEX_FIRST has duplicate value 0x1000000 - using name + value pattern
+    NV_INDEX_FIRSTValue = 0x1000000, // Original value: (HR_NV_INDEX + 0)
 
     /// Last allowed NV Index
-    NvIndexLast = (NV_INDEX_FIRST + 0x00FFFFFF),
-    PermanentFirst = TPM_RH:FIRST,
-    PermanentLast = TPM_RH:LAST,
+    NV_INDEX_LAST = 0x1FFFFFF, // Original value: (NV_INDEX_FIRST + 0x00FFFFFF)
+    // WARNING: PERMANENT_FIRST has duplicate value 0x40000000 - using name + value pattern
+    PERMANENT_FIRSTValue = 0x40000000, // Original value: TPM_RH::FIRST
+    PERMANENT_LAST = 0x4000011F, // Original value: TPM_RH::LAST
 
     /// AC aliased NV Index
-    HrNvAc = ((TPM_HT:NV_INDEX  <<  HR_SHIFT) + 0xD00000),
+    HR_NV_AC = 0x1D00000, // Original value: ((TPM_HT::NV_INDEX  <<  HR_SHIFT) + 0xD00000)
 
     /// First NV Index aliased to Attached Component
-    NvAcFirst = (HR_NV_AC + 0),
+    // WARNING: NV_AC_FIRST has duplicate value 0x1D00000 - using name + value pattern
+    NV_AC_FIRSTValue = 0x1D00000, // Original value: (HR_NV_AC + 0)
 
     /// Last NV Index aliased to Attached Component
-    NvAcLast = (HR_NV_AC + 0x0000FFFF),
+    NV_AC_LAST = 0x1D0FFFF, // Original value: (HR_NV_AC + 0x0000FFFF)
 
     /// AC Handle
-    HrAc = (TPM_HT:AC  <<  HR_SHIFT),
+    HR_AC = 0x90000000, // Original value: (TPM_HT::AC  <<  HR_SHIFT)
 
     /// First Attached Component
-    AcFirst = (HR_AC + 0),
+    // WARNING: AC_FIRST has duplicate value 0x90000000 - using name + value pattern
+    AC_FIRSTValue = 0x90000000, // Original value: (HR_AC + 0)
 
     /// Last Attached Component
-    AcLast = (HR_AC + 0x0000FFFF)
-}
-
-impl TryFrom<u32> for TPM_HC {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x00FFFFFF => Ok(Self::HrHandleMask),
-            0xFF000000 => Ok(Self::HrRangeMask),
-            24 => Ok(Self::HrShift),
-            (TPM_HT:PCR  <<  HR_SHIFT) => Ok(Self::HrPcr),
-            (TPM_HT:HMAC_SESSION  <<  HR_SHIFT) => Ok(Self::HrHmacSession),
-            (TPM_HT:POLICY_SESSION  <<  HR_SHIFT) => Ok(Self::HrPolicySession),
-            (TPM_HT:TRANSIENT  <<  HR_SHIFT) => Ok(Self::HrTransient),
-            (TPM_HT:PERSISTENT  <<  HR_SHIFT) => Ok(Self::HrPersistent),
-            (TPM_HT:NV_INDEX  <<  HR_SHIFT) => Ok(Self::HrNvIndex),
-            (TPM_HT:PERMANENT  <<  HR_SHIFT) => Ok(Self::HrPermanent),
-            (HR_PCR + 0) => Ok(Self::PcrFirst),
-            (PCR_FIRST + Implementation:IMPLEMENTATION_PCR-1) => Ok(Self::PcrLast),
-            (HR_HMAC_SESSION + 0) => Ok(Self::HmacSessionFirst),
-            (HMAC_SESSION_FIRST+Implementation:MAX_ACTIVE_SESSIONS-1) => Ok(Self::HmacSessionLast),
-            HMAC_SESSION_FIRST => Ok(Self::LoadedSessionFirst),
-            HMAC_SESSION_LAST => Ok(Self::LoadedSessionLast),
-            (HR_POLICY_SESSION + 0) => Ok(Self::PolicySessionFirst),
-            (POLICY_SESSION_FIRST + Implementation:MAX_ACTIVE_SESSIONS-1) => Ok(Self::PolicySessionLast),
-            (HR_TRANSIENT + 0) => Ok(Self::TransientFirst),
-            POLICY_SESSION_FIRST => Ok(Self::ActiveSessionFirst),
-            POLICY_SESSION_LAST => Ok(Self::ActiveSessionLast),
-            (TRANSIENT_FIRST+Implementation:MAX_LOADED_OBJECTS-1) => Ok(Self::TransientLast),
-            (HR_PERSISTENT + 0) => Ok(Self::PersistentFirst),
-            (PERSISTENT_FIRST + 0x00FFFFFF) => Ok(Self::PersistentLast),
-            (PERSISTENT_FIRST + 0x00800000) => Ok(Self::PlatformPersistent),
-            (HR_NV_INDEX + 0) => Ok(Self::NvIndexFirst),
-            (NV_INDEX_FIRST + 0x00FFFFFF) => Ok(Self::NvIndexLast),
-            TPM_RH:FIRST => Ok(Self::PermanentFirst),
-            TPM_RH:LAST => Ok(Self::PermanentLast),
-            ((TPM_HT:NV_INDEX  <<  HR_SHIFT) + 0xD00000) => Ok(Self::HrNvAc),
-            (HR_NV_AC + 0) => Ok(Self::NvAcFirst),
-            (HR_NV_AC + 0x0000FFFF) => Ok(Self::NvAcLast),
-            (TPM_HT:AC  <<  HR_SHIFT) => Ok(Self::HrAc),
-            (HR_AC + 0) => Ok(Self::AcFirst),
-            (HR_AC + 0x0000FFFF) => Ok(Self::AcLast),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    AC_LAST = 0x9000FFFF // Original value: (HR_AC + 0x0000FFFF)
 }
 
 impl fmt::Display for TPM_HC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::HrHandleMask => write!(f, "HrHandleMask"),
-            Self::HrRangeMask => write!(f, "HrRangeMask"),
-            Self::HrShift => write!(f, "HrShift"),
-            Self::HrPcr => write!(f, "HrPcr"),
-            Self::HrHmacSession => write!(f, "HrHmacSession"),
-            Self::HrPolicySession => write!(f, "HrPolicySession"),
-            Self::HrTransient => write!(f, "HrTransient"),
-            Self::HrPersistent => write!(f, "HrPersistent"),
-            Self::HrNvIndex => write!(f, "HrNvIndex"),
-            Self::HrPermanent => write!(f, "HrPermanent"),
-            Self::PcrFirst => write!(f, "PcrFirst"),
-            Self::PcrLast => write!(f, "PcrLast"),
-            Self::HmacSessionFirst => write!(f, "HmacSessionFirst"),
-            Self::HmacSessionLast => write!(f, "HmacSessionLast"),
-            Self::LoadedSessionFirst => write!(f, "LoadedSessionFirst"),
-            Self::LoadedSessionLast => write!(f, "LoadedSessionLast"),
-            Self::PolicySessionFirst => write!(f, "PolicySessionFirst"),
-            Self::PolicySessionLast => write!(f, "PolicySessionLast"),
-            Self::TransientFirst => write!(f, "TransientFirst"),
-            Self::ActiveSessionFirst => write!(f, "ActiveSessionFirst"),
-            Self::ActiveSessionLast => write!(f, "ActiveSessionLast"),
-            Self::TransientLast => write!(f, "TransientLast"),
-            Self::PersistentFirst => write!(f, "PersistentFirst"),
-            Self::PersistentLast => write!(f, "PersistentLast"),
-            Self::PlatformPersistent => write!(f, "PlatformPersistent"),
-            Self::NvIndexFirst => write!(f, "NvIndexFirst"),
-            Self::NvIndexLast => write!(f, "NvIndexLast"),
-            Self::PermanentFirst => write!(f, "PermanentFirst"),
-            Self::PermanentLast => write!(f, "PermanentLast"),
-            Self::HrNvAc => write!(f, "HrNvAc"),
-            Self::NvAcFirst => write!(f, "NvAcFirst"),
-            Self::NvAcLast => write!(f, "NvAcLast"),
-            Self::HrAc => write!(f, "HrAc"),
-            Self::AcFirst => write!(f, "AcFirst"),
-            Self::AcLast => write!(f, "AcLast"),
+            Self::HR_HANDLE_MASK => write!(f, "HR_HANDLE_MASK"),
+            Self::HR_RANGE_MASK => write!(f, "HR_RANGE_MASK"),
+            Self::HR_SHIFT => write!(f, "HR_SHIFT"),
+            Self::HR_PCR => write!(f, "HR_PCR"),
+            Self::HR_HMAC_SESSION => write!(f, "HR_HMAC_SESSION"),
+            Self::HR_POLICY_SESSION => write!(f, "HR_POLICY_SESSION"),
+            Self::HR_TRANSIENT => write!(f, "HR_TRANSIENT"),
+            Self::HR_PERSISTENT => write!(f, "HR_PERSISTENT"),
+            Self::HR_NV_INDEX => write!(f, "HR_NV_INDEX"),
+            Self::HR_PERMANENT => write!(f, "HR_PERMANENT"),
+            Self::PCR_FIRST => write!(f, "PCR_FIRST"),
+            Self::PCR_LAST => write!(f, "PCR_LAST"),
+            Self::HMAC_SESSION_FIRST => write!(f, "HMAC_SESSION_FIRST"),
+            Self::HMAC_SESSION_LAST => write!(f, "HMAC_SESSION_LAST"),
+            Self::LOADED_SESSION_FIRST => write!(f, "LOADED_SESSION_FIRST"),
+            Self::LOADED_SESSION_LAST => write!(f, "LOADED_SESSION_LAST"),
+            Self::POLICY_SESSION_FIRST => write!(f, "POLICY_SESSION_FIRST"),
+            Self::POLICY_SESSION_LAST => write!(f, "POLICY_SESSION_LAST"),
+            Self::TRANSIENT_FIRST => write!(f, "TRANSIENT_FIRST"),
+            Self::ACTIVE_SESSION_FIRST => write!(f, "ACTIVE_SESSION_FIRST"),
+            Self::ACTIVE_SESSION_LAST => write!(f, "ACTIVE_SESSION_LAST"),
+            Self::TRANSIENT_LAST => write!(f, "TRANSIENT_LAST"),
+            Self::PERSISTENT_FIRST => write!(f, "PERSISTENT_FIRST"),
+            Self::PERSISTENT_LAST => write!(f, "PERSISTENT_LAST"),
+            Self::PLATFORM_PERSISTENT => write!(f, "PLATFORM_PERSISTENT"),
+            Self::NV_INDEX_FIRST => write!(f, "NV_INDEX_FIRST"),
+            Self::NV_INDEX_LAST => write!(f, "NV_INDEX_LAST"),
+            Self::PERMANENT_FIRST => write!(f, "PERMANENT_FIRST"),
+            Self::PERMANENT_LAST => write!(f, "PERMANENT_LAST"),
+            Self::HR_NV_AC => write!(f, "HR_NV_AC"),
+            Self::NV_AC_FIRST => write!(f, "NV_AC_FIRST"),
+            Self::NV_AC_LAST => write!(f, "NV_AC_LAST"),
+            Self::HR_AC => write!(f, "HR_AC"),
+            Self::AC_FIRST => write!(f, "AC_FIRST"),
+            Self::AC_LAST => write!(f, "AC_LAST"),
         }
-
     }
-
 }
 
 /// This structure defines the attributes of an algorithm.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_ALGORITHM {
     /// SET (1): an asymmetric algorithm with public and private portions
     /// CLEAR (0): not an asymmetric algorithm
-    Asymmetric = 0x1,
+    asymmetric = 0x1,
 
     /// SET (1): a symmetric block cipher
     /// CLEAR (0): not a symmetric block cipher
-    Symmetric = 0x2,
+    symmetric = 0x2,
 
     /// SET (1): a hash algorithm
     /// CLEAR (0): not a hash algorithm
-    Hash = 0x4,
+    hash = 0x4,
 
     /// SET (1): an algorithm that may be used as an object type
     /// CLEAR (0): an algorithm that is not used as an object type
-    Object = 0x8,
+    object = 0x8,
 
     /// SET (1): a signing algorithm. The setting of asymmetric, symmetric, and hash will
     /// indicate the type of signing algorithm.
     /// CLEAR (0): not a signing algorithm
-    Signing = 0x100,
+    signing = 0x100,
 
     /// SET (1): an encryption/decryption algorithm. The setting of asymmetric, symmetric, and
     /// hash will indicate the type of encryption/decryption algorithm.
     /// CLEAR (0): not an encryption/decryption algorithm
-    Encrypting = 0x200,
+    encrypting = 0x200,
 
     /// SET (1): a method such as a key derivative function (KDF)
     /// CLEAR (0): not a method
-    Method = 0x400
-}
-
-impl TryFrom<u32> for TPMA_ALGORITHM {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x1 => Ok(Self::Asymmetric),
-            0x2 => Ok(Self::Symmetric),
-            0x4 => Ok(Self::Hash),
-            0x8 => Ok(Self::Object),
-            0x100 => Ok(Self::Signing),
-            0x200 => Ok(Self::Encrypting),
-            0x400 => Ok(Self::Method),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    method = 0x400
 }
 
 impl fmt::Display for TPMA_ALGORITHM {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Asymmetric => write!(f, "Asymmetric"),
-            Self::Symmetric => write!(f, "Symmetric"),
-            Self::Hash => write!(f, "Hash"),
-            Self::Object => write!(f, "Object"),
-            Self::Signing => write!(f, "Signing"),
-            Self::Encrypting => write!(f, "Encrypting"),
-            Self::Method => write!(f, "Method"),
+            Self::asymmetric => write!(f, "asymmetric"),
+            Self::symmetric => write!(f, "symmetric"),
+            Self::hash => write!(f, "hash"),
+            Self::object => write!(f, "object"),
+            Self::signing => write!(f, "signing"),
+            Self::encrypting => write!(f, "encrypting"),
+            Self::method => write!(f, "method"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_ALGORITHM {
@@ -4267,122 +3178,96 @@ fn from(value: u32) -> Self {
 
 /// This attribute structure indicates an objects use, its authorization types, and its
 /// relationship to other objects.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_OBJECT {
     /// SET (1): The hierarchy of the object, as indicated by its Qualified Name, may not change.
     /// CLEAR (0): The hierarchy of the object may change as a result of this object or an
     /// ancestor key being duplicated for use in another hierarchy.
     /// NOTE fixedTPM does not indicate that key material resides on a single TPM (see
     /// sensitiveDataOrigin).
-    FixedTPM = 0x2,
+    fixedTPM = 0x2,
 
     /// SET (1): Previously saved contexts of this object may not be loaded after Startup(CLEAR).
     /// CLEAR (0): Saved contexts of this object may be used after a Shutdown(STATE) and
     /// subsequent Startup().
-    StClear = 0x4,
+    stClear = 0x4,
 
     /// SET (1): The parent of the object may not change.
     /// CLEAR (0): The parent of the object may change as the result of a TPM2_Duplicate() of
     /// the object.
-    FixedParent = 0x10,
+    fixedParent = 0x10,
 
     /// SET (1): Indicates that, when the object was created with TPM2_Create() or
     /// TPM2_CreatePrimary(), the TPM generated all of the sensitive data other than the authValue.
     /// CLEAR (0): A portion of the sensitive data, other than the authValue, was provided by
     /// the caller.
-    SensitiveDataOrigin = 0x20,
+    sensitiveDataOrigin = 0x20,
 
     /// SET (1): Approval of USER role actions with this object may be with an HMAC session or
     /// with a password using the authValue of the object or a policy session.
     /// CLEAR (0): Approval of USER role actions with this object may only be done with a
     /// policy session.
-    UserWithAuth = 0x40,
+    userWithAuth = 0x40,
 
     /// SET (1): Approval of ADMIN role actions with this object may only be done with a
     /// policy session.
     /// CLEAR (0): Approval of ADMIN role actions with this object may be with an HMAC session
     /// or with a password using the authValue of the object or a policy session.
-    AdminWithPolicy = 0x80,
+    adminWithPolicy = 0x80,
 
     /// SET (1): The object is not subject to dictionary attack protections.
     /// CLEAR (0): The object is subject to dictionary attack protections.
-    NoDA = 0x400,
+    noDA = 0x400,
 
     /// SET (1): If the object is duplicated, then symmetricAlg shall not be TPM_ALG_NULL and
     /// newParentHandle shall not be TPM_RH_NULL.
     /// CLEAR (0): The object may be duplicated without an inner wrapper on the private
     /// portion of the object and the new parent may be TPM_RH_NULL.
-    EncryptedDuplication = 0x800,
+    encryptedDuplication = 0x800,
 
     /// SET (1): Key usage is restricted to manipulate structures of known format; the parent
     /// of this key shall have restricted SET.
     /// CLEAR (0): Key usage is not restricted to use on special formats.
-    Restricted = 0x10000,
+    restricted = 0x10000,
 
     /// SET (1): The private portion of the key may be used to decrypt.
     /// CLEAR (0): The private portion of the key may not be used to decrypt.
-    Decrypt = 0x20000,
+    decrypt = 0x20000,
 
     /// SET (1): For a symmetric cipher object, the private portion of the key may be used to
     /// encrypt. For other objects, the private portion of the key may be used to sign.
     /// CLEAR (0): The private portion of the key may not be used to sign or encrypt.
-    Sign = 0x40000,
+    sign = 0x40000,
 
     /// Alias to the sign value.
-    Encrypt = 0x40000,
+    // WARNING: encrypt has duplicate value 0x40000 - using name + value pattern
+    encryptValue = 0x40000,
 
     /// SET (1): An asymmetric key that may not be used to sign with TPM2_Sign()
     /// CLEAR (0): A key that may be used with TPM2_Sign() if sign is SET
     /// NOTE: This attribute only has significance if sign is SET.
-    X509sign = 0x80000
-}
-
-impl TryFrom<u32> for TPMA_OBJECT {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x2 => Ok(Self::FixedTPM),
-            0x4 => Ok(Self::StClear),
-            0x10 => Ok(Self::FixedParent),
-            0x20 => Ok(Self::SensitiveDataOrigin),
-            0x40 => Ok(Self::UserWithAuth),
-            0x80 => Ok(Self::AdminWithPolicy),
-            0x400 => Ok(Self::NoDA),
-            0x800 => Ok(Self::EncryptedDuplication),
-            0x10000 => Ok(Self::Restricted),
-            0x20000 => Ok(Self::Decrypt),
-            0x40000 => Ok(Self::Sign),
-            0x40000 => Ok(Self::Encrypt),
-            0x80000 => Ok(Self::X509sign),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    x509sign = 0x80000
 }
 
 impl fmt::Display for TPMA_OBJECT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::FixedTPM => write!(f, "FixedTPM"),
-            Self::StClear => write!(f, "StClear"),
-            Self::FixedParent => write!(f, "FixedParent"),
-            Self::SensitiveDataOrigin => write!(f, "SensitiveDataOrigin"),
-            Self::UserWithAuth => write!(f, "UserWithAuth"),
-            Self::AdminWithPolicy => write!(f, "AdminWithPolicy"),
-            Self::NoDA => write!(f, "NoDA"),
-            Self::EncryptedDuplication => write!(f, "EncryptedDuplication"),
-            Self::Restricted => write!(f, "Restricted"),
-            Self::Decrypt => write!(f, "Decrypt"),
-            Self::Sign => write!(f, "Sign"),
-            Self::Encrypt => write!(f, "Encrypt"),
-            Self::X509sign => write!(f, "X509sign"),
+            Self::fixedTPM => write!(f, "fixedTPM"),
+            Self::stClear => write!(f, "stClear"),
+            Self::fixedParent => write!(f, "fixedParent"),
+            Self::sensitiveDataOrigin => write!(f, "sensitiveDataOrigin"),
+            Self::userWithAuth => write!(f, "userWithAuth"),
+            Self::adminWithPolicy => write!(f, "adminWithPolicy"),
+            Self::noDA => write!(f, "noDA"),
+            Self::encryptedDuplication => write!(f, "encryptedDuplication"),
+            Self::restricted => write!(f, "restricted"),
+            Self::decrypt => write!(f, "decrypt"),
+            Self::sign => write!(f, "sign"),
+            Self::encrypt => write!(f, "encrypt"),
+            Self::x509sign => write!(f, "x509sign"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_OBJECT {
@@ -4402,8 +3287,8 @@ fn from(value: u32) -> Self {
 
 /// This octet in each session is used to identify the session type, indicate its
 /// relationship to any handles in the command, and indicate its use in parameter encryption.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i8)]
 pub enum TPMA_SESSION {
     /// SET (1): In a command, this setting indicates that the session is to remain active
     /// after successful completion of the command. In a response, it indicates that the
@@ -4418,7 +3303,7 @@ pub enum TPMA_SESSION {
     /// the space is available. A session created after another session is ended may have the
     /// same handle but logically is not the same session.
     /// This attribute has no effect if the command does not complete successfully.
-    ContinueSession = 0x1,
+    continueSession = 0x1,
 
     /// SET (1): In a command, this setting indicates that the command should only be executed
     /// if the session is exclusive at the start of the command. In a response, it indicates
@@ -4426,14 +3311,14 @@ pub enum TPMA_SESSION {
     /// SET (TPM_RC_ATTRIBUTES).
     /// CLEAR (0): In a command, indicates that the session need not be exclusive at the start
     /// of the command. In a response, indicates that the session is not exclusive.
-    AuditExclusive = 0x2,
+    auditExclusive = 0x2,
 
     /// SET (1): In a command, this setting indicates that the audit digest of the session
     /// should be initialized and the exclusive status of the session SET. This setting is
     /// only allowed if the audit attribute is SET (TPM_RC_ATTRIBUTES).
     /// CLEAR (0): In a command, indicates that the audit digest should not be initialized.
     /// This bit is always CLEAR in a response.
-    AuditReset = 0x4,
+    auditReset = 0x4,
 
     /// SET (1): In a command, this setting indicates that the first parameter in the command
     /// is symmetrically encrypted using the parameter encryption scheme described in TPM 2.0
@@ -4445,7 +3330,7 @@ pub enum TPMA_SESSION {
     /// This attribute may be SET in a session that is not associated with a command handle.
     /// Such a session is provided for purposes of encrypting a parameter and not for authorization.
     /// This attribute may be SET in combination with any other session attributes.
-    Decrypt = 0x20,
+    decrypt = 0x20,
 
     /// SET (1): In a command, this setting indicates that the TPM should use this session to
     /// encrypt the first parameter in the response. In a response, it indicates that the
@@ -4456,7 +3341,7 @@ pub enum TPMA_SESSION {
     /// For a password authorization, this attribute will be CLEAR in both the command and response.
     /// This attribute may be SET in a session that is not associated with a command handle.
     /// Such a session is provided for purposes of encrypting a parameter and not for authorization.
-    Encrypt = 0x40,
+    encrypt = 0x40,
 
     /// SET (1): In a command or response, this setting indicates that the session is for
     /// audit and that auditExclusive and auditReset have meaning. This session may also be
@@ -4464,40 +3349,20 @@ pub enum TPMA_SESSION {
     /// may be SET or CLEAR.
     /// CLEAR (0): Session is not used for audit.
     /// If SET in the command, then this attribute will be SET in the response.
-    Audit = 0x80
-}
-
-impl TryFrom<u8> for TPMA_SESSION {
-    type Error = TpmError;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            0x1 => Ok(Self::ContinueSession),
-            0x2 => Ok(Self::AuditExclusive),
-            0x4 => Ok(Self::AuditReset),
-            0x20 => Ok(Self::Decrypt),
-            0x40 => Ok(Self::Encrypt),
-            0x80 => Ok(Self::Audit),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    audit = 0x80
 }
 
 impl fmt::Display for TPMA_SESSION {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::ContinueSession => write!(f, "ContinueSession"),
-            Self::AuditExclusive => write!(f, "AuditExclusive"),
-            Self::AuditReset => write!(f, "AuditReset"),
-            Self::Decrypt => write!(f, "Decrypt"),
-            Self::Encrypt => write!(f, "Encrypt"),
-            Self::Audit => write!(f, "Audit"),
+            Self::continueSession => write!(f, "continueSession"),
+            Self::auditExclusive => write!(f, "auditExclusive"),
+            Self::auditReset => write!(f, "auditReset"),
+            Self::decrypt => write!(f, "decrypt"),
+            Self::encrypt => write!(f, "encrypt"),
+            Self::audit => write!(f, "audit"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_SESSION {
@@ -4518,56 +3383,34 @@ fn from(value: u8) -> Self {
 /// In a TPMS_CREATION_DATA structure, this structure is used to indicate the locality of
 /// the command that created the object. No more than one of the locality attributes shall
 /// be set in the creation data.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i8)]
 pub enum TPMA_LOCALITY {
-    LocZero = 0x1,
-    LocOne = 0x2,
-    LocTwo = 0x4,
-    LocThree = 0x8,
-    LocFour = 0x10,
+    LOC_ZERO = 0x1,
+    LOC_ONE = 0x2,
+    LOC_TWO = 0x4,
+    LOC_THREE = 0x8,
+    LOC_FOUR = 0x10,
 
     /// If any of these bits is set, an extended locality is indicated
-    ExtendedBitMask = 0xE0,
-    ExtendedBitOffset = 5,
-    ExtendedBitLength = 3
-}
-
-impl TryFrom<u8> for TPMA_LOCALITY {
-    type Error = TpmError;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            0x1 => Ok(Self::LocZero),
-            0x2 => Ok(Self::LocOne),
-            0x4 => Ok(Self::LocTwo),
-            0x8 => Ok(Self::LocThree),
-            0x10 => Ok(Self::LocFour),
-            0xE0 => Ok(Self::ExtendedBitMask),
-            5 => Ok(Self::ExtendedBitOffset),
-            3 => Ok(Self::ExtendedBitLength),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    Extended_BIT_MASK = 0xE0,
+    Extended_BIT_OFFSET = 0x5, // Original value: 5
+    Extended_BIT_LENGTH = 0x3 // Original value: 3
 }
 
 impl fmt::Display for TPMA_LOCALITY {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::LocZero => write!(f, "LocZero"),
-            Self::LocOne => write!(f, "LocOne"),
-            Self::LocTwo => write!(f, "LocTwo"),
-            Self::LocThree => write!(f, "LocThree"),
-            Self::LocFour => write!(f, "LocFour"),
-            Self::ExtendedBitMask => write!(f, "ExtendedBitMask"),
-            Self::ExtendedBitOffset => write!(f, "ExtendedBitOffset"),
-            Self::ExtendedBitLength => write!(f, "ExtendedBitLength"),
+            Self::LOC_ZERO => write!(f, "LOC_ZERO"),
+            Self::LOC_ONE => write!(f, "LOC_ONE"),
+            Self::LOC_TWO => write!(f, "LOC_TWO"),
+            Self::LOC_THREE => write!(f, "LOC_THREE"),
+            Self::LOC_FOUR => write!(f, "LOC_FOUR"),
+            Self::Extended_BIT_MASK => write!(f, "Extended_BIT_MASK"),
+            Self::Extended_BIT_OFFSET => write!(f, "Extended_BIT_OFFSET"),
+            Self::Extended_BIT_LENGTH => write!(f, "Extended_BIT_LENGTH"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_LOCALITY {
@@ -4589,67 +3432,47 @@ fn from(value: u8) -> Self {
 /// _TPM_Init or any TPM2_Startup(). Some of the attributes in this structure may change
 /// as the result of specific Protected Capabilities. This structure may be read using
 /// TPM2_GetCapability(capability = TPM_CAP_TPM_PROPERTIES, property = TPM_PT_PERMANENT).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_PERMANENT {
     /// SET (1): TPM2_HierarchyChangeAuth() with ownerAuth has been executed since the last TPM2_Clear().
     /// CLEAR (0): ownerAuth has not been changed since TPM2_Clear().
-    OwnerAuthSet = 0x1,
+    ownerAuthSet = 0x1,
 
     /// SET (1): TPM2_HierarchyChangeAuth() with endorsementAuth has been executed since the
     /// last TPM2_Clear().
     /// CLEAR (0): endorsementAuth has not been changed since TPM2_Clear().
-    EndorsementAuthSet = 0x2,
+    endorsementAuthSet = 0x2,
 
     /// SET (1): TPM2_HierarchyChangeAuth() with lockoutAuth has been executed since the last
     /// TPM2_Clear().
     /// CLEAR (0): lockoutAuth has not been changed since TPM2_Clear().
-    LockoutAuthSet = 0x4,
+    lockoutAuthSet = 0x4,
 
     /// SET (1): TPM2_Clear() is disabled.
     /// CLEAR (0): TPM2_Clear() is enabled.
     /// NOTE See TPM2_ClearControl in TPM 2.0 Part 3 for details on changing this attribute.
-    DisableClear = 0x100,
+    disableClear = 0x100,
 
     /// SET (1): The TPM is in lockout, when failedTries is equal to maxTries.
-    InLockout = 0x200,
+    inLockout = 0x200,
 
     /// SET (1): The EPS was created by the TPM.
     /// CLEAR (0): The EPS was created outside of the TPM using a manufacturer-specific process.
-    TpmGeneratedEPS = 0x400
-}
-
-impl TryFrom<u32> for TPMA_PERMANENT {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x1 => Ok(Self::OwnerAuthSet),
-            0x2 => Ok(Self::EndorsementAuthSet),
-            0x4 => Ok(Self::LockoutAuthSet),
-            0x100 => Ok(Self::DisableClear),
-            0x200 => Ok(Self::InLockout),
-            0x400 => Ok(Self::TpmGeneratedEPS),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    tpmGeneratedEPS = 0x400
 }
 
 impl fmt::Display for TPMA_PERMANENT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::OwnerAuthSet => write!(f, "OwnerAuthSet"),
-            Self::EndorsementAuthSet => write!(f, "EndorsementAuthSet"),
-            Self::LockoutAuthSet => write!(f, "LockoutAuthSet"),
-            Self::DisableClear => write!(f, "DisableClear"),
-            Self::InLockout => write!(f, "InLockout"),
-            Self::TpmGeneratedEPS => write!(f, "TpmGeneratedEPS"),
+            Self::ownerAuthSet => write!(f, "ownerAuthSet"),
+            Self::endorsementAuthSet => write!(f, "endorsementAuthSet"),
+            Self::lockoutAuthSet => write!(f, "lockoutAuthSet"),
+            Self::disableClear => write!(f, "disableClear"),
+            Self::inLockout => write!(f, "inLockout"),
+            Self::tpmGeneratedEPS => write!(f, "tpmGeneratedEPS"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_PERMANENT {
@@ -4669,15 +3492,15 @@ fn from(value: u32) -> Self {
 
 /// This structure may be read using TPM2_GetCapability(capability =
 /// TPM_CAP_TPM_PROPERTIES, property = TPM_PT_STARTUP_CLEAR).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_STARTUP_CLEAR {
     /// SET (1): The platform hierarchy is enabled and platformAuth or platformPolicy may be
     /// used for authorization.
     /// CLEAR (0): platformAuth and platformPolicy may not be used for authorizations, and
     /// objects in the platform hierarchy, including persistent objects, cannot be used.
     /// NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute.
-    PhEnable = 0x1,
+    phEnable = 0x1,
 
     /// SET (1): The Storage hierarchy is enabled and ownerAuth or ownerPolicy may be used for
     /// authorization. NV indices defined using owner authorization are accessible.
@@ -4685,14 +3508,14 @@ pub enum TPMA_STARTUP_CLEAR {
     /// in the Storage hierarchy, persistent objects, and NV indices defined using owner
     /// authorization cannot be used.
     /// NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute.
-    ShEnable = 0x2,
+    shEnable = 0x2,
 
     /// SET (1): The EPS hierarchy is enabled and Endorsement Authorization may be used to
     /// authorize commands.
     /// CLEAR (0): Endorsement Authorization may not be used for authorizations, and objects
     /// in the endorsement hierarchy, including persistent objects, cannot be used.
     /// NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute.
-    EhEnable = 0x4,
+    ehEnable = 0x4,
 
     /// SET (1): NV indices that have TPMA_NV_PLATFORMCREATE SET may be read or written. The
     /// platform can create define and undefine indices.
@@ -4707,45 +3530,26 @@ pub enum TPMA_STARTUP_CLEAR {
     /// whether phEnableNV is applicable. Since the TPM will return TPM_RC_HANDLE if the index
     /// does not exist, it also returns this error code if the index is disabled. Otherwise,
     /// the TPM would leak the existence of an index even when disabled.
-    PhEnableNV = 0x8,
+    phEnableNV = 0x8,
 
     /// SET (1): The TPM received a TPM2_Shutdown() and a matching TPM2_Startup().
     /// CLEAR (0): TPM2_Startup(TPM_SU_CLEAR) was not preceded by a TPM2_Shutdown() of any type.
     /// NOTE A shutdown is orderly if the TPM receives a TPM2_Shutdown() of any type followed
     /// by a TPM2_Startup() of any type. However, the TPM will return an error if
     /// TPM2_Startup(TPM_SU_STATE) was not preceded by TPM2_Shutdown(TPM_SU_STATE).
-    Orderly = 0x80000000
-}
-
-impl TryFrom<u32> for TPMA_STARTUP_CLEAR {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x1 => Ok(Self::PhEnable),
-            0x2 => Ok(Self::ShEnable),
-            0x4 => Ok(Self::EhEnable),
-            0x8 => Ok(Self::PhEnableNV),
-            0x80000000 => Ok(Self::Orderly),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    orderly = 0xFFFFFFFF80000000
 }
 
 impl fmt::Display for TPMA_STARTUP_CLEAR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::PhEnable => write!(f, "PhEnable"),
-            Self::ShEnable => write!(f, "ShEnable"),
-            Self::EhEnable => write!(f, "EhEnable"),
-            Self::PhEnableNV => write!(f, "PhEnableNV"),
-            Self::Orderly => write!(f, "Orderly"),
+            Self::phEnable => write!(f, "phEnable"),
+            Self::shEnable => write!(f, "shEnable"),
+            Self::ehEnable => write!(f, "ehEnable"),
+            Self::phEnableNV => write!(f, "phEnableNV"),
+            Self::orderly => write!(f, "orderly"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_STARTUP_CLEAR {
@@ -4766,54 +3570,37 @@ fn from(value: u32) -> Self {
 /// This structure of this attribute is used to report the memory management method used
 /// by the TPM for transient objects and authorization sessions. This structure may be
 /// read using TPM2_GetCapability(capability = TPM_CAP_TPM_PROPERTIES, property = TPM_PT_MEMORY).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_MEMORY {
     /// SET (1): indicates that the RAM memory used for authorization session contexts is
     /// shared with the memory used for transient objects
     /// CLEAR (0): indicates that the memory used for authorization sessions is not shared
     /// with memory used for transient objects
-    SharedRAM = 0x1,
+    sharedRAM = 0x1,
 
     /// SET (1): indicates that the NV memory used for persistent objects is shared with the
     /// NV memory used for NV Index values
     /// CLEAR (0): indicates that the persistent objects and NV Index values are allocated
     /// from separate sections of NV
-    SharedNV = 0x2,
+    sharedNV = 0x2,
 
     /// SET (1): indicates that the TPM copies persistent objects to a transient-object slot
     /// in RAM when the persistent object is referenced in a command. The TRM is required to
     /// make sure that an object slot is available.
     /// CLEAR (0): indicates that the TPM does not use transient-object slots when persistent
     /// objects are referenced
-    ObjectCopiedToRam = 0x4
-}
-
-impl TryFrom<u32> for TPMA_MEMORY {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x1 => Ok(Self::SharedRAM),
-            0x2 => Ok(Self::SharedNV),
-            0x4 => Ok(Self::ObjectCopiedToRam),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    objectCopiedToRam = 0x4
 }
 
 impl fmt::Display for TPMA_MEMORY {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::SharedRAM => write!(f, "SharedRAM"),
-            Self::SharedNV => write!(f, "SharedNV"),
-            Self::ObjectCopiedToRam => write!(f, "ObjectCopiedToRam"),
+            Self::sharedRAM => write!(f, "sharedRAM"),
+            Self::sharedNV => write!(f, "sharedNV"),
+            Self::objectCopiedToRam => write!(f, "objectCopiedToRam"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_MEMORY {
@@ -4834,92 +3621,64 @@ fn from(value: u32) -> Self {
 /// This structure defines the attributes of a command from a context management
 /// perspective. The fields of the structure indicate to the TPM Resource Manager (TRM)
 /// the number of resources required by a command and how the command affects the TPMs resources.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_CC {
     /// Indicates the command being selected
-    CommandindexBitMask = 0xFFFF,
-    CommandindexBitOffset = 0,
-    CommandindexBitLength = 16,
+    commandIndex_BIT_MASK = 0xFFFF,
+    commandIndex_BIT_OFFSET = 0x0, // Original value: 0
+    commandIndex_BIT_LENGTH = 0x10, // Original value: 16
 
     /// SET (1): indicates that the command may write to NV
     /// CLEAR (0): indicates that the command does not write to NV
-    Nv = 0x400000,
+    nv = 0x400000,
 
     /// SET (1): This command could flush any number of loaded contexts.
     /// CLEAR (0): no additional changes other than indicated by the flushed attribute
-    Extensive = 0x800000,
+    extensive = 0x800000,
 
     /// SET (1): The context associated with any transient handle in the command will be
     /// flushed when this command completes.
     /// CLEAR (0): No context is flushed as a side effect of this command.
-    Flushed = 0x1000000,
+    flushed = 0x1000000,
 
     /// Indicates the number of the handles in the handle area for this command
-    ChandlesBitMask = 0xE000000,
-    ChandlesBitOffset = 25,
-    ChandlesBitLength = 3,
+    cHandles_BIT_MASK = 0xE000000,
+    cHandles_BIT_OFFSET = 0x19, // Original value: 25
+    cHandles_BIT_LENGTH = 0x3, // Original value: 3
 
     /// SET (1): indicates the presence of the handle area in the response
-    RHandle = 0x10000000,
+    rHandle = 0x10000000,
 
     /// SET (1): indicates that the command is vendor-specific
     /// CLEAR (0): indicates that the command is defined in a version of this specification
     V = 0x20000000,
 
     /// Allocated for software; shall be zero
-    ResBitMask = 0xC0000000,
-    ResBitOffset = 30,
-    ResBitLength = 2
-}
-
-impl TryFrom<u32> for TPMA_CC {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0xFFFF => Ok(Self::CommandindexBitMask),
-            0 => Ok(Self::CommandindexBitOffset),
-            16 => Ok(Self::CommandindexBitLength),
-            0x400000 => Ok(Self::Nv),
-            0x800000 => Ok(Self::Extensive),
-            0x1000000 => Ok(Self::Flushed),
-            0xE000000 => Ok(Self::ChandlesBitMask),
-            25 => Ok(Self::ChandlesBitOffset),
-            3 => Ok(Self::ChandlesBitLength),
-            0x10000000 => Ok(Self::RHandle),
-            0x20000000 => Ok(Self::V),
-            0xC0000000 => Ok(Self::ResBitMask),
-            30 => Ok(Self::ResBitOffset),
-            2 => Ok(Self::ResBitLength),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    Res_BIT_MASK = 0xFFFFFFFFC0000000,
+    Res_BIT_OFFSET = 0x1E, // Original value: 30
+    Res_BIT_LENGTH = 0x2 // Original value: 2
 }
 
 impl fmt::Display for TPMA_CC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::CommandindexBitMask => write!(f, "CommandindexBitMask"),
-            Self::CommandindexBitOffset => write!(f, "CommandindexBitOffset"),
-            Self::CommandindexBitLength => write!(f, "CommandindexBitLength"),
-            Self::Nv => write!(f, "Nv"),
-            Self::Extensive => write!(f, "Extensive"),
-            Self::Flushed => write!(f, "Flushed"),
-            Self::ChandlesBitMask => write!(f, "ChandlesBitMask"),
-            Self::ChandlesBitOffset => write!(f, "ChandlesBitOffset"),
-            Self::ChandlesBitLength => write!(f, "ChandlesBitLength"),
-            Self::RHandle => write!(f, "RHandle"),
+            Self::commandIndex_BIT_MASK => write!(f, "commandIndex_BIT_MASK"),
+            Self::commandIndex_BIT_OFFSET => write!(f, "commandIndex_BIT_OFFSET"),
+            Self::commandIndex_BIT_LENGTH => write!(f, "commandIndex_BIT_LENGTH"),
+            Self::nv => write!(f, "nv"),
+            Self::extensive => write!(f, "extensive"),
+            Self::flushed => write!(f, "flushed"),
+            Self::cHandles_BIT_MASK => write!(f, "cHandles_BIT_MASK"),
+            Self::cHandles_BIT_OFFSET => write!(f, "cHandles_BIT_OFFSET"),
+            Self::cHandles_BIT_LENGTH => write!(f, "cHandles_BIT_LENGTH"),
+            Self::rHandle => write!(f, "rHandle"),
             Self::V => write!(f, "V"),
-            Self::ResBitMask => write!(f, "ResBitMask"),
-            Self::ResBitOffset => write!(f, "ResBitOffset"),
-            Self::ResBitLength => write!(f, "ResBitLength"),
+            Self::Res_BIT_MASK => write!(f, "Res_BIT_MASK"),
+            Self::Res_BIT_OFFSET => write!(f, "Res_BIT_OFFSET"),
+            Self::Res_BIT_LENGTH => write!(f, "Res_BIT_LENGTH"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_CC {
@@ -4940,35 +3699,20 @@ fn from(value: u32) -> Self {
 /// This structure of this attribute is used to report that the TPM is designed for these
 /// modes. This structure may be read using TPM2_GetCapability(capability =
 /// TPM_CAP_TPM_PROPERTIES, property = TPM_PT_MODES).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_MODES {
     /// SET (1): indicates that the TPM is designed to comply with all of the FIPS 140-2
     /// requirements at Level 1 or higher.
-    Fips1402 = 0x1
-}
-
-impl TryFrom<u32> for TPMA_MODES {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x1 => Ok(Self::Fips1402),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    FIPS_140_2 = 0x1
 }
 
 impl fmt::Display for TPMA_MODES {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Fips1402 => write!(f, "Fips1402"),
+            Self::FIPS_140_2 => write!(f, "FIPS_140_2"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_MODES {
@@ -4991,79 +3735,56 @@ fn from(value: u32) -> Self {
 /// TPM2_CertifyX509, when a caller provides a DER encoded Key Usage in
 /// partialCertificate, the TPM will validate that the key to be certified meets the
 /// requirements of Key Usage.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_X509_KEY_USAGE {
     /// Attributes.Decrypt SET
-    DecipherOnly = 0x800000,
+    decipherOnly = 0x800000,
 
     /// Attributes.Decrypt SET
-    EncipherOnly = 0x1000000,
+    encipherOnly = 0x1000000,
 
     /// Attributes.sign SET
-    CRLSign = 0x2000000,
+    cRLSign = 0x2000000,
 
     /// Attributes.sign SET
-    KeyCertSign = 0x4000000,
+    keyCertSign = 0x4000000,
 
     /// Attributes.Decrypt SET
-    KeyAgreement = 0x8000000,
+    keyAgreement = 0x8000000,
 
     /// Attributes.Decrypt SET
-    DataEncipherment = 0x10000000,
+    dataEncipherment = 0x10000000,
 
     /// Asymmetric key with decrypt and restricted SET key has the attributes of a parent key
-    KeyEncipherment = 0x20000000,
+    keyEncipherment = 0x20000000,
 
     /// FixedTPM SET in Subject Key (objectHandle)
-    Nonrepudiation = 0x40000000,
+    nonrepudiation = 0x40000000,
 
     /// Alias to the nonrepudiation value.
-    ContentCommitment = 0x40000000,
+    // WARNING: contentCommitment has duplicate value 0x40000000 - using name + value pattern
+    contentCommitmentValue = 0x40000000,
 
     /// Sign SET in Subject Key (objectHandle)
-    DigitalSignature = 0x80000000
-}
-
-impl TryFrom<u32> for TPMA_X509_KEY_USAGE {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x800000 => Ok(Self::DecipherOnly),
-            0x1000000 => Ok(Self::EncipherOnly),
-            0x2000000 => Ok(Self::CRLSign),
-            0x4000000 => Ok(Self::KeyCertSign),
-            0x8000000 => Ok(Self::KeyAgreement),
-            0x10000000 => Ok(Self::DataEncipherment),
-            0x20000000 => Ok(Self::KeyEncipherment),
-            0x40000000 => Ok(Self::Nonrepudiation),
-            0x40000000 => Ok(Self::ContentCommitment),
-            0x80000000 => Ok(Self::DigitalSignature),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    digitalSignature = 0xFFFFFFFF80000000
 }
 
 impl fmt::Display for TPMA_X509_KEY_USAGE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::DecipherOnly => write!(f, "DecipherOnly"),
-            Self::EncipherOnly => write!(f, "EncipherOnly"),
-            Self::CRLSign => write!(f, "CRLSign"),
-            Self::KeyCertSign => write!(f, "KeyCertSign"),
-            Self::KeyAgreement => write!(f, "KeyAgreement"),
-            Self::DataEncipherment => write!(f, "DataEncipherment"),
-            Self::KeyEncipherment => write!(f, "KeyEncipherment"),
-            Self::Nonrepudiation => write!(f, "Nonrepudiation"),
-            Self::ContentCommitment => write!(f, "ContentCommitment"),
-            Self::DigitalSignature => write!(f, "DigitalSignature"),
+            Self::decipherOnly => write!(f, "decipherOnly"),
+            Self::encipherOnly => write!(f, "encipherOnly"),
+            Self::cRLSign => write!(f, "cRLSign"),
+            Self::keyCertSign => write!(f, "keyCertSign"),
+            Self::keyAgreement => write!(f, "keyAgreement"),
+            Self::dataEncipherment => write!(f, "dataEncipherment"),
+            Self::keyEncipherment => write!(f, "keyEncipherment"),
+            Self::nonrepudiation => write!(f, "nonrepudiation"),
+            Self::contentCommitment => write!(f, "contentCommitment"),
+            Self::digitalSignature => write!(f, "digitalSignature"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_X509_KEY_USAGE {
@@ -5085,40 +3806,24 @@ fn from(value: u32) -> Self {
 /// TPM2_GetCapability(capability = TPM_CAP_ACT, property = TPM_RH_ACT_x where x is the
 /// ACT number (0-F)). The signaled value must be preserved across TPM Resume or if the
 /// TPM has not lost power. The signaled value may be preserved over a power cycle of a TPM.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_ACT {
     /// SET (1): The ACT has signaled
     /// CLEAR (0): The ACT has not signaled
-    Signaled = 0x1,
+    signaled = 0x1,
 
     /// Preserves the state of signaled, depending on the power cycle
-    PreserveSignaled = 0x2
-}
-
-impl TryFrom<u32> for TPMA_ACT {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x1 => Ok(Self::Signaled),
-            0x2 => Ok(Self::PreserveSignaled),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    preserveSignaled = 0x2
 }
 
 impl fmt::Display for TPMA_ACT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Signaled => write!(f, "Signaled"),
-            Self::PreserveSignaled => write!(f, "PreserveSignaled"),
+            Self::signaled => write!(f, "signaled"),
+            Self::preserveSignaled => write!(f, "preserveSignaled"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_ACT {
@@ -5140,51 +3845,32 @@ fn from(value: u32) -> Self {
 /// Index is changed from TPM 1.2 in order to include the Index in the reserved handle
 /// space. Handles in this range use the digest of the public area of the Index as the
 /// Name of the entity in authorization computations
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPM_NV_INDEX {
     /// The Index of the NV location
-    IndexBitMask = 0xFFFFFF,
-    IndexBitOffset = 0,
-    IndexBitLength = 24,
+    index_BIT_MASK = 0xFFFFFF,
+    index_BIT_OFFSET = 0x0, // Original value: 0
+    index_BIT_LENGTH = 0x18, // Original value: 24
 
     /// Constant value of TPM_HT_NV_INDEX indicating the NV Index range
-    RhnvBitMask = 0xFF000000,
-    RhnvBitOffset = 24,
-    RhnvBitLength = 8
-}
-
-impl TryFrom<u32> for TPM_NV_INDEX {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0xFFFFFF => Ok(Self::IndexBitMask),
-            0 => Ok(Self::IndexBitOffset),
-            24 => Ok(Self::IndexBitLength),
-            0xFF000000 => Ok(Self::RhnvBitMask),
-            24 => Ok(Self::RhnvBitOffset),
-            8 => Ok(Self::RhnvBitLength),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    RhNv_BIT_MASK = 0xFFFFFFFFFF000000,
+    // WARNING: RhNv_BIT_OFFSET has duplicate value 0x18 - using name + value pattern
+    RhNv_BIT_OFFSETValue = 0x18, // Original value: 24
+    RhNv_BIT_LENGTH = 0x8 // Original value: 8
 }
 
 impl fmt::Display for TPM_NV_INDEX {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::IndexBitMask => write!(f, "IndexBitMask"),
-            Self::IndexBitOffset => write!(f, "IndexBitOffset"),
-            Self::IndexBitLength => write!(f, "IndexBitLength"),
-            Self::RhnvBitMask => write!(f, "RhnvBitMask"),
-            Self::RhnvBitOffset => write!(f, "RhnvBitOffset"),
-            Self::RhnvBitLength => write!(f, "RhnvBitLength"),
+            Self::index_BIT_MASK => write!(f, "index_BIT_MASK"),
+            Self::index_BIT_OFFSET => write!(f, "index_BIT_OFFSET"),
+            Self::index_BIT_LENGTH => write!(f, "index_BIT_LENGTH"),
+            Self::RhNv_BIT_MASK => write!(f, "RhNv_BIT_MASK"),
+            Self::RhNv_BIT_OFFSET => write!(f, "RhNv_BIT_OFFSET"),
+            Self::RhNv_BIT_LENGTH => write!(f, "RhNv_BIT_LENGTH"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPM_NV_INDEX {
@@ -5204,8 +3890,8 @@ fn from(value: u32) -> Self {
 
 /// This structure allows the TPM to keep track of the data and permissions to manipulate
 /// an NV Index.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[repr(u32)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(i32)]
 pub enum TPMA_NV {
     /// SET (1): The Index data can be written if Platform Authorization is provided.
     /// CLEAR (0): Writing of the Index data cannot be authorized with Platform Authorization.
@@ -5244,16 +3930,18 @@ pub enum TPMA_NV {
     EXTEND = 0x40,
 
     /// PIN Fail - contains pinCount that increments on a PIN authorization failure and a pinLimit
-    PinFail = 0x80,
+    PIN_FAIL = 0x80,
 
     /// PIN Pass - contains pinCount that increments on a PIN authorization success and a pinLimit
-    PinPass = 0x90,
+    PIN_PASS = 0x90,
 
     /// The type of the index.
     /// NOTE A TPM is not required to support all TPM_NT values
-    TpmntBitMask = 0xF0,
-    TpmntBitOffset = 4,
-    TpmntBitLength = 4,
+    TpmNt_BIT_MASK = 0xF0,
+    // WARNING: TpmNt_BIT_OFFSET has duplicate value 0x4 - using name + value pattern
+    TpmNt_BIT_OFFSETValue = 0x4, // Original value: 4
+    // WARNING: TpmNt_BIT_LENGTH has duplicate value 0x4 - using name + value pattern
+    TpmNt_BIT_LENGTHValue = 0x4, // Original value: 4
 
     /// SET (1): Index may not be deleted unless the authPolicy is satisfied using
     /// TPM2_NV_UndefineSpaceSpecial().
@@ -5261,7 +3949,7 @@ pub enum TPMA_NV {
     /// TPM2_NV_UndefineSpace().
     /// NOTE An Index with this attribute and a policy that cannot be satisfied (e.g., an
     /// Empty Policy) cannot be deleted.
-    PolicyDelete = 0x400,
+    POLICY_DELETE = 0x400,
 
     /// SET (1): Index cannot be written.
     /// CLEAR (0): Index can be written.
@@ -5282,7 +3970,7 @@ pub enum TPMA_NV {
     /// until the next TPM Reset or TPM Restart.
     /// CLEAR (0): TPM2_NV_WriteLock() does not block subsequent writes if TPMA_NV_WRITEDEFINE
     /// is also CLEAR.
-    WriteStclear = 0x4000,
+    WRITE_STCLEAR = 0x4000,
 
     /// SET (1): If TPM2_NV_GlobalWriteLock() is successful, TPMA_NV_WRITELOCKED is set.
     /// CLEAR (0): TPM2_NV_GlobalWriteLock() has no effect on the writing of the data at this Index.
@@ -5309,7 +3997,7 @@ pub enum TPMA_NV {
     /// CLEAR (0): Authorization failures of the Index will increment the authorization
     /// failure counter and authorizations of this Index are not allowed when the TPM is in
     /// Lockout mode.
-    NoDa = 0x2000000,
+    NO_DA = 0x2000000,
 
     /// SET (1): NV Index state is only required to be saved when the TPM performs an orderly
     /// shutdown (TPM2_Shutdown()).
@@ -5320,7 +4008,7 @@ pub enum TPMA_NV {
     /// SET (1): TPMA_NV_WRITTEN for the Index is CLEAR by TPM Reset or TPM Restart.
     /// CLEAR (0): TPMA_NV_WRITTEN is not changed by TPM Restart.
     /// NOTE This attribute may only be SET if TPM_NT is not TPM_NT_COUNTER.
-    ClearStclear = 0x8000000,
+    CLEAR_STCLEAR = 0x8000000,
 
     /// SET (1): Reads of the Index are blocked until the next TPM Reset or TPM Restart.
     /// CLEAR (0): Reads of the Index are allowed if proper authorization is provided.
@@ -5341,49 +4029,7 @@ pub enum TPMA_NV {
 
     /// SET (1): TPM2_NV_ReadLock() may be used to SET TPMA_NV_READLOCKED for this Index.
     /// CLEAR (0): TPM2_NV_ReadLock() has no effect on this Index.
-    ReadStclear = 0x80000000
-}
-
-impl TryFrom<u32> for TPMA_NV {
-    type Error = TpmError;
-
-    fn try_from(value: u32) -> Result<Self, Self::Error> {
-        match value {
-            0x1 => Ok(Self::PPWRITE),
-            0x2 => Ok(Self::OWNERWRITE),
-            0x4 => Ok(Self::AUTHWRITE),
-            0x8 => Ok(Self::POLICYWRITE),
-            0x0 => Ok(Self::ORDINARY),
-            0x10 => Ok(Self::COUNTER),
-            0x20 => Ok(Self::BITS),
-            0x40 => Ok(Self::EXTEND),
-            0x80 => Ok(Self::PinFail),
-            0x90 => Ok(Self::PinPass),
-            0xF0 => Ok(Self::TpmntBitMask),
-            4 => Ok(Self::TpmntBitOffset),
-            4 => Ok(Self::TpmntBitLength),
-            0x400 => Ok(Self::PolicyDelete),
-            0x800 => Ok(Self::WRITELOCKED),
-            0x1000 => Ok(Self::WRITEALL),
-            0x2000 => Ok(Self::WRITEDEFINE),
-            0x4000 => Ok(Self::WriteStclear),
-            0x8000 => Ok(Self::GLOBALLOCK),
-            0x10000 => Ok(Self::PPREAD),
-            0x20000 => Ok(Self::OWNERREAD),
-            0x40000 => Ok(Self::AUTHREAD),
-            0x80000 => Ok(Self::POLICYREAD),
-            0x2000000 => Ok(Self::NoDa),
-            0x4000000 => Ok(Self::ORDERLY),
-            0x8000000 => Ok(Self::ClearStclear),
-            0x10000000 => Ok(Self::READLOCKED),
-            0x20000000 => Ok(Self::WRITTEN),
-            0x40000000 => Ok(Self::PLATFORMCREATE),
-            0x80000000 => Ok(Self::ReadStclear),
-            _ => Err(TpmError::InvalidEnumValue),
-        }
-
-    }
-
+    READ_STCLEAR = 0xFFFFFFFF80000000
 }
 
 impl fmt::Display for TPMA_NV {
@@ -5397,32 +4043,30 @@ impl fmt::Display for TPMA_NV {
             Self::COUNTER => write!(f, "COUNTER"),
             Self::BITS => write!(f, "BITS"),
             Self::EXTEND => write!(f, "EXTEND"),
-            Self::PinFail => write!(f, "PinFail"),
-            Self::PinPass => write!(f, "PinPass"),
-            Self::TpmntBitMask => write!(f, "TpmntBitMask"),
-            Self::TpmntBitOffset => write!(f, "TpmntBitOffset"),
-            Self::TpmntBitLength => write!(f, "TpmntBitLength"),
-            Self::PolicyDelete => write!(f, "PolicyDelete"),
+            Self::PIN_FAIL => write!(f, "PIN_FAIL"),
+            Self::PIN_PASS => write!(f, "PIN_PASS"),
+            Self::TpmNt_BIT_MASK => write!(f, "TpmNt_BIT_MASK"),
+            Self::TpmNt_BIT_OFFSET => write!(f, "TpmNt_BIT_OFFSET"),
+            Self::TpmNt_BIT_LENGTH => write!(f, "TpmNt_BIT_LENGTH"),
+            Self::POLICY_DELETE => write!(f, "POLICY_DELETE"),
             Self::WRITELOCKED => write!(f, "WRITELOCKED"),
             Self::WRITEALL => write!(f, "WRITEALL"),
             Self::WRITEDEFINE => write!(f, "WRITEDEFINE"),
-            Self::WriteStclear => write!(f, "WriteStclear"),
+            Self::WRITE_STCLEAR => write!(f, "WRITE_STCLEAR"),
             Self::GLOBALLOCK => write!(f, "GLOBALLOCK"),
             Self::PPREAD => write!(f, "PPREAD"),
             Self::OWNERREAD => write!(f, "OWNERREAD"),
             Self::AUTHREAD => write!(f, "AUTHREAD"),
             Self::POLICYREAD => write!(f, "POLICYREAD"),
-            Self::NoDa => write!(f, "NoDa"),
+            Self::NO_DA => write!(f, "NO_DA"),
             Self::ORDERLY => write!(f, "ORDERLY"),
-            Self::ClearStclear => write!(f, "ClearStclear"),
+            Self::CLEAR_STCLEAR => write!(f, "CLEAR_STCLEAR"),
             Self::READLOCKED => write!(f, "READLOCKED"),
             Self::WRITTEN => write!(f, "WRITTEN"),
             Self::PLATFORMCREATE => write!(f, "PLATFORMCREATE"),
-            Self::ReadStclear => write!(f, "ReadStclear"),
+            Self::READ_STCLEAR => write!(f, "READ_STCLEAR"),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_NV {
@@ -5451,57 +4095,53 @@ pub trait TpmUnion {
 /// TPML_TAGGED_TPM_PROPERTY, TPML_TAGGED_PCR_PROPERTY, TPML_ECC_CURVE,
 /// TPML_TAGGED_POLICY, TPML_ACT_DATA.
 pub enum TPMU_CAPABILITIES {
-    Algorithms(TPML_ALG_PROPERTY),
-    Handles(TPML_HANDLE),
-    Command(TPML_CCA),
-    PpCommands(TPML_CC),
-    AuditCommands(TPML_CC),
-    AssignedPCR(TPML_PCR_SELECTION),
-    TpmProperties(TPML_TAGGED_TPM_PROPERTY),
-    PcrProperties(TPML_TAGGED_PCR_PROPERTY),
-    EccCurves(TPML_ECC_CURVE),
-    AuthPolicies(TPML_TAGGED_POLICY),
-    ActData(TPML_ACT_DATA),
+    algorithms(TPML_ALG_PROPERTY),
+    handles(TPML_HANDLE),
+    command(TPML_CCA),
+    ppCommands(TPML_CC),
+    auditCommands(TPML_CC),
+    assignedPCR(TPML_PCR_SELECTION),
+    tpmProperties(TPML_TAGGED_TPM_PROPERTY),
+    pcrProperties(TPML_TAGGED_PCR_PROPERTY),
+    eccCurves(TPML_ECC_CURVE),
+    authPolicies(TPML_TAGGED_POLICY),
+    actData(TPML_ACT_DATA),
 }
 
 impl TpmUnion for TPMU_CAPABILITIES {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Algorithms(_) => TPM_CAP:ALGS as u32,
-            Self::Handles(_) => TPM_CAP:HANDLES as u32,
-            Self::Command(_) => TPM_CAP:COMMANDS as u32,
-            Self::PpCommands(_) => TPM_CAP:PP_COMMANDS as u32,
-            Self::AuditCommands(_) => TPM_CAP:AUDIT_COMMANDS as u32,
-            Self::AssignedPCR(_) => TPM_CAP:PCRS as u32,
-            Self::TpmProperties(_) => TPM_CAP:TPM_PROPERTIES as u32,
-            Self::PcrProperties(_) => TPM_CAP:PCR_PROPERTIES as u32,
-            Self::EccCurves(_) => TPM_CAP:ECC_CURVES as u32,
-            Self::AuthPolicies(_) => TPM_CAP:AUTH_POLICIES as u32,
-            Self::ActData(_) => TPM_CAP:ACT as u32,
+            Self::algorithms(_) => TPM_CAP:ALGS as u32,
+            Self::handles(_) => TPM_CAP:HANDLES as u32,
+            Self::command(_) => TPM_CAP:COMMANDS as u32,
+            Self::ppCommands(_) => TPM_CAP:PP_COMMANDS as u32,
+            Self::auditCommands(_) => TPM_CAP:AUDIT_COMMANDS as u32,
+            Self::assignedPCR(_) => TPM_CAP:PCRS as u32,
+            Self::tpmProperties(_) => TPM_CAP:TPM_PROPERTIES as u32,
+            Self::pcrProperties(_) => TPM_CAP:PCR_PROPERTIES as u32,
+            Self::eccCurves(_) => TPM_CAP:ECC_CURVES as u32,
+            Self::authPolicies(_) => TPM_CAP:AUTH_POLICIES as u32,
+            Self::actData(_) => TPM_CAP:ACT as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_CAPABILITIES {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Algorithms(inner) => write!(f, "TPMU_CAPABILITIES::Algorithms({:?})", inner),
-            Self::Handles(inner) => write!(f, "TPMU_CAPABILITIES::Handles({:?})", inner),
-            Self::Command(inner) => write!(f, "TPMU_CAPABILITIES::Command({:?})", inner),
-            Self::PpCommands(inner) => write!(f, "TPMU_CAPABILITIES::PpCommands({:?})", inner),
-            Self::AuditCommands(inner) => write!(f, "TPMU_CAPABILITIES::AuditCommands({:?})", inner),
-            Self::AssignedPCR(inner) => write!(f, "TPMU_CAPABILITIES::AssignedPCR({:?})", inner),
-            Self::TpmProperties(inner) => write!(f, "TPMU_CAPABILITIES::TpmProperties({:?})", inner),
-            Self::PcrProperties(inner) => write!(f, "TPMU_CAPABILITIES::PcrProperties({:?})", inner),
-            Self::EccCurves(inner) => write!(f, "TPMU_CAPABILITIES::EccCurves({:?})", inner),
-            Self::AuthPolicies(inner) => write!(f, "TPMU_CAPABILITIES::AuthPolicies({:?})", inner),
-            Self::ActData(inner) => write!(f, "TPMU_CAPABILITIES::ActData({:?})", inner),
+            Self::algorithms(inner) => write!(f, "TPMU_CAPABILITIES::algorithms({:?})", inner),
+            Self::handles(inner) => write!(f, "TPMU_CAPABILITIES::handles({:?})", inner),
+            Self::command(inner) => write!(f, "TPMU_CAPABILITIES::command({:?})", inner),
+            Self::ppCommands(inner) => write!(f, "TPMU_CAPABILITIES::ppCommands({:?})", inner),
+            Self::auditCommands(inner) => write!(f, "TPMU_CAPABILITIES::auditCommands({:?})", inner),
+            Self::assignedPCR(inner) => write!(f, "TPMU_CAPABILITIES::assignedPCR({:?})", inner),
+            Self::tpmProperties(inner) => write!(f, "TPMU_CAPABILITIES::tpmProperties({:?})", inner),
+            Self::pcrProperties(inner) => write!(f, "TPMU_CAPABILITIES::pcrProperties({:?})", inner),
+            Self::eccCurves(inner) => write!(f, "TPMU_CAPABILITIES::eccCurves({:?})", inner),
+            Self::authPolicies(inner) => write!(f, "TPMU_CAPABILITIES::authPolicies({:?})", inner),
+            Self::actData(inner) => write!(f, "TPMU_CAPABILITIES::actData({:?})", inner),
         }
-
     }
-
 }
 
 /// Table 132 Definition of TPMU_ATTEST Union [OUT]
@@ -5509,48 +4149,44 @@ impl fmt::Debug for TPMU_CAPABILITIES {
 /// TPMS_COMMAND_AUDIT_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO,
 /// TPMS_NV_CERTIFY_INFO, TPMS_NV_DIGEST_CERTIFY_INFO.
 pub enum TPMU_ATTEST {
-    Certify(TPMS_CERTIFY_INFO),
-    Creation(TPMS_CREATION_INFO),
-    Quote(TPMS_QUOTE_INFO),
-    CommandAudit(TPMS_COMMAND_AUDIT_INFO),
-    SessionAudit(TPMS_SESSION_AUDIT_INFO),
-    Time(TPMS_TIME_ATTEST_INFO),
-    Nv(TPMS_NV_CERTIFY_INFO),
-    NvDigest(TPMS_NV_DIGEST_CERTIFY_INFO),
+    certify(TPMS_CERTIFY_INFO),
+    creation(TPMS_CREATION_INFO),
+    quote(TPMS_QUOTE_INFO),
+    commandAudit(TPMS_COMMAND_AUDIT_INFO),
+    sessionAudit(TPMS_SESSION_AUDIT_INFO),
+    time(TPMS_TIME_ATTEST_INFO),
+    nv(TPMS_NV_CERTIFY_INFO),
+    nvDigest(TPMS_NV_DIGEST_CERTIFY_INFO),
 }
 
 impl TpmUnion for TPMU_ATTEST {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Certify(_) => TPM_ST:ATTEST_CERTIFY as u32,
-            Self::Creation(_) => TPM_ST:ATTEST_CREATION as u32,
-            Self::Quote(_) => TPM_ST:ATTEST_QUOTE as u32,
-            Self::CommandAudit(_) => TPM_ST:ATTEST_COMMAND_AUDIT as u32,
-            Self::SessionAudit(_) => TPM_ST:ATTEST_SESSION_AUDIT as u32,
-            Self::Time(_) => TPM_ST:ATTEST_TIME as u32,
-            Self::Nv(_) => TPM_ST:ATTEST_NV as u32,
-            Self::NvDigest(_) => TPM_ST:ATTEST_NV_DIGEST as u32,
+            Self::certify(_) => TPM_ST:ATTEST_CERTIFY as u32,
+            Self::creation(_) => TPM_ST:ATTEST_CREATION as u32,
+            Self::quote(_) => TPM_ST:ATTEST_QUOTE as u32,
+            Self::commandAudit(_) => TPM_ST:ATTEST_COMMAND_AUDIT as u32,
+            Self::sessionAudit(_) => TPM_ST:ATTEST_SESSION_AUDIT as u32,
+            Self::time(_) => TPM_ST:ATTEST_TIME as u32,
+            Self::nv(_) => TPM_ST:ATTEST_NV as u32,
+            Self::nvDigest(_) => TPM_ST:ATTEST_NV_DIGEST as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_ATTEST {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Certify(inner) => write!(f, "TPMU_ATTEST::Certify({:?})", inner),
-            Self::Creation(inner) => write!(f, "TPMU_ATTEST::Creation({:?})", inner),
-            Self::Quote(inner) => write!(f, "TPMU_ATTEST::Quote({:?})", inner),
-            Self::CommandAudit(inner) => write!(f, "TPMU_ATTEST::CommandAudit({:?})", inner),
-            Self::SessionAudit(inner) => write!(f, "TPMU_ATTEST::SessionAudit({:?})", inner),
-            Self::Time(inner) => write!(f, "TPMU_ATTEST::Time({:?})", inner),
-            Self::Nv(inner) => write!(f, "TPMU_ATTEST::Nv({:?})", inner),
-            Self::NvDigest(inner) => write!(f, "TPMU_ATTEST::NvDigest({:?})", inner),
+            Self::certify(inner) => write!(f, "TPMU_ATTEST::certify({:?})", inner),
+            Self::creation(inner) => write!(f, "TPMU_ATTEST::creation({:?})", inner),
+            Self::quote(inner) => write!(f, "TPMU_ATTEST::quote({:?})", inner),
+            Self::commandAudit(inner) => write!(f, "TPMU_ATTEST::commandAudit({:?})", inner),
+            Self::sessionAudit(inner) => write!(f, "TPMU_ATTEST::sessionAudit({:?})", inner),
+            Self::time(inner) => write!(f, "TPMU_ATTEST::time({:?})", inner),
+            Self::nv(inner) => write!(f, "TPMU_ATTEST::nv({:?})", inner),
+            Self::nvDigest(inner) => write!(f, "TPMU_ATTEST::nvDigest({:?})", inner),
         }
-
     }
-
 }
 
 /// This union allows additional parameters to be added for a symmetric cipher. Currently,
@@ -5558,45 +4194,41 @@ impl fmt::Debug for TPMU_ATTEST {
 /// One of: TPMS_TDES_SYM_DETAILS, TPMS_AES_SYM_DETAILS, TPMS_SM4_SYM_DETAILS,
 /// TPMS_CAMELLIA_SYM_DETAILS, TPMS_ANY_SYM_DETAILS, TPMS_XOR_SYM_DETAILS, TPMS_NULL_SYM_DETAILS.
 pub enum TPMU_SYM_DETAILS {
-    Tdes(TPMS_TDES_SYM_DETAILS),
-    Aes(TPMS_AES_SYM_DETAILS),
-    Sm4(TPMS_SM4_SYM_DETAILS),
-    Camellia(TPMS_CAMELLIA_SYM_DETAILS),
-    Sym(TPMS_ANY_SYM_DETAILS),
-    Xor(TPMS_XOR_SYM_DETAILS),
-    Null(TPMS_NULL_SYM_DETAILS),
+    tdes(TPMS_TDES_SYM_DETAILS),
+    aes(TPMS_AES_SYM_DETAILS),
+    sm4(TPMS_SM4_SYM_DETAILS),
+    camellia(TPMS_CAMELLIA_SYM_DETAILS),
+    sym(TPMS_ANY_SYM_DETAILS),
+    xor(TPMS_XOR_SYM_DETAILS),
+    null(TPMS_NULL_SYM_DETAILS),
 }
 
 impl TpmUnion for TPMU_SYM_DETAILS {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Tdes(_) => TPM_ALG_ID:TDES as u32,
-            Self::Aes(_) => TPM_ALG_ID:AES as u32,
-            Self::Sm4(_) => TPM_ALG_ID:SM4 as u32,
-            Self::Camellia(_) => TPM_ALG_ID:CAMELLIA as u32,
-            Self::Sym(_) => TPM_ALG_ID:ANY as u32,
-            Self::Xor(_) => TPM_ALG_ID:XOR as u32,
-            Self::Null(_) => TPM_ALG_ID:NULL as u32,
+            Self::tdes(_) => TPM_ALG_ID:TDES as u32,
+            Self::aes(_) => TPM_ALG_ID:AES as u32,
+            Self::sm4(_) => TPM_ALG_ID:SM4 as u32,
+            Self::camellia(_) => TPM_ALG_ID:CAMELLIA as u32,
+            Self::sym(_) => TPM_ALG_ID:ANY as u32,
+            Self::xor(_) => TPM_ALG_ID:XOR as u32,
+            Self::null(_) => TPM_ALG_ID:NULL as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_SYM_DETAILS {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Tdes(inner) => write!(f, "TPMU_SYM_DETAILS::Tdes({:?})", inner),
-            Self::Aes(inner) => write!(f, "TPMU_SYM_DETAILS::Aes({:?})", inner),
-            Self::Sm4(inner) => write!(f, "TPMU_SYM_DETAILS::Sm4({:?})", inner),
-            Self::Camellia(inner) => write!(f, "TPMU_SYM_DETAILS::Camellia({:?})", inner),
-            Self::Sym(inner) => write!(f, "TPMU_SYM_DETAILS::Sym({:?})", inner),
-            Self::Xor(inner) => write!(f, "TPMU_SYM_DETAILS::Xor({:?})", inner),
-            Self::Null(inner) => write!(f, "TPMU_SYM_DETAILS::Null({:?})", inner),
+            Self::tdes(inner) => write!(f, "TPMU_SYM_DETAILS::tdes({:?})", inner),
+            Self::aes(inner) => write!(f, "TPMU_SYM_DETAILS::aes({:?})", inner),
+            Self::sm4(inner) => write!(f, "TPMU_SYM_DETAILS::sm4({:?})", inner),
+            Self::camellia(inner) => write!(f, "TPMU_SYM_DETAILS::camellia({:?})", inner),
+            Self::sym(inner) => write!(f, "TPMU_SYM_DETAILS::sym({:?})", inner),
+            Self::xor(inner) => write!(f, "TPMU_SYM_DETAILS::xor({:?})", inner),
+            Self::null(inner) => write!(f, "TPMU_SYM_DETAILS::null({:?})", inner),
         }
-
     }
-
 }
 
 /// This structure allows a TPM2B_SENSITIVE_CREATE structure to carry either a
@@ -5604,62 +4236,54 @@ impl fmt::Debug for TPMU_SYM_DETAILS {
 /// determined by context. When an object is being derived, the derivation values are present.
 /// One of: u8, TPMS_DERIVE.
 pub enum TPMU_SENSITIVE_CREATE {
-    Create,
-    Derive(TPMS_DERIVE),
+    create,
+    derive(TPMS_DERIVE),
 }
 
 impl TpmUnion for TPMU_SENSITIVE_CREATE {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Create => TPM_ALG_ID:ANY as u32,
-            Self::Derive(_) => TPM_ALG_ID:ANY2 as u32,
+            Self::create => TPM_ALG_ID:ANY as u32,
+            Self::derive(_) => TPM_ALG_ID:ANY2 as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_SENSITIVE_CREATE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Create => write!(f, "TPMU_SENSITIVE_CREATE::Create"),
-            Self::Derive(inner) => write!(f, "TPMU_SENSITIVE_CREATE::Derive({:?})", inner),
+            Self::create => write!(f, "TPMU_SENSITIVE_CREATE::create"),
+            Self::derive(inner) => write!(f, "TPMU_SENSITIVE_CREATE::derive({:?})", inner),
         }
-
     }
-
 }
 
 /// Table 157 Definition of TPMU_SCHEME_KEYEDHASH Union [IN/OUT]
 /// One of: TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_NULL_SCHEME_KEYEDHASH.
 pub enum TPMU_SCHEME_KEYEDHASH {
-    Hmac(TPMS_SCHEME_HMAC),
-    Xor(TPMS_SCHEME_XOR),
-    Null(TPMS_NULL_SCHEME_KEYEDHASH),
+    hmac(TPMS_SCHEME_HMAC),
+    xor(TPMS_SCHEME_XOR),
+    null(TPMS_NULL_SCHEME_KEYEDHASH),
 }
 
 impl TpmUnion for TPMU_SCHEME_KEYEDHASH {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Hmac(_) => TPM_ALG_ID:HMAC as u32,
-            Self::Xor(_) => TPM_ALG_ID:XOR as u32,
-            Self::Null(_) => TPM_ALG_ID:NULL as u32,
+            Self::hmac(_) => TPM_ALG_ID:HMAC as u32,
+            Self::xor(_) => TPM_ALG_ID:XOR as u32,
+            Self::null(_) => TPM_ALG_ID:NULL as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_SCHEME_KEYEDHASH {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Hmac(inner) => write!(f, "TPMU_SCHEME_KEYEDHASH::Hmac({:?})", inner),
-            Self::Xor(inner) => write!(f, "TPMU_SCHEME_KEYEDHASH::Xor({:?})", inner),
-            Self::Null(inner) => write!(f, "TPMU_SCHEME_KEYEDHASH::Null({:?})", inner),
+            Self::hmac(inner) => write!(f, "TPMU_SCHEME_KEYEDHASH::hmac({:?})", inner),
+            Self::xor(inner) => write!(f, "TPMU_SCHEME_KEYEDHASH::xor({:?})", inner),
+            Self::null(inner) => write!(f, "TPMU_SCHEME_KEYEDHASH::null({:?})", inner),
         }
-
     }
-
 }
 
 /// This is the union of all of the signature schemes.
@@ -5667,93 +4291,85 @@ impl fmt::Debug for TPMU_SCHEME_KEYEDHASH {
 /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
 /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
 pub enum TPMU_SIG_SCHEME {
-    Rsassa(TPMS_SIG_SCHEME_RSASSA),
-    Rsapss(TPMS_SIG_SCHEME_RSAPSS),
-    Ecdsa(TPMS_SIG_SCHEME_ECDSA),
-    Ecdaa(TPMS_SIG_SCHEME_ECDAA),
-    Sm2(TPMS_SIG_SCHEME_SM2),
-    Ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR),
-    Hmac(TPMS_SCHEME_HMAC),
-    Any(TPMS_SCHEME_HASH),
-    Null(TPMS_NULL_SIG_SCHEME),
+    rsassa(TPMS_SIG_SCHEME_RSASSA),
+    rsapss(TPMS_SIG_SCHEME_RSAPSS),
+    ecdsa(TPMS_SIG_SCHEME_ECDSA),
+    ecdaa(TPMS_SIG_SCHEME_ECDAA),
+    sm2(TPMS_SIG_SCHEME_SM2),
+    ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR),
+    hmac(TPMS_SCHEME_HMAC),
+    any(TPMS_SCHEME_HASH),
+    null(TPMS_NULL_SIG_SCHEME),
 }
 
 impl TpmUnion for TPMU_SIG_SCHEME {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Rsassa(_) => TPM_ALG_ID:RSASSA as u32,
-            Self::Rsapss(_) => TPM_ALG_ID:RSAPSS as u32,
-            Self::Ecdsa(_) => TPM_ALG_ID:ECDSA as u32,
-            Self::Ecdaa(_) => TPM_ALG_ID:ECDAA as u32,
-            Self::Sm2(_) => TPM_ALG_ID:SM2 as u32,
-            Self::Ecschnorr(_) => TPM_ALG_ID:ECSCHNORR as u32,
-            Self::Hmac(_) => TPM_ALG_ID:HMAC as u32,
-            Self::Any(_) => TPM_ALG_ID:ANY as u32,
-            Self::Null(_) => TPM_ALG_ID:NULL as u32,
+            Self::rsassa(_) => TPM_ALG_ID:RSASSA as u32,
+            Self::rsapss(_) => TPM_ALG_ID:RSAPSS as u32,
+            Self::ecdsa(_) => TPM_ALG_ID:ECDSA as u32,
+            Self::ecdaa(_) => TPM_ALG_ID:ECDAA as u32,
+            Self::sm2(_) => TPM_ALG_ID:SM2 as u32,
+            Self::ecschnorr(_) => TPM_ALG_ID:ECSCHNORR as u32,
+            Self::hmac(_) => TPM_ALG_ID:HMAC as u32,
+            Self::any(_) => TPM_ALG_ID:ANY as u32,
+            Self::null(_) => TPM_ALG_ID:NULL as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_SIG_SCHEME {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Rsassa(inner) => write!(f, "TPMU_SIG_SCHEME::Rsassa({:?})", inner),
-            Self::Rsapss(inner) => write!(f, "TPMU_SIG_SCHEME::Rsapss({:?})", inner),
-            Self::Ecdsa(inner) => write!(f, "TPMU_SIG_SCHEME::Ecdsa({:?})", inner),
-            Self::Ecdaa(inner) => write!(f, "TPMU_SIG_SCHEME::Ecdaa({:?})", inner),
-            Self::Sm2(inner) => write!(f, "TPMU_SIG_SCHEME::Sm2({:?})", inner),
-            Self::Ecschnorr(inner) => write!(f, "TPMU_SIG_SCHEME::Ecschnorr({:?})", inner),
-            Self::Hmac(inner) => write!(f, "TPMU_SIG_SCHEME::Hmac({:?})", inner),
-            Self::Any(inner) => write!(f, "TPMU_SIG_SCHEME::Any({:?})", inner),
-            Self::Null(inner) => write!(f, "TPMU_SIG_SCHEME::Null({:?})", inner),
+            Self::rsassa(inner) => write!(f, "TPMU_SIG_SCHEME::rsassa({:?})", inner),
+            Self::rsapss(inner) => write!(f, "TPMU_SIG_SCHEME::rsapss({:?})", inner),
+            Self::ecdsa(inner) => write!(f, "TPMU_SIG_SCHEME::ecdsa({:?})", inner),
+            Self::ecdaa(inner) => write!(f, "TPMU_SIG_SCHEME::ecdaa({:?})", inner),
+            Self::sm2(inner) => write!(f, "TPMU_SIG_SCHEME::sm2({:?})", inner),
+            Self::ecschnorr(inner) => write!(f, "TPMU_SIG_SCHEME::ecschnorr({:?})", inner),
+            Self::hmac(inner) => write!(f, "TPMU_SIG_SCHEME::hmac({:?})", inner),
+            Self::any(inner) => write!(f, "TPMU_SIG_SCHEME::any({:?})", inner),
+            Self::null(inner) => write!(f, "TPMU_SIG_SCHEME::null({:?})", inner),
         }
-
     }
-
 }
 
 /// Table 166 Definition of TPMU_KDF_SCHEME Union [IN/OUT]
 /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
 /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
 pub enum TPMU_KDF_SCHEME {
-    Mgf1(TPMS_KDF_SCHEME_MGF1),
-    Kdf1Sp80056a(TPMS_KDF_SCHEME_KDF1_SP800_56A),
-    Kdf2(TPMS_KDF_SCHEME_KDF2),
-    Kdf1Sp800108(TPMS_KDF_SCHEME_KDF1_SP800_108),
-    AnyKdf(TPMS_SCHEME_HASH),
-    Null(TPMS_NULL_KDF_SCHEME),
+    mgf1(TPMS_KDF_SCHEME_MGF1),
+    kdf1_sp800_56a(TPMS_KDF_SCHEME_KDF1_SP800_56A),
+    kdf2(TPMS_KDF_SCHEME_KDF2),
+    kdf1_sp800_108(TPMS_KDF_SCHEME_KDF1_SP800_108),
+    anyKdf(TPMS_SCHEME_HASH),
+    null(TPMS_NULL_KDF_SCHEME),
 }
 
 impl TpmUnion for TPMU_KDF_SCHEME {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Mgf1(_) => TPM_ALG_ID:MGF1 as u32,
-            Self::Kdf1Sp80056a(_) => TPM_ALG_ID:KDF1_SP800_56A as u32,
-            Self::Kdf2(_) => TPM_ALG_ID:KDF2 as u32,
-            Self::Kdf1Sp800108(_) => TPM_ALG_ID:KDF1_SP800_108 as u32,
-            Self::AnyKdf(_) => TPM_ALG_ID:ANY as u32,
-            Self::Null(_) => TPM_ALG_ID:NULL as u32,
+            Self::mgf1(_) => TPM_ALG_ID:MGF1 as u32,
+            Self::kdf1_sp800_56a(_) => TPM_ALG_ID:KDF1_SP800_56A as u32,
+            Self::kdf2(_) => TPM_ALG_ID:KDF2 as u32,
+            Self::kdf1_sp800_108(_) => TPM_ALG_ID:KDF1_SP800_108 as u32,
+            Self::anyKdf(_) => TPM_ALG_ID:ANY as u32,
+            Self::null(_) => TPM_ALG_ID:NULL as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_KDF_SCHEME {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Mgf1(inner) => write!(f, "TPMU_KDF_SCHEME::Mgf1({:?})", inner),
-            Self::Kdf1Sp80056a(inner) => write!(f, "TPMU_KDF_SCHEME::Kdf1Sp80056a({:?})", inner),
-            Self::Kdf2(inner) => write!(f, "TPMU_KDF_SCHEME::Kdf2({:?})", inner),
-            Self::Kdf1Sp800108(inner) => write!(f, "TPMU_KDF_SCHEME::Kdf1Sp800108({:?})", inner),
-            Self::AnyKdf(inner) => write!(f, "TPMU_KDF_SCHEME::AnyKdf({:?})", inner),
-            Self::Null(inner) => write!(f, "TPMU_KDF_SCHEME::Null({:?})", inner),
+            Self::mgf1(inner) => write!(f, "TPMU_KDF_SCHEME::mgf1({:?})", inner),
+            Self::kdf1_sp800_56a(inner) => write!(f, "TPMU_KDF_SCHEME::kdf1_sp800_56a({:?})", inner),
+            Self::kdf2(inner) => write!(f, "TPMU_KDF_SCHEME::kdf2({:?})", inner),
+            Self::kdf1_sp800_108(inner) => write!(f, "TPMU_KDF_SCHEME::kdf1_sp800_108({:?})", inner),
+            Self::anyKdf(inner) => write!(f, "TPMU_KDF_SCHEME::anyKdf({:?})", inner),
+            Self::null(inner) => write!(f, "TPMU_KDF_SCHEME::null({:?})", inner),
         }
-
     }
-
 }
 
 /// This union of all asymmetric schemes is used in each of the asymmetric scheme
@@ -5764,60 +4380,56 @@ impl fmt::Debug for TPMU_KDF_SCHEME {
 /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
 /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
 pub enum TPMU_ASYM_SCHEME {
-    Ecdh(TPMS_KEY_SCHEME_ECDH),
-    Ecmqv(TPMS_KEY_SCHEME_ECMQV),
-    Rsassa(TPMS_SIG_SCHEME_RSASSA),
-    Rsapss(TPMS_SIG_SCHEME_RSAPSS),
-    Ecdsa(TPMS_SIG_SCHEME_ECDSA),
-    Ecdaa(TPMS_SIG_SCHEME_ECDAA),
-    Sm2(TPMS_SIG_SCHEME_SM2),
-    Ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR),
-    Rsaes(TPMS_ENC_SCHEME_RSAES),
-    Oaep(TPMS_ENC_SCHEME_OAEP),
-    AnySig(TPMS_SCHEME_HASH),
-    Null(TPMS_NULL_ASYM_SCHEME),
+    ecdh(TPMS_KEY_SCHEME_ECDH),
+    ecmqv(TPMS_KEY_SCHEME_ECMQV),
+    rsassa(TPMS_SIG_SCHEME_RSASSA),
+    rsapss(TPMS_SIG_SCHEME_RSAPSS),
+    ecdsa(TPMS_SIG_SCHEME_ECDSA),
+    ecdaa(TPMS_SIG_SCHEME_ECDAA),
+    sm2(TPMS_SIG_SCHEME_SM2),
+    ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR),
+    rsaes(TPMS_ENC_SCHEME_RSAES),
+    oaep(TPMS_ENC_SCHEME_OAEP),
+    anySig(TPMS_SCHEME_HASH),
+    null(TPMS_NULL_ASYM_SCHEME),
 }
 
 impl TpmUnion for TPMU_ASYM_SCHEME {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Ecdh(_) => TPM_ALG_ID:ECDH as u32,
-            Self::Ecmqv(_) => TPM_ALG_ID:ECMQV as u32,
-            Self::Rsassa(_) => TPM_ALG_ID:RSASSA as u32,
-            Self::Rsapss(_) => TPM_ALG_ID:RSAPSS as u32,
-            Self::Ecdsa(_) => TPM_ALG_ID:ECDSA as u32,
-            Self::Ecdaa(_) => TPM_ALG_ID:ECDAA as u32,
-            Self::Sm2(_) => TPM_ALG_ID:SM2 as u32,
-            Self::Ecschnorr(_) => TPM_ALG_ID:ECSCHNORR as u32,
-            Self::Rsaes(_) => TPM_ALG_ID:RSAES as u32,
-            Self::Oaep(_) => TPM_ALG_ID:OAEP as u32,
-            Self::AnySig(_) => TPM_ALG_ID:ANY as u32,
-            Self::Null(_) => TPM_ALG_ID:NULL as u32,
+            Self::ecdh(_) => TPM_ALG_ID:ECDH as u32,
+            Self::ecmqv(_) => TPM_ALG_ID:ECMQV as u32,
+            Self::rsassa(_) => TPM_ALG_ID:RSASSA as u32,
+            Self::rsapss(_) => TPM_ALG_ID:RSAPSS as u32,
+            Self::ecdsa(_) => TPM_ALG_ID:ECDSA as u32,
+            Self::ecdaa(_) => TPM_ALG_ID:ECDAA as u32,
+            Self::sm2(_) => TPM_ALG_ID:SM2 as u32,
+            Self::ecschnorr(_) => TPM_ALG_ID:ECSCHNORR as u32,
+            Self::rsaes(_) => TPM_ALG_ID:RSAES as u32,
+            Self::oaep(_) => TPM_ALG_ID:OAEP as u32,
+            Self::anySig(_) => TPM_ALG_ID:ANY as u32,
+            Self::null(_) => TPM_ALG_ID:NULL as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_ASYM_SCHEME {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Ecdh(inner) => write!(f, "TPMU_ASYM_SCHEME::Ecdh({:?})", inner),
-            Self::Ecmqv(inner) => write!(f, "TPMU_ASYM_SCHEME::Ecmqv({:?})", inner),
-            Self::Rsassa(inner) => write!(f, "TPMU_ASYM_SCHEME::Rsassa({:?})", inner),
-            Self::Rsapss(inner) => write!(f, "TPMU_ASYM_SCHEME::Rsapss({:?})", inner),
-            Self::Ecdsa(inner) => write!(f, "TPMU_ASYM_SCHEME::Ecdsa({:?})", inner),
-            Self::Ecdaa(inner) => write!(f, "TPMU_ASYM_SCHEME::Ecdaa({:?})", inner),
-            Self::Sm2(inner) => write!(f, "TPMU_ASYM_SCHEME::Sm2({:?})", inner),
-            Self::Ecschnorr(inner) => write!(f, "TPMU_ASYM_SCHEME::Ecschnorr({:?})", inner),
-            Self::Rsaes(inner) => write!(f, "TPMU_ASYM_SCHEME::Rsaes({:?})", inner),
-            Self::Oaep(inner) => write!(f, "TPMU_ASYM_SCHEME::Oaep({:?})", inner),
-            Self::AnySig(inner) => write!(f, "TPMU_ASYM_SCHEME::AnySig({:?})", inner),
-            Self::Null(inner) => write!(f, "TPMU_ASYM_SCHEME::Null({:?})", inner),
+            Self::ecdh(inner) => write!(f, "TPMU_ASYM_SCHEME::ecdh({:?})", inner),
+            Self::ecmqv(inner) => write!(f, "TPMU_ASYM_SCHEME::ecmqv({:?})", inner),
+            Self::rsassa(inner) => write!(f, "TPMU_ASYM_SCHEME::rsassa({:?})", inner),
+            Self::rsapss(inner) => write!(f, "TPMU_ASYM_SCHEME::rsapss({:?})", inner),
+            Self::ecdsa(inner) => write!(f, "TPMU_ASYM_SCHEME::ecdsa({:?})", inner),
+            Self::ecdaa(inner) => write!(f, "TPMU_ASYM_SCHEME::ecdaa({:?})", inner),
+            Self::sm2(inner) => write!(f, "TPMU_ASYM_SCHEME::sm2({:?})", inner),
+            Self::ecschnorr(inner) => write!(f, "TPMU_ASYM_SCHEME::ecschnorr({:?})", inner),
+            Self::rsaes(inner) => write!(f, "TPMU_ASYM_SCHEME::rsaes({:?})", inner),
+            Self::oaep(inner) => write!(f, "TPMU_ASYM_SCHEME::oaep({:?})", inner),
+            Self::anySig(inner) => write!(f, "TPMU_ASYM_SCHEME::anySig({:?})", inner),
+            Self::null(inner) => write!(f, "TPMU_ASYM_SCHEME::null({:?})", inner),
         }
-
     }
-
 }
 
 /// A TPMU_SIGNATURE_COMPOSITE is a union of the various signatures that are supported by
@@ -5827,90 +4439,82 @@ impl fmt::Debug for TPMU_ASYM_SCHEME {
 /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
 /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
 pub enum TPMU_SIGNATURE {
-    Rsassa(TPMS_SIGNATURE_RSASSA),
-    Rsapss(TPMS_SIGNATURE_RSAPSS),
-    Ecdsa(TPMS_SIGNATURE_ECDSA),
-    Ecdaa(TPMS_SIGNATURE_ECDAA),
-    Sm2(TPMS_SIGNATURE_SM2),
-    Ecschnorr(TPMS_SIGNATURE_ECSCHNORR),
-    Hmac(TPMT_HA),
-    Any(TPMS_SCHEME_HASH),
-    Null(TPMS_NULL_SIGNATURE),
+    rsassa(TPMS_SIGNATURE_RSASSA),
+    rsapss(TPMS_SIGNATURE_RSAPSS),
+    ecdsa(TPMS_SIGNATURE_ECDSA),
+    ecdaa(TPMS_SIGNATURE_ECDAA),
+    sm2(TPMS_SIGNATURE_SM2),
+    ecschnorr(TPMS_SIGNATURE_ECSCHNORR),
+    hmac(TPMT_HA),
+    any(TPMS_SCHEME_HASH),
+    null(TPMS_NULL_SIGNATURE),
 }
 
 impl TpmUnion for TPMU_SIGNATURE {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Rsassa(_) => TPM_ALG_ID:RSASSA as u32,
-            Self::Rsapss(_) => TPM_ALG_ID:RSAPSS as u32,
-            Self::Ecdsa(_) => TPM_ALG_ID:ECDSA as u32,
-            Self::Ecdaa(_) => TPM_ALG_ID:ECDAA as u32,
-            Self::Sm2(_) => TPM_ALG_ID:SM2 as u32,
-            Self::Ecschnorr(_) => TPM_ALG_ID:ECSCHNORR as u32,
-            Self::Hmac(_) => TPM_ALG_ID:HMAC as u32,
-            Self::Any(_) => TPM_ALG_ID:ANY as u32,
-            Self::Null(_) => TPM_ALG_ID:NULL as u32,
+            Self::rsassa(_) => TPM_ALG_ID:RSASSA as u32,
+            Self::rsapss(_) => TPM_ALG_ID:RSAPSS as u32,
+            Self::ecdsa(_) => TPM_ALG_ID:ECDSA as u32,
+            Self::ecdaa(_) => TPM_ALG_ID:ECDAA as u32,
+            Self::sm2(_) => TPM_ALG_ID:SM2 as u32,
+            Self::ecschnorr(_) => TPM_ALG_ID:ECSCHNORR as u32,
+            Self::hmac(_) => TPM_ALG_ID:HMAC as u32,
+            Self::any(_) => TPM_ALG_ID:ANY as u32,
+            Self::null(_) => TPM_ALG_ID:NULL as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_SIGNATURE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Rsassa(inner) => write!(f, "TPMU_SIGNATURE::Rsassa({:?})", inner),
-            Self::Rsapss(inner) => write!(f, "TPMU_SIGNATURE::Rsapss({:?})", inner),
-            Self::Ecdsa(inner) => write!(f, "TPMU_SIGNATURE::Ecdsa({:?})", inner),
-            Self::Ecdaa(inner) => write!(f, "TPMU_SIGNATURE::Ecdaa({:?})", inner),
-            Self::Sm2(inner) => write!(f, "TPMU_SIGNATURE::Sm2({:?})", inner),
-            Self::Ecschnorr(inner) => write!(f, "TPMU_SIGNATURE::Ecschnorr({:?})", inner),
-            Self::Hmac(inner) => write!(f, "TPMU_SIGNATURE::Hmac({:?})", inner),
-            Self::Any(inner) => write!(f, "TPMU_SIGNATURE::Any({:?})", inner),
-            Self::Null(inner) => write!(f, "TPMU_SIGNATURE::Null({:?})", inner),
+            Self::rsassa(inner) => write!(f, "TPMU_SIGNATURE::rsassa({:?})", inner),
+            Self::rsapss(inner) => write!(f, "TPMU_SIGNATURE::rsapss({:?})", inner),
+            Self::ecdsa(inner) => write!(f, "TPMU_SIGNATURE::ecdsa({:?})", inner),
+            Self::ecdaa(inner) => write!(f, "TPMU_SIGNATURE::ecdaa({:?})", inner),
+            Self::sm2(inner) => write!(f, "TPMU_SIGNATURE::sm2({:?})", inner),
+            Self::ecschnorr(inner) => write!(f, "TPMU_SIGNATURE::ecschnorr({:?})", inner),
+            Self::hmac(inner) => write!(f, "TPMU_SIGNATURE::hmac({:?})", inner),
+            Self::any(inner) => write!(f, "TPMU_SIGNATURE::any({:?})", inner),
+            Self::null(inner) => write!(f, "TPMU_SIGNATURE::null({:?})", inner),
         }
-
     }
-
 }
 
 /// This is the union of all values allowed in in the unique field of a TPMT_PUBLIC.
 /// One of: TPM2B_DIGEST_KEYEDHASH, TPM2B_DIGEST_SYMCIPHER, TPM2B_PUBLIC_KEY_RSA,
 /// TPMS_ECC_POINT, TPMS_DERIVE.
 pub enum TPMU_PUBLIC_ID {
-    KeyedHash(TPM2B_DIGEST_KEYEDHASH),
-    Sym(TPM2B_DIGEST_SYMCIPHER),
-    Rsa(TPM2B_PUBLIC_KEY_RSA),
-    Ecc(TPMS_ECC_POINT),
-    Derive(TPMS_DERIVE),
+    keyedHash(TPM2B_DIGEST_KEYEDHASH),
+    sym(TPM2B_DIGEST_SYMCIPHER),
+    rsa(TPM2B_PUBLIC_KEY_RSA),
+    ecc(TPMS_ECC_POINT),
+    derive(TPMS_DERIVE),
 }
 
 impl TpmUnion for TPMU_PUBLIC_ID {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::KeyedHash(_) => TPM_ALG_ID:KEYEDHASH as u32,
-            Self::Sym(_) => TPM_ALG_ID:SYMCIPHER as u32,
-            Self::Rsa(_) => TPM_ALG_ID:RSA as u32,
-            Self::Ecc(_) => TPM_ALG_ID:ECC as u32,
-            Self::Derive(_) => TPM_ALG_ID:ANY as u32,
+            Self::keyedHash(_) => TPM_ALG_ID:KEYEDHASH as u32,
+            Self::sym(_) => TPM_ALG_ID:SYMCIPHER as u32,
+            Self::rsa(_) => TPM_ALG_ID:RSA as u32,
+            Self::ecc(_) => TPM_ALG_ID:ECC as u32,
+            Self::derive(_) => TPM_ALG_ID:ANY as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_PUBLIC_ID {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::KeyedHash(inner) => write!(f, "TPMU_PUBLIC_ID::KeyedHash({:?})", inner),
-            Self::Sym(inner) => write!(f, "TPMU_PUBLIC_ID::Sym({:?})", inner),
-            Self::Rsa(inner) => write!(f, "TPMU_PUBLIC_ID::Rsa({:?})", inner),
-            Self::Ecc(inner) => write!(f, "TPMU_PUBLIC_ID::Ecc({:?})", inner),
-            Self::Derive(inner) => write!(f, "TPMU_PUBLIC_ID::Derive({:?})", inner),
+            Self::keyedHash(inner) => write!(f, "TPMU_PUBLIC_ID::keyedHash({:?})", inner),
+            Self::sym(inner) => write!(f, "TPMU_PUBLIC_ID::sym({:?})", inner),
+            Self::rsa(inner) => write!(f, "TPMU_PUBLIC_ID::rsa({:?})", inner),
+            Self::ecc(inner) => write!(f, "TPMU_PUBLIC_ID::ecc({:?})", inner),
+            Self::derive(inner) => write!(f, "TPMU_PUBLIC_ID::derive({:?})", inner),
         }
-
     }
-
 }
 
 /// Table 199 defines the possible parameter definition structures that may be contained
@@ -5919,78 +4523,70 @@ impl fmt::Debug for TPMU_PUBLIC_ID {
 /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
 /// TPMS_ASYM_PARMS.
 pub enum TPMU_PUBLIC_PARMS {
-    KeyedHashDetail(TPMS_KEYEDHASH_PARMS),
-    SymDetail(TPMS_SYMCIPHER_PARMS),
-    RsaDetail(TPMS_RSA_PARMS),
-    EccDetail(TPMS_ECC_PARMS),
-    AsymDetail(TPMS_ASYM_PARMS),
+    keyedHashDetail(TPMS_KEYEDHASH_PARMS),
+    symDetail(TPMS_SYMCIPHER_PARMS),
+    rsaDetail(TPMS_RSA_PARMS),
+    eccDetail(TPMS_ECC_PARMS),
+    asymDetail(TPMS_ASYM_PARMS),
 }
 
 impl TpmUnion for TPMU_PUBLIC_PARMS {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::KeyedHashDetail(_) => TPM_ALG_ID:KEYEDHASH as u32,
-            Self::SymDetail(_) => TPM_ALG_ID:SYMCIPHER as u32,
-            Self::RsaDetail(_) => TPM_ALG_ID:RSA as u32,
-            Self::EccDetail(_) => TPM_ALG_ID:ECC as u32,
-            Self::AsymDetail(_) => TPM_ALG_ID:ANY as u32,
+            Self::keyedHashDetail(_) => TPM_ALG_ID:KEYEDHASH as u32,
+            Self::symDetail(_) => TPM_ALG_ID:SYMCIPHER as u32,
+            Self::rsaDetail(_) => TPM_ALG_ID:RSA as u32,
+            Self::eccDetail(_) => TPM_ALG_ID:ECC as u32,
+            Self::asymDetail(_) => TPM_ALG_ID:ANY as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_PUBLIC_PARMS {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::KeyedHashDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::KeyedHashDetail({:?})", inner),
-            Self::SymDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::SymDetail({:?})", inner),
-            Self::RsaDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::RsaDetail({:?})", inner),
-            Self::EccDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::EccDetail({:?})", inner),
-            Self::AsymDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::AsymDetail({:?})", inner),
+            Self::keyedHashDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::keyedHashDetail({:?})", inner),
+            Self::symDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::symDetail({:?})", inner),
+            Self::rsaDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::rsaDetail({:?})", inner),
+            Self::eccDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::eccDetail({:?})", inner),
+            Self::asymDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::asymDetail({:?})", inner),
         }
-
     }
-
 }
 
 /// Table 205 Definition of TPMU_SENSITIVE_COMPOSITE Union [IN/OUT]
 /// One of: TPM2B_PRIVATE_KEY_RSA, TPM2B_ECC_PARAMETER, TPM2B_SENSITIVE_DATA,
 /// TPM2B_SYM_KEY, TPM2B_PRIVATE_VENDOR_SPECIFIC.
 pub enum TPMU_SENSITIVE_COMPOSITE {
-    Rsa(TPM2B_PRIVATE_KEY_RSA),
-    Ecc(TPM2B_ECC_PARAMETER),
-    Bits(TPM2B_SENSITIVE_DATA),
-    Sym(TPM2B_SYM_KEY),
-    Any(TPM2B_PRIVATE_VENDOR_SPECIFIC),
+    rsa(TPM2B_PRIVATE_KEY_RSA),
+    ecc(TPM2B_ECC_PARAMETER),
+    bits(TPM2B_SENSITIVE_DATA),
+    sym(TPM2B_SYM_KEY),
+    any(TPM2B_PRIVATE_VENDOR_SPECIFIC),
 }
 
 impl TpmUnion for TPMU_SENSITIVE_COMPOSITE {
     fn get_union_selector(&self) -> u32 {
         match self {
-            Self::Rsa(_) => TPM_ALG_ID:RSA as u32,
-            Self::Ecc(_) => TPM_ALG_ID:ECC as u32,
-            Self::Bits(_) => TPM_ALG_ID:KEYEDHASH as u32,
-            Self::Sym(_) => TPM_ALG_ID:SYMCIPHER as u32,
-            Self::Any(_) => TPM_ALG_ID:ANY as u32,
+            Self::rsa(_) => TPM_ALG_ID:RSA as u32,
+            Self::ecc(_) => TPM_ALG_ID:ECC as u32,
+            Self::bits(_) => TPM_ALG_ID:KEYEDHASH as u32,
+            Self::sym(_) => TPM_ALG_ID:SYMCIPHER as u32,
+            Self::any(_) => TPM_ALG_ID:ANY as u32,
         }
-
     }
-
 }
 
 impl fmt::Debug for TPMU_SENSITIVE_COMPOSITE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::Rsa(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::Rsa({:?})", inner),
-            Self::Ecc(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::Ecc({:?})", inner),
-            Self::Bits(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::Bits({:?})", inner),
-            Self::Sym(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::Sym({:?})", inner),
-            Self::Any(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::Any({:?})", inner),
+            Self::rsa(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::rsa({:?})", inner),
+            Self::ecc(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::ecc({:?})", inner),
+            Self::bits(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::bits({:?})", inner),
+            Self::sym(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::sym({:?})", inner),
+            Self::any(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::any({:?})", inner),
         }
-
     }
-
 }
 
 /// Handle of a loaded TPM key or other object [TSS]
@@ -6003,36 +4599,32 @@ pub struct TPM_HANDLE {
 impl Default for TPM_HANDLE {
     fn default() -> Self {
         Self {
-            handle = as u32TPM_RH:NULL;
+            handle: as u32TPM_RH::NULL,
         }
-
     }
-
 }
 
 impl TPM_HANDLE {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: u32
+        handle: u32,
         ) -> Self {
         Self {
             handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Base class for empty union elements.
@@ -6047,9 +4639,7 @@ impl Default for TPMS_NULL_UNION {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NULL_UNION {
@@ -6074,16 +4664,15 @@ impl TPMS_NULL_UNION {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used as a placeholder. In some cases, a union will have a selector
@@ -6097,9 +4686,7 @@ impl Default for TPMS_EMPTY {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_EMPTY {
@@ -6109,64 +4696,58 @@ impl TPMS_EMPTY {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is a return value for a TPM2_GetCapability() that reads the installed algorithms.
 #[derive(Debug, Clone)]
 pub struct TPMS_ALGORITHM_DESCRIPTION {
     /// An algorithm
-    pub alg: tpm_alg_id,
+    pub alg: TPM_ALG_ID,
 
     /// The attributes of the algorithm
-    pub attributes: tpma_algorithm,
+    pub attributes: TPMA_ALGORITHM,
 }
 
 impl Default for TPMS_ALGORITHM_DESCRIPTION {
     fn default() -> Self {
         Self {
-            alg = TPM_ALG_ID:NULL;
+            alg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_ALGORITHM_DESCRIPTION {
     /// Creates a new instance with the specified values
     pub fn new(
-        alg: tpm_alg_id
-        ,
-        attributes: tpma_algorithm
+        alg: TPM_ALG_ID,
+        attributes: TPMA_ALGORITHM,
         ) -> Self {
         Self {
             alg,
             attributes,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 80 shows the basic hash-agile structure used in this specification. To handle
@@ -6178,57 +4759,51 @@ pub struct TPMT_HA {
     /// NOTE The leading + on the type indicates that this structure should pass an indication
     /// to the unmarshaling function for TPMI_ALG_HASH so that TPM_ALG_NULL will be allowed if
     /// a use of a TPMT_HA allows TPM_ALG_NULL.
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 
     /// Hash value
-    pub digest: vec<u8>,
+    pub digest: Vec<u8>,
 }
 
 impl Default for TPMT_HA {
     fn default() -> Self {
         Self {
-            hashAlg = TPM_ALG_ID:NULL;
+            hashAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMT_HA {
     /// Creates a new instance with the specified values
     pub fn new(
-        hash_alg: tpm_alg_id
-        ,
-        digest: vec<u8>
+        hash_Alg: TPM_ALG_ID,
+        digest: Vec<u8>,
         ) -> Self {
         Self {
-            hash_alg,
+            hash_Alg,
             digest,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMT_HA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIGNATURE::HMAC as u32
+            TPMU_SIGNATURE::HMAC as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used for a sized buffer that cannot be larger than the largest
@@ -6236,27 +4811,24 @@ impl TPMT_HA {
 #[derive(Debug, Clone)]
 pub struct TPM2B_DIGEST {
     /// The buffer area that can be no larger than a digest
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_DIGEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_DIGEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     // Union trait implementations
@@ -6265,57 +4837,52 @@ impl TPM2B_DIGEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used for a data buffer that is required to be no larger than the
 /// size of the Name of an object.
 #[derive(Debug, Clone)]
 pub struct TPM2B_DATA {
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_DATA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 83 Definition of Types for TPM2B_NONCE
@@ -6338,41 +4905,37 @@ pub type TPM2B_OPERAND = TPM2B_DIGEST;
 #[derive(Debug, Clone)]
 pub struct TPM2B_EVENT {
     /// The operand
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_EVENT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_EVENT {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This type is a sized buffer that can hold a maximally sized buffer for commands that
@@ -6380,41 +4943,37 @@ impl TPM2B_EVENT {
 #[derive(Debug, Clone)]
 pub struct TPM2B_MAX_BUFFER {
     /// The operand
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_MAX_BUFFER {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_MAX_BUFFER {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This type is a sized buffer that can hold a maximally sized buffer for NV data
@@ -6423,41 +4982,37 @@ impl TPM2B_MAX_BUFFER {
 pub struct TPM2B_MAX_NV_BUFFER {
     /// The operand
     /// NOTE MAX_NV_BUFFER_SIZE is TPM-dependent
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_MAX_NV_BUFFER {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_MAX_NV_BUFFER {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This TPM-dependent structure is used to provide the timeout value for an
@@ -6465,41 +5020,37 @@ impl TPM2B_MAX_NV_BUFFER {
 #[derive(Debug, Clone)]
 pub struct TPM2B_TIMEOUT {
     /// The timeout value
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_TIMEOUT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_TIMEOUT {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used for passing an initial value for a symmetric block cipher to or
@@ -6508,171 +5059,154 @@ impl TPM2B_TIMEOUT {
 #[derive(Debug, Clone)]
 pub struct TPM2B_IV {
     /// The IV value
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_IV {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_IV {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This buffer holds a Name for any entity type.
 #[derive(Debug, Clone)]
 pub struct TPM2B_NAME {
     /// The Name structure
-    pub name: vec<u8>,
+    pub name: Vec<u8>,
 }
 
 impl Default for TPM2B_NAME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_NAME {
     /// Creates a new instance with the specified values
     pub fn new(
-        name: vec<u8>
+        name: Vec<u8>,
         ) -> Self {
         Self {
             name,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure provides a standard method of specifying a list of PCR.
 #[derive(Debug, Clone)]
 pub struct TPMS_PCR_SELECT {
     /// The bit map of selected PCR
-    pub pcr_select: vec<u8>,
+    pub pcr_Select: Vec<u8>,
 }
 
 impl Default for TPMS_PCR_SELECT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_PCR_SELECT {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_select: vec<u8>
+        pcr_Select: Vec<u8>,
         ) -> Self {
         Self {
-            pcr_select,
+            pcr_Select,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 94 Definition of TPMS_PCR_SELECTION Structure
 #[derive(Debug, Clone)]
 pub struct TPMS_PCR_SELECTION {
     /// The hash algorithm associated with the selection
-    pub hash: tpm_alg_id,
+    pub hash: TPM_ALG_ID,
 
     /// The bit map of selected PCR
-    pub pcr_select: vec<u8>,
+    pub pcr_Select: Vec<u8>,
 }
 
 impl Default for TPMS_PCR_SELECTION {
     fn default() -> Self {
         Self {
-            hash = TPM_ALG_ID:NULL;
+            hash: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_PCR_SELECTION {
     /// Creates a new instance with the specified values
     pub fn new(
-        hash: tpm_alg_id
-        ,
-        pcr_select: vec<u8>
+        hash: TPM_ALG_ID,
+        pcr_Select: Vec<u8>,
         ) -> Self {
         Self {
             hash,
-            pcr_select,
+            pcr_Select,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This ticket is produced by TPM2_Create() or TPM2_CreatePrimary(). It is used to bind
@@ -6680,48 +5214,43 @@ impl TPMS_PCR_SELECTION {
 #[derive(Debug, Clone)]
 pub struct TPMT_TK_CREATION {
     /// The hierarchy containing name
-    pub hierarchy: tpm_handle,
+    pub hierarchy: TPM_HANDLE,
 
     /// This shall be the HMAC produced using a proof value of hierarchy.
-    pub digest: vec<u8>,
+    pub digest: Vec<u8>,
 }
 
 impl Default for TPMT_TK_CREATION {
     fn default() -> Self {
         Self {
-            hierarchy = TPM_HANDLE();
+            hierarchy: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPMT_TK_CREATION {
     /// Creates a new instance with the specified values
     pub fn new(
-        hierarchy: tpm_handle
-        ,
-        digest: vec<u8>
+        hierarchy: TPM_HANDLE,
+        digest: Vec<u8>,
         ) -> Self {
         Self {
             hierarchy,
             digest,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This ticket is produced by TPM2_VerifySignature(). This formulation is used for
@@ -6730,48 +5259,43 @@ impl TPMT_TK_CREATION {
 #[derive(Debug, Clone)]
 pub struct TPMT_TK_VERIFIED {
     /// The hierarchy containing keyName
-    pub hierarchy: tpm_handle,
+    pub hierarchy: TPM_HANDLE,
 
     /// This shall be the HMAC produced using a proof value of hierarchy.
-    pub digest: vec<u8>,
+    pub digest: Vec<u8>,
 }
 
 impl Default for TPMT_TK_VERIFIED {
     fn default() -> Self {
         Self {
-            hierarchy = TPM_HANDLE();
+            hierarchy: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPMT_TK_VERIFIED {
     /// Creates a new instance with the specified values
     pub fn new(
-        hierarchy: tpm_handle
-        ,
-        digest: vec<u8>
+        hierarchy: TPM_HANDLE,
+        digest: Vec<u8>,
         ) -> Self {
         Self {
             hierarchy,
             digest,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This ticket is produced by TPM2_PolicySigned() and TPM2_PolicySecret() when the
@@ -6780,54 +5304,48 @@ impl TPMT_TK_VERIFIED {
 #[derive(Debug, Clone)]
 pub struct TPMT_TK_AUTH {
     /// Ticket structure tag
-    pub tag: tpm_st,
+    pub tag: TPM_ST,
 
     /// The hierarchy of the object used to produce the ticket
-    pub hierarchy: tpm_handle,
+    pub hierarchy: TPM_HANDLE,
 
     /// This shall be the HMAC produced using a proof value of hierarchy.
-    pub digest: vec<u8>,
+    pub digest: Vec<u8>,
 }
 
 impl Default for TPMT_TK_AUTH {
     fn default() -> Self {
         Self {
-            hierarchy = TPM_HANDLE();
+            hierarchy: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPMT_TK_AUTH {
     /// Creates a new instance with the specified values
     pub fn new(
-        tag: tpm_st
-        ,
-        hierarchy: tpm_handle
-        ,
-        digest: vec<u8>
+        tag: TPM_ST,
+        hierarchy: TPM_HANDLE,
+        digest: Vec<u8>,
         ) -> Self {
         Self {
             tag,
             hierarchy,
             digest,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This ticket is produced by TPM2_SequenceComplete() or TPM2_Hash() when the message
@@ -6835,48 +5353,43 @@ impl TPMT_TK_AUTH {
 #[derive(Debug, Clone)]
 pub struct TPMT_TK_HASHCHECK {
     /// The hierarchy
-    pub hierarchy: tpm_handle,
+    pub hierarchy: TPM_HANDLE,
 
     /// This shall be the HMAC produced using a proof value of hierarchy.
-    pub digest: vec<u8>,
+    pub digest: Vec<u8>,
 }
 
 impl Default for TPMT_TK_HASHCHECK {
     fn default() -> Self {
         Self {
-            hierarchy = TPM_HANDLE();
+            hierarchy: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPMT_TK_HASHCHECK {
     /// Creates a new instance with the specified values
     pub fn new(
-        hierarchy: tpm_handle
-        ,
-        digest: vec<u8>
+        hierarchy: TPM_HANDLE,
+        digest: Vec<u8>,
         ) -> Self {
         Self {
             hierarchy,
             digest,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used to report the properties of an algorithm identifier. It is
@@ -6884,48 +5397,43 @@ impl TPMT_TK_HASHCHECK {
 #[derive(Debug, Clone)]
 pub struct TPMS_ALG_PROPERTY {
     /// An algorithm identifier
-    pub alg: tpm_alg_id,
+    pub alg: TPM_ALG_ID,
 
     /// The attributes of the algorithm
-    pub alg_properties: tpma_algorithm,
+    pub alg_Properties: TPMA_ALGORITHM,
 }
 
 impl Default for TPMS_ALG_PROPERTY {
     fn default() -> Self {
         Self {
-            alg = TPM_ALG_ID:NULL;
+            alg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_ALG_PROPERTY {
     /// Creates a new instance with the specified values
     pub fn new(
-        alg: tpm_alg_id
-        ,
-        alg_properties: tpma_algorithm
+        alg: TPM_ALG_ID,
+        alg_Properties: TPMA_ALGORITHM,
         ) -> Self {
         Self {
             alg,
-            alg_properties,
+            alg_Properties,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used to report the properties that are UINT32 values. It is returned
@@ -6933,7 +5441,7 @@ impl TPMS_ALG_PROPERTY {
 #[derive(Debug, Clone)]
 pub struct TPMS_TAGGED_PROPERTY {
     /// A property identifier
-    pub property: tpm_pt,
+    pub property: TPM_PT,
 
     /// The value of the property
     pub value: u32,
@@ -6943,84 +5451,74 @@ impl Default for TPMS_TAGGED_PROPERTY {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_TAGGED_PROPERTY {
     /// Creates a new instance with the specified values
     pub fn new(
-        property: tpm_pt
-        ,
-        value: u32
+        property: TPM_PT,
+        value: u32,
         ) -> Self {
         Self {
             property,
             value,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used in TPM2_GetCapability() to return the attributes of the PCR.
 #[derive(Debug, Clone)]
 pub struct TPMS_TAGGED_PCR_SELECT {
     /// The property identifier
-    pub tag: tpm_pt_pcr,
+    pub tag: TPM_PT_PCR,
 
     /// The bit map of PCR with the identified property
-    pub pcr_select: vec<u8>,
+    pub pcr_Select: Vec<u8>,
 }
 
 impl Default for TPMS_TAGGED_PCR_SELECT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_TAGGED_PCR_SELECT {
     /// Creates a new instance with the specified values
     pub fn new(
-        tag: tpm_pt_pcr
-        ,
-        pcr_select: vec<u8>
+        tag: TPM_PT_PCR,
+        pcr_Select: Vec<u8>,
         ) -> Self {
         Self {
             tag,
-            pcr_select,
+            pcr_Select,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used in TPM2_GetCapability() to return the policy associated with a
@@ -7028,102 +5526,91 @@ impl TPMS_TAGGED_PCR_SELECT {
 #[derive(Debug, Clone)]
 pub struct TPMS_TAGGED_POLICY {
     /// A permanent handle
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// The policy algorithm and hash
-    pub policy_hash: tpmt_ha,
+    pub policy_Hash: TPMT_HA,
 }
 
 impl Default for TPMS_TAGGED_POLICY {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPMS_TAGGED_POLICY {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: tpm_handle
-        ,
-        policy_hash: tpmt_ha
+        handle: TPM_HANDLE,
+        policy_Hash: TPMT_HA,
         ) -> Self {
         Self {
             handle,
-            policy_hash,
+            policy_Hash,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used in TPM2_GetCapability() to return the ACT data.
 #[derive(Debug, Clone)]
 pub struct TPMS_ACT_DATA {
     /// A permanent handle
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// The current timeout of the ACT
     pub timeout: u32,
 
     /// The state of the ACT
-    pub attributes: tpma_act,
+    pub attributes: TPMA_ACT,
 }
 
 impl Default for TPMS_ACT_DATA {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPMS_ACT_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: tpm_handle
-        ,
-        timeout: u32
-        ,
-        attributes: tpma_act
+        handle: TPM_HANDLE,
+        timeout: u32,
+        attributes: TPMA_ACT,
         ) -> Self {
         Self {
             handle,
             timeout,
             attributes,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// A list of command codes may be input to the TPM or returned by the TPM depending on
@@ -7133,100 +5620,90 @@ pub struct TPML_CC {
     /// A list of command codes
     /// The maximum only applies to a command code list in a command. The response size is
     /// limited only by the size of the parameter buffer.
-    pub command_codes: vec<tpm_cc>,
+    pub command_Codes: Vec<TPM_CC>,
 }
 
 impl Default for TPML_CC {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_CC {
     /// Creates a new instance with the specified values
     pub fn new(
-        command_codes: vec<tpm_cc>
+        command_Codes: Vec<TPM_CC>,
         ) -> Self {
         Self {
-            command_codes,
+            command_Codes,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_CC {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::PpCommands as u32
+            TPMU_CAPABILITIES::PP_COMMANDS as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is only used in TPM2_GetCapability(capability = TPM_CAP_COMMANDS).
 #[derive(Debug, Clone)]
 pub struct TPML_CCA {
     /// A list of command codes attributes
-    pub command_attributes: vec<tpma_cc>,
+    pub command_Attributes: Vec<TPMA_CC>,
 }
 
 impl Default for TPML_CCA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_CCA {
     /// Creates a new instance with the specified values
     pub fn new(
-        command_attributes: vec<tpma_cc>
+        command_Attributes: Vec<TPMA_CC>,
         ) -> Self {
         Self {
-            command_attributes,
+            command_Attributes,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_CCA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::COMMANDS as u32
+            TPMU_CAPABILITIES::COMMANDS as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is returned by TPM2_IncrementalSelfTest().
@@ -7235,41 +5712,37 @@ pub struct TPML_ALG {
     /// A list of algorithm IDs
     /// The maximum only applies to an algorithm list in a command. The response size is
     /// limited only by the size of the parameter buffer.
-    pub algorithms: vec<tpm_alg_id>,
+    pub algorithms: Vec<TPM_ALG_ID>,
 }
 
 impl Default for TPML_ALG {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_ALG {
     /// Creates a new instance with the specified values
     pub fn new(
-        algorithms: vec<tpm_alg_id>
+        algorithms: Vec<TPM_ALG_ID>,
         ) -> Self {
         Self {
             algorithms,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used when the TPM returns a list of loaded handles when the
@@ -7277,50 +5750,45 @@ impl TPML_ALG {
 #[derive(Debug, Clone)]
 pub struct TPML_HANDLE {
     /// An array of handles
-    pub handle: vec<tpm_handle>,
+    pub handle: Vec<TPM_HANDLE>,
 }
 
 impl Default for TPML_HANDLE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_HANDLE {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: vec<tpm_handle>
+        handle: Vec<TPM_HANDLE>,
         ) -> Self {
         Self {
             handle,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_HANDLE {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::HANDLES as u32
+            TPMU_CAPABILITIES::HANDLES as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is used to convey a list of digest values. This type is used in
@@ -7331,41 +5799,37 @@ pub struct TPML_DIGEST {
     /// For TPM2_PolicyOR(), all digests will have been computed using the digest of the
     /// policy session. For TPM2_PCR_Read(), each digest will be the size of the digest for
     /// the bank containing the PCR.
-    pub digests: vec<tpm2_b_digest>,
+    pub digests: Vec<TPM2B_DIGEST>,
 }
 
 impl Default for TPML_DIGEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_DIGEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        digests: vec<tpm2_b_digest>
+        digests: Vec<TPM2B_DIGEST>,
         ) -> Self {
         Self {
             digests,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is used to convey a list of digest values. This type is returned by
@@ -7373,41 +5837,37 @@ impl TPML_DIGEST {
 #[derive(Debug, Clone)]
 pub struct TPML_DIGEST_VALUES {
     /// A list of tagged digests
-    pub digests: vec<tpmt_ha>,
+    pub digests: Vec<TPMT_HA>,
 }
 
 impl Default for TPML_DIGEST_VALUES {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_DIGEST_VALUES {
     /// Creates a new instance with the specified values
     pub fn new(
-        digests: vec<tpmt_ha>
+        digests: Vec<TPMT_HA>,
         ) -> Self {
         Self {
             digests,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is used to indicate the PCR that are included in a selection when more than
@@ -7415,50 +5875,45 @@ impl TPML_DIGEST_VALUES {
 #[derive(Debug, Clone)]
 pub struct TPML_PCR_SELECTION {
     /// List of selections
-    pub pcr_selections: vec<tpms_pcr_selection>,
+    pub pcr_Selections: Vec<TPMS_PCR_SELECTION>,
 }
 
 impl Default for TPML_PCR_SELECTION {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_PCR_SELECTION {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_selections: vec<tpms_pcr_selection>
+        pcr_Selections: Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            pcr_selections,
+            pcr_Selections,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_PCR_SELECTION {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::PCRS as u32
+            TPMU_CAPABILITIES::PCRS as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is used to report on a list of algorithm attributes. It is returned in a
@@ -7466,50 +5921,45 @@ impl TPML_PCR_SELECTION {
 #[derive(Debug, Clone)]
 pub struct TPML_ALG_PROPERTY {
     /// List of properties
-    pub alg_properties: vec<tpms_alg_property>,
+    pub alg_Properties: Vec<TPMS_ALG_PROPERTY>,
 }
 
 impl Default for TPML_ALG_PROPERTY {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_ALG_PROPERTY {
     /// Creates a new instance with the specified values
     pub fn new(
-        alg_properties: vec<tpms_alg_property>
+        alg_Properties: Vec<TPMS_ALG_PROPERTY>,
         ) -> Self {
         Self {
-            alg_properties,
+            alg_Properties,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_ALG_PROPERTY {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::ALGS as u32
+            TPMU_CAPABILITIES::ALGS as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is used to report on a list of properties that are TPMS_TAGGED_PROPERTY
@@ -7517,50 +5967,45 @@ impl TPML_ALG_PROPERTY {
 #[derive(Debug, Clone)]
 pub struct TPML_TAGGED_TPM_PROPERTY {
     /// An array of tagged properties
-    pub tpm_property: vec<tpms_tagged_property>,
+    pub tpm_Property: Vec<TPMS_TAGGED_PROPERTY>,
 }
 
 impl Default for TPML_TAGGED_TPM_PROPERTY {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_TAGGED_TPM_PROPERTY {
     /// Creates a new instance with the specified values
     pub fn new(
-        tpm_property: vec<tpms_tagged_property>
+        tpm_Property: Vec<TPMS_TAGGED_PROPERTY>,
         ) -> Self {
         Self {
-            tpm_property,
+            tpm_Property,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_TAGGED_TPM_PROPERTY {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::TpmProperties as u32
+            TPMU_CAPABILITIES::TPM_PROPERTIES as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is used to report on a list of properties that are TPMS_PCR_SELECT values.
@@ -7568,50 +6013,45 @@ impl TPML_TAGGED_TPM_PROPERTY {
 #[derive(Debug, Clone)]
 pub struct TPML_TAGGED_PCR_PROPERTY {
     /// A tagged PCR selection
-    pub pcr_property: vec<tpms_tagged_pcr_select>,
+    pub pcr_Property: Vec<TPMS_TAGGED_PCR_SELECT>,
 }
 
 impl Default for TPML_TAGGED_PCR_PROPERTY {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_TAGGED_PCR_PROPERTY {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_property: vec<tpms_tagged_pcr_select>
+        pcr_Property: Vec<TPMS_TAGGED_PCR_SELECT>,
         ) -> Self {
         Self {
-            pcr_property,
+            pcr_Property,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_TAGGED_PCR_PROPERTY {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::PcrProperties as u32
+            TPMU_CAPABILITIES::PCR_PROPERTIES as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is used to report the ECC curve ID values supported by the TPM. It is
@@ -7619,50 +6059,45 @@ impl TPML_TAGGED_PCR_PROPERTY {
 #[derive(Debug, Clone)]
 pub struct TPML_ECC_CURVE {
     /// Array of ECC curve identifiers
-    pub ecc_curves: vec<tpm_ecc_curve>,
+    pub ecc_Curves: Vec<TPM_ECC_CURVE>,
 }
 
 impl Default for TPML_ECC_CURVE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_ECC_CURVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        ecc_curves: vec<tpm_ecc_curve>
+        ecc_Curves: Vec<TPM_ECC_CURVE>,
         ) -> Self {
         Self {
-            ecc_curves,
+            ecc_Curves,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_ECC_CURVE {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::EccCurves as u32
+            TPMU_CAPABILITIES::ECC_CURVES as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is used to report the authorization policy values for permanent handles.
@@ -7671,50 +6106,45 @@ impl TPML_ECC_CURVE {
 #[derive(Debug, Clone)]
 pub struct TPML_TAGGED_POLICY {
     /// Array of tagged policies
-    pub policies: vec<tpms_tagged_policy>,
+    pub policies: Vec<TPMS_TAGGED_POLICY>,
 }
 
 impl Default for TPML_TAGGED_POLICY {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_TAGGED_POLICY {
     /// Creates a new instance with the specified values
     pub fn new(
-        policies: vec<tpms_tagged_policy>
+        policies: Vec<TPMS_TAGGED_POLICY>,
         ) -> Self {
         Self {
             policies,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_TAGGED_POLICY {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::AuthPolicies as u32
+            TPMU_CAPABILITIES::AUTH_POLICIES as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is used to report the timeout and state for the ACT. This list may be
@@ -7722,50 +6152,45 @@ impl TPML_TAGGED_POLICY {
 #[derive(Debug, Clone)]
 pub struct TPML_ACT_DATA {
     /// Array of ACT data
-    pub act_data: vec<tpms_act_data>,
+    pub act_Data: Vec<TPMS_ACT_DATA>,
 }
 
 impl Default for TPML_ACT_DATA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_ACT_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        act_data: vec<tpms_act_data>
+        act_Data: Vec<TPMS_ACT_DATA>,
         ) -> Self {
         Self {
-            act_data,
+            act_Data,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPML_ACT_DATA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_CAPABILITIES::ACT as u32
+            TPMU_CAPABILITIES::ACT as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This data area is returned in response to a TPM2_GetCapability().
@@ -7777,27 +6202,24 @@ pub struct TPMS_CAPABILITY_DATA {
     /// One of: TPML_ALG_PROPERTY, TPML_HANDLE, TPML_CCA, TPML_CC, TPML_PCR_SELECTION,
     /// TPML_TAGGED_TPM_PROPERTY, TPML_TAGGED_PCR_PROPERTY, TPML_ECC_CURVE,
     /// TPML_TAGGED_POLICY, TPML_ACT_DATA.
-    pub data: Option<Box<dyn TPMU_CAPABILITIES>>,
+    pub data: TPMU_CAPABILITIES,
 }
 
 impl Default for TPMS_CAPABILITY_DATA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_CAPABILITY_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        data: Option<Box<dyn TPMU_CAPABILITIES>>
+        data: TPMU_CAPABILITIES,
         ) -> Self {
         Self {
             data,
         }
-
     }
 
     /// Get the capability selector value
@@ -7811,16 +6233,15 @@ impl TPMS_CAPABILITY_DATA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used in each of the attestation commands.
@@ -7835,11 +6256,11 @@ pub struct TPMS_CLOCK_INFO {
     pub clock: u64,
 
     /// Number of occurrences of TPM Reset since the last TPM2_Clear()
-    pub reset_count: u32,
+    pub reset_Count: u32,
 
     /// Number of times that TPM2_Shutdown() or _TPM_Hash_Start have occurred since the last
     /// TPM Reset or TPM2_Clear().
-    pub restart_count: u32,
+    pub restart_Count: u32,
 
     /// No value of Clock greater than the current value of Clock has been previously reported
     /// by the TPM. Set to YES on TPM2_Clear().
@@ -7850,43 +6271,36 @@ impl Default for TPMS_CLOCK_INFO {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_CLOCK_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        clock: u64
-        ,
-        reset_count: u32
-        ,
-        restart_count: u32
-        ,
-        safe: u8
+        clock: u64,
+        reset_Count: u32,
+        restart_Count: u32,
+        safe: u8,
         ) -> Self {
         Self {
             clock,
-            reset_count,
-            restart_count,
+            reset_Count,
+            restart_Count,
             safe,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used in, e.g., the TPM2_GetTime() attestation and TPM2_ReadClock().
@@ -7897,281 +6311,250 @@ pub struct TPMS_TIME_INFO {
     pub time: u64,
 
     /// A structure containing the clock information
-    pub clock_info: tpms_clock_info,
+    pub clock_Info: TPMS_CLOCK_INFO,
 }
 
 impl Default for TPMS_TIME_INFO {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_TIME_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        time: u64
-        ,
-        clock_info: tpms_clock_info
+        time: u64,
+        clock_Info: TPMS_CLOCK_INFO,
         ) -> Self {
         Self {
             time,
-            clock_info,
+            clock_Info,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used when the TPM performs TPM2_GetTime.
 #[derive(Debug, Clone)]
 pub struct TPMS_TIME_ATTEST_INFO {
     /// The Time, Clock, resetCount, restartCount, and Safe indicator
-    pub time: tpms_time_info,
+    pub time: TPMS_TIME_INFO,
 
     /// A TPM vendor-specific value indicating the version number of the firmware
-    pub firmware_version: u64,
+    pub firmware_Version: u64,
 }
 
 impl Default for TPMS_TIME_ATTEST_INFO {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_TIME_ATTEST_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        time: tpms_time_info
-        ,
-        firmware_version: u64
+        time: TPMS_TIME_INFO,
+        firmware_Version: u64,
         ) -> Self {
         Self {
             time,
-            firmware_version,
+            firmware_Version,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_TIME_ATTEST_INFO {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ATTEST::AttestTime as u32
+            TPMU_ATTEST::ATTEST_TIME as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is the attested data for TPM2_Certify().
 #[derive(Debug, Clone)]
 pub struct TPMS_CERTIFY_INFO {
     /// Name of the certified object
-    pub name: vec<u8>,
+    pub name: Vec<u8>,
 
     /// Qualified Name of the certified object
-    pub qualified_name: vec<u8>,
+    pub qualified_Name: Vec<u8>,
 }
 
 impl Default for TPMS_CERTIFY_INFO {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_CERTIFY_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        name: vec<u8>
-        ,
-        qualified_name: vec<u8>
+        name: Vec<u8>,
+        qualified_Name: Vec<u8>,
         ) -> Self {
         Self {
             name,
-            qualified_name,
+            qualified_Name,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_CERTIFY_INFO {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ATTEST::AttestCertify as u32
+            TPMU_ATTEST::ATTEST_CERTIFY as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is the attested data for TPM2_Quote().
 #[derive(Debug, Clone)]
 pub struct TPMS_QUOTE_INFO {
     /// Information on algID, PCR selected and digest
-    pub pcr_select: vec<tpms_pcr_selection>,
+    pub pcr_Select: Vec<TPMS_PCR_SELECTION>,
 
     /// Digest of the selected PCR using the hash of the signing key
-    pub pcr_digest: vec<u8>,
+    pub pcr_Digest: Vec<u8>,
 }
 
 impl Default for TPMS_QUOTE_INFO {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_QUOTE_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_select: vec<tpms_pcr_selection>
-        ,
-        pcr_digest: vec<u8>
+        pcr_Select: Vec<TPMS_PCR_SELECTION>,
+        pcr_Digest: Vec<u8>,
         ) -> Self {
         Self {
-            pcr_select,
-            pcr_digest,
+            pcr_Select,
+            pcr_Digest,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_QUOTE_INFO {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ATTEST::AttestQuote as u32
+            TPMU_ATTEST::ATTEST_QUOTE as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is the attested data for TPM2_GetCommandAuditDigest().
 #[derive(Debug, Clone)]
 pub struct TPMS_COMMAND_AUDIT_INFO {
     /// The monotonic audit counter
-    pub audit_counter: u64,
+    pub audit_Counter: u64,
 
     /// Hash algorithm used for the command audit
-    pub digest_alg: tpm_alg_id,
+    pub digest_Alg: TPM_ALG_ID,
 
     /// The current value of the audit digest
-    pub audit_digest: vec<u8>,
+    pub audit_Digest: Vec<u8>,
 
     /// Digest of the command codes being audited using digestAlg
-    pub command_digest: vec<u8>,
+    pub command_Digest: Vec<u8>,
 }
 
 impl Default for TPMS_COMMAND_AUDIT_INFO {
     fn default() -> Self {
         Self {
-            digestAlg = TPM_ALG_ID:NULL;
+            digestAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_COMMAND_AUDIT_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        audit_counter: u64
-        ,
-        digest_alg: tpm_alg_id
-        ,
-        audit_digest: vec<u8>
-        ,
-        command_digest: vec<u8>
+        audit_Counter: u64,
+        digest_Alg: TPM_ALG_ID,
+        audit_Digest: Vec<u8>,
+        command_Digest: Vec<u8>,
         ) -> Self {
         Self {
-            audit_counter,
-            digest_alg,
-            audit_digest,
-            command_digest,
+            audit_Counter,
+            digest_Alg,
+            audit_Digest,
+            command_Digest,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_COMMAND_AUDIT_INFO {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ATTEST::AttestCommandAudit as u32
+            TPMU_ATTEST::ATTEST_COMMAND_AUDIT as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is the attested data for TPM2_GetSessionAuditDigest().
@@ -8180,112 +6563,100 @@ pub struct TPMS_SESSION_AUDIT_INFO {
     /// Current exclusive status of the session
     /// TRUE if all of the commands recorded in the sessionDigest were executed without any
     /// intervening TPM command that did not use this audit session
-    pub exclusive_session: u8,
+    pub exclusive_Session: u8,
 
     /// The current value of the session audit digest
-    pub session_digest: vec<u8>,
+    pub session_Digest: Vec<u8>,
 }
 
 impl Default for TPMS_SESSION_AUDIT_INFO {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SESSION_AUDIT_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        exclusive_session: u8
-        ,
-        session_digest: vec<u8>
+        exclusive_Session: u8,
+        session_Digest: Vec<u8>,
         ) -> Self {
         Self {
-            exclusive_session,
-            session_digest,
+            exclusive_Session,
+            session_Digest,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_SESSION_AUDIT_INFO {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ATTEST::AttestSessionAudit as u32
+            TPMU_ATTEST::ATTEST_SESSION_AUDIT as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is the attested data for TPM2_CertifyCreation().
 #[derive(Debug, Clone)]
 pub struct TPMS_CREATION_INFO {
     /// Name of the object
-    pub object_name: vec<u8>,
+    pub object_Name: Vec<u8>,
 
     /// CreationHash
-    pub creation_hash: vec<u8>,
+    pub creation_Hash: Vec<u8>,
 }
 
 impl Default for TPMS_CREATION_INFO {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_CREATION_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        object_name: vec<u8>
-        ,
-        creation_hash: vec<u8>
+        object_Name: Vec<u8>,
+        creation_Hash: Vec<u8>,
         ) -> Self {
         Self {
-            object_name,
-            creation_hash,
+            object_Name,
+            creation_Hash,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_CREATION_INFO {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ATTEST::AttestCreation as u32
+            TPMU_ATTEST::ATTEST_CREATION as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure contains the Name and contents of the selected NV Index that is
@@ -8293,62 +6664,55 @@ impl TPMS_CREATION_INFO {
 #[derive(Debug, Clone)]
 pub struct TPMS_NV_CERTIFY_INFO {
     /// Name of the NV Index
-    pub index_name: vec<u8>,
+    pub index_Name: Vec<u8>,
 
     /// The offset parameter of TPM2_NV_Certify()
     pub offset: u16,
 
     /// Contents of the NV Index
-    pub nv_contents: vec<u8>,
+    pub nv_Contents: Vec<u8>,
 }
 
 impl Default for TPMS_NV_CERTIFY_INFO {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NV_CERTIFY_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        index_name: vec<u8>
-        ,
-        offset: u16
-        ,
-        nv_contents: vec<u8>
+        index_Name: Vec<u8>,
+        offset: u16,
+        nv_Contents: Vec<u8>,
         ) -> Self {
         Self {
-            index_name,
+            index_Name,
             offset,
-            nv_contents,
+            nv_Contents,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_NV_CERTIFY_INFO {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ATTEST::AttestNv as u32
+            TPMU_ATTEST::ATTEST_NV as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure contains the Name and hash of the contents of the selected NV Index
@@ -8356,56 +6720,50 @@ impl TPMS_NV_CERTIFY_INFO {
 #[derive(Debug, Clone)]
 pub struct TPMS_NV_DIGEST_CERTIFY_INFO {
     /// Name of the NV Index
-    pub index_name: vec<u8>,
+    pub index_Name: Vec<u8>,
 
     /// Hash of the contents of the index
-    pub nv_digest: vec<u8>,
+    pub nv_Digest: Vec<u8>,
 }
 
 impl Default for TPMS_NV_DIGEST_CERTIFY_INFO {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NV_DIGEST_CERTIFY_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        index_name: vec<u8>
-        ,
-        nv_digest: vec<u8>
+        index_Name: Vec<u8>,
+        nv_Digest: Vec<u8>,
         ) -> Self {
         Self {
-            index_name,
-            nv_digest,
+            index_Name,
+            nv_Digest,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_NV_DIGEST_CERTIFY_INFO {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ATTEST::AttestNvDigest as u32
+            TPMU_ATTEST::ATTEST_NV_DIGEST as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used on each TPM-generated signed structure. The signature is over
@@ -8413,65 +6771,57 @@ impl TPMS_NV_DIGEST_CERTIFY_INFO {
 #[derive(Debug, Clone)]
 pub struct TPMS_ATTEST {
     /// The indication that this structure was created by a TPM (always TPM_GENERATED_VALUE)
-    pub magic: tpm_generated,
+    pub magic: TPM_GENERATED,
 
     /// Type of the attestation structure
 
     /// Qualified Name of the signing key
-    pub qualified_signer: vec<u8>,
+    pub qualified_Signer: Vec<u8>,
 
     /// External information supplied by caller
     /// NOTE A TPM2B_DATA structure provides room for a digest and a method indicator to
     /// indicate the components of the digest. The definition of this method indicator is
     /// outside the scope of this specification.
-    pub extra_data: vec<u8>,
+    pub extra_Data: Vec<u8>,
 
     /// Clock, resetCount, restartCount, and Safe
-    pub clock_info: tpms_clock_info,
+    pub clock_Info: TPMS_CLOCK_INFO,
 
     /// TPM-vendor-specific value identifying the version number of the firmware
-    pub firmware_version: u64,
+    pub firmware_Version: u64,
 
     /// The type-specific attestation information
     /// One of: TPMS_CERTIFY_INFO, TPMS_CREATION_INFO, TPMS_QUOTE_INFO,
     /// TPMS_COMMAND_AUDIT_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO,
     /// TPMS_NV_CERTIFY_INFO, TPMS_NV_DIGEST_CERTIFY_INFO.
-    pub attested: Option<Box<dyn TPMU_ATTEST>>,
+    pub attested: TPMU_ATTEST,
 }
 
 impl Default for TPMS_ATTEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_ATTEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        magic: tpm_generated
-        ,
-        qualified_signer: vec<u8>
-        ,
-        extra_data: vec<u8>
-        ,
-        clock_info: tpms_clock_info
-        ,
-        firmware_version: u64
-        ,
-        attested: Option<Box<dyn TPMU_ATTEST>>
+        magic: TPM_GENERATED,
+        qualified_Signer: Vec<u8>,
+        extra_Data: Vec<u8>,
+        clock_Info: TPMS_CLOCK_INFO,
+        firmware_Version: u64,
+        attested: TPMU_ATTEST,
         ) -> Self {
         Self {
             magic,
-            qualified_signer,
-            extra_data,
-            clock_info,
-            firmware_version,
+            qualified_Signer,
+            extra_Data,
+            clock_Info,
+            firmware_Version,
             attested,
         }
-
     }
 
     /// Get the type selector value
@@ -8485,16 +6835,15 @@ impl TPMS_ATTEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This sized buffer to contain the signed structure. The attestationData is the signed
@@ -8502,101 +6851,90 @@ impl TPMS_ATTEST {
 #[derive(Debug, Clone)]
 pub struct TPM2B_ATTEST {
     /// The signed structure
-    pub attestation_data: tpms_attest,
+    pub attestation_Data: TPMS_ATTEST,
 }
 
 impl Default for TPM2B_ATTEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_ATTEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        attestation_data: tpms_attest
+        attestation_Data: TPMS_ATTEST,
         ) -> Self {
         Self {
-            attestation_data,
+            attestation_Data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is the format used for each of the authorizations in the session area of a command.
 #[derive(Debug, Clone)]
 pub struct TPMS_AUTH_COMMAND {
     /// The session handle
-    pub session_handle: tpm_handle,
+    pub session_Handle: TPM_HANDLE,
 
     /// The session nonce, may be the Empty Buffer
-    pub nonce: vec<u8>,
+    pub nonce: Vec<u8>,
 
     /// The session attributes
-    pub session_attributes: tpma_session,
+    pub session_Attributes: TPMA_SESSION,
 
     /// Either an HMAC, a password, or an EmptyAuth
-    pub hmac: vec<u8>,
+    pub hmac: Vec<u8>,
 }
 
 impl Default for TPMS_AUTH_COMMAND {
     fn default() -> Self {
         Self {
-            sessionHandle = TPM_HANDLE();
+            sessionHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPMS_AUTH_COMMAND {
     /// Creates a new instance with the specified values
     pub fn new(
-        session_handle: tpm_handle
-        ,
-        nonce: vec<u8>
-        ,
-        session_attributes: tpma_session
-        ,
-        hmac: vec<u8>
+        session_Handle: TPM_HANDLE,
+        nonce: Vec<u8>,
+        session_Attributes: TPMA_SESSION,
+        hmac: Vec<u8>,
         ) -> Self {
         Self {
-            session_handle,
+            session_Handle,
             nonce,
-            session_attributes,
+            session_Attributes,
             hmac,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is the format for each of the authorizations in the session area of the response.
@@ -8605,53 +6943,47 @@ impl TPMS_AUTH_COMMAND {
 #[derive(Debug, Clone)]
 pub struct TPMS_AUTH_RESPONSE {
     /// The session nonce, may be the Empty Buffer
-    pub nonce: vec<u8>,
+    pub nonce: Vec<u8>,
 
     /// The session attributes
-    pub session_attributes: tpma_session,
+    pub session_Attributes: TPMA_SESSION,
 
     /// Either an HMAC or an EmptyAuth
-    pub hmac: vec<u8>,
+    pub hmac: Vec<u8>,
 }
 
 impl Default for TPMS_AUTH_RESPONSE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_AUTH_RESPONSE {
     /// Creates a new instance with the specified values
     pub fn new(
-        nonce: vec<u8>
-        ,
-        session_attributes: tpma_session
-        ,
-        hmac: vec<u8>
+        nonce: Vec<u8>,
+        session_Attributes: TPMA_SESSION,
+        hmac: Vec<u8>,
         ) -> Self {
         Self {
             nonce,
-            session_attributes,
+            session_Attributes,
             hmac,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -8664,9 +6996,7 @@ impl Default for TPMS_TDES_SYM_DETAILS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_TDES_SYM_DETAILS {
@@ -8674,23 +7004,21 @@ impl TPMS_TDES_SYM_DETAILS {
     impl TpmUnion for TPMS_TDES_SYM_DETAILS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SYM_DETAILS::TDES as u32
+            TPMU_SYM_DETAILS::TDES as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -8703,9 +7031,7 @@ impl Default for TPMS_AES_SYM_DETAILS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_AES_SYM_DETAILS {
@@ -8713,23 +7039,21 @@ impl TPMS_AES_SYM_DETAILS {
     impl TpmUnion for TPMS_AES_SYM_DETAILS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SYM_DETAILS::AES as u32
+            TPMU_SYM_DETAILS::AES as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -8742,9 +7066,7 @@ impl Default for TPMS_SM4_SYM_DETAILS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SM4_SYM_DETAILS {
@@ -8752,23 +7074,21 @@ impl TPMS_SM4_SYM_DETAILS {
     impl TpmUnion for TPMS_SM4_SYM_DETAILS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SYM_DETAILS::SM4 as u32
+            TPMU_SYM_DETAILS::SM4 as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -8781,9 +7101,7 @@ impl Default for TPMS_CAMELLIA_SYM_DETAILS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_CAMELLIA_SYM_DETAILS {
@@ -8791,23 +7109,21 @@ impl TPMS_CAMELLIA_SYM_DETAILS {
     impl TpmUnion for TPMS_CAMELLIA_SYM_DETAILS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SYM_DETAILS::CAMELLIA as u32
+            TPMU_SYM_DETAILS::CAMELLIA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -8820,9 +7136,7 @@ impl Default for TPMS_ANY_SYM_DETAILS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_ANY_SYM_DETAILS {
@@ -8830,23 +7144,21 @@ impl TPMS_ANY_SYM_DETAILS {
     impl TpmUnion for TPMS_ANY_SYM_DETAILS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SYM_DETAILS::ANY as u32
+            TPMU_SYM_DETAILS::ANY as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -8859,9 +7171,7 @@ impl Default for TPMS_XOR_SYM_DETAILS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_XOR_SYM_DETAILS {
@@ -8869,23 +7179,21 @@ impl TPMS_XOR_SYM_DETAILS {
     impl TpmUnion for TPMS_XOR_SYM_DETAILS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SYM_DETAILS::XOR as u32
+            TPMU_SYM_DETAILS::XOR as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -8898,9 +7206,7 @@ impl Default for TPMS_NULL_SYM_DETAILS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NULL_SYM_DETAILS {
@@ -8908,23 +7214,21 @@ impl TPMS_NULL_SYM_DETAILS {
     impl TpmUnion for TPMS_NULL_SYM_DETAILS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SYM_DETAILS::NULL as u32
+            TPMU_SYM_DETAILS::NULL as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The TPMT_SYM_DEF structure is used to select an algorithm to be used for parameter
@@ -8932,55 +7236,49 @@ impl TPMS_NULL_SYM_DETAILS {
 #[derive(Debug, Clone)]
 pub struct TPMT_SYM_DEF {
     /// Indicates a symmetric algorithm
-    pub algorithm: tpm_alg_id,
+    pub algorithm: TPM_ALG_ID,
 
     /// A supported key size
-    pub key_bits: u16,
+    pub key_Bits: u16,
 
     /// The mode for the key
-    pub mode: tpm_alg_id,
+    pub mode: TPM_ALG_ID,
 }
 
 impl Default for TPMT_SYM_DEF {
     fn default() -> Self {
         Self {
-            algorithm = TPM_ALG_ID:NULL;
-            mode = TPM_ALG_ID:NULL;
+            algorithm: TPM_ALG_ID::NULL,
+            mode: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMT_SYM_DEF {
     /// Creates a new instance with the specified values
     pub fn new(
-        algorithm: tpm_alg_id
-        ,
-        key_bits: u16
-        ,
-        mode: tpm_alg_id
+        algorithm: TPM_ALG_ID,
+        key_Bits: u16,
+        mode: TPM_ALG_ID,
         ) -> Self {
         Self {
             algorithm,
-            key_bits,
+            key_Bits,
             mode,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used when different symmetric block cipher (not XOR) algorithms may
@@ -8991,156 +7289,140 @@ pub struct TPMT_SYM_DEF_OBJECT {
     /// Selects a symmetric block cipher
     /// When used in the parameter area of a parent object, this shall be a supported block
     /// cipher and not TPM_ALG_NULL
-    pub algorithm: tpm_alg_id,
+    pub algorithm: TPM_ALG_ID,
 
     /// The key size
-    pub key_bits: u16,
+    pub key_Bits: u16,
 
     /// Default mode
     /// When used in the parameter area of a parent object, this shall be TPM_ALG_CFB.
-    pub mode: tpm_alg_id,
+    pub mode: TPM_ALG_ID,
 }
 
 impl Default for TPMT_SYM_DEF_OBJECT {
     fn default() -> Self {
         Self {
-            algorithm = TPM_ALG_ID:NULL;
-            mode = TPM_ALG_ID:NULL;
+            algorithm: TPM_ALG_ID::NULL,
+            mode: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMT_SYM_DEF_OBJECT {
     /// Creates a new instance with the specified values
     pub fn new(
-        algorithm: tpm_alg_id
-        ,
-        key_bits: u16
-        ,
-        mode: tpm_alg_id
+        algorithm: TPM_ALG_ID,
+        key_Bits: u16,
+        mode: TPM_ALG_ID,
         ) -> Self {
         Self {
             algorithm,
-            key_bits,
+            key_Bits,
             mode,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used to hold a symmetric key in the sensitive area of an asymmetric object.
 #[derive(Debug, Clone)]
 pub struct TPM2B_SYM_KEY {
     /// The key
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_SYM_KEY {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_SYM_KEY {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPM2B_SYM_KEY {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SENSITIVE_COMPOSITE::SYMCIPHER as u32
+            TPMU_SENSITIVE_COMPOSITE::SYMCIPHER as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure contains the parameters for a symmetric block cipher object.
 #[derive(Debug, Clone)]
 pub struct TPMS_SYMCIPHER_PARMS {
     /// A symmetric block cipher
-    pub sym: tpmt_sym_def_object,
+    pub sym: TPMT_SYM_DEF_OBJECT,
 }
 
 impl Default for TPMS_SYMCIPHER_PARMS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SYMCIPHER_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        sym: tpmt_sym_def_object
+        sym: TPMT_SYM_DEF_OBJECT,
         ) -> Self {
         Self {
             sym,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_SYMCIPHER_PARMS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_PUBLIC_PARMS::SYMCIPHER as u32
+            TPMU_PUBLIC_PARMS::SYMCIPHER as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This buffer holds a label or context value. For interoperability and backwards
@@ -9149,41 +7431,37 @@ impl TPMS_SYMCIPHER_PARMS {
 #[derive(Debug, Clone)]
 pub struct TPM2B_LABEL {
     /// Symmetric data for a created object or the label and context for a derived object
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_LABEL {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_LABEL {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure contains the label and context fields for a derived object. These
@@ -9191,153 +7469,137 @@ impl TPM2B_LABEL {
 /// template take precedence over the values in the inSensitive parameter.
 #[derive(Debug, Clone)]
 pub struct TPMS_DERIVE {
-    pub label: vec<u8>,
-    pub context: vec<u8>,
+    pub label: Vec<u8>,
+    pub context: Vec<u8>,
 }
 
 impl Default for TPMS_DERIVE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_DERIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        label: vec<u8>
-        ,
-        context: vec<u8>
+        label: Vec<u8>,
+        context: Vec<u8>,
         ) -> Self {
         Self {
             label,
             context,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_DERIVE {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SENSITIVE_CREATE::ANY2 as u32
+            TPMU_SENSITIVE_CREATE::ANY2 as u32
         }
-
     }
 
     impl TpmUnion for TPMS_DERIVE {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SENSITIVE_CREATE::ANY2 as u32
+            TPMU_SENSITIVE_CREATE::ANY2 as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 147 Definition of TPM2B_DERIVE Structure
 #[derive(Debug, Clone)]
 pub struct TPM2B_DERIVE {
     /// Symmetric data for a created object or the label and context for a derived object
-    pub buffer: tpms_derive,
+    pub buffer: TPMS_DERIVE,
 }
 
 impl Default for TPM2B_DERIVE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_DERIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: tpms_derive
+        buffer: TPMS_DERIVE,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This buffer wraps the TPMU_SENSITIVE_CREATE structure.
 #[derive(Debug, Clone)]
 pub struct TPM2B_SENSITIVE_DATA {
     /// Symmetric data for a created object or the label and context for a derived object
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_SENSITIVE_DATA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_SENSITIVE_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPM2B_SENSITIVE_DATA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SENSITIVE_COMPOSITE::KEYEDHASH as u32
+            TPMU_SENSITIVE_COMPOSITE::KEYEDHASH as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure defines the values to be placed in the sensitive area of a created
@@ -9345,47 +7607,42 @@ impl TPM2B_SENSITIVE_DATA {
 #[derive(Debug, Clone)]
 pub struct TPMS_SENSITIVE_CREATE {
     /// The USER auth secret value
-    pub user_auth: vec<u8>,
+    pub user_Auth: Vec<u8>,
 
     /// Data to be sealed, a key, or derivation values
-    pub data: vec<u8>,
+    pub data: Vec<u8>,
 }
 
 impl Default for TPMS_SENSITIVE_CREATE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SENSITIVE_CREATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        user_auth: vec<u8>
-        ,
-        data: vec<u8>
+        user_Auth: Vec<u8>,
+        data: Vec<u8>,
         ) -> Self {
         Self {
-            user_auth,
+            user_Auth,
             data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure contains the sensitive creation data in a sized buffer. This structure
@@ -9394,41 +7651,37 @@ impl TPMS_SENSITIVE_CREATE {
 #[derive(Debug, Clone)]
 pub struct TPM2B_SENSITIVE_CREATE {
     /// Data to be sealed or a symmetric key value.
-    pub sensitive: tpms_sensitive_create,
+    pub sensitive: TPMS_SENSITIVE_CREATE,
 }
 
 impl Default for TPM2B_SENSITIVE_CREATE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_SENSITIVE_CREATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        sensitive: tpms_sensitive_create
+        sensitive: TPMS_SENSITIVE_CREATE,
         ) -> Self {
         Self {
             sensitive,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is the scheme data for schemes that only require a hash to complete
@@ -9436,28 +7689,25 @@ impl TPM2B_SENSITIVE_CREATE {
 #[derive(Debug, Clone)]
 pub struct TPMS_SCHEME_HASH {
     /// The hash algorithm used to digest the message
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 }
 
 impl Default for TPMS_SCHEME_HASH {
     fn default() -> Self {
         Self {
-            hashAlg = TPM_ALG_ID:NULL;
+            hashAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_SCHEME_HASH {
     /// Creates a new instance with the specified values
     pub fn new(
-        hash_alg: tpm_alg_id
+        hash_Alg: TPM_ALG_ID,
         ) -> Self {
         Self {
-            hash_alg,
+            hash_Alg,
         }
-
     }
 
     // Union trait implementations
@@ -9478,23 +7728,22 @@ impl TPMS_SCHEME_HASH {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This definition is for split signing schemes that require a commit count.
 #[derive(Debug, Clone)]
 pub struct TPMS_SCHEME_ECDAA {
     /// The hash algorithm used to digest the message
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 
     /// The counter value that is used between TPM2_Commit() and the sign operation
     pub count: u16,
@@ -9503,25 +7752,21 @@ pub struct TPMS_SCHEME_ECDAA {
 impl Default for TPMS_SCHEME_ECDAA {
     fn default() -> Self {
         Self {
-            hashAlg = TPM_ALG_ID:NULL;
+            hashAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_SCHEME_ECDAA {
     /// Creates a new instance with the specified values
     pub fn new(
-        hash_alg: tpm_alg_id
-        ,
-        count: u16
+        hash_Alg: TPM_ALG_ID,
+        count: u16,
         ) -> Self {
         Self {
-            hash_alg,
+            hash_Alg,
             count,
         }
-
     }
 
     // Union trait implementations
@@ -9533,16 +7778,15 @@ impl TPMS_SCHEME_ECDAA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 155 Definition of Types for HMAC_SIG_SCHEME
@@ -9554,9 +7798,7 @@ impl Default for TPMS_SCHEME_HMAC {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SCHEME_HMAC {
@@ -9564,89 +7806,80 @@ impl TPMS_SCHEME_HMAC {
     impl TpmUnion for TPMS_SCHEME_HMAC {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SCHEME_KEYEDHASH::HMAC as u32
+            TPMU_SCHEME_KEYEDHASH::HMAC as u32
         }
-
     }
 
     impl TpmUnion for TPMS_SCHEME_HMAC {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SCHEME_KEYEDHASH::HMAC as u32
+            TPMU_SCHEME_KEYEDHASH::HMAC as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is for the XOR encryption scheme.
 #[derive(Debug, Clone)]
 pub struct TPMS_SCHEME_XOR {
     /// The hash algorithm used to digest the message
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 
     /// The key derivation function
-    pub kdf: tpm_alg_id,
+    pub kdf: TPM_ALG_ID,
 }
 
 impl Default for TPMS_SCHEME_XOR {
     fn default() -> Self {
         Self {
-            hashAlg = TPM_ALG_ID:NULL;
-            kdf = TPM_ALG_ID:NULL;
+            hashAlg: TPM_ALG_ID::NULL,
+            kdf: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_SCHEME_XOR {
     /// Creates a new instance with the specified values
     pub fn new(
-        hash_alg: tpm_alg_id
-        ,
-        kdf: tpm_alg_id
+        hash_Alg: TPM_ALG_ID,
+        kdf: TPM_ALG_ID,
         ) -> Self {
         Self {
-            hash_alg,
+            hash_Alg,
             kdf,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_SCHEME_XOR {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SCHEME_KEYEDHASH::XOR as u32
+            TPMU_SCHEME_KEYEDHASH::XOR as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -9659,9 +7892,7 @@ impl Default for TPMS_NULL_SCHEME_KEYEDHASH {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NULL_SCHEME_KEYEDHASH {
@@ -9669,23 +7900,21 @@ impl TPMS_NULL_SCHEME_KEYEDHASH {
     impl TpmUnion for TPMS_NULL_SCHEME_KEYEDHASH {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SCHEME_KEYEDHASH::NULL as u32
+            TPMU_SCHEME_KEYEDHASH::NULL as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used for a hash signing object.
@@ -9695,27 +7924,24 @@ pub struct TPMT_KEYEDHASH_SCHEME {
 
     /// The scheme parameters
     /// One of: TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_NULL_SCHEME_KEYEDHASH.
-    pub details: Option<Box<dyn TPMU_SCHEME_KEYEDHASH>>,
+    pub details: TPMU_SCHEME_KEYEDHASH,
 }
 
 impl Default for TPMT_KEYEDHASH_SCHEME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_KEYEDHASH_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<Box<dyn TPMU_SCHEME_KEYEDHASH>>
+        details: TPMU_SCHEME_KEYEDHASH,
         ) -> Self {
         Self {
             details,
         }
-
     }
 
     /// Get the scheme selector value
@@ -9729,16 +7955,15 @@ impl TPMT_KEYEDHASH_SCHEME {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These are the RSA schemes that only need a hash algorithm as a scheme parameter.
@@ -9750,9 +7975,7 @@ impl Default for TPMS_SIG_SCHEME_RSASSA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIG_SCHEME_RSASSA {
@@ -9760,31 +7983,28 @@ impl TPMS_SIG_SCHEME_RSASSA {
     impl TpmUnion for TPMS_SIG_SCHEME_RSASSA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::RSASSA as u32
+            TPMU_SIG_SCHEME::RSASSA as u32
         }
-
     }
 
     impl TpmUnion for TPMS_SIG_SCHEME_RSASSA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::RSASSA as u32
+            TPMU_SIG_SCHEME::RSASSA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These are the RSA schemes that only need a hash algorithm as a scheme parameter.
@@ -9796,9 +8016,7 @@ impl Default for TPMS_SIG_SCHEME_RSAPSS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIG_SCHEME_RSAPSS {
@@ -9806,31 +8024,28 @@ impl TPMS_SIG_SCHEME_RSAPSS {
     impl TpmUnion for TPMS_SIG_SCHEME_RSAPSS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::RSAPSS as u32
+            TPMU_SIG_SCHEME::RSAPSS as u32
         }
-
     }
 
     impl TpmUnion for TPMS_SIG_SCHEME_RSAPSS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::RSAPSS as u32
+            TPMU_SIG_SCHEME::RSAPSS as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
@@ -9844,9 +8059,7 @@ impl Default for TPMS_SIG_SCHEME_ECDSA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIG_SCHEME_ECDSA {
@@ -9854,31 +8067,28 @@ impl TPMS_SIG_SCHEME_ECDSA {
     impl TpmUnion for TPMS_SIG_SCHEME_ECDSA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::ECDSA as u32
+            TPMU_SIG_SCHEME::ECDSA as u32
         }
-
     }
 
     impl TpmUnion for TPMS_SIG_SCHEME_ECDSA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::ECDSA as u32
+            TPMU_SIG_SCHEME::ECDSA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
@@ -9892,9 +8102,7 @@ impl Default for TPMS_SIG_SCHEME_SM2 {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIG_SCHEME_SM2 {
@@ -9902,31 +8110,28 @@ impl TPMS_SIG_SCHEME_SM2 {
     impl TpmUnion for TPMS_SIG_SCHEME_SM2 {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::SM2 as u32
+            TPMU_SIG_SCHEME::SM2 as u32
         }
-
     }
 
     impl TpmUnion for TPMS_SIG_SCHEME_SM2 {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::SM2 as u32
+            TPMU_SIG_SCHEME::SM2 as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
@@ -9940,9 +8145,7 @@ impl Default for TPMS_SIG_SCHEME_ECSCHNORR {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIG_SCHEME_ECSCHNORR {
@@ -9950,31 +8153,28 @@ impl TPMS_SIG_SCHEME_ECSCHNORR {
     impl TpmUnion for TPMS_SIG_SCHEME_ECSCHNORR {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::ECSCHNORR as u32
+            TPMU_SIG_SCHEME::ECSCHNORR as u32
         }
-
     }
 
     impl TpmUnion for TPMS_SIG_SCHEME_ECSCHNORR {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::ECSCHNORR as u32
+            TPMU_SIG_SCHEME::ECSCHNORR as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
@@ -9988,9 +8188,7 @@ impl Default for TPMS_SIG_SCHEME_ECDAA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIG_SCHEME_ECDAA {
@@ -9998,31 +8196,28 @@ impl TPMS_SIG_SCHEME_ECDAA {
     impl TpmUnion for TPMS_SIG_SCHEME_ECDAA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::ECDAA as u32
+            TPMU_SIG_SCHEME::ECDAA as u32
         }
-
     }
 
     impl TpmUnion for TPMS_SIG_SCHEME_ECDAA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::ECDAA as u32
+            TPMU_SIG_SCHEME::ECDAA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -10035,9 +8230,7 @@ impl Default for TPMS_NULL_SIG_SCHEME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NULL_SIG_SCHEME {
@@ -10045,23 +8238,21 @@ impl TPMS_NULL_SIG_SCHEME {
     impl TpmUnion for TPMS_NULL_SIG_SCHEME {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIG_SCHEME::NULL as u32
+            TPMU_SIG_SCHEME::NULL as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 162 Definition of TPMT_SIG_SCHEME Structure
@@ -10073,27 +8264,24 @@ pub struct TPMT_SIG_SCHEME {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub details: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub details: TPMU_SIG_SCHEME,
 }
 
 impl Default for TPMT_SIG_SCHEME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_SIG_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<Box<dyn TPMU_SIG_SCHEME>>
+        details: TPMU_SIG_SCHEME,
         ) -> Self {
         Self {
             details,
         }
-
     }
 
     /// Get the scheme selector value
@@ -10107,16 +8295,15 @@ impl TPMT_SIG_SCHEME {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These are the RSA encryption schemes that only need a hash algorithm as a controlling parameter.
@@ -10128,9 +8315,7 @@ impl Default for TPMS_ENC_SCHEME_OAEP {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_ENC_SCHEME_OAEP {
@@ -10138,23 +8323,21 @@ impl TPMS_ENC_SCHEME_OAEP {
     impl TpmUnion for TPMS_ENC_SCHEME_OAEP {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ASYM_SCHEME::OAEP as u32
+            TPMU_ASYM_SCHEME::OAEP as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These are the RSA encryption schemes that only need a hash algorithm as a controlling parameter.
@@ -10166,9 +8349,7 @@ impl Default for TPMS_ENC_SCHEME_RSAES {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_ENC_SCHEME_RSAES {
@@ -10176,23 +8357,21 @@ impl TPMS_ENC_SCHEME_RSAES {
     impl TpmUnion for TPMS_ENC_SCHEME_RSAES {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ASYM_SCHEME::RSAES as u32
+            TPMU_ASYM_SCHEME::RSAES as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These are the ECC schemes that only need a hash algorithm as a controlling parameter.
@@ -10204,9 +8383,7 @@ impl Default for TPMS_KEY_SCHEME_ECDH {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_KEY_SCHEME_ECDH {
@@ -10214,23 +8391,21 @@ impl TPMS_KEY_SCHEME_ECDH {
     impl TpmUnion for TPMS_KEY_SCHEME_ECDH {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ASYM_SCHEME::ECDH as u32
+            TPMU_ASYM_SCHEME::ECDH as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These are the ECC schemes that only need a hash algorithm as a controlling parameter.
@@ -10242,9 +8417,7 @@ impl Default for TPMS_KEY_SCHEME_ECMQV {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_KEY_SCHEME_ECMQV {
@@ -10252,23 +8425,21 @@ impl TPMS_KEY_SCHEME_ECMQV {
     impl TpmUnion for TPMS_KEY_SCHEME_ECMQV {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ASYM_SCHEME::ECMQV as u32
+            TPMU_ASYM_SCHEME::ECMQV as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These structures are used to define the key derivation for symmetric secret sharing
@@ -10282,9 +8453,7 @@ impl Default for TPMS_KDF_SCHEME_MGF1 {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_KDF_SCHEME_MGF1 {
@@ -10292,23 +8461,21 @@ impl TPMS_KDF_SCHEME_MGF1 {
     impl TpmUnion for TPMS_KDF_SCHEME_MGF1 {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_KDF_SCHEME::MGF1 as u32
+            TPMU_KDF_SCHEME::MGF1 as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These structures are used to define the key derivation for symmetric secret sharing
@@ -10322,9 +8489,7 @@ impl Default for TPMS_KDF_SCHEME_KDF1_SP800_56A {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_KDF_SCHEME_KDF1_SP800_56A {
@@ -10332,23 +8497,21 @@ impl TPMS_KDF_SCHEME_KDF1_SP800_56A {
     impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_56A {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_KDF_SCHEME::Kdf1Sp80056a as u32
+            TPMU_KDF_SCHEME::KDF1_SP800_56A as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These structures are used to define the key derivation for symmetric secret sharing
@@ -10362,9 +8525,7 @@ impl Default for TPMS_KDF_SCHEME_KDF2 {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_KDF_SCHEME_KDF2 {
@@ -10372,23 +8533,21 @@ impl TPMS_KDF_SCHEME_KDF2 {
     impl TpmUnion for TPMS_KDF_SCHEME_KDF2 {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_KDF_SCHEME::KDF2 as u32
+            TPMU_KDF_SCHEME::KDF2 as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These structures are used to define the key derivation for symmetric secret sharing
@@ -10402,9 +8561,7 @@ impl Default for TPMS_KDF_SCHEME_KDF1_SP800_108 {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_KDF_SCHEME_KDF1_SP800_108 {
@@ -10412,23 +8569,21 @@ impl TPMS_KDF_SCHEME_KDF1_SP800_108 {
     impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_108 {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_KDF_SCHEME::Kdf1Sp800108 as u32
+            TPMU_KDF_SCHEME::KDF1_SP800_108 as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -10441,9 +8596,7 @@ impl Default for TPMS_NULL_KDF_SCHEME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NULL_KDF_SCHEME {
@@ -10451,23 +8604,21 @@ impl TPMS_NULL_KDF_SCHEME {
     impl TpmUnion for TPMS_NULL_KDF_SCHEME {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_KDF_SCHEME::NULL as u32
+            TPMU_KDF_SCHEME::NULL as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 167 Definition of TPMT_KDF_SCHEME Structure
@@ -10478,27 +8629,24 @@ pub struct TPMT_KDF_SCHEME {
     /// Scheme parameters
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub details: Option<Box<dyn TPMU_KDF_SCHEME>>,
+    pub details: TPMU_KDF_SCHEME,
 }
 
 impl Default for TPMT_KDF_SCHEME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_KDF_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<Box<dyn TPMU_KDF_SCHEME>>
+        details: TPMU_KDF_SCHEME,
         ) -> Self {
         Self {
             details,
         }
-
     }
 
     /// Get the scheme selector value
@@ -10512,16 +8660,15 @@ impl TPMT_KDF_SCHEME {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -10534,9 +8681,7 @@ impl Default for TPMS_NULL_ASYM_SCHEME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NULL_ASYM_SCHEME {
@@ -10544,23 +8689,21 @@ impl TPMS_NULL_ASYM_SCHEME {
     impl TpmUnion for TPMS_NULL_ASYM_SCHEME {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_ASYM_SCHEME::NULL as u32
+            TPMU_ASYM_SCHEME::NULL as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is defined to allow overlay of all of the schemes for any asymmetric
@@ -10575,27 +8718,24 @@ pub struct TPMT_ASYM_SCHEME {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub details: TPMU_ASYM_SCHEME,
 }
 
 impl Default for TPMT_ASYM_SCHEME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_ASYM_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<Box<dyn TPMU_ASYM_SCHEME>>
+        details: TPMU_ASYM_SCHEME,
         ) -> Self {
         Self {
             details,
         }
-
     }
 
     /// Get the scheme selector value
@@ -10609,16 +8749,15 @@ impl TPMT_ASYM_SCHEME {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 172 Definition of {RSA} TPMT_RSA_SCHEME Structure
@@ -10631,27 +8770,24 @@ pub struct TPMT_RSA_SCHEME {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub details: TPMU_ASYM_SCHEME,
 }
 
 impl Default for TPMT_RSA_SCHEME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_RSA_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<Box<dyn TPMU_ASYM_SCHEME>>
+        details: TPMU_ASYM_SCHEME,
         ) -> Self {
         Self {
             details,
         }
-
     }
 
     /// Get the scheme selector value
@@ -10665,16 +8801,15 @@ impl TPMT_RSA_SCHEME {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 174 Definition of {RSA} TPMT_RSA_DECRYPT Structure
@@ -10687,27 +8822,24 @@ pub struct TPMT_RSA_DECRYPT {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub details: TPMU_ASYM_SCHEME,
 }
 
 impl Default for TPMT_RSA_DECRYPT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_RSA_DECRYPT {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<Box<dyn TPMU_ASYM_SCHEME>>
+        details: TPMU_ASYM_SCHEME,
         ) -> Self {
         Self {
             details,
         }
-
     }
 
     /// Get the scheme selector value
@@ -10721,221 +8853,199 @@ impl TPMT_RSA_DECRYPT {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This sized buffer holds the largest RSA public key supported by the TPM.
 #[derive(Debug, Clone)]
 pub struct TPM2B_PUBLIC_KEY_RSA {
     /// Value
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_PUBLIC_KEY_RSA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_PUBLIC_KEY_RSA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPM2B_PUBLIC_KEY_RSA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_PUBLIC_ID::RSA as u32
+            TPMU_PUBLIC_ID::RSA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This sized buffer holds the largest RSA prime number supported by the TPM.
 #[derive(Debug, Clone)]
 pub struct TPM2B_PRIVATE_KEY_RSA {
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_PRIVATE_KEY_RSA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_PRIVATE_KEY_RSA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPM2B_PRIVATE_KEY_RSA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SENSITIVE_COMPOSITE::RSA as u32
+            TPMU_SENSITIVE_COMPOSITE::RSA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This sized buffer holds the largest ECC parameter (coordinate) supported by the TPM.
 #[derive(Debug, Clone)]
 pub struct TPM2B_ECC_PARAMETER {
     /// The parameter data
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_ECC_PARAMETER {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_ECC_PARAMETER {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPM2B_ECC_PARAMETER {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SENSITIVE_COMPOSITE::ECC as u32
+            TPMU_SENSITIVE_COMPOSITE::ECC as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure holds two ECC coordinates that, together, make up an ECC point.
 #[derive(Debug, Clone)]
 pub struct TPMS_ECC_POINT {
     /// X coordinate
-    pub x: vec<u8>,
+    pub x: Vec<u8>,
 
     /// Y coordinate
-    pub y: vec<u8>,
+    pub y: Vec<u8>,
 }
 
 impl Default for TPMS_ECC_POINT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_ECC_POINT {
     /// Creates a new instance with the specified values
     pub fn new(
-        x: vec<u8>
-        ,
-        y: vec<u8>
+        x: Vec<u8>,
+        y: Vec<u8>,
         ) -> Self {
         Self {
             x,
             y,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPMS_ECC_POINT {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_PUBLIC_ID::ECC as u32
+            TPMU_PUBLIC_ID::ECC as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is defined to allow a point to be a single sized parameter so that it
@@ -10943,41 +9053,37 @@ impl TPMS_ECC_POINT {
 #[derive(Debug, Clone)]
 pub struct TPM2B_ECC_POINT {
     /// Coordinates
-    pub point: tpms_ecc_point,
+    pub point: TPMS_ECC_POINT,
 }
 
 impl Default for TPM2B_ECC_POINT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_ECC_POINT {
     /// Creates a new instance with the specified values
     pub fn new(
-        point: tpms_ecc_point
+        point: TPMS_ECC_POINT,
         ) -> Self {
         Self {
             point,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 183 Definition of (TPMT_SIG_SCHEME) {ECC} TPMT_ECC_SCHEME Structure
@@ -10990,27 +9096,24 @@ pub struct TPMT_ECC_SCHEME {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub details: TPMU_ASYM_SCHEME,
 }
 
 impl Default for TPMT_ECC_SCHEME {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_ECC_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<Box<dyn TPMU_ASYM_SCHEME>>
+        details: TPMU_ASYM_SCHEME,
         ) -> Self {
         Self {
             details,
         }
-
     }
 
     /// Get the scheme selector value
@@ -11024,16 +9127,15 @@ impl TPMT_ECC_SCHEME {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used to report on the curve parameters of an ECC curve. It is
@@ -11041,17 +9143,17 @@ impl TPMT_ECC_SCHEME {
 #[derive(Debug, Clone)]
 pub struct TPMS_ALGORITHM_DETAIL_ECC {
     /// Identifier for the curve
-    pub curve_id: tpm_ecc_curve,
+    pub curve_ID: TPM_ECC_CURVE,
 
     /// Size in bits of the key
-    pub key_size: u16,
+    pub key_Size: u16,
 
     /// Scheme selector
 
     /// If not TPM_ALG_NULL, the required KDF and hash algorithm used in secret sharing operations
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub kdf: Option<Box<dyn TPMU_KDF_SCHEME>>,
+    pub kdf: TPMU_KDF_SCHEME,
 
     /// Scheme selector
 
@@ -11061,82 +9163,69 @@ pub struct TPMS_ALGORITHM_DETAIL_ECC {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub sign: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub sign: TPMU_ASYM_SCHEME,
 
     /// Fp (the modulus)
-    pub p: vec<u8>,
+    pub p: Vec<u8>,
 
     /// Coefficient of the linear term in the curve equation
-    pub a: vec<u8>,
+    pub a: Vec<u8>,
 
     /// Constant term for curve equation
-    pub b: vec<u8>,
+    pub b: Vec<u8>,
 
     /// X coordinate of base point G
-    pub gx: vec<u8>,
+    pub gX: Vec<u8>,
 
     /// Y coordinate of base point G
-    pub gy: vec<u8>,
+    pub gY: Vec<u8>,
 
     /// Order of G
-    pub n: vec<u8>,
+    pub n: Vec<u8>,
 
     /// Cofactor (a size of zero indicates a cofactor of 1)
-    pub h: vec<u8>,
+    pub h: Vec<u8>,
 }
 
 impl Default for TPMS_ALGORITHM_DETAIL_ECC {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_ALGORITHM_DETAIL_ECC {
     /// Creates a new instance with the specified values
     pub fn new(
-        curve_id: tpm_ecc_curve
-        ,
-        key_size: u16
-        ,
-        kdf: Option<Box<dyn TPMU_KDF_SCHEME>>
-        ,
-        sign: Option<Box<dyn TPMU_ASYM_SCHEME>>
-        ,
-        p: vec<u8>
-        ,
-        a: vec<u8>
-        ,
-        b: vec<u8>
-        ,
-        gx: vec<u8>
-        ,
-        gy: vec<u8>
-        ,
-        n: vec<u8>
-        ,
-        h: vec<u8>
+        curve_ID: TPM_ECC_CURVE,
+        key_Size: u16,
+        kdf: TPMU_KDF_SCHEME,
+        sign: TPMU_ASYM_SCHEME,
+        p: Vec<u8>,
+        a: Vec<u8>,
+        b: Vec<u8>,
+        gX: Vec<u8>,
+        gY: Vec<u8>,
+        n: Vec<u8>,
+        h: Vec<u8>,
         ) -> Self {
         Self {
-            curve_id,
-            key_size,
+            curve_ID,
+            key_Size,
             kdf,
             sign,
             p,
             a,
             b,
-            gx,
-            gy,
+            gX,
+            gY,
             n,
             h,
         }
-
     }
 
     /// Get the kdfScheme selector value
-    pub fn kdf_scheme(&self) -> TPM_ALG_ID {
+    pub fn kdf_Scheme(&self) -> TPM_ALG_ID {
         match &self.kdf {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -11145,7 +9234,7 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
     }
 
     /// Get the signScheme selector value
-    pub fn sign_scheme(&self) -> TPM_ALG_ID {
+    pub fn sign_Scheme(&self) -> TPM_ALG_ID {
         match &self.sign {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -11155,16 +9244,15 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
@@ -11172,34 +9260,30 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
 pub struct TPMS_SIGNATURE_RSA {
     /// The hash algorithm used to digest the message
     /// TPM_ALG_NULL is not allowed.
-    pub hash: tpm_alg_id,
+    pub hash: TPM_ALG_ID,
 
     /// The signature is the size of a public key.
-    pub sig: vec<u8>,
+    pub sig: Vec<u8>,
 }
 
 impl Default for TPMS_SIGNATURE_RSA {
     fn default() -> Self {
         Self {
-            hash = TPM_ALG_ID:NULL;
+            hash: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_SIGNATURE_RSA {
     /// Creates a new instance with the specified values
     pub fn new(
-        hash: tpm_alg_id
-        ,
-        sig: vec<u8>
+        hash: TPM_ALG_ID,
+        sig: Vec<u8>,
         ) -> Self {
         Self {
             hash,
             sig,
         }
-
     }
 
     // Union trait implementations
@@ -11208,16 +9292,15 @@ impl TPMS_SIGNATURE_RSA {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
@@ -11229,9 +9312,7 @@ impl Default for TPMS_SIGNATURE_RSASSA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIGNATURE_RSASSA {
@@ -11239,23 +9320,21 @@ impl TPMS_SIGNATURE_RSASSA {
     impl TpmUnion for TPMS_SIGNATURE_RSASSA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIGNATURE::RSASSA as u32
+            TPMU_SIGNATURE::RSASSA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
@@ -11267,9 +9346,7 @@ impl Default for TPMS_SIGNATURE_RSAPSS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIGNATURE_RSAPSS {
@@ -11277,23 +9354,21 @@ impl TPMS_SIGNATURE_RSAPSS {
     impl TpmUnion for TPMS_SIGNATURE_RSAPSS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIGNATURE::RSAPSS as u32
+            TPMU_SIGNATURE::RSAPSS as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
@@ -11301,36 +9376,31 @@ impl TPMS_SIGNATURE_RSAPSS {
 pub struct TPMS_SIGNATURE_ECC {
     /// The hash algorithm used in the signature process
     /// TPM_ALG_NULL is not allowed.
-    pub hash: tpm_alg_id,
-    pub signature_r: vec<u8>,
-    pub signature_s: vec<u8>,
+    pub hash: TPM_ALG_ID,
+    pub signature_R: Vec<u8>,
+    pub signature_S: Vec<u8>,
 }
 
 impl Default for TPMS_SIGNATURE_ECC {
     fn default() -> Self {
         Self {
-            hash = TPM_ALG_ID:NULL;
+            hash: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_SIGNATURE_ECC {
     /// Creates a new instance with the specified values
     pub fn new(
-        hash: tpm_alg_id
-        ,
-        signature_r: vec<u8>
-        ,
-        signature_s: vec<u8>
+        hash: TPM_ALG_ID,
+        signature_R: Vec<u8>,
+        signature_S: Vec<u8>,
         ) -> Self {
         Self {
             hash,
-            signature_r,
-            signature_s,
+            signature_R,
+            signature_S,
         }
-
     }
 
     // Union trait implementations
@@ -11339,16 +9409,15 @@ impl TPMS_SIGNATURE_ECC {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
@@ -11360,9 +9429,7 @@ impl Default for TPMS_SIGNATURE_ECDSA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIGNATURE_ECDSA {
@@ -11370,23 +9437,21 @@ impl TPMS_SIGNATURE_ECDSA {
     impl TpmUnion for TPMS_SIGNATURE_ECDSA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIGNATURE::ECDSA as u32
+            TPMU_SIGNATURE::ECDSA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
@@ -11398,9 +9463,7 @@ impl Default for TPMS_SIGNATURE_ECDAA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIGNATURE_ECDAA {
@@ -11408,23 +9471,21 @@ impl TPMS_SIGNATURE_ECDAA {
     impl TpmUnion for TPMS_SIGNATURE_ECDAA {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIGNATURE::ECDAA as u32
+            TPMU_SIGNATURE::ECDAA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
@@ -11436,9 +9497,7 @@ impl Default for TPMS_SIGNATURE_SM2 {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIGNATURE_SM2 {
@@ -11446,23 +9505,21 @@ impl TPMS_SIGNATURE_SM2 {
     impl TpmUnion for TPMS_SIGNATURE_SM2 {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIGNATURE::SM2 as u32
+            TPMU_SIGNATURE::SM2 as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
@@ -11474,9 +9531,7 @@ impl Default for TPMS_SIGNATURE_ECSCHNORR {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_SIGNATURE_ECSCHNORR {
@@ -11484,23 +9539,21 @@ impl TPMS_SIGNATURE_ECSCHNORR {
     impl TpmUnion for TPMS_SIGNATURE_ECSCHNORR {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIGNATURE::ECSCHNORR as u32
+            TPMU_SIGNATURE::ECSCHNORR as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Custom data structure representing an empty element (i.e. the one with 
@@ -11513,9 +9566,7 @@ impl Default for TPMS_NULL_SIGNATURE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NULL_SIGNATURE {
@@ -11523,23 +9574,21 @@ impl TPMS_NULL_SIGNATURE {
     impl TpmUnion for TPMS_NULL_SIGNATURE {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SIGNATURE::NULL as u32
+            TPMU_SIGNATURE::NULL as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 190 shows the basic algorithm-agile structure when a symmetric or asymmetric
@@ -11555,31 +9604,28 @@ pub struct TPMT_SIGNATURE {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for TPMT_SIGNATURE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_SIGNATURE {
     /// Creates a new instance with the specified values
     pub fn new(
-        signature: Option<Box<dyn TPMU_SIGNATURE>>
+        signature: TPMU_SIGNATURE,
         ) -> Self {
         Self {
             signature,
         }
-
     }
 
     /// Get the sigAlg selector value
-    pub fn sig_alg(&self) -> TPM_ALG_ID {
+    pub fn sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -11589,57 +9635,52 @@ impl TPMT_SIGNATURE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 192 Definition of TPM2B_ENCRYPTED_SECRET Structure
 #[derive(Debug, Clone)]
 pub struct TPM2B_ENCRYPTED_SECRET {
     /// Secret
-    pub secret: vec<u8>,
+    pub secret: Vec<u8>,
 }
 
 impl Default for TPM2B_ENCRYPTED_SECRET {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_ENCRYPTED_SECRET {
     /// Creates a new instance with the specified values
     pub fn new(
-        secret: vec<u8>
+        secret: Vec<u8>,
         ) -> Self {
         Self {
             secret,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure describes the parameters that would appear in the public area of a
@@ -11652,31 +9693,28 @@ pub struct TPMS_KEYEDHASH_PARMS {
     /// determines the size of the data field for a data object created with TPM2_Create() or
     /// TPM2_CreatePrimary().
     /// One of: TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_NULL_SCHEME_KEYEDHASH.
-    pub scheme: Option<Box<dyn TPMU_SCHEME_KEYEDHASH>>,
+    pub scheme: TPMU_SCHEME_KEYEDHASH,
 }
 
 impl Default for TPMS_KEYEDHASH_PARMS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_KEYEDHASH_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        scheme: Option<Box<dyn TPMU_SCHEME_KEYEDHASH>>
+        scheme: TPMU_SCHEME_KEYEDHASH,
         ) -> Self {
         Self {
             scheme,
         }
-
     }
 
     /// Get the schemeScheme selector value
-    pub fn scheme_scheme(&self) -> TPM_ALG_ID {
+    pub fn scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -11688,23 +9726,21 @@ impl TPMS_KEYEDHASH_PARMS {
     impl TpmUnion for TPMS_KEYEDHASH_PARMS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_PUBLIC_PARMS::KEYEDHASH as u32
+            TPMU_PUBLIC_PARMS::KEYEDHASH as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure contains the common public area parameters for an asymmetric key. The
@@ -11716,7 +9752,7 @@ pub struct TPMS_ASYM_PARMS {
     /// a supported symmetric algorithm
     /// This field is optional for keys that are not decryption keys and shall be set to
     /// TPM_ALG_NULL if not used.
-    pub symmetric: tpmt_sym_def_object,
+    pub symmetric: TPMT_SYM_DEF_OBJECT,
 
     /// Scheme selector
 
@@ -11727,34 +9763,30 @@ pub struct TPMS_ASYM_PARMS {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub scheme: TPMU_ASYM_SCHEME,
 }
 
 impl Default for TPMS_ASYM_PARMS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_ASYM_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        symmetric: tpmt_sym_def_object
-        ,
-        scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>
+        symmetric: TPMT_SYM_DEF_OBJECT,
+        scheme: TPMU_ASYM_SCHEME,
         ) -> Self {
         Self {
             symmetric,
             scheme,
         }
-
     }
 
     /// Get the schemeScheme selector value
-    pub fn scheme_scheme(&self) -> TPM_ALG_ID {
+    pub fn scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -11766,23 +9798,21 @@ impl TPMS_ASYM_PARMS {
     impl TpmUnion for TPMS_ASYM_PARMS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_PUBLIC_PARMS::ANY as u32
+            TPMU_PUBLIC_PARMS::ANY as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// A TPM compatible with this specification and supporting RSA shall support two primes
@@ -11795,7 +9825,7 @@ pub struct TPMS_RSA_PARMS {
     /// For a restricted decryption key, shall be set to a supported symmetric algorithm, key
     /// size, and mode.
     /// if the key is not a restricted decryption key, this field shall be set to TPM_ALG_NULL.
-    pub symmetric: tpmt_sym_def_object,
+    pub symmetric: TPMT_SYM_DEF_OBJECT,
 
     /// Scheme selector
 
@@ -11811,10 +9841,10 @@ pub struct TPMS_RSA_PARMS {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub scheme: TPMU_ASYM_SCHEME,
 
     /// Number of bits in the public modulus
-    pub key_bits: u16,
+    pub key_Bits: u16,
 
     /// The public exponent
     /// A prime number greater than 2.
@@ -11825,33 +9855,27 @@ impl Default for TPMS_RSA_PARMS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_RSA_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        symmetric: tpmt_sym_def_object
-        ,
-        scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>
-        ,
-        key_bits: u16
-        ,
-        exponent: u32
+        symmetric: TPMT_SYM_DEF_OBJECT,
+        scheme: TPMU_ASYM_SCHEME,
+        key_Bits: u16,
+        exponent: u32,
         ) -> Self {
         Self {
             symmetric,
             scheme,
-            key_bits,
+            key_Bits,
             exponent,
         }
-
     }
 
     /// Get the schemeScheme selector value
-    pub fn scheme_scheme(&self) -> TPM_ALG_ID {
+    pub fn scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -11863,23 +9887,21 @@ impl TPMS_RSA_PARMS {
     impl TpmUnion for TPMS_RSA_PARMS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_PUBLIC_PARMS::RSA as u32
+            TPMU_PUBLIC_PARMS::RSA as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure contains the parameters for prime modulus ECC.
@@ -11888,7 +9910,7 @@ pub struct TPMS_ECC_PARMS {
     /// For a restricted decryption key, shall be set to a supported symmetric algorithm, key
     /// size. and mode.
     /// if the key is not a restricted decryption key, this field shall be set to TPM_ALG_NULL.
-    pub symmetric: tpmt_sym_def_object,
+    pub symmetric: TPMT_SYM_DEF_OBJECT,
 
     /// Scheme selector
 
@@ -11902,10 +9924,10 @@ pub struct TPMS_ECC_PARMS {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub scheme: TPMU_ASYM_SCHEME,
 
     /// ECC curve ID
-    pub curve_id: tpm_ecc_curve,
+    pub curve_ID: TPM_ECC_CURVE,
 
     /// Scheme selector
 
@@ -11916,40 +9938,34 @@ pub struct TPMS_ECC_PARMS {
     /// reference code, this field needs to be set to TPM_ALG_NULL.
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub kdf: Option<Box<dyn TPMU_KDF_SCHEME>>,
+    pub kdf: TPMU_KDF_SCHEME,
 }
 
 impl Default for TPMS_ECC_PARMS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_ECC_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        symmetric: tpmt_sym_def_object
-        ,
-        scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>
-        ,
-        curve_id: tpm_ecc_curve
-        ,
-        kdf: Option<Box<dyn TPMU_KDF_SCHEME>>
+        symmetric: TPMT_SYM_DEF_OBJECT,
+        scheme: TPMU_ASYM_SCHEME,
+        curve_ID: TPM_ECC_CURVE,
+        kdf: TPMU_KDF_SCHEME,
         ) -> Self {
         Self {
             symmetric,
             scheme,
-            curve_id,
+            curve_ID,
             kdf,
         }
-
     }
 
     /// Get the schemeScheme selector value
-    pub fn scheme_scheme(&self) -> TPM_ALG_ID {
+    pub fn scheme_Scheme(&self) -> TPM_ALG_ID {
         match &self.scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -11958,7 +9974,7 @@ impl TPMS_ECC_PARMS {
     }
 
     /// Get the kdfScheme selector value
-    pub fn kdf_scheme(&self) -> TPM_ALG_ID {
+    pub fn kdf_Scheme(&self) -> TPM_ALG_ID {
         match &self.kdf {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -11970,23 +9986,21 @@ impl TPMS_ECC_PARMS {
     impl TpmUnion for TPMS_ECC_PARMS {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_PUBLIC_PARMS::ECC as u32
+            TPMU_PUBLIC_PARMS::ECC as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used in TPM2_TestParms() to validate that a set of algorithm
@@ -11998,27 +10012,24 @@ pub struct TPMT_PUBLIC_PARMS {
     /// The algorithm details
     /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
     /// TPMS_ASYM_PARMS.
-    pub parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>,
+    pub parameters: TPMU_PUBLIC_PARMS,
 }
 
 impl Default for TPMT_PUBLIC_PARMS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_PUBLIC_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>
+        parameters: TPMU_PUBLIC_PARMS,
         ) -> Self {
         Self {
             parameters,
         }
-
     }
 
     /// Get the type selector value
@@ -12032,16 +10043,15 @@ impl TPMT_PUBLIC_PARMS {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Table 201 defines the public area structure. The Name of the object is nameAlg
@@ -12053,59 +10063,52 @@ pub struct TPMT_PUBLIC {
     /// Algorithm used for computing the Name of the object
     /// NOTE The "+" indicates that the instance of a TPMT_PUBLIC may have a "+" to indicate
     /// that the nameAlg may be TPM_ALG_NULL.
-    pub name_alg: tpm_alg_id,
+    pub name_Alg: TPM_ALG_ID,
 
     /// Attributes that, along with type, determine the manipulations of this object
-    pub object_attributes: tpma_object,
+    pub object_Attributes: TPMA_OBJECT,
 
     /// Optional policy for using this key
     /// The policy is computed using the nameAlg of the object.
     /// NOTE Shall be the Empty Policy if no authorization policy is present.
-    pub auth_policy: vec<u8>,
+    pub auth_Policy: Vec<u8>,
 
     /// The algorithm or structure details
     /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
     /// TPMS_ASYM_PARMS.
-    pub parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>,
+    pub parameters: TPMU_PUBLIC_PARMS,
 
     /// The unique identifier of the structure
     /// For an asymmetric key, this would be the public key.
     /// One of: TPM2B_DIGEST_KEYEDHASH, TPM2B_DIGEST_SYMCIPHER, TPM2B_PUBLIC_KEY_RSA,
     /// TPMS_ECC_POINT, TPMS_DERIVE.
-    pub unique: Option<Box<dyn TPMU_PUBLIC_ID>>,
+    pub unique: TPMU_PUBLIC_ID,
 }
 
 impl Default for TPMT_PUBLIC {
     fn default() -> Self {
         Self {
-            nameAlg = TPM_ALG_ID:NULL;
+            nameAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMT_PUBLIC {
     /// Creates a new instance with the specified values
     pub fn new(
-        name_alg: tpm_alg_id
-        ,
-        object_attributes: tpma_object
-        ,
-        auth_policy: vec<u8>
-        ,
-        parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>
-        ,
-        unique: Option<Box<dyn TPMU_PUBLIC_ID>>
+        name_Alg: TPM_ALG_ID,
+        object_Attributes: TPMA_OBJECT,
+        auth_Policy: Vec<u8>,
+        parameters: TPMU_PUBLIC_PARMS,
+        unique: TPMU_PUBLIC_ID,
         ) -> Self {
         Self {
-            name_alg,
-            object_attributes,
-            auth_policy,
+            name_Alg,
+            object_Attributes,
+            auth_Policy,
             parameters,
             unique,
         }
-
     }
 
     /// Get the type selector value
@@ -12119,16 +10122,15 @@ impl TPMT_PUBLIC {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This sized buffer is used to embed a TPMT_PUBLIC in a load command and in any response
@@ -12138,82 +10140,74 @@ pub struct TPM2B_PUBLIC {
     /// The public area
     /// NOTE The + indicates that the caller may specify that use of TPM_ALG_NULL is allowed
     /// for nameAlg.
-    pub public_area: tpmt_public,
+    pub public_Area: TPMT_PUBLIC,
 }
 
 impl Default for TPM2B_PUBLIC {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_PUBLIC {
     /// Creates a new instance with the specified values
     pub fn new(
-        public_area: tpmt_public
+        public_Area: TPMT_PUBLIC,
         ) -> Self {
         Self {
-            public_area,
+            public_Area,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This sized buffer is used to embed a TPMT_TEMPLATE for TPM2_CreateLoaded().
 #[derive(Debug, Clone)]
 pub struct TPM2B_TEMPLATE {
     /// The public area
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_TEMPLATE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_TEMPLATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is defined for coding purposes. For IO to the TPM, the sensitive
@@ -12224,50 +10218,45 @@ impl TPM2B_TEMPLATE {
 /// such vendor-specific calculations.
 #[derive(Debug, Clone)]
 pub struct TPM2B_PRIVATE_VENDOR_SPECIFIC {
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_PRIVATE_VENDOR_SPECIFIC {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_PRIVATE_VENDOR_SPECIFIC {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     // Union trait implementations
     impl TpmUnion for TPM2B_PRIVATE_VENDOR_SPECIFIC {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_SENSITIVE_COMPOSITE::ANY as u32
+            TPMU_SENSITIVE_COMPOSITE::ANY as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// AuthValue shall not be larger than the size of the digest produced by the nameAlg of
@@ -12279,45 +10268,40 @@ pub struct TPMT_SENSITIVE {
 
     /// User authorization data
     /// The authValue may be a zero-length string.
-    pub auth_value: vec<u8>,
+    pub auth_Value: Vec<u8>,
 
     /// For a parent object, the optional protection seed; for other objects, the obfuscation value
-    pub seed_value: vec<u8>,
+    pub seed_Value: Vec<u8>,
 
     /// The type-specific private data
     /// One of: TPM2B_PRIVATE_KEY_RSA, TPM2B_ECC_PARAMETER, TPM2B_SENSITIVE_DATA,
     /// TPM2B_SYM_KEY, TPM2B_PRIVATE_VENDOR_SPECIFIC.
-    pub sensitive: Option<Box<dyn TPMU_SENSITIVE_COMPOSITE>>,
+    pub sensitive: TPMU_SENSITIVE_COMPOSITE,
 }
 
 impl Default for TPMT_SENSITIVE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMT_SENSITIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_value: vec<u8>
-        ,
-        seed_value: vec<u8>
-        ,
-        sensitive: Option<Box<dyn TPMU_SENSITIVE_COMPOSITE>>
+        auth_Value: Vec<u8>,
+        seed_Value: Vec<u8>,
+        sensitive: TPMU_SENSITIVE_COMPOSITE,
         ) -> Self {
         Self {
-            auth_value,
-            seed_value,
+            auth_Value,
+            seed_Value,
             sensitive,
         }
-
     }
 
     /// Get the sensitiveType selector value
-    pub fn sensitive_type(&self) -> TPM_ALG_ID {
+    pub fn sensitive_Type(&self) -> TPM_ALG_ID {
         match &self.sensitive {
         Some(u) => u.get_union_selector() as _,
             None => 0 as _,
@@ -12327,16 +10311,15 @@ impl TPMT_SENSITIVE {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The TPM2B_SENSITIVE structure is used as a parameter in TPM2_LoadExternal(). It is an
@@ -12344,94 +10327,84 @@ impl TPMT_SENSITIVE {
 #[derive(Debug, Clone)]
 pub struct TPM2B_SENSITIVE {
     /// An unencrypted sensitive area
-    pub sensitive_area: tpmt_sensitive,
+    pub sensitive_Area: TPMT_SENSITIVE,
 }
 
 impl Default for TPM2B_SENSITIVE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_SENSITIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        sensitive_area: tpmt_sensitive
+        sensitive_Area: TPMT_SENSITIVE,
         ) -> Self {
         Self {
-            sensitive_area,
+            sensitive_Area,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is defined to size the contents of a TPM2B_PRIVATE. This structure is
 /// not directly marshaled or unmarshaled.
 #[derive(Debug, Clone)]
 pub struct _PRIVATE {
-    pub integrity_outer: vec<u8>,
+    pub integrity_Outer: Vec<u8>,
 
     /// Could also be a TPM2B_IV
-    pub integrity_inner: vec<u8>,
+    pub integrity_Inner: Vec<u8>,
 
     /// The sensitive area
-    pub sensitive: tpmt_sensitive,
+    pub sensitive: TPMT_SENSITIVE,
 }
 
 impl Default for _PRIVATE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl _PRIVATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        integrity_outer: vec<u8>
-        ,
-        integrity_inner: vec<u8>
-        ,
-        sensitive: tpmt_sensitive
+        integrity_Outer: Vec<u8>,
+        integrity_Inner: Vec<u8>,
+        sensitive: TPMT_SENSITIVE,
         ) -> Self {
         Self {
-            integrity_outer,
-            integrity_inner,
+            integrity_Outer,
+            integrity_Inner,
             sensitive,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The TPM2B_PRIVATE structure is used as a parameter in multiple commands that create,
@@ -12439,92 +10412,83 @@ impl _PRIVATE {
 #[derive(Debug, Clone)]
 pub struct TPM2B_PRIVATE {
     /// An encrypted private area
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_PRIVATE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_PRIVATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used for sizing the TPM2B_ID_OBJECT.
 #[derive(Debug, Clone)]
 pub struct TPMS_ID_OBJECT {
     /// HMAC using the nameAlg of the storage key on the target TPM
-    pub integrity_hmac: vec<u8>,
+    pub integrity_HMAC: Vec<u8>,
 
     /// Credential protector information returned if name matches the referenced object
     /// All of the encIdentity is encrypted, including the size field.
     /// NOTE The TPM is not required to check that the size is not larger than the digest of
     /// the nameAlg. However, if the size is larger, the ID object may not be usable on a TPM
     /// that has no digest larger than produced by nameAlg.
-    pub enc_identity: vec<u8>,
+    pub enc_Identity: Vec<u8>,
 }
 
 impl Default for TPMS_ID_OBJECT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_ID_OBJECT {
     /// Creates a new instance with the specified values
     pub fn new(
-        integrity_hmac: vec<u8>
-        ,
-        enc_identity: vec<u8>
+        integrity_HMAC: Vec<u8>,
+        enc_Identity: Vec<u8>,
         ) -> Self {
         Self {
-            integrity_hmac,
-            enc_identity,
+            integrity_HMAC,
+            enc_Identity,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is an output from TPM2_MakeCredential() and is an input to
@@ -12532,41 +10496,37 @@ impl TPMS_ID_OBJECT {
 #[derive(Debug, Clone)]
 pub struct TPM2B_ID_OBJECT {
     /// An encrypted credential area
-    pub credential: tpms_id_object,
+    pub credential: TPMS_ID_OBJECT,
 }
 
 impl Default for TPM2B_ID_OBJECT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_ID_OBJECT {
     /// Creates a new instance with the specified values
     pub fn new(
-        credential: tpms_id_object
+        credential: TPMS_ID_OBJECT,
         ) -> Self {
         Self {
             credential,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is the data that can be written to and read from a TPM_NT_PIN_PASS or
@@ -12577,160 +10537,143 @@ pub struct TPMS_NV_PIN_COUNTER_PARAMETERS {
     /// This counter shows the current number of successful authValue authorization attempts
     /// to access a TPM_NT_PIN_PASS index or the current number of unsuccessful authValue
     /// authorization attempts to access a TPM_NT_PIN_FAIL index.
-    pub pin_count: u32,
+    pub pin_Count: u32,
 
     /// This threshold is the value of pinCount at which the authValue authorization of the
     /// host TPM_NT_PIN_PASS or TPM_NT_PIN_FAIL index is locked out.
-    pub pin_limit: u32,
+    pub pin_Limit: u32,
 }
 
 impl Default for TPMS_NV_PIN_COUNTER_PARAMETERS {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_NV_PIN_COUNTER_PARAMETERS {
     /// Creates a new instance with the specified values
     pub fn new(
-        pin_count: u32
-        ,
-        pin_limit: u32
+        pin_Count: u32,
+        pin_Limit: u32,
         ) -> Self {
         Self {
-            pin_count,
-            pin_limit,
+            pin_Count,
+            pin_Limit,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure describes an NV Index.
 #[derive(Debug, Clone)]
 pub struct TPMS_NV_PUBLIC {
     /// The handle of the data area
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// Hash algorithm used to compute the name of the Index and used for the authPolicy. For
     /// an extend index, the hash algorithm used for the extend.
-    pub name_alg: tpm_alg_id,
+    pub name_Alg: TPM_ALG_ID,
 
     /// The Index attributes
-    pub attributes: tpma_nv,
+    pub attributes: TPMA_NV,
 
     /// Optional access policy for the Index
     /// The policy is computed using the nameAlg
     /// NOTE Shall be the Empty Policy if no authorization policy is present.
-    pub auth_policy: vec<u8>,
+    pub auth_Policy: Vec<u8>,
 
     /// The size of the data area
     /// The maximum size is implementation-dependent. The minimum maximum size is platform-specific.
-    pub data_size: u16,
+    pub data_Size: u16,
 }
 
 impl Default for TPMS_NV_PUBLIC {
     fn default() -> Self {
         Self {
-            nvIndex = TPM_HANDLE();
-            nameAlg = TPM_ALG_ID:NULL;
+            nvIndex: TPM_HANDLE::default(),
+            nameAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_NV_PUBLIC {
     /// Creates a new instance with the specified values
     pub fn new(
-        nv_index: tpm_handle
-        ,
-        name_alg: tpm_alg_id
-        ,
-        attributes: tpma_nv
-        ,
-        auth_policy: vec<u8>
-        ,
-        data_size: u16
+        nv_Index: TPM_HANDLE,
+        name_Alg: TPM_ALG_ID,
+        attributes: TPMA_NV,
+        auth_Policy: Vec<u8>,
+        data_Size: u16,
         ) -> Self {
         Self {
-            nv_index,
-            name_alg,
+            nv_Index,
+            name_Alg,
             attributes,
-            auth_policy,
-            data_size,
+            auth_Policy,
+            data_Size,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used when a TPMS_NV_PUBLIC is sent on the TPM interface.
 #[derive(Debug, Clone)]
 pub struct TPM2B_NV_PUBLIC {
     /// The public area
-    pub nv_public: tpms_nv_public,
+    pub nv_Public: TPMS_NV_PUBLIC,
 }
 
 impl Default for TPM2B_NV_PUBLIC {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_NV_PUBLIC {
     /// Creates a new instance with the specified values
     pub fn new(
-        nv_public: tpms_nv_public
+        nv_Public: TPMS_NV_PUBLIC,
         ) -> Self {
         Self {
-            nv_public,
+            nv_Public,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure holds the object or session context data. When saved, the full
@@ -12738,128 +10681,115 @@ impl TPM2B_NV_PUBLIC {
 #[derive(Debug, Clone)]
 pub struct TPM2B_CONTEXT_SENSITIVE {
     /// The sensitive data
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2B_CONTEXT_SENSITIVE {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_CONTEXT_SENSITIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: vec<u8>
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure holds the integrity value and the encrypted data for a context.
 #[derive(Debug, Clone)]
 pub struct TPMS_CONTEXT_DATA {
     /// The integrity value
-    pub integrity: vec<u8>,
+    pub integrity: Vec<u8>,
 
     /// The sensitive area
-    pub encrypted: vec<u8>,
+    pub encrypted: Vec<u8>,
 }
 
 impl Default for TPMS_CONTEXT_DATA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_CONTEXT_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        integrity: vec<u8>
-        ,
-        encrypted: vec<u8>
+        integrity: Vec<u8>,
+        encrypted: Vec<u8>,
         ) -> Self {
         Self {
             integrity,
             encrypted,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used in a TPMS_CONTEXT.
 #[derive(Debug, Clone)]
 pub struct TPM2B_CONTEXT_DATA {
-    pub buffer: tpms_context_data,
+    pub buffer: TPMS_CONTEXT_DATA,
 }
 
 impl Default for TPM2B_CONTEXT_DATA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_CONTEXT_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: tpms_context_data
+        buffer: TPMS_CONTEXT_DATA,
         ) -> Self {
         Self {
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is used in TPM2_ContextLoad() and TPM2_ContextSave(). If the values of
@@ -12873,58 +10803,51 @@ pub struct TPMS_CONTEXT {
 
     /// A handle indicating if the context is a session, object, or sequence object (see Table
     /// 222 Context Handle Values
-    pub saved_handle: tpm_handle,
+    pub saved_Handle: TPM_HANDLE,
 
     /// The hierarchy of the context
-    pub hierarchy: tpm_handle,
+    pub hierarchy: TPM_HANDLE,
 
     /// The context data and integrity HMAC
-    pub context_blob: tpms_context_data,
+    pub context_Blob: TPMS_CONTEXT_DATA,
 }
 
 impl Default for TPMS_CONTEXT {
     fn default() -> Self {
         Self {
-            savedHandle = TPM_HANDLE();
-            hierarchy = TPM_HANDLE();
+            savedHandle: TPM_HANDLE::default(),
+            hierarchy: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPMS_CONTEXT {
     /// Creates a new instance with the specified values
     pub fn new(
-        sequence: u64
-        ,
-        saved_handle: tpm_handle
-        ,
-        hierarchy: tpm_handle
-        ,
-        context_blob: tpms_context_data
+        sequence: u64,
+        saved_Handle: TPM_HANDLE,
+        hierarchy: TPM_HANDLE,
+        context_Blob: TPMS_CONTEXT_DATA,
         ) -> Self {
         Self {
             sequence,
-            saved_handle,
+            saved_Handle,
             hierarchy,
-            context_blob,
+            context_Blob,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure provides information relating to the creation environment for the
@@ -12935,125 +10858,111 @@ impl TPMS_CONTEXT {
 #[derive(Debug, Clone)]
 pub struct TPMS_CREATION_DATA {
     /// List indicating the PCR included in pcrDigest
-    pub pcr_select: vec<tpms_pcr_selection>,
+    pub pcr_Select: Vec<TPMS_PCR_SELECTION>,
 
     /// Digest of the selected PCR using nameAlg of the object for which this structure is
     /// being created
     /// pcrDigest.size shall be zero if the pcrSelect list is empty.
-    pub pcr_digest: vec<u8>,
+    pub pcr_Digest: Vec<u8>,
 
     /// The locality at which the object was created
-    pub locality: tpma_locality,
+    pub locality: TPMA_LOCALITY,
 
     /// NameAlg of the parent
-    pub parent_name_alg: tpm_alg_id,
+    pub parent_Name_Alg: TPM_ALG_ID,
 
     /// Name of the parent at time of creation
     /// The size will match digest size associated with parentNameAlg unless it is
     /// TPM_ALG_NULL, in which case the size will be 4 and parentName will be the hierarchy handle.
-    pub parent_name: vec<u8>,
+    pub parent_Name: Vec<u8>,
 
     /// Qualified Name of the parent at the time of creation
     /// Size is the same as parentName.
-    pub parent_qualified_name: vec<u8>,
+    pub parent_Qualified_Name: Vec<u8>,
 
     /// Association with additional information added by the key creator
     /// This will be the contents of the outsideInfo parameter in TPM2_Create() or TPM2_CreatePrimary().
-    pub outside_info: vec<u8>,
+    pub outside_Info: Vec<u8>,
 }
 
 impl Default for TPMS_CREATION_DATA {
     fn default() -> Self {
         Self {
-            parentNameAlg = TPM_ALG_ID:NULL;
+            parentNameAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPMS_CREATION_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_select: vec<tpms_pcr_selection>
-        ,
-        pcr_digest: vec<u8>
-        ,
-        locality: tpma_locality
-        ,
-        parent_name_alg: tpm_alg_id
-        ,
-        parent_name: vec<u8>
-        ,
-        parent_qualified_name: vec<u8>
-        ,
-        outside_info: vec<u8>
+        pcr_Select: Vec<TPMS_PCR_SELECTION>,
+        pcr_Digest: Vec<u8>,
+        locality: TPMA_LOCALITY,
+        parent_Name_Alg: TPM_ALG_ID,
+        parent_Name: Vec<u8>,
+        parent_Qualified_Name: Vec<u8>,
+        outside_Info: Vec<u8>,
         ) -> Self {
         Self {
-            pcr_select,
-            pcr_digest,
+            pcr_Select,
+            pcr_Digest,
             locality,
-            parent_name_alg,
-            parent_name,
-            parent_qualified_name,
-            outside_info,
+            parent_Name_Alg,
+            parent_Name,
+            parent_Qualified_Name,
+            outside_Info,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This structure is created by TPM2_Create() and TPM2_CreatePrimary(). It is never
 /// entered into the TPM and never has a size of zero.
 #[derive(Debug, Clone)]
 pub struct TPM2B_CREATION_DATA {
-    pub creation_data: tpms_creation_data,
+    pub creation_Data: TPMS_CREATION_DATA,
 }
 
 impl Default for TPM2B_CREATION_DATA {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_CREATION_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        creation_data: tpms_creation_data
+        creation_Data: TPMS_CREATION_DATA,
         ) -> Self {
         Self {
-            creation_data,
+            creation_Data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// TPMS_AC_OUTPUT is used to return information about an AC. The tag structure parameter
@@ -13061,7 +10970,7 @@ impl TPM2B_CREATION_DATA {
 #[derive(Debug, Clone)]
 pub struct TPMS_AC_OUTPUT {
     /// Tag indicating the contents of data
-    pub tag: tpm_at,
+    pub tag: TPM_AT,
 
     /// The data returned from the AC
     pub data: u32,
@@ -13071,78 +10980,69 @@ impl Default for TPMS_AC_OUTPUT {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPMS_AC_OUTPUT {
     /// Creates a new instance with the specified values
     pub fn new(
-        tag: tpm_at
-        ,
-        data: u32
+        tag: TPM_AT,
+        data: u32,
         ) -> Self {
         Self {
             tag,
             data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This list is only used in TPM2_AC_GetCapability().
 #[derive(Debug, Clone)]
 pub struct TPML_AC_CAPABILITIES {
     /// A list of AC values
-    pub ac_capabilities: vec<tpms_ac_output>,
+    pub ac_Capabilities: Vec<TPMS_AC_OUTPUT>,
 }
 
 impl Default for TPML_AC_CAPABILITIES {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPML_AC_CAPABILITIES {
     /// Creates a new instance with the specified values
     pub fn new(
-        ac_capabilities: vec<tpms_ac_output>
+        ac_Capabilities: Vec<TPMS_AC_OUTPUT>,
         ) -> Self {
         Self {
-            ac_capabilities,
+            ac_Capabilities,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// TPM2_Startup() is always preceded by _TPM_Init, which is the physical indication that
@@ -13154,41 +11054,37 @@ impl TPML_AC_CAPABILITIES {
 #[derive(Debug, Clone)]
 pub struct TPM2_Startup_REQUEST {
     /// TPM_SU_CLEAR or TPM_SU_STATE
-    pub startup_type: tpm_su,
+    pub startup_Type: TPM_SU,
 }
 
 impl Default for TPM2_Startup_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_Startup_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        startup_type: tpm_su
+        startup_Type: TPM_SU,
         ) -> Self {
         Self {
-            startup_type,
+            startup_Type,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to prepare the TPM for a power cycle. The shutdownType parameter
@@ -13196,41 +11092,37 @@ impl TPM2_Startup_REQUEST {
 #[derive(Debug, Clone)]
 pub struct TPM2_Shutdown_REQUEST {
     /// TPM_SU_CLEAR or TPM_SU_STATE
-    pub shutdown_type: tpm_su,
+    pub shutdown_Type: TPM_SU,
 }
 
 impl Default for TPM2_Shutdown_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_Shutdown_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        shutdown_type: tpm_su
+        shutdown_Type: TPM_SU,
         ) -> Self {
         Self {
-            shutdown_type,
+            shutdown_Type,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command causes the TPM to perform a test of its capabilities. If the fullTest is
@@ -13240,113 +11132,102 @@ impl TPM2_Shutdown_REQUEST {
 pub struct TPM2_SelfTest_REQUEST {
     /// YES if full test to be performed
     /// NO if only test of untested functions required
-    pub full_test: u8,
+    pub full_Test: u8,
 }
 
 impl Default for TPM2_SelfTest_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_SelfTest_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        full_test: u8
+        full_Test: u8,
         ) -> Self {
         Self {
-            full_test,
+            full_Test,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command causes the TPM to perform a test of the selected algorithms.
 #[derive(Debug, Clone)]
 pub struct TPM2_IncrementalSelfTest_REQUEST {
     /// List of algorithms that should be tested
-    pub to_test: vec<tpm_alg_id>,
+    pub to_Test: Vec<TPM_ALG_ID>,
 }
 
 impl Default for TPM2_IncrementalSelfTest_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_IncrementalSelfTest_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        to_test: vec<tpm_alg_id>
+        to_Test: Vec<TPM_ALG_ID>,
         ) -> Self {
         Self {
-            to_test,
+            to_Test,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command causes the TPM to perform a test of the selected algorithms.
 #[derive(Debug, Clone)]
 pub struct IncrementalSelfTestResponse {
     /// List of algorithms that need testing
-    pub to_do_list: vec<tpm_alg_id>,
+    pub to_Do_List: Vec<TPM_ALG_ID>,
 }
 
 impl Default for IncrementalSelfTestResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl IncrementalSelfTestResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns manufacturer-specific information regarding the results of a
@@ -13359,24 +11240,21 @@ impl Default for TPM2_GetTestResult_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_GetTestResult_REQUEST {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns manufacturer-specific information regarding the results of a
@@ -13385,32 +11263,29 @@ impl TPM2_GetTestResult_REQUEST {
 pub struct GetTestResultResponse {
     /// Test result data
     /// contains manufacturer-specific information
-    pub out_data: vec<u8>,
-    pub test_result: tpm_rc,
+    pub out_Data: Vec<u8>,
+    pub test_Result: TPM_RC,
 }
 
 impl Default for GetTestResultResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl GetTestResultResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to start an authorization session using alternative methods of
@@ -13421,86 +11296,76 @@ pub struct TPM2_StartAuthSession_REQUEST {
     /// Handle of a loaded decrypt key used to encrypt salt
     /// may be TPM_RH_NULL
     /// Auth Index: None
-    pub tpm_key: tpm_handle,
+    pub tpm_Key: TPM_HANDLE,
 
     /// Entity providing the authValue
     /// may be TPM_RH_NULL
     /// Auth Index: None
-    pub bind: tpm_handle,
+    pub bind: TPM_HANDLE,
 
     /// Initial nonceCaller, sets nonceTPM size for the session
     /// shall be at least 16 octets
-    pub nonce_caller: vec<u8>,
+    pub nonce_Caller: Vec<u8>,
 
     /// Value encrypted according to the type of tpmKey
     /// If tpmKey is TPM_RH_NULL, this shall be the Empty Buffer.
-    pub encrypted_salt: vec<u8>,
+    pub encrypted_Salt: Vec<u8>,
 
     /// Indicates the type of the session; simple HMAC or policy (including a trial policy)
-    pub session_type: tpm_se,
+    pub session_Type: TPM_SE,
 
     /// The algorithm and key size for parameter encryption
     /// may select TPM_ALG_NULL
-    pub symmetric: tpmt_sym_def,
+    pub symmetric: TPMT_SYM_DEF,
 
     /// Hash algorithm to use for the session
     /// Shall be a hash algorithm supported by the TPM and not TPM_ALG_NULL
-    pub auth_hash: tpm_alg_id,
+    pub auth_Hash: TPM_ALG_ID,
 }
 
 impl Default for TPM2_StartAuthSession_REQUEST {
     fn default() -> Self {
         Self {
-            tpmKey = TPM_HANDLE();
-            bind = TPM_HANDLE();
-            authHash = TPM_ALG_ID:NULL;
+            tpmKey: TPM_HANDLE::default(),
+            bind: TPM_HANDLE::default(),
+            authHash: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_StartAuthSession_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        tpm_key: tpm_handle
-        ,
-        bind: tpm_handle
-        ,
-        nonce_caller: vec<u8>
-        ,
-        encrypted_salt: vec<u8>
-        ,
-        session_type: tpm_se
-        ,
-        symmetric: tpmt_sym_def
-        ,
-        auth_hash: tpm_alg_id
+        tpm_Key: TPM_HANDLE,
+        bind: TPM_HANDLE,
+        nonce_Caller: Vec<u8>,
+        encrypted_Salt: Vec<u8>,
+        session_Type: TPM_SE,
+        symmetric: TPMT_SYM_DEF,
+        auth_Hash: TPM_ALG_ID,
         ) -> Self {
         Self {
-            tpm_key,
+            tpm_Key,
             bind,
-            nonce_caller,
-            encrypted_salt,
-            session_type,
+            nonce_Caller,
+            encrypted_Salt,
+            session_Type,
             symmetric,
-            auth_hash,
+            auth_Hash,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to start an authorization session using alternative methods of
@@ -13509,35 +11374,32 @@ impl TPM2_StartAuthSession_REQUEST {
 #[derive(Debug, Clone)]
 pub struct StartAuthSessionResponse {
     /// Handle for the newly created session
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// The initial nonce from the TPM, used in the computation of the sessionKey
-    pub nonce_tpm: vec<u8>,
+    pub nonce_TPM: Vec<u8>,
 }
 
 impl Default for StartAuthSessionResponse {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl StartAuthSessionResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows a policy authorization session to be returned to its initial
@@ -13549,42 +11411,38 @@ impl StartAuthSessionResponse {
 #[derive(Debug, Clone)]
 pub struct TPM2_PolicyRestart_REQUEST {
     /// The handle for the policy session
-    pub session_handle: tpm_handle,
+    pub session_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_PolicyRestart_REQUEST {
     fn default() -> Self {
         Self {
-            sessionHandle = TPM_HANDLE();
+            sessionHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyRestart_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        session_handle: tpm_handle
+        session_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            session_handle,
+            session_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to create an object that can be loaded into a TPM using
@@ -13599,67 +11457,59 @@ pub struct TPM2_Create_REQUEST {
     /// Handle of parent for new object
     /// Auth Index: 1
     /// Auth Role: USER
-    pub parent_handle: tpm_handle,
+    pub parent_Handle: TPM_HANDLE,
 
     /// The sensitive data
-    pub in_sensitive: tpms_sensitive_create,
+    pub in_Sensitive: TPMS_SENSITIVE_CREATE,
 
     /// The public template
-    pub in_public: tpmt_public,
+    pub in_Public: TPMT_PUBLIC,
 
     /// Data that will be included in the creation data for this object to provide permanent,
     /// verifiable linkage between this object and some object owner data
-    pub outside_info: vec<u8>,
+    pub outside_Info: Vec<u8>,
 
     /// PCR that will be used in creation data
-    pub creation_pcr: vec<tpms_pcr_selection>,
+    pub creation_PCR: Vec<TPMS_PCR_SELECTION>,
 }
 
 impl Default for TPM2_Create_REQUEST {
     fn default() -> Self {
         Self {
-            parentHandle = TPM_HANDLE();
+            parentHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Create_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parent_handle: tpm_handle
-        ,
-        in_sensitive: tpms_sensitive_create
-        ,
-        in_public: tpmt_public
-        ,
-        outside_info: vec<u8>
-        ,
-        creation_pcr: vec<tpms_pcr_selection>
+        parent_Handle: TPM_HANDLE,
+        in_Sensitive: TPMS_SENSITIVE_CREATE,
+        in_Public: TPMT_PUBLIC,
+        outside_Info: Vec<u8>,
+        creation_PCR: Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            parent_handle,
-            in_sensitive,
-            in_public,
-            outside_info,
-            creation_pcr,
+            parent_Handle,
+            in_Sensitive,
+            in_Public,
+            outside_Info,
+            creation_PCR,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to create an object that can be loaded into a TPM using
@@ -13672,44 +11522,41 @@ impl TPM2_Create_REQUEST {
 #[derive(Debug, Clone)]
 pub struct CreateResponse {
     /// The private portion of the object
-    pub out_private: tpm2b_private,
+    pub out_Private: TPM2B_PRIVATE,
 
     /// The public portion of the created object
-    pub out_public: tpmt_public,
+    pub out_Public: TPMT_PUBLIC,
 
     /// Contains a TPMS_CREATION_DATA
-    pub creation_data: tpms_creation_data,
+    pub creation_Data: TPMS_CREATION_DATA,
 
     /// Digest of creationData using nameAlg of outPublic
-    pub creation_hash: vec<u8>,
+    pub creation_Hash: Vec<u8>,
 
     /// Ticket used by TPM2_CertifyCreation() to validate that the creation data was produced
     /// by the TPM
-    pub creation_ticket: tpmt_tk_creation,
+    pub creation_Ticket: TPMT_TK_CREATION,
 }
 
 impl Default for CreateResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl CreateResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to load objects into the TPM. This command is used when both a
@@ -13720,54 +11567,48 @@ pub struct TPM2_Load_REQUEST {
     /// TPM handle of parent key; shall not be a reserved handle
     /// Auth Index: 1
     /// Auth Role: USER
-    pub parent_handle: tpm_handle,
+    pub parent_Handle: TPM_HANDLE,
 
     /// The private portion of the object
-    pub in_private: tpm2b_private,
+    pub in_Private: TPM2B_PRIVATE,
 
     /// The public portion of the object
-    pub in_public: tpmt_public,
+    pub in_Public: TPMT_PUBLIC,
 }
 
 impl Default for TPM2_Load_REQUEST {
     fn default() -> Self {
         Self {
-            parentHandle = TPM_HANDLE();
+            parentHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Load_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parent_handle: tpm_handle
-        ,
-        in_private: tpm2b_private
-        ,
-        in_public: tpmt_public
+        parent_Handle: TPM_HANDLE,
+        in_Private: TPM2B_PRIVATE,
+        in_Public: TPMT_PUBLIC,
         ) -> Self {
         Self {
-            parent_handle,
-            in_private,
-            in_public,
+            parent_Handle,
+            in_Private,
+            in_Public,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to load objects into the TPM. This command is used when both a
@@ -13776,35 +11617,32 @@ impl TPM2_Load_REQUEST {
 #[derive(Debug, Clone)]
 pub struct LoadResponse {
     /// Handle of type TPM_HT_TRANSIENT for the loaded object
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// Name of the loaded object
-    pub name: vec<u8>,
+    pub name: Vec<u8>,
 }
 
 impl Default for LoadResponse {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl LoadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to load an object that is not a Protected Object into the TPM.
@@ -13812,54 +11650,48 @@ impl LoadResponse {
 #[derive(Debug, Clone)]
 pub struct TPM2_LoadExternal_REQUEST {
     /// The sensitive portion of the object (optional)
-    pub in_private: tpmt_sensitive,
+    pub in_Private: TPMT_SENSITIVE,
 
     /// The public portion of the object
-    pub in_public: tpmt_public,
+    pub in_Public: TPMT_PUBLIC,
 
     /// Hierarchy with which the object area is associated
-    pub hierarchy: tpm_handle,
+    pub hierarchy: TPM_HANDLE,
 }
 
 impl Default for TPM2_LoadExternal_REQUEST {
     fn default() -> Self {
         Self {
-            hierarchy = TPM_HANDLE();
+            hierarchy: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_LoadExternal_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        in_private: tpmt_sensitive
-        ,
-        in_public: tpmt_public
-        ,
-        hierarchy: tpm_handle
+        in_Private: TPMT_SENSITIVE,
+        in_Public: TPMT_PUBLIC,
+        hierarchy: TPM_HANDLE,
         ) -> Self {
         Self {
-            in_private,
-            in_public,
+            in_Private,
+            in_Public,
             hierarchy,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to load an object that is not a Protected Object into the TPM.
@@ -13867,35 +11699,32 @@ impl TPM2_LoadExternal_REQUEST {
 #[derive(Debug, Clone)]
 pub struct LoadExternalResponse {
     /// Handle of type TPM_HT_TRANSIENT for the loaded object
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// Name of the loaded object
-    pub name: vec<u8>,
+    pub name: Vec<u8>,
 }
 
 impl Default for LoadExternalResponse {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl LoadExternalResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows access to the public area of a loaded object.
@@ -13903,79 +11732,72 @@ impl LoadExternalResponse {
 pub struct TPM2_ReadPublic_REQUEST {
     /// TPM handle of an object
     /// Auth Index: None
-    pub object_handle: tpm_handle,
+    pub object_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_ReadPublic_REQUEST {
     fn default() -> Self {
         Self {
-            objectHandle = TPM_HANDLE();
+            objectHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ReadPublic_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        object_handle: tpm_handle
+        object_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            object_handle,
+            object_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows access to the public area of a loaded object.
 #[derive(Debug, Clone)]
 pub struct ReadPublicResponse {
     /// Structure containing the public area of an object
-    pub out_public: tpmt_public,
+    pub out_Public: TPMT_PUBLIC,
 
     /// Name of the object
-    pub name: vec<u8>,
+    pub name: Vec<u8>,
 
     /// The Qualified Name of the object
-    pub qualified_name: vec<u8>,
+    pub qualified_Name: Vec<u8>,
 }
 
 impl Default for ReadPublicResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ReadPublicResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command enables the association of a credential with an object in a way that
@@ -13985,63 +11807,56 @@ pub struct TPM2_ActivateCredential_REQUEST {
     /// Handle of the object associated with certificate in credentialBlob
     /// Auth Index: 1
     /// Auth Role: ADMIN
-    pub activate_handle: tpm_handle,
+    pub activate_Handle: TPM_HANDLE,
 
     /// Loaded key used to decrypt the TPMS_SENSITIVE in credentialBlob
     /// Auth Index: 2
     /// Auth Role: USER
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// The credential
-    pub credential_blob: tpms_id_object,
+    pub credential_Blob: TPMS_ID_OBJECT,
 
     /// KeyHandle algorithm-dependent encrypted seed that protects credentialBlob
-    pub secret: vec<u8>,
+    pub secret: Vec<u8>,
 }
 
 impl Default for TPM2_ActivateCredential_REQUEST {
     fn default() -> Self {
         Self {
-            activateHandle = TPM_HANDLE();
-            keyHandle = TPM_HANDLE();
+            activateHandle: TPM_HANDLE::default(),
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ActivateCredential_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        activate_handle: tpm_handle
-        ,
-        key_handle: tpm_handle
-        ,
-        credential_blob: tpms_id_object
-        ,
-        secret: vec<u8>
+        activate_Handle: TPM_HANDLE,
+        key_Handle: TPM_HANDLE,
+        credential_Blob: TPMS_ID_OBJECT,
+        secret: Vec<u8>,
         ) -> Self {
         Self {
-            activate_handle,
-            key_handle,
-            credential_blob,
+            activate_Handle,
+            key_Handle,
+            credential_Blob,
             secret,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command enables the association of a credential with an object in a way that
@@ -14051,31 +11866,28 @@ pub struct ActivateCredentialResponse {
     /// The decrypted certificate information
     /// the data should be no larger than the size of the digest of the nameAlg associated
     /// with keyHandle
-    pub cert_info: vec<u8>,
+    pub cert_Info: Vec<u8>,
 }
 
 impl Default for ActivateCredentialResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ActivateCredentialResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows the TPM to perform the actions required of a Certificate Authority
@@ -14084,54 +11896,48 @@ impl ActivateCredentialResponse {
 pub struct TPM2_MakeCredential_REQUEST {
     /// Loaded public area, used to encrypt the sensitive area containing the credential key
     /// Auth Index: None
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// The credential information
-    pub credential: vec<u8>,
+    pub credential: Vec<u8>,
 
     /// Name of the object to which the credential applies
-    pub object_name: vec<u8>,
+    pub object_Name: Vec<u8>,
 }
 
 impl Default for TPM2_MakeCredential_REQUEST {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_MakeCredential_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: tpm_handle
-        ,
-        credential: vec<u8>
-        ,
-        object_name: vec<u8>
+        handle: TPM_HANDLE,
+        credential: Vec<u8>,
+        object_Name: Vec<u8>,
         ) -> Self {
         Self {
             handle,
             credential,
-            object_name,
+            object_Name,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows the TPM to perform the actions required of a Certificate Authority
@@ -14139,34 +11945,31 @@ impl TPM2_MakeCredential_REQUEST {
 #[derive(Debug, Clone)]
 pub struct MakeCredentialResponse {
     /// The credential
-    pub credential_blob: tpms_id_object,
+    pub credential_Blob: TPMS_ID_OBJECT,
 
     /// Handle algorithm-dependent data that wraps the key that encrypts credentialBlob
-    pub secret: vec<u8>,
+    pub secret: Vec<u8>,
 }
 
 impl Default for MakeCredentialResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl MakeCredentialResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the data in a loaded Sealed Data Object.
@@ -14175,42 +11978,38 @@ pub struct TPM2_Unseal_REQUEST {
     /// Handle of a loaded data object
     /// Auth Index: 1
     /// Auth Role: USER
-    pub item_handle: tpm_handle,
+    pub item_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_Unseal_REQUEST {
     fn default() -> Self {
         Self {
-            itemHandle = TPM_HANDLE();
+            itemHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Unseal_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        item_handle: tpm_handle
+        item_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            item_handle,
+            item_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the data in a loaded Sealed Data Object.
@@ -14218,31 +12017,28 @@ impl TPM2_Unseal_REQUEST {
 pub struct UnsealResponse {
     /// Unsealed data
     /// Size of outData is limited to be no more than 128 octets.
-    pub out_data: vec<u8>,
+    pub out_Data: Vec<u8>,
 }
 
 impl Default for UnsealResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl UnsealResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to change the authorization secret for a TPM-resident object.
@@ -14251,87 +12047,78 @@ pub struct TPM2_ObjectChangeAuth_REQUEST {
     /// Handle of the object
     /// Auth Index: 1
     /// Auth Role: ADMIN
-    pub object_handle: tpm_handle,
+    pub object_Handle: TPM_HANDLE,
 
     /// Handle of the parent
     /// Auth Index: None
-    pub parent_handle: tpm_handle,
+    pub parent_Handle: TPM_HANDLE,
 
     /// New authorization value
-    pub new_auth: vec<u8>,
+    pub new_Auth: Vec<u8>,
 }
 
 impl Default for TPM2_ObjectChangeAuth_REQUEST {
     fn default() -> Self {
         Self {
-            objectHandle = TPM_HANDLE();
-            parentHandle = TPM_HANDLE();
+            objectHandle: TPM_HANDLE::default(),
+            parentHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ObjectChangeAuth_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        object_handle: tpm_handle
-        ,
-        parent_handle: tpm_handle
-        ,
-        new_auth: vec<u8>
+        object_Handle: TPM_HANDLE,
+        parent_Handle: TPM_HANDLE,
+        new_Auth: Vec<u8>,
         ) -> Self {
         Self {
-            object_handle,
-            parent_handle,
-            new_auth,
+            object_Handle,
+            parent_Handle,
+            new_Auth,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to change the authorization secret for a TPM-resident object.
 #[derive(Debug, Clone)]
 pub struct ObjectChangeAuthResponse {
     /// Private area containing the new authorization value
-    pub out_private: tpm2b_private,
+    pub out_Private: TPM2B_PRIVATE,
 }
 
 impl Default for ObjectChangeAuthResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ObjectChangeAuthResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command creates an object and loads it in the TPM. This command allows creation
@@ -14345,54 +12132,48 @@ pub struct TPM2_CreateLoaded_REQUEST {
     /// TPM_RH_OWNER, TPM_RH_PLATFORM+{PP}, or TPM_RH_NULL
     /// Auth Index: 1
     /// Auth Role: USER
-    pub parent_handle: tpm_handle,
+    pub parent_Handle: TPM_HANDLE,
 
     /// The sensitive data, see TPM 2.0 Part 1 Sensitive Values
-    pub in_sensitive: tpms_sensitive_create,
+    pub in_Sensitive: TPMS_SENSITIVE_CREATE,
 
     /// The public template
-    pub in_public: vec<u8>,
+    pub in_Public: Vec<u8>,
 }
 
 impl Default for TPM2_CreateLoaded_REQUEST {
     fn default() -> Self {
         Self {
-            parentHandle = TPM_HANDLE();
+            parentHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_CreateLoaded_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parent_handle: tpm_handle
-        ,
-        in_sensitive: tpms_sensitive_create
-        ,
-        in_public: vec<u8>
+        parent_Handle: TPM_HANDLE,
+        in_Sensitive: TPMS_SENSITIVE_CREATE,
+        in_Public: Vec<u8>,
         ) -> Self {
         Self {
-            parent_handle,
-            in_sensitive,
-            in_public,
+            parent_Handle,
+            in_Sensitive,
+            in_Public,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command creates an object and loads it in the TPM. This command allows creation
@@ -14403,41 +12184,38 @@ impl TPM2_CreateLoaded_REQUEST {
 #[derive(Debug, Clone)]
 pub struct CreateLoadedResponse {
     /// Handle of type TPM_HT_TRANSIENT for created object
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// The sensitive area of the object (optional)
-    pub out_private: tpm2b_private,
+    pub out_Private: TPM2B_PRIVATE,
 
     /// The public portion of the created object
-    pub out_public: tpmt_public,
+    pub out_Public: TPMT_PUBLIC,
 
     /// The name of the created object
-    pub name: vec<u8>,
+    pub name: Vec<u8>,
 }
 
 impl Default for CreateLoadedResponse {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl CreateLoadedResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command duplicates a loaded object so that it may be used in a different
@@ -14448,65 +12226,58 @@ pub struct TPM2_Duplicate_REQUEST {
     /// Loaded object to duplicate
     /// Auth Index: 1
     /// Auth Role: DUP
-    pub object_handle: tpm_handle,
+    pub object_Handle: TPM_HANDLE,
 
     /// Shall reference the public area of an asymmetric key
     /// Auth Index: None
-    pub new_parent_handle: tpm_handle,
+    pub new_Parent_Handle: TPM_HANDLE,
 
     /// Optional symmetric encryption key
     /// The size for this key is set to zero when the TPM is to generate the key. This
     /// parameter may be encrypted.
-    pub encryption_key_in: vec<u8>,
+    pub encryption_Key_In: Vec<u8>,
 
     /// Definition for the symmetric algorithm to be used for the inner wrapper
     /// may be TPM_ALG_NULL if no inner wrapper is applied
-    pub symmetric_alg: tpmt_sym_def_object,
+    pub symmetric_Alg: TPMT_SYM_DEF_OBJECT,
 }
 
 impl Default for TPM2_Duplicate_REQUEST {
     fn default() -> Self {
         Self {
-            objectHandle = TPM_HANDLE();
-            newParentHandle = TPM_HANDLE();
+            objectHandle: TPM_HANDLE::default(),
+            newParentHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Duplicate_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        object_handle: tpm_handle
-        ,
-        new_parent_handle: tpm_handle
-        ,
-        encryption_key_in: vec<u8>
-        ,
-        symmetric_alg: tpmt_sym_def_object
+        object_Handle: TPM_HANDLE,
+        new_Parent_Handle: TPM_HANDLE,
+        encryption_Key_In: Vec<u8>,
+        symmetric_Alg: TPMT_SYM_DEF_OBJECT,
         ) -> Self {
         Self {
-            object_handle,
-            new_parent_handle,
-            encryption_key_in,
-            symmetric_alg,
+            object_Handle,
+            new_Parent_Handle,
+            encryption_Key_In,
+            symmetric_Alg,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command duplicates a loaded object so that it may be used in a different
@@ -14517,37 +12288,34 @@ pub struct DuplicateResponse {
     /// If the caller provided an encryption key or if symmetricAlg was TPM_ALG_NULL, then
     /// this will be the Empty Buffer; otherwise, it shall contain the TPM-generated,
     /// symmetric encryption key for the inner wrapper.
-    pub encryption_key_out: vec<u8>,
+    pub encryption_Key_Out: Vec<u8>,
 
     /// Private area that may be encrypted by encryptionKeyIn; and may be doubly encrypted
-    pub duplicate: tpm2b_private,
+    pub duplicate: TPM2B_PRIVATE,
 
     /// Seed protected by the asymmetric algorithms of new parent (NP)
-    pub out_sym_seed: vec<u8>,
+    pub out_Sym_Seed: Vec<u8>,
 }
 
 impl Default for DuplicateResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl DuplicateResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows the TPM to serve in the role as a Duplication Authority. If proper
@@ -14561,69 +12329,61 @@ pub struct TPM2_Rewrap_REQUEST {
     /// Parent of object
     /// Auth Index: 1
     /// Auth Role: User
-    pub old_parent: tpm_handle,
+    pub old_Parent: TPM_HANDLE,
 
     /// New parent of the object
     /// Auth Index: None
-    pub new_parent: tpm_handle,
+    pub new_Parent: TPM_HANDLE,
 
     /// An object encrypted using symmetric key derived from inSymSeed
-    pub in_duplicate: tpm2b_private,
+    pub in_Duplicate: TPM2B_PRIVATE,
 
     /// The Name of the object being rewrapped
-    pub name: vec<u8>,
+    pub name: Vec<u8>,
 
     /// The seed for the symmetric key and HMAC key
     /// needs oldParent private key to recover the seed and generate the symmetric key
-    pub in_sym_seed: vec<u8>,
+    pub in_Sym_Seed: Vec<u8>,
 }
 
 impl Default for TPM2_Rewrap_REQUEST {
     fn default() -> Self {
         Self {
-            oldParent = TPM_HANDLE();
-            newParent = TPM_HANDLE();
+            oldParent: TPM_HANDLE::default(),
+            newParent: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Rewrap_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        old_parent: tpm_handle
-        ,
-        new_parent: tpm_handle
-        ,
-        in_duplicate: tpm2b_private
-        ,
-        name: vec<u8>
-        ,
-        in_sym_seed: vec<u8>
+        old_Parent: TPM_HANDLE,
+        new_Parent: TPM_HANDLE,
+        in_Duplicate: TPM2B_PRIVATE,
+        name: Vec<u8>,
+        in_Sym_Seed: Vec<u8>,
         ) -> Self {
         Self {
-            old_parent,
-            new_parent,
-            in_duplicate,
+            old_Parent,
+            new_Parent,
+            in_Duplicate,
             name,
-            in_sym_seed,
+            in_Sym_Seed,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows the TPM to serve in the role as a Duplication Authority. If proper
@@ -14635,34 +12395,31 @@ impl TPM2_Rewrap_REQUEST {
 #[derive(Debug, Clone)]
 pub struct RewrapResponse {
     /// An object encrypted using symmetric key derived from outSymSeed
-    pub out_duplicate: tpm2b_private,
+    pub out_Duplicate: TPM2B_PRIVATE,
 
     /// Seed for a symmetric key protected by newParent asymmetric key
-    pub out_sym_seed: vec<u8>,
+    pub out_Sym_Seed: Vec<u8>,
 }
 
 impl Default for RewrapResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl RewrapResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows an object to be encrypted using the symmetric encryption values of
@@ -14674,80 +12431,71 @@ pub struct TPM2_Import_REQUEST {
     /// The handle of the new parent for the object
     /// Auth Index: 1
     /// Auth Role: USER
-    pub parent_handle: tpm_handle,
+    pub parent_Handle: TPM_HANDLE,
 
     /// The optional symmetric encryption key used as the inner wrapper for duplicate
     /// If symmetricAlg is TPM_ALG_NULL, then this parameter shall be the Empty Buffer.
-    pub encryption_key: vec<u8>,
+    pub encryption_Key: Vec<u8>,
 
     /// The public area of the object to be imported
     /// This is provided so that the integrity value for duplicate and the object attributes
     /// can be checked.
     /// NOTE Even if the integrity value of the object is not checked on input, the object
     /// Name is required to create the integrity value for the imported object.
-    pub object_public: tpmt_public,
+    pub object_Public: TPMT_PUBLIC,
 
     /// The symmetrically encrypted duplicate object that may contain an inner symmetric wrapper
-    pub duplicate: tpm2b_private,
+    pub duplicate: TPM2B_PRIVATE,
 
     /// The seed for the symmetric key and HMAC key
     /// inSymSeed is encrypted/encoded using the algorithms of newParent.
-    pub in_sym_seed: vec<u8>,
+    pub in_Sym_Seed: Vec<u8>,
 
     /// Definition for the symmetric algorithm to use for the inner wrapper
     /// If this algorithm is TPM_ALG_NULL, no inner wrapper is present and encryptionKey shall
     /// be the Empty Buffer.
-    pub symmetric_alg: tpmt_sym_def_object,
+    pub symmetric_Alg: TPMT_SYM_DEF_OBJECT,
 }
 
 impl Default for TPM2_Import_REQUEST {
     fn default() -> Self {
         Self {
-            parentHandle = TPM_HANDLE();
+            parentHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Import_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parent_handle: tpm_handle
-        ,
-        encryption_key: vec<u8>
-        ,
-        object_public: tpmt_public
-        ,
-        duplicate: tpm2b_private
-        ,
-        in_sym_seed: vec<u8>
-        ,
-        symmetric_alg: tpmt_sym_def_object
+        parent_Handle: TPM_HANDLE,
+        encryption_Key: Vec<u8>,
+        object_Public: TPMT_PUBLIC,
+        duplicate: TPM2B_PRIVATE,
+        in_Sym_Seed: Vec<u8>,
+        symmetric_Alg: TPMT_SYM_DEF_OBJECT,
         ) -> Self {
         Self {
-            parent_handle,
-            encryption_key,
-            object_public,
+            parent_Handle,
+            encryption_Key,
+            object_Public,
             duplicate,
-            in_sym_seed,
-            symmetric_alg,
+            in_Sym_Seed,
+            symmetric_Alg,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows an object to be encrypted using the symmetric encryption values of
@@ -14757,31 +12505,28 @@ impl TPM2_Import_REQUEST {
 #[derive(Debug, Clone)]
 pub struct ImportResponse {
     /// The sensitive area encrypted with the symmetric key of parentHandle
-    pub out_private: tpm2b_private,
+    pub out_Private: TPM2B_PRIVATE,
 }
 
 impl Default for ImportResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ImportResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs RSA encryption using the indicated padding scheme according to
@@ -14792,13 +12537,13 @@ impl ImportResponse {
 pub struct TPM2_RSA_Encrypt_REQUEST {
     /// Reference to public portion of RSA key to use for encryption
     /// Auth Index: None
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// Message to be encrypted
     /// NOTE 1 The data type was chosen because it limits the overall size of the input to no
     /// greater than the size of the largest RSA public key. This may be larger than allowed
     /// for keyHandle.
-    pub message: vec<u8>,
+    pub message: Vec<u8>,
 
     /// Scheme selector
 
@@ -14807,47 +12552,41 @@ pub struct TPM2_RSA_Encrypt_REQUEST {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub in_Scheme: TPMU_ASYM_SCHEME,
 
     /// Optional label L to be associated with the message
     /// Size of the buffer is zero if no label is present
     /// NOTE 2 See description of label above.
-    pub label: vec<u8>,
+    pub label: Vec<u8>,
 }
 
 impl Default for TPM2_RSA_Encrypt_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_RSA_Encrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
-        ,
-        message: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>
-        ,
-        label: vec<u8>
+        key_Handle: TPM_HANDLE,
+        message: Vec<u8>,
+        in_Scheme: TPMU_ASYM_SCHEME,
+        label: Vec<u8>,
         ) -> Self {
         Self {
-            key_handle,
+            key_Handle,
             message,
-            in_scheme,
+            in_Scheme,
             label,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -14856,16 +12595,15 @@ impl TPM2_RSA_Encrypt_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs RSA encryption using the indicated padding scheme according to
@@ -14875,31 +12613,28 @@ impl TPM2_RSA_Encrypt_REQUEST {
 #[derive(Debug, Clone)]
 pub struct RSA_EncryptResponse {
     /// Encrypted output
-    pub out_data: vec<u8>,
+    pub out_Data: Vec<u8>,
 }
 
 impl Default for RSA_EncryptResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl RSA_EncryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs RSA decryption using the indicated padding scheme according to
@@ -14909,11 +12644,11 @@ pub struct TPM2_RSA_Decrypt_REQUEST {
     /// RSA key to use for decryption
     /// Auth Index: 1
     /// Auth Role: USER
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// Cipher text to be decrypted
     /// NOTE An encrypted RSA data block is the size of the public modulus.
-    pub cipher_text: vec<u8>,
+    pub cipher_Text: Vec<u8>,
 
     /// Scheme selector
 
@@ -14922,45 +12657,39 @@ pub struct TPM2_RSA_Decrypt_REQUEST {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
+    pub in_Scheme: TPMU_ASYM_SCHEME,
 
     /// Label whose association with the message is to be verified
-    pub label: vec<u8>,
+    pub label: Vec<u8>,
 }
 
 impl Default for TPM2_RSA_Decrypt_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_RSA_Decrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
-        ,
-        cipher_text: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>
-        ,
-        label: vec<u8>
+        key_Handle: TPM_HANDLE,
+        cipher_Text: Vec<u8>,
+        in_Scheme: TPMU_ASYM_SCHEME,
+        label: Vec<u8>,
         ) -> Self {
         Self {
-            key_handle,
-            cipher_text,
-            in_scheme,
+            key_Handle,
+            cipher_Text,
+            in_Scheme,
             label,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -14969,16 +12698,15 @@ impl TPM2_RSA_Decrypt_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs RSA decryption using the indicated padding scheme according to
@@ -14986,31 +12714,28 @@ impl TPM2_RSA_Decrypt_REQUEST {
 #[derive(Debug, Clone)]
 pub struct RSA_DecryptResponse {
     /// Decrypted output
-    pub message: vec<u8>,
+    pub message: Vec<u8>,
 }
 
 impl Default for RSA_DecryptResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl RSA_DecryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command uses the TPM to generate an ephemeral key pair (de, Qe where Qe [de]G).
@@ -15020,42 +12745,38 @@ impl RSA_DecryptResponse {
 pub struct TPM2_ECDH_KeyGen_REQUEST {
     /// Handle of a loaded ECC key public area.
     /// Auth Index: None
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_ECDH_KeyGen_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ECDH_KeyGen_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
+        key_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            key_handle,
+            key_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command uses the TPM to generate an ephemeral key pair (de, Qe where Qe [de]G).
@@ -15064,34 +12785,31 @@ impl TPM2_ECDH_KeyGen_REQUEST {
 #[derive(Debug, Clone)]
 pub struct ECDH_KeyGenResponse {
     /// Results of P h[de]Qs
-    pub zpoint: tpms_ecc_point,
+    pub zPoint: TPMS_ECC_POINT,
 
     /// Generated ephemeral public point (Qe)
-    pub pub_point: tpms_ecc_point,
+    pub pub_Point: TPMS_ECC_POINT,
 }
 
 impl Default for ECDH_KeyGenResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ECDH_KeyGenResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command uses the TPM to recover the Z value from a public point (QB) and a
@@ -15103,48 +12821,43 @@ pub struct TPM2_ECDH_ZGen_REQUEST {
     /// Handle of a loaded ECC key
     /// Auth Index: 1
     /// Auth Role: USER
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// A public key
-    pub in_point: tpms_ecc_point,
+    pub in_Point: TPMS_ECC_POINT,
 }
 
 impl Default for TPM2_ECDH_ZGen_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ECDH_ZGen_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
-        ,
-        in_point: tpms_ecc_point
+        key_Handle: TPM_HANDLE,
+        in_Point: TPMS_ECC_POINT,
         ) -> Self {
         Self {
-            key_handle,
-            in_point,
+            key_Handle,
+            in_Point,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command uses the TPM to recover the Z value from a public point (QB) and a
@@ -15154,103 +12867,93 @@ impl TPM2_ECDH_ZGen_REQUEST {
 #[derive(Debug, Clone)]
 pub struct ECDH_ZGenResponse {
     /// X and Y coordinates of the product of the multiplication Z = (xZ , yZ) [hdS]QB
-    pub out_point: tpms_ecc_point,
+    pub out_Point: TPMS_ECC_POINT,
 }
 
 impl Default for ECDH_ZGenResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ECDH_ZGenResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the parameters of an ECC curve identified by its TCG-assigned curveID.
 #[derive(Debug, Clone)]
 pub struct TPM2_ECC_Parameters_REQUEST {
     /// Parameter set selector
-    pub curve_id: tpm_ecc_curve,
+    pub curve_ID: TPM_ECC_CURVE,
 }
 
 impl Default for TPM2_ECC_Parameters_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_ECC_Parameters_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        curve_id: tpm_ecc_curve
+        curve_ID: TPM_ECC_CURVE,
         ) -> Self {
         Self {
-            curve_id,
+            curve_ID,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the parameters of an ECC curve identified by its TCG-assigned curveID.
 #[derive(Debug, Clone)]
 pub struct ECC_ParametersResponse {
     /// ECC parameters for the selected curve
-    pub parameters: tpms_algorithm_detail_ecc,
+    pub parameters: TPMS_ALGORITHM_DETAIL_ECC,
 }
 
 impl Default for ECC_ParametersResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ECC_ParametersResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command supports two-phase key exchange protocols. The command is used in
@@ -15263,16 +12966,16 @@ pub struct TPM2_ZGen_2Phase_REQUEST {
     /// The private key referenced by this handle is used as dS,A
     /// Auth Index: 1
     /// Auth Role: USER
-    pub key_a: tpm_handle,
+    pub key_A: TPM_HANDLE,
 
     /// Other partys static public key (Qs,B = (Xs,B, Ys,B))
-    pub in_qs_b: tpms_ecc_point,
+    pub in_Qs_B: TPMS_ECC_POINT,
 
     /// Other party's ephemeral public key (Qe,B = (Xe,B, Ye,B))
-    pub in_qe_b: tpms_ecc_point,
+    pub in_Qe_B: TPMS_ECC_POINT,
 
     /// The key exchange scheme
-    pub in_scheme: tpm_alg_id,
+    pub in_Scheme: TPM_ALG_ID,
 
     /// Value returned by TPM2_EC_Ephemeral()
     pub counter: u16,
@@ -15281,49 +12984,41 @@ pub struct TPM2_ZGen_2Phase_REQUEST {
 impl Default for TPM2_ZGen_2Phase_REQUEST {
     fn default() -> Self {
         Self {
-            keyA = TPM_HANDLE();
-            inScheme = TPM_ALG_ID:NULL;
+            keyA: TPM_HANDLE::default(),
+            inScheme: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_ZGen_2Phase_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_a: tpm_handle
-        ,
-        in_qs_b: tpms_ecc_point
-        ,
-        in_qe_b: tpms_ecc_point
-        ,
-        in_scheme: tpm_alg_id
-        ,
-        counter: u16
+        key_A: TPM_HANDLE,
+        in_Qs_B: TPMS_ECC_POINT,
+        in_Qe_B: TPMS_ECC_POINT,
+        in_Scheme: TPM_ALG_ID,
+        counter: u16,
         ) -> Self {
         Self {
-            key_a,
-            in_qs_b,
-            in_qe_b,
-            in_scheme,
+            key_A,
+            in_Qs_B,
+            in_Qe_B,
+            in_Scheme,
             counter,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command supports two-phase key exchange protocols. The command is used in
@@ -15333,34 +13028,31 @@ impl TPM2_ZGen_2Phase_REQUEST {
 #[derive(Debug, Clone)]
 pub struct ZGen_2PhaseResponse {
     /// X and Y coordinates of the computed value (scheme dependent)
-    pub out_z1: tpms_ecc_point,
+    pub out_Z1: TPMS_ECC_POINT,
 
     /// X and Y coordinates of the second computed value (scheme dependent)
-    pub out_z2: tpms_ecc_point,
+    pub out_Z2: TPMS_ECC_POINT,
 }
 
 impl Default for ZGen_2PhaseResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ZGen_2PhaseResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs ECC encryption as described in Part 1, Annex D.
@@ -15368,49 +13060,44 @@ impl ZGen_2PhaseResponse {
 pub struct TPM2_ECC_Encrypt_REQUEST {
     /// Reference to public portion of ECC key to use for encryption
     /// Auth Index: None
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// Plaintext to be encrypted
-    pub plain_text: vec<u8>,
+    pub plain_Text: Vec<u8>,
 
     /// Scheme selector
 
     /// The KDF to use if scheme associated with keyHandle is TPM_ALG_NULL
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_KDF_SCHEME>>,
+    pub in_Scheme: TPMU_KDF_SCHEME,
 }
 
 impl Default for TPM2_ECC_Encrypt_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ECC_Encrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
-        ,
-        plain_text: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_KDF_SCHEME>>
+        key_Handle: TPM_HANDLE,
+        plain_Text: Vec<u8>,
+        in_Scheme: TPMU_KDF_SCHEME,
         ) -> Self {
         Self {
-            key_handle,
-            plain_text,
-            in_scheme,
+            key_Handle,
+            plain_Text,
+            in_Scheme,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -15419,53 +13106,49 @@ impl TPM2_ECC_Encrypt_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs ECC encryption as described in Part 1, Annex D.
 #[derive(Debug, Clone)]
 pub struct ECC_EncryptResponse {
     /// The public ephemeral key used for ECDH
-    pub c1: tpms_ecc_point,
+    pub C1: TPMS_ECC_POINT,
 
     /// The data block produced by the XOR process
-    pub c2: vec<u8>,
+    pub C2: Vec<u8>,
 
     /// The integrity value
-    pub c3: vec<u8>,
+    pub C3: Vec<u8>,
 }
 
 impl Default for ECC_EncryptResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ECC_EncryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs ECC decryption.
@@ -15474,61 +13157,54 @@ pub struct TPM2_ECC_Decrypt_REQUEST {
     /// ECC key to use for decryption
     /// Auth Index: 1
     /// Auth Role: USER
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// The public ephemeral key used for ECDH
-    pub c1: tpms_ecc_point,
+    pub C1: TPMS_ECC_POINT,
 
     /// The data block produced by the XOR process
-    pub c2: vec<u8>,
+    pub C2: Vec<u8>,
 
     /// The integrity value
-    pub c3: vec<u8>,
+    pub C3: Vec<u8>,
 
     /// Scheme selector
 
     /// The KDF to use if scheme associated with keyHandle is TPM_ALG_NULL
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_KDF_SCHEME>>,
+    pub in_Scheme: TPMU_KDF_SCHEME,
 }
 
 impl Default for TPM2_ECC_Decrypt_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ECC_Decrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
-        ,
-        c1: tpms_ecc_point
-        ,
-        c2: vec<u8>
-        ,
-        c3: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_KDF_SCHEME>>
+        key_Handle: TPM_HANDLE,
+        C1: TPMS_ECC_POINT,
+        C2: Vec<u8>,
+        C3: Vec<u8>,
+        in_Scheme: TPMU_KDF_SCHEME,
         ) -> Self {
         Self {
-            key_handle,
-            c1,
-            c2,
-            c3,
-            in_scheme,
+            key_Handle,
+            C1,
+            C2,
+            C3,
+            in_Scheme,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -15537,47 +13213,43 @@ impl TPM2_ECC_Decrypt_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs ECC decryption.
 #[derive(Debug, Clone)]
 pub struct ECC_DecryptResponse {
     /// Decrypted output
-    pub plain_text: vec<u8>,
+    pub plain_Text: Vec<u8>,
 }
 
 impl Default for ECC_DecryptResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ECC_DecryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// NOTE 1 This command is deprecated, and TPM2_EncryptDecrypt2() is preferred. This
@@ -15587,68 +13259,60 @@ pub struct TPM2_EncryptDecrypt_REQUEST {
     /// The symmetric key used for the operation
     /// Auth Index: 1
     /// Auth Role: USER
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// If YES, then the operation is decryption; if NO, the operation is encryption
     pub decrypt: u8,
 
     /// Symmetric encryption/decryption mode
     /// this field shall match the default mode of the key or be TPM_ALG_NULL.
-    pub mode: tpm_alg_id,
+    pub mode: TPM_ALG_ID,
 
     /// An initial value as required by the algorithm
-    pub iv_in: vec<u8>,
+    pub iv_In: Vec<u8>,
 
     /// The data to be encrypted/decrypted
-    pub in_data: vec<u8>,
+    pub in_Data: Vec<u8>,
 }
 
 impl Default for TPM2_EncryptDecrypt_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
-            mode = TPM_ALG_ID:NULL;
+            keyHandle: TPM_HANDLE::default(),
+            mode: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_EncryptDecrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
-        ,
-        decrypt: u8
-        ,
-        mode: tpm_alg_id
-        ,
-        iv_in: vec<u8>
-        ,
-        in_data: vec<u8>
+        key_Handle: TPM_HANDLE,
+        decrypt: u8,
+        mode: TPM_ALG_ID,
+        iv_In: Vec<u8>,
+        in_Data: Vec<u8>,
         ) -> Self {
         Self {
-            key_handle,
+            key_Handle,
             decrypt,
             mode,
-            iv_in,
-            in_data,
+            iv_In,
+            in_Data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// NOTE 1 This command is deprecated, and TPM2_EncryptDecrypt2() is preferred. This
@@ -15656,34 +13320,31 @@ impl TPM2_EncryptDecrypt_REQUEST {
 #[derive(Debug, Clone)]
 pub struct EncryptDecryptResponse {
     /// Encrypted or decrypted output
-    pub out_data: vec<u8>,
+    pub out_Data: Vec<u8>,
 
     /// Chaining value to use for IV in next round
-    pub iv_out: vec<u8>,
+    pub iv_Out: Vec<u8>,
 }
 
 impl Default for EncryptDecryptResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl EncryptDecryptResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is identical to TPM2_EncryptDecrypt(), except that the inData parameter
@@ -15693,68 +13354,60 @@ pub struct TPM2_EncryptDecrypt2_REQUEST {
     /// The symmetric key used for the operation
     /// Auth Index: 1
     /// Auth Role: USER
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// The data to be encrypted/decrypted
-    pub in_data: vec<u8>,
+    pub in_Data: Vec<u8>,
 
     /// If YES, then the operation is decryption; if NO, the operation is encryption
     pub decrypt: u8,
 
     /// Symmetric mode
     /// this field shall match the default mode of the key or be TPM_ALG_NULL.
-    pub mode: tpm_alg_id,
+    pub mode: TPM_ALG_ID,
 
     /// An initial value as required by the algorithm
-    pub iv_in: vec<u8>,
+    pub iv_In: Vec<u8>,
 }
 
 impl Default for TPM2_EncryptDecrypt2_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
-            mode = TPM_ALG_ID:NULL;
+            keyHandle: TPM_HANDLE::default(),
+            mode: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_EncryptDecrypt2_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
-        ,
-        in_data: vec<u8>
-        ,
-        decrypt: u8
-        ,
-        mode: tpm_alg_id
-        ,
-        iv_in: vec<u8>
+        key_Handle: TPM_HANDLE,
+        in_Data: Vec<u8>,
+        decrypt: u8,
+        mode: TPM_ALG_ID,
+        iv_In: Vec<u8>,
         ) -> Self {
         Self {
-            key_handle,
-            in_data,
+            key_Handle,
+            in_Data,
             decrypt,
             mode,
-            iv_in,
+            iv_In,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is identical to TPM2_EncryptDecrypt(), except that the inData parameter
@@ -15762,125 +13415,113 @@ impl TPM2_EncryptDecrypt2_REQUEST {
 #[derive(Debug, Clone)]
 pub struct EncryptDecrypt2Response {
     /// Encrypted or decrypted output
-    pub out_data: vec<u8>,
+    pub out_Data: Vec<u8>,
 
     /// Chaining value to use for IV in next round
-    pub iv_out: vec<u8>,
+    pub iv_Out: Vec<u8>,
 }
 
 impl Default for EncryptDecrypt2Response {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl EncryptDecrypt2Response {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs a hash operation on a data buffer and returns the results.
 #[derive(Debug, Clone)]
 pub struct TPM2_Hash_REQUEST {
     /// Data to be hashed
-    pub data: vec<u8>,
+    pub data: Vec<u8>,
 
     /// Algorithm for the hash being computed shall not be TPM_ALG_NULL
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 
     /// Hierarchy to use for the ticket (TPM_RH_NULL allowed)
-    pub hierarchy: tpm_handle,
+    pub hierarchy: TPM_HANDLE,
 }
 
 impl Default for TPM2_Hash_REQUEST {
     fn default() -> Self {
         Self {
-            hashAlg = TPM_ALG_ID:NULL;
-            hierarchy = TPM_HANDLE();
+            hashAlg: TPM_ALG_ID::NULL,
+            hierarchy: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Hash_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        data: vec<u8>
-        ,
-        hash_alg: tpm_alg_id
-        ,
-        hierarchy: tpm_handle
+        data: Vec<u8>,
+        hash_Alg: TPM_ALG_ID,
+        hierarchy: TPM_HANDLE,
         ) -> Self {
         Self {
             data,
-            hash_alg,
+            hash_Alg,
             hierarchy,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs a hash operation on a data buffer and returns the results.
 #[derive(Debug, Clone)]
 pub struct HashResponse {
     /// Results
-    pub out_hash: vec<u8>,
+    pub out_Hash: Vec<u8>,
 
     /// Ticket indicating that the sequence of octets used to compute outDigest did not start
     /// with TPM_GENERATED_VALUE
     /// will be a NULL ticket if the digest may not be signed with a restricted key
-    pub validation: tpmt_tk_hashcheck,
+    pub validation: TPMT_TK_HASHCHECK,
 }
 
 impl Default for HashResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl HashResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs an HMAC on the supplied data using the indicated hash algorithm.
@@ -15889,86 +13530,77 @@ pub struct TPM2_HMAC_REQUEST {
     /// Handle for the symmetric signing key providing the HMAC key
     /// Auth Index: 1
     /// Auth Role: USER
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// HMAC data
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 
     /// Algorithm to use for HMAC
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 }
 
 impl Default for TPM2_HMAC_REQUEST {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
-            hashAlg = TPM_ALG_ID:NULL;
+            handle: TPM_HANDLE::default(),
+            hashAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_HMAC_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: tpm_handle
-        ,
-        buffer: vec<u8>
-        ,
-        hash_alg: tpm_alg_id
+        handle: TPM_HANDLE,
+        buffer: Vec<u8>,
+        hash_Alg: TPM_ALG_ID,
         ) -> Self {
         Self {
             handle,
             buffer,
-            hash_alg,
+            hash_Alg,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs an HMAC on the supplied data using the indicated hash algorithm.
 #[derive(Debug, Clone)]
 pub struct HMACResponse {
     /// The returned HMAC in a sized buffer
-    pub out_hmac: vec<u8>,
+    pub out_HMAC: Vec<u8>,
 }
 
 impl Default for HMACResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl HMACResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs an HMAC or a block cipher MAC on the supplied data using the
@@ -15978,55 +13610,49 @@ pub struct TPM2_MAC_REQUEST {
     /// Handle for the symmetric signing key providing the MAC key
     /// Auth Index: 1
     /// Auth Role: USER
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// MAC data
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 
     /// Algorithm to use for MAC
-    pub in_scheme: tpm_alg_id,
+    pub in_Scheme: TPM_ALG_ID,
 }
 
 impl Default for TPM2_MAC_REQUEST {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
-            inScheme = TPM_ALG_ID:NULL;
+            handle: TPM_HANDLE::default(),
+            inScheme: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_MAC_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: tpm_handle
-        ,
-        buffer: vec<u8>
-        ,
-        in_scheme: tpm_alg_id
+        handle: TPM_HANDLE,
+        buffer: Vec<u8>,
+        in_Scheme: TPM_ALG_ID,
         ) -> Self {
         Self {
             handle,
             buffer,
-            in_scheme,
+            in_Scheme,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command performs an HMAC or a block cipher MAC on the supplied data using the
@@ -16034,144 +13660,130 @@ impl TPM2_MAC_REQUEST {
 #[derive(Debug, Clone)]
 pub struct MACResponse {
     /// The returned MAC in a sized buffer
-    pub out_mac: vec<u8>,
+    pub out_MAC: Vec<u8>,
 }
 
 impl Default for MACResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl MACResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the next bytesRequested octets from the random number generator (RNG).
 #[derive(Debug, Clone)]
 pub struct TPM2_GetRandom_REQUEST {
     /// Number of octets to return
-    pub bytes_requested: u16,
+    pub bytes_Requested: u16,
 }
 
 impl Default for TPM2_GetRandom_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_GetRandom_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        bytes_requested: u16
+        bytes_Requested: u16,
         ) -> Self {
         Self {
-            bytes_requested,
+            bytes_Requested,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the next bytesRequested octets from the random number generator (RNG).
 #[derive(Debug, Clone)]
 pub struct GetRandomResponse {
     /// The random octets
-    pub random_bytes: vec<u8>,
+    pub random_Bytes: Vec<u8>,
 }
 
 impl Default for GetRandomResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl GetRandomResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to add "additional information" to the RNG state.
 #[derive(Debug, Clone)]
 pub struct TPM2_StirRandom_REQUEST {
     /// Additional information
-    pub in_data: vec<u8>,
+    pub in_Data: Vec<u8>,
 }
 
 impl Default for TPM2_StirRandom_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_StirRandom_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        in_data: vec<u8>
+        in_Data: Vec<u8>,
         ) -> Self {
         Self {
-            in_data,
+            in_Data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command starts an HMAC sequence. The TPM will create and initialize an HMAC
@@ -16182,55 +13794,49 @@ pub struct TPM2_HMAC_Start_REQUEST {
     /// Handle of an HMAC key
     /// Auth Index: 1
     /// Auth Role: USER
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// Authorization value for subsequent use of the sequence
-    pub auth: vec<u8>,
+    pub auth: Vec<u8>,
 
     /// The hash algorithm to use for the HMAC
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 }
 
 impl Default for TPM2_HMAC_Start_REQUEST {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
-            hashAlg = TPM_ALG_ID:NULL;
+            handle: TPM_HANDLE::default(),
+            hashAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_HMAC_Start_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: tpm_handle
-        ,
-        auth: vec<u8>
-        ,
-        hash_alg: tpm_alg_id
+        handle: TPM_HANDLE,
+        auth: Vec<u8>,
+        hash_Alg: TPM_ALG_ID,
         ) -> Self {
         Self {
             handle,
             auth,
-            hash_alg,
+            hash_Alg,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command starts an HMAC sequence. The TPM will create and initialize an HMAC
@@ -16239,32 +13845,29 @@ impl TPM2_HMAC_Start_REQUEST {
 #[derive(Debug, Clone)]
 pub struct HMAC_StartResponse {
     /// A handle to reference the sequence
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 }
 
 impl Default for HMAC_StartResponse {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl HMAC_StartResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command starts a MAC sequence. The TPM will create and initialize a MAC sequence
@@ -16275,55 +13878,49 @@ pub struct TPM2_MAC_Start_REQUEST {
     /// Handle of a MAC key
     /// Auth Index: 1
     /// Auth Role: USER
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// Authorization value for subsequent use of the sequence
-    pub auth: vec<u8>,
+    pub auth: Vec<u8>,
 
     /// The algorithm to use for the MAC
-    pub in_scheme: tpm_alg_id,
+    pub in_Scheme: TPM_ALG_ID,
 }
 
 impl Default for TPM2_MAC_Start_REQUEST {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
-            inScheme = TPM_ALG_ID:NULL;
+            handle: TPM_HANDLE::default(),
+            inScheme: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_MAC_Start_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: tpm_handle
-        ,
-        auth: vec<u8>
-        ,
-        in_scheme: tpm_alg_id
+        handle: TPM_HANDLE,
+        auth: Vec<u8>,
+        in_Scheme: TPM_ALG_ID,
         ) -> Self {
         Self {
             handle,
             auth,
-            in_scheme,
+            in_Scheme,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command starts a MAC sequence. The TPM will create and initialize a MAC sequence
@@ -16332,32 +13929,29 @@ impl TPM2_MAC_Start_REQUEST {
 #[derive(Debug, Clone)]
 pub struct MAC_StartResponse {
     /// A handle to reference the sequence
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 }
 
 impl Default for MAC_StartResponse {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl MAC_StartResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command starts a hash or an Event Sequence. If hashAlg is an implemented hash,
@@ -16367,49 +13961,44 @@ impl MAC_StartResponse {
 #[derive(Debug, Clone)]
 pub struct TPM2_HashSequenceStart_REQUEST {
     /// Authorization value for subsequent use of the sequence
-    pub auth: vec<u8>,
+    pub auth: Vec<u8>,
 
     /// The hash algorithm to use for the hash sequence
     /// An Event Sequence starts if this is TPM_ALG_NULL.
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 }
 
 impl Default for TPM2_HashSequenceStart_REQUEST {
     fn default() -> Self {
         Self {
-            hashAlg = TPM_ALG_ID:NULL;
+            hashAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_HashSequenceStart_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: vec<u8>
-        ,
-        hash_alg: tpm_alg_id
+        auth: Vec<u8>,
+        hash_Alg: TPM_ALG_ID,
         ) -> Self {
         Self {
             auth,
-            hash_alg,
+            hash_Alg,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command starts a hash or an Event Sequence. If hashAlg is an implemented hash,
@@ -16419,32 +14008,29 @@ impl TPM2_HashSequenceStart_REQUEST {
 #[derive(Debug, Clone)]
 pub struct HashSequenceStartResponse {
     /// A handle to reference the sequence
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 }
 
 impl Default for HashSequenceStartResponse {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl HashSequenceStartResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to add data to a hash or HMAC sequence. The amount of data in
@@ -16454,48 +14040,43 @@ pub struct TPM2_SequenceUpdate_REQUEST {
     /// Handle for the sequence object
     /// Auth Index: 1
     /// Auth Role: USER
-    pub sequence_handle: tpm_handle,
+    pub sequence_Handle: TPM_HANDLE,
 
     /// Data to be added to hash
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2_SequenceUpdate_REQUEST {
     fn default() -> Self {
         Self {
-            sequenceHandle = TPM_HANDLE();
+            sequenceHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_SequenceUpdate_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sequence_handle: tpm_handle
-        ,
-        buffer: vec<u8>
+        sequence_Handle: TPM_HANDLE,
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
-            sequence_handle,
+            sequence_Handle,
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command adds the last part of data, if any, to a hash/HMAC sequence and returns
@@ -16505,55 +14086,49 @@ pub struct TPM2_SequenceComplete_REQUEST {
     /// Authorization for the sequence
     /// Auth Index: 1
     /// Auth Role: USER
-    pub sequence_handle: tpm_handle,
+    pub sequence_Handle: TPM_HANDLE,
 
     /// Data to be added to the hash/HMAC
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 
     /// Hierarchy of the ticket for a hash
-    pub hierarchy: tpm_handle,
+    pub hierarchy: TPM_HANDLE,
 }
 
 impl Default for TPM2_SequenceComplete_REQUEST {
     fn default() -> Self {
         Self {
-            sequenceHandle = TPM_HANDLE();
-            hierarchy = TPM_HANDLE();
+            sequenceHandle: TPM_HANDLE::default(),
+            hierarchy: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_SequenceComplete_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sequence_handle: tpm_handle
-        ,
-        buffer: vec<u8>
-        ,
-        hierarchy: tpm_handle
+        sequence_Handle: TPM_HANDLE,
+        buffer: Vec<u8>,
+        hierarchy: TPM_HANDLE,
         ) -> Self {
         Self {
-            sequence_handle,
+            sequence_Handle,
             buffer,
             hierarchy,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command adds the last part of data, if any, to a hash/HMAC sequence and returns
@@ -16561,36 +14136,33 @@ impl TPM2_SequenceComplete_REQUEST {
 #[derive(Debug, Clone)]
 pub struct SequenceCompleteResponse {
     /// The returned HMAC or digest in a sized buffer
-    pub result: vec<u8>,
+    pub result: Vec<u8>,
 
     /// Ticket indicating that the sequence of octets used to compute outDigest did not start
     /// with TPM_GENERATED_VALUE
     /// This is a NULL Ticket when the sequence is HMAC.
-    pub validation: tpmt_tk_hashcheck,
+    pub validation: TPMT_TK_HASHCHECK,
 }
 
 impl Default for SequenceCompleteResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl SequenceCompleteResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command adds the last part of data, if any, to an Event Sequence and returns the
@@ -16603,57 +14175,51 @@ pub struct TPM2_EventSequenceComplete_REQUEST {
     /// PCR to be extended with the Event data
     /// Auth Index: 1
     /// Auth Role: USER
-    pub pcr_handle: tpm_handle,
+    pub pcr_Handle: TPM_HANDLE,
 
     /// Authorization for the sequence
     /// Auth Index: 2
     /// Auth Role: USER
-    pub sequence_handle: tpm_handle,
+    pub sequence_Handle: TPM_HANDLE,
 
     /// Data to be added to the Event
-    pub buffer: vec<u8>,
+    pub buffer: Vec<u8>,
 }
 
 impl Default for TPM2_EventSequenceComplete_REQUEST {
     fn default() -> Self {
         Self {
-            pcrHandle = TPM_HANDLE();
-            sequenceHandle = TPM_HANDLE();
+            pcrHandle: TPM_HANDLE::default(),
+            sequenceHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_EventSequenceComplete_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_handle: tpm_handle
-        ,
-        sequence_handle: tpm_handle
-        ,
-        buffer: vec<u8>
+        pcr_Handle: TPM_HANDLE,
+        sequence_Handle: TPM_HANDLE,
+        buffer: Vec<u8>,
         ) -> Self {
         Self {
-            pcr_handle,
-            sequence_handle,
+            pcr_Handle,
+            sequence_Handle,
             buffer,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command adds the last part of data, if any, to an Event Sequence and returns the
@@ -16664,31 +14230,28 @@ impl TPM2_EventSequenceComplete_REQUEST {
 #[derive(Debug, Clone)]
 pub struct EventSequenceCompleteResponse {
     /// List of digests computed for the PCR
-    pub results: vec<tpmt_ha>,
+    pub results: Vec<TPMT_HA>,
 }
 
 impl Default for EventSequenceCompleteResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl EventSequenceCompleteResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to prove that an object with a specific Name is loaded
@@ -16701,15 +14264,15 @@ pub struct TPM2_Certify_REQUEST {
     /// Handle of the object to be certified
     /// Auth Index: 1
     /// Auth Role: ADMIN
-    pub object_handle: tpm_handle,
+    pub object_Handle: TPM_HANDLE,
 
     /// Handle of the key used to sign the attestation structure
     /// Auth Index: 2
     /// Auth Role: USER
-    pub sign_handle: tpm_handle,
+    pub sign_Handle: TPM_HANDLE,
 
     /// User provided qualifying data
-    pub qualifying_data: vec<u8>,
+    pub qualifying_Data: Vec<u8>,
 
     /// Scheme selector
 
@@ -16717,43 +14280,37 @@ pub struct TPM2_Certify_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub in_Scheme: TPMU_SIG_SCHEME,
 }
 
 impl Default for TPM2_Certify_REQUEST {
     fn default() -> Self {
         Self {
-            objectHandle = TPM_HANDLE();
-            signHandle = TPM_HANDLE();
+            objectHandle: TPM_HANDLE::default(),
+            signHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Certify_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        object_handle: tpm_handle
-        ,
-        sign_handle: tpm_handle
-        ,
-        qualifying_data: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>
+        object_Handle: TPM_HANDLE,
+        sign_Handle: TPM_HANDLE,
+        qualifying_Data: Vec<u8>,
+        in_Scheme: TPMU_SIG_SCHEME,
         ) -> Self {
         Self {
-            object_handle,
-            sign_handle,
-            qualifying_data,
-            in_scheme,
+            object_Handle,
+            sign_Handle,
+            qualifying_Data,
+            in_Scheme,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -16762,16 +14319,15 @@ impl TPM2_Certify_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to prove that an object with a specific Name is loaded
@@ -16782,7 +14338,7 @@ impl TPM2_Certify_REQUEST {
 #[derive(Debug, Clone)]
 pub struct CertifyResponse {
     /// The structure that was signed
-    pub certify_info: tpms_attest,
+    pub certify_Info: TPMS_ATTEST,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -16790,21 +14346,19 @@ pub struct CertifyResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for CertifyResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl CertifyResponse {
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -16814,16 +14368,15 @@ impl CertifyResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to prove the association between an object and its creation data.
@@ -16835,17 +14388,17 @@ pub struct TPM2_CertifyCreation_REQUEST {
     /// Handle of the key that will sign the attestation block
     /// Auth Index: 1
     /// Auth Role: USER
-    pub sign_handle: tpm_handle,
+    pub sign_Handle: TPM_HANDLE,
 
     /// The object associated with the creation data
     /// Auth Index: None
-    pub object_handle: tpm_handle,
+    pub object_Handle: TPM_HANDLE,
 
     /// User-provided qualifying data
-    pub qualifying_data: vec<u8>,
+    pub qualifying_Data: Vec<u8>,
 
     /// Hash of the creation data produced by TPM2_Create() or TPM2_CreatePrimary()
-    pub creation_hash: vec<u8>,
+    pub creation_Hash: Vec<u8>,
 
     /// Scheme selector
 
@@ -16853,52 +14406,44 @@ pub struct TPM2_CertifyCreation_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub in_Scheme: TPMU_SIG_SCHEME,
 
     /// Ticket produced by TPM2_Create() or TPM2_CreatePrimary()
-    pub creation_ticket: tpmt_tk_creation,
+    pub creation_Ticket: TPMT_TK_CREATION,
 }
 
 impl Default for TPM2_CertifyCreation_REQUEST {
     fn default() -> Self {
         Self {
-            signHandle = TPM_HANDLE();
-            objectHandle = TPM_HANDLE();
+            signHandle: TPM_HANDLE::default(),
+            objectHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_CertifyCreation_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sign_handle: tpm_handle
-        ,
-        object_handle: tpm_handle
-        ,
-        qualifying_data: vec<u8>
-        ,
-        creation_hash: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>
-        ,
-        creation_ticket: tpmt_tk_creation
+        sign_Handle: TPM_HANDLE,
+        object_Handle: TPM_HANDLE,
+        qualifying_Data: Vec<u8>,
+        creation_Hash: Vec<u8>,
+        in_Scheme: TPMU_SIG_SCHEME,
+        creation_Ticket: TPMT_TK_CREATION,
         ) -> Self {
         Self {
-            sign_handle,
-            object_handle,
-            qualifying_data,
-            creation_hash,
-            in_scheme,
-            creation_ticket,
+            sign_Handle,
+            object_Handle,
+            qualifying_Data,
+            creation_Hash,
+            in_Scheme,
+            creation_Ticket,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -16907,16 +14452,15 @@ impl TPM2_CertifyCreation_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to prove the association between an object and its creation data.
@@ -16926,7 +14470,7 @@ impl TPM2_CertifyCreation_REQUEST {
 #[derive(Debug, Clone)]
 pub struct CertifyCreationResponse {
     /// The structure that was signed
-    pub certify_info: tpms_attest,
+    pub certify_Info: TPMS_ATTEST,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -16934,21 +14478,19 @@ pub struct CertifyCreationResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for CertifyCreationResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl CertifyCreationResponse {
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -16958,16 +14500,15 @@ impl CertifyCreationResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to quote PCR values.
@@ -16976,10 +14517,10 @@ pub struct TPM2_Quote_REQUEST {
     /// Handle of key that will perform signature
     /// Auth Index: 1
     /// Auth Role: USER
-    pub sign_handle: tpm_handle,
+    pub sign_Handle: TPM_HANDLE,
 
     /// Data supplied by the caller
-    pub qualifying_data: vec<u8>,
+    pub qualifying_Data: Vec<u8>,
 
     /// Scheme selector
 
@@ -16987,45 +14528,39 @@ pub struct TPM2_Quote_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub in_Scheme: TPMU_SIG_SCHEME,
 
     /// PCR set to quote
-    pub pcrselect: vec<tpms_pcr_selection>,
+    pub PCRselect: Vec<TPMS_PCR_SELECTION>,
 }
 
 impl Default for TPM2_Quote_REQUEST {
     fn default() -> Self {
         Self {
-            signHandle = TPM_HANDLE();
+            signHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Quote_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sign_handle: tpm_handle
-        ,
-        qualifying_data: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>
-        ,
-        pcrselect: vec<tpms_pcr_selection>
+        sign_Handle: TPM_HANDLE,
+        qualifying_Data: Vec<u8>,
+        in_Scheme: TPMU_SIG_SCHEME,
+        PCRselect: Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            sign_handle,
-            qualifying_data,
-            in_scheme,
-            pcrselect,
+            sign_Handle,
+            qualifying_Data,
+            in_Scheme,
+            PCRselect,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -17034,23 +14569,22 @@ impl TPM2_Quote_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to quote PCR values.
 #[derive(Debug, Clone)]
 pub struct QuoteResponse {
     /// The quoted information
-    pub quoted: tpms_attest,
+    pub quoted: TPMS_ATTEST,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -17058,21 +14592,19 @@ pub struct QuoteResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for QuoteResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl QuoteResponse {
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -17082,16 +14614,15 @@ impl QuoteResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns a digital signature of the audit session digest.
@@ -17100,19 +14631,19 @@ pub struct TPM2_GetSessionAuditDigest_REQUEST {
     /// Handle of the privacy administrator (TPM_RH_ENDORSEMENT)
     /// Auth Index: 1
     /// Auth Role: USER
-    pub privacy_admin_handle: tpm_handle,
+    pub privacy_Admin_Handle: TPM_HANDLE,
 
     /// Handle of the signing key
     /// Auth Index: 2
     /// Auth Role: USER
-    pub sign_handle: tpm_handle,
+    pub sign_Handle: TPM_HANDLE,
 
     /// Handle of the audit session
     /// Auth Index: None
-    pub session_handle: tpm_handle,
+    pub session_Handle: TPM_HANDLE,
 
     /// User-provided qualifying data may be zero-length
-    pub qualifying_data: vec<u8>,
+    pub qualifying_Data: Vec<u8>,
 
     /// Scheme selector
 
@@ -17120,47 +14651,40 @@ pub struct TPM2_GetSessionAuditDigest_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub in_Scheme: TPMU_SIG_SCHEME,
 }
 
 impl Default for TPM2_GetSessionAuditDigest_REQUEST {
     fn default() -> Self {
         Self {
-            privacyAdminHandle = TPM_HANDLE();
-            signHandle = TPM_HANDLE();
-            sessionHandle = TPM_HANDLE();
+            privacyAdminHandle: TPM_HANDLE::default(),
+            signHandle: TPM_HANDLE::default(),
+            sessionHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_GetSessionAuditDigest_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        privacy_admin_handle: tpm_handle
-        ,
-        sign_handle: tpm_handle
-        ,
-        session_handle: tpm_handle
-        ,
-        qualifying_data: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>
+        privacy_Admin_Handle: TPM_HANDLE,
+        sign_Handle: TPM_HANDLE,
+        session_Handle: TPM_HANDLE,
+        qualifying_Data: Vec<u8>,
+        in_Scheme: TPMU_SIG_SCHEME,
         ) -> Self {
         Self {
-            privacy_admin_handle,
-            sign_handle,
-            session_handle,
-            qualifying_data,
-            in_scheme,
+            privacy_Admin_Handle,
+            sign_Handle,
+            session_Handle,
+            qualifying_Data,
+            in_Scheme,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -17169,23 +14693,22 @@ impl TPM2_GetSessionAuditDigest_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns a digital signature of the audit session digest.
 #[derive(Debug, Clone)]
 pub struct GetSessionAuditDigestResponse {
     /// The audit information that was signed
-    pub audit_info: tpms_attest,
+    pub audit_Info: TPMS_ATTEST,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -17193,21 +14716,19 @@ pub struct GetSessionAuditDigestResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for GetSessionAuditDigestResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl GetSessionAuditDigestResponse {
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -17217,16 +14738,15 @@ impl GetSessionAuditDigestResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the current value of the command audit digest, a digest of the
@@ -17237,15 +14757,15 @@ pub struct TPM2_GetCommandAuditDigest_REQUEST {
     /// Handle of the privacy administrator (TPM_RH_ENDORSEMENT)
     /// Auth Index: 1
     /// Auth Role: USER
-    pub privacy_handle: tpm_handle,
+    pub privacy_Handle: TPM_HANDLE,
 
     /// The handle of the signing key
     /// Auth Index: 2
     /// Auth Role: USER
-    pub sign_handle: tpm_handle,
+    pub sign_Handle: TPM_HANDLE,
 
     /// Other data to associate with this audit digest
-    pub qualifying_data: vec<u8>,
+    pub qualifying_Data: Vec<u8>,
 
     /// Scheme selector
 
@@ -17253,43 +14773,37 @@ pub struct TPM2_GetCommandAuditDigest_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub in_Scheme: TPMU_SIG_SCHEME,
 }
 
 impl Default for TPM2_GetCommandAuditDigest_REQUEST {
     fn default() -> Self {
         Self {
-            privacyHandle = TPM_HANDLE();
-            signHandle = TPM_HANDLE();
+            privacyHandle: TPM_HANDLE::default(),
+            signHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_GetCommandAuditDigest_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        privacy_handle: tpm_handle
-        ,
-        sign_handle: tpm_handle
-        ,
-        qualifying_data: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>
+        privacy_Handle: TPM_HANDLE,
+        sign_Handle: TPM_HANDLE,
+        qualifying_Data: Vec<u8>,
+        in_Scheme: TPMU_SIG_SCHEME,
         ) -> Self {
         Self {
-            privacy_handle,
-            sign_handle,
-            qualifying_data,
-            in_scheme,
+            privacy_Handle,
+            sign_Handle,
+            qualifying_Data,
+            in_Scheme,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -17298,16 +14812,15 @@ impl TPM2_GetCommandAuditDigest_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the current value of the command audit digest, a digest of the
@@ -17316,7 +14829,7 @@ impl TPM2_GetCommandAuditDigest_REQUEST {
 #[derive(Debug, Clone)]
 pub struct GetCommandAuditDigestResponse {
     /// The auditInfo that was signed
-    pub audit_info: tpms_attest,
+    pub audit_Info: TPMS_ATTEST,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -17324,21 +14837,19 @@ pub struct GetCommandAuditDigestResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for GetCommandAuditDigestResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl GetCommandAuditDigestResponse {
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -17348,16 +14859,15 @@ impl GetCommandAuditDigestResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the current values of Time and Clock.
@@ -17366,15 +14876,15 @@ pub struct TPM2_GetTime_REQUEST {
     /// Handle of the privacy administrator (TPM_RH_ENDORSEMENT)
     /// Auth Index: 1
     /// Auth Role: USER
-    pub privacy_admin_handle: tpm_handle,
+    pub privacy_Admin_Handle: TPM_HANDLE,
 
     /// The keyHandle identifier of a loaded key that can perform digital signatures
     /// Auth Index: 2
     /// Auth Role: USER
-    pub sign_handle: tpm_handle,
+    pub sign_Handle: TPM_HANDLE,
 
     /// Data to tick stamp
-    pub qualifying_data: vec<u8>,
+    pub qualifying_Data: Vec<u8>,
 
     /// Scheme selector
 
@@ -17382,43 +14892,37 @@ pub struct TPM2_GetTime_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub in_Scheme: TPMU_SIG_SCHEME,
 }
 
 impl Default for TPM2_GetTime_REQUEST {
     fn default() -> Self {
         Self {
-            privacyAdminHandle = TPM_HANDLE();
-            signHandle = TPM_HANDLE();
+            privacyAdminHandle: TPM_HANDLE::default(),
+            signHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_GetTime_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        privacy_admin_handle: tpm_handle
-        ,
-        sign_handle: tpm_handle
-        ,
-        qualifying_data: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>
+        privacy_Admin_Handle: TPM_HANDLE,
+        sign_Handle: TPM_HANDLE,
+        qualifying_Data: Vec<u8>,
+        in_Scheme: TPMU_SIG_SCHEME,
         ) -> Self {
         Self {
-            privacy_admin_handle,
-            sign_handle,
-            qualifying_data,
-            in_scheme,
+            privacy_Admin_Handle,
+            sign_Handle,
+            qualifying_Data,
+            in_Scheme,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -17427,23 +14931,22 @@ impl TPM2_GetTime_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the current values of Time and Clock.
 #[derive(Debug, Clone)]
 pub struct GetTimeResponse {
     /// Standard TPM-generated attestation block
-    pub time_info: tpms_attest,
+    pub time_Info: TPMS_ATTEST,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -17451,21 +14954,19 @@ pub struct GetTimeResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for GetTimeResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl GetTimeResponse {
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -17475,16 +14976,15 @@ impl GetTimeResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to generate an X.509 certificate that proves an object
@@ -17498,15 +14998,15 @@ pub struct TPM2_CertifyX509_REQUEST {
     /// Handle of the object to be certified
     /// Auth Index: 1
     /// Auth Role: ADMIN
-    pub object_handle: tpm_handle,
+    pub object_Handle: TPM_HANDLE,
 
     /// Handle of the key used to sign the attestation structure
     /// Auth Index: 2
     /// Auth Role: USER
-    pub sign_handle: tpm_handle,
+    pub sign_Handle: TPM_HANDLE,
 
     /// Shall be an Empty Buffer
-    pub reserved: vec<u8>,
+    pub reserved: Vec<u8>,
 
     /// Scheme selector
 
@@ -17514,49 +15014,42 @@ pub struct TPM2_CertifyX509_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub in_Scheme: TPMU_SIG_SCHEME,
 
     /// A DER encoded partial certificate
-    pub partial_certificate: vec<u8>,
+    pub partial_Certificate: Vec<u8>,
 }
 
 impl Default for TPM2_CertifyX509_REQUEST {
     fn default() -> Self {
         Self {
-            objectHandle = TPM_HANDLE();
-            signHandle = TPM_HANDLE();
+            objectHandle: TPM_HANDLE::default(),
+            signHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_CertifyX509_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        object_handle: tpm_handle
-        ,
-        sign_handle: tpm_handle
-        ,
-        reserved: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>
-        ,
-        partial_certificate: vec<u8>
+        object_Handle: TPM_HANDLE,
+        sign_Handle: TPM_HANDLE,
+        reserved: Vec<u8>,
+        in_Scheme: TPMU_SIG_SCHEME,
+        partial_Certificate: Vec<u8>,
         ) -> Self {
         Self {
-            object_handle,
-            sign_handle,
+            object_Handle,
+            sign_Handle,
             reserved,
-            in_scheme,
-            partial_certificate,
+            in_Scheme,
+            partial_Certificate,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -17565,16 +15058,15 @@ impl TPM2_CertifyX509_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to generate an X.509 certificate that proves an object
@@ -17587,10 +15079,10 @@ impl TPM2_CertifyX509_REQUEST {
 pub struct CertifyX509Response {
     /// A DER encoded SEQUENCE containing the DER encoded fields added to partialCertificate
     /// to make it a complete RFC5280 TBSCertificate.
-    pub added_to_certificate: vec<u8>,
+    pub added_To_Certificate: Vec<u8>,
 
     /// The digest that was signed
-    pub tbs_digest: vec<u8>,
+    pub tbs_Digest: Vec<u8>,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -17598,21 +15090,19 @@ pub struct CertifyX509Response {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for CertifyX509Response {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl CertifyX509Response {
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -17622,16 +15112,15 @@ impl CertifyX509Response {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// TPM2_Commit() performs the first part of an ECC anonymous signing operation. The TPM
@@ -17643,60 +15132,53 @@ pub struct TPM2_Commit_REQUEST {
     /// Handle of the key that will be used in the signing operation
     /// Auth Index: 1
     /// Auth Role: USER
-    pub sign_handle: tpm_handle,
+    pub sign_Handle: TPM_HANDLE,
 
     /// A point (M) on the curve used by signHandle
-    pub p1: tpms_ecc_point,
+    pub P1: TPMS_ECC_POINT,
 
     /// Octet array used to derive x-coordinate of a base point
-    pub s2: vec<u8>,
+    pub s2: Vec<u8>,
 
     /// Y coordinate of the point associated with s2
-    pub y2: vec<u8>,
+    pub y2: Vec<u8>,
 }
 
 impl Default for TPM2_Commit_REQUEST {
     fn default() -> Self {
         Self {
-            signHandle = TPM_HANDLE();
+            signHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Commit_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sign_handle: tpm_handle
-        ,
-        p1: tpms_ecc_point
-        ,
-        s2: vec<u8>
-        ,
-        y2: vec<u8>
+        sign_Handle: TPM_HANDLE,
+        P1: TPMS_ECC_POINT,
+        s2: Vec<u8>,
+        y2: Vec<u8>,
         ) -> Self {
         Self {
-            sign_handle,
-            p1,
+            sign_Handle,
+            P1,
             s2,
             y2,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// TPM2_Commit() performs the first part of an ECC anonymous signing operation. The TPM
@@ -17706,13 +15188,13 @@ impl TPM2_Commit_REQUEST {
 #[derive(Debug, Clone)]
 pub struct CommitResponse {
     /// ECC point K [ds](x2, y2)
-    pub k: tpms_ecc_point,
+    pub K: TPMS_ECC_POINT,
 
     /// ECC point L [r](x2, y2)
-    pub l: tpms_ecc_point,
+    pub L: TPMS_ECC_POINT,
 
     /// ECC point E [r]P1
-    pub e: tpms_ecc_point,
+    pub E: TPMS_ECC_POINT,
 
     /// Least-significant 16 bits of commitCount
     pub counter: u16,
@@ -17722,72 +15204,65 @@ impl Default for CommitResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl CommitResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// TPM2_EC_Ephemeral() creates an ephemeral key for use in a two-phase key exchange protocol.
 #[derive(Debug, Clone)]
 pub struct TPM2_EC_Ephemeral_REQUEST {
     /// The curve for the computed ephemeral point
-    pub curve_id: tpm_ecc_curve,
+    pub curve_ID: TPM_ECC_CURVE,
 }
 
 impl Default for TPM2_EC_Ephemeral_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_EC_Ephemeral_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        curve_id: tpm_ecc_curve
+        curve_ID: TPM_ECC_CURVE,
         ) -> Self {
         Self {
-            curve_id,
+            curve_ID,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// TPM2_EC_Ephemeral() creates an ephemeral key for use in a two-phase key exchange protocol.
 #[derive(Debug, Clone)]
 pub struct EC_EphemeralResponse {
     /// Ephemeral public key Q [r]G
-    pub q: tpms_ecc_point,
+    pub Q: TPMS_ECC_POINT,
 
     /// Least-significant 16 bits of commitCount
     pub counter: u16,
@@ -17797,24 +15272,21 @@ impl Default for EC_EphemeralResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl EC_EphemeralResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command uses loaded keys to validate a signature on a message with the message
@@ -17823,10 +15295,10 @@ impl EC_EphemeralResponse {
 pub struct TPM2_VerifySignature_REQUEST {
     /// Handle of public key that will be used in the validation
     /// Auth Index: None
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// Digest of the signed message
-    pub digest: vec<u8>,
+    pub digest: Vec<u8>,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -17834,38 +15306,33 @@ pub struct TPM2_VerifySignature_REQUEST {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for TPM2_VerifySignature_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_VerifySignature_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
-        ,
-        digest: vec<u8>
-        ,
-        signature: Option<Box<dyn TPMU_SIGNATURE>>
+        key_Handle: TPM_HANDLE,
+        digest: Vec<u8>,
+        signature: TPMU_SIGNATURE,
         ) -> Self {
         Self {
-            key_handle,
+            key_Handle,
             digest,
             signature,
         }
-
     }
 
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -17875,47 +15342,43 @@ impl TPM2_VerifySignature_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command uses loaded keys to validate a signature on a message with the message
 /// digest passed to the TPM.
 #[derive(Debug, Clone)]
 pub struct VerifySignatureResponse {
-    pub validation: tpmt_tk_verified,
+    pub validation: TPMT_TK_VERIFIED,
 }
 
 impl Default for VerifySignatureResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl VerifySignatureResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command causes the TPM to sign an externally provided hash with the specified
@@ -17925,10 +15388,10 @@ pub struct TPM2_Sign_REQUEST {
     /// Handle of key that will perform signing
     /// Auth Index: 1
     /// Auth Role: USER
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// Digest to be signed
-    pub digest: vec<u8>,
+    pub digest: Vec<u8>,
 
     /// Scheme selector
 
@@ -17936,47 +15399,41 @@ pub struct TPM2_Sign_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub in_Scheme: TPMU_SIG_SCHEME,
 
     /// Proof that digest was created by the TPM
     /// If keyHandle is not a restricted signing key, then this may be a NULL Ticket with tag
     /// = TPM_ST_CHECKHASH.
-    pub validation: tpmt_tk_hashcheck,
+    pub validation: TPMT_TK_HASHCHECK,
 }
 
 impl Default for TPM2_Sign_REQUEST {
     fn default() -> Self {
         Self {
-            keyHandle = TPM_HANDLE();
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Sign_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        key_handle: tpm_handle
-        ,
-        digest: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>
-        ,
-        validation: tpmt_tk_hashcheck
+        key_Handle: TPM_HANDLE,
+        digest: Vec<u8>,
+        in_Scheme: TPMU_SIG_SCHEME,
+        validation: TPMT_TK_HASHCHECK,
         ) -> Self {
         Self {
-            key_handle,
+            key_Handle,
             digest,
-            in_scheme,
+            in_Scheme,
             validation,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -17985,16 +15442,15 @@ impl TPM2_Sign_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command causes the TPM to sign an externally provided hash with the specified
@@ -18007,21 +15463,19 @@ pub struct SignResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for SignResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl SignResponse {
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -18031,16 +15485,15 @@ impl SignResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command may be used by the Privacy Administrator or platform to change the audit
@@ -18051,61 +15504,54 @@ pub struct TPM2_SetCommandCodeAuditStatus_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth: tpm_handle,
+    pub auth: TPM_HANDLE,
 
     /// Hash algorithm for the audit digest; if TPM_ALG_NULL, then the hash is not changed
-    pub audit_alg: tpm_alg_id,
+    pub audit_Alg: TPM_ALG_ID,
 
     /// List of commands that will be added to those that will be audited
-    pub set_list: vec<tpm_cc>,
+    pub set_List: Vec<TPM_CC>,
 
     /// List of commands that will no longer be audited
-    pub clear_list: vec<tpm_cc>,
+    pub clear_List: Vec<TPM_CC>,
 }
 
 impl Default for TPM2_SetCommandCodeAuditStatus_REQUEST {
     fn default() -> Self {
         Self {
-            auth = TPM_HANDLE();
-            auditAlg = TPM_ALG_ID:NULL;
+            auth: TPM_HANDLE::default(),
+            auditAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_SetCommandCodeAuditStatus_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: tpm_handle
-        ,
-        audit_alg: tpm_alg_id
-        ,
-        set_list: vec<tpm_cc>
-        ,
-        clear_list: vec<tpm_cc>
+        auth: TPM_HANDLE,
+        audit_Alg: TPM_ALG_ID,
+        set_List: Vec<TPM_CC>,
+        clear_List: Vec<TPM_CC>,
         ) -> Self {
         Self {
             auth,
-            audit_alg,
-            set_list,
-            clear_list,
+            audit_Alg,
+            set_List,
+            clear_List,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to cause an update to the indicated PCR. The digests parameter
@@ -18117,48 +15563,43 @@ pub struct TPM2_PCR_Extend_REQUEST {
     /// Handle of the PCR
     /// Auth Handle: 1
     /// Auth Role: USER
-    pub pcr_handle: tpm_handle,
+    pub pcr_Handle: TPM_HANDLE,
 
     /// List of tagged digest values to be extended
-    pub digests: vec<tpmt_ha>,
+    pub digests: Vec<TPMT_HA>,
 }
 
 impl Default for TPM2_PCR_Extend_REQUEST {
     fn default() -> Self {
         Self {
-            pcrHandle = TPM_HANDLE();
+            pcrHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PCR_Extend_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_handle: tpm_handle
-        ,
-        digests: vec<tpmt_ha>
+        pcr_Handle: TPM_HANDLE,
+        digests: Vec<TPMT_HA>,
         ) -> Self {
         Self {
-            pcr_handle,
+            pcr_Handle,
             digests,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to cause an update to the indicated PCR.
@@ -18167,156 +15608,141 @@ pub struct TPM2_PCR_Event_REQUEST {
     /// Handle of the PCR
     /// Auth Handle: 1
     /// Auth Role: USER
-    pub pcr_handle: tpm_handle,
+    pub pcr_Handle: TPM_HANDLE,
 
     /// Event data in sized buffer
-    pub event_data: vec<u8>,
+    pub event_Data: Vec<u8>,
 }
 
 impl Default for TPM2_PCR_Event_REQUEST {
     fn default() -> Self {
         Self {
-            pcrHandle = TPM_HANDLE();
+            pcrHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PCR_Event_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_handle: tpm_handle
-        ,
-        event_data: vec<u8>
+        pcr_Handle: TPM_HANDLE,
+        event_Data: Vec<u8>,
         ) -> Self {
         Self {
-            pcr_handle,
-            event_data,
+            pcr_Handle,
+            event_Data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to cause an update to the indicated PCR.
 #[derive(Debug, Clone)]
 pub struct PCR_EventResponse {
-    pub digests: vec<tpmt_ha>,
+    pub digests: Vec<TPMT_HA>,
 }
 
 impl Default for PCR_EventResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl PCR_EventResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the values of all PCR specified in pcrSelectionIn.
 #[derive(Debug, Clone)]
 pub struct TPM2_PCR_Read_REQUEST {
     /// The selection of PCR to read
-    pub pcr_selection_in: vec<tpms_pcr_selection>,
+    pub pcr_Selection_In: Vec<TPMS_PCR_SELECTION>,
 }
 
 impl Default for TPM2_PCR_Read_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_PCR_Read_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_selection_in: vec<tpms_pcr_selection>
+        pcr_Selection_In: Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            pcr_selection_in,
+            pcr_Selection_In,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the values of all PCR specified in pcrSelectionIn.
 #[derive(Debug, Clone)]
 pub struct PCR_ReadResponse {
     /// The current value of the PCR update counter
-    pub pcr_update_counter: u32,
+    pub pcr_Update_Counter: u32,
 
     /// The PCR in the returned list
-    pub pcr_selection_out: vec<tpms_pcr_selection>,
+    pub pcr_Selection_Out: Vec<TPMS_PCR_SELECTION>,
 
     /// The contents of the PCR indicated in pcrSelectOut-˃ pcrSelection[] as tagged digests
-    pub pcr_values: vec<tpm2_b_digest>,
+    pub pcr_Values: Vec<TPM2B_DIGEST>,
 }
 
 impl Default for PCR_ReadResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl PCR_ReadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to set the desired PCR allocation of PCR and algorithms. This
@@ -18326,48 +15752,43 @@ pub struct TPM2_PCR_Allocate_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The requested allocation
-    pub pcr_allocation: vec<tpms_pcr_selection>,
+    pub pcr_Allocation: Vec<TPMS_PCR_SELECTION>,
 }
 
 impl Default for TPM2_PCR_Allocate_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PCR_Allocate_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        pcr_allocation: vec<tpms_pcr_selection>
+        auth_Handle: TPM_HANDLE,
+        pcr_Allocation: Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            auth_handle,
-            pcr_allocation,
+            auth_Handle,
+            pcr_Allocation,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to set the desired PCR allocation of PCR and algorithms. This
@@ -18375,40 +15796,37 @@ impl TPM2_PCR_Allocate_REQUEST {
 #[derive(Debug, Clone)]
 pub struct PCR_AllocateResponse {
     /// YES if the allocation succeeded
-    pub allocation_success: u8,
+    pub allocation_Success: u8,
 
     /// Maximum number of PCR that may be in a bank
-    pub max_pcr: u32,
+    pub max_PCR: u32,
 
     /// Number of octets required to satisfy the request
-    pub size_needed: u32,
+    pub size_Needed: u32,
 
     /// Number of octets available. Computed before the allocation.
-    pub size_available: u32,
+    pub size_Available: u32,
 }
 
 impl Default for PCR_AllocateResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl PCR_AllocateResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to associate a policy with a PCR or group of PCR. The policy
@@ -18418,62 +15836,55 @@ pub struct TPM2_PCR_SetAuthPolicy_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The desired authPolicy
-    pub auth_policy: vec<u8>,
+    pub auth_Policy: Vec<u8>,
 
     /// The hash algorithm of the policy
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 
     /// The PCR for which the policy is to be set
-    pub pcr_num: tpm_handle,
+    pub pcr_Num: TPM_HANDLE,
 }
 
 impl Default for TPM2_PCR_SetAuthPolicy_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            hashAlg = TPM_ALG_ID:NULL;
-            pcrNum = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            hashAlg: TPM_ALG_ID::NULL,
+            pcrNum: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PCR_SetAuthPolicy_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        auth_policy: vec<u8>
-        ,
-        hash_alg: tpm_alg_id
-        ,
-        pcr_num: tpm_handle
+        auth_Handle: TPM_HANDLE,
+        auth_Policy: Vec<u8>,
+        hash_Alg: TPM_ALG_ID,
+        pcr_Num: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
-            auth_policy,
-            hash_alg,
-            pcr_num,
+            auth_Handle,
+            auth_Policy,
+            hash_Alg,
+            pcr_Num,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command changes the authValue of a PCR or group of PCR.
@@ -18482,48 +15893,43 @@ pub struct TPM2_PCR_SetAuthValue_REQUEST {
     /// Handle for a PCR that may have an authorization value set
     /// Auth Index: 1
     /// Auth Role: USER
-    pub pcr_handle: tpm_handle,
+    pub pcr_Handle: TPM_HANDLE,
 
     /// The desired authorization value
-    pub auth: vec<u8>,
+    pub auth: Vec<u8>,
 }
 
 impl Default for TPM2_PCR_SetAuthValue_REQUEST {
     fn default() -> Self {
         Self {
-            pcrHandle = TPM_HANDLE();
+            pcrHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PCR_SetAuthValue_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_handle: tpm_handle
-        ,
-        auth: vec<u8>
+        pcr_Handle: TPM_HANDLE,
+        auth: Vec<u8>,
         ) -> Self {
         Self {
-            pcr_handle,
+            pcr_Handle,
             auth,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// If the attribute of a PCR allows the PCR to be reset and proper authorization is
@@ -18534,42 +15940,38 @@ pub struct TPM2_PCR_Reset_REQUEST {
     /// The PCR to reset
     /// Auth Index: 1
     /// Auth Role: USER
-    pub pcr_handle: tpm_handle,
+    pub pcr_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_PCR_Reset_REQUEST {
     fn default() -> Self {
         Self {
-            pcrHandle = TPM_HANDLE();
+            pcrHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PCR_Reset_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcr_handle: tpm_handle
+        pcr_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            pcr_handle,
+            pcr_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command includes a signed authorization in a policy. The command ties the policy
@@ -18578,24 +15980,24 @@ impl TPM2_PCR_Reset_REQUEST {
 pub struct TPM2_PolicySigned_REQUEST {
     /// Handle for a key that will validate the signature
     /// Auth Index: None
-    pub auth_object: tpm_handle,
+    pub auth_Object: TPM_HANDLE,
 
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The policy nonce for the session
     /// This can be the Empty Buffer.
-    pub nonce_tpm: vec<u8>,
+    pub nonce_TPM: Vec<u8>,
 
     /// Digest of the command parameters to which this authorization is limited
     /// This is not the cpHash for this command but the cpHash for the command to which this
     /// policy session will be applied. If it is not limited, the parameter will be the Empty Buffer.
-    pub cp_hash_a: vec<u8>,
+    pub cp_Hash_A: Vec<u8>,
 
     /// A reference to a policy relating to the authorization may be the Empty Buffer
     /// Size is limited to be no larger than the nonce size supported on the TPM.
-    pub policy_ref: vec<u8>,
+    pub policy_Ref: Vec<u8>,
 
     /// Time when authorization will expire, measured in seconds from the time that nonceTPM
     /// was generated
@@ -18608,51 +16010,42 @@ pub struct TPM2_PolicySigned_REQUEST {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub auth: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub auth: TPMU_SIGNATURE,
 }
 
 impl Default for TPM2_PolicySigned_REQUEST {
     fn default() -> Self {
         Self {
-            authObject = TPM_HANDLE();
-            policySession = TPM_HANDLE();
+            authObject: TPM_HANDLE::default(),
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicySigned_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_object: tpm_handle
-        ,
-        policy_session: tpm_handle
-        ,
-        nonce_tpm: vec<u8>
-        ,
-        cp_hash_a: vec<u8>
-        ,
-        policy_ref: vec<u8>
-        ,
-        expiration: i32
-        ,
-        auth: Option<Box<dyn TPMU_SIGNATURE>>
+        auth_Object: TPM_HANDLE,
+        policy_Session: TPM_HANDLE,
+        nonce_TPM: Vec<u8>,
+        cp_Hash_A: Vec<u8>,
+        policy_Ref: Vec<u8>,
+        expiration: i32,
+        auth: TPMU_SIGNATURE,
         ) -> Self {
         Self {
-            auth_object,
-            policy_session,
-            nonce_tpm,
-            cp_hash_a,
-            policy_ref,
+            auth_Object,
+            policy_Session,
+            nonce_TPM,
+            cp_Hash_A,
+            policy_Ref,
             expiration,
             auth,
         }
-
     }
 
     /// Get the authSigAlg selector value
-    pub fn auth_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn auth_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.auth {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -18662,16 +16055,15 @@ impl TPM2_PolicySigned_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command includes a signed authorization in a policy. The command ties the policy
@@ -18680,35 +16072,32 @@ impl TPM2_PolicySigned_REQUEST {
 pub struct PolicySignedResponse {
     /// Implementation-specific time value, used to indicate to the TPM when the ticket expires
     /// NOTE If policyTicket is a NULL Ticket, then this shall be the Empty Buffer.
-    pub timeout: vec<u8>,
+    pub timeout: Vec<u8>,
 
     /// Produced if the command succeeds and expiration in the command was non-zero; this
     /// ticket will use the TPMT_ST_AUTH_SIGNED structure tag. See 23.2.5
-    pub policy_ticket: tpmt_tk_auth,
+    pub policy_Ticket: TPMT_TK_AUTH,
 }
 
 impl Default for PolicySignedResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl PolicySignedResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command includes a secret-based authorization to a policy. The caller proves
@@ -18720,24 +16109,24 @@ pub struct TPM2_PolicySecret_REQUEST {
     /// Handle for an entity providing the authorization
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The policy nonce for the session
     /// This can be the Empty Buffer.
-    pub nonce_tpm: vec<u8>,
+    pub nonce_TPM: Vec<u8>,
 
     /// Digest of the command parameters to which this authorization is limited
     /// This not the cpHash for this command but the cpHash for the command to which this
     /// policy session will be applied. If it is not limited, the parameter will be the Empty Buffer.
-    pub cp_hash_a: vec<u8>,
+    pub cp_Hash_A: Vec<u8>,
 
     /// A reference to a policy relating to the authorization may be the Empty Buffer
     /// Size is limited to be no larger than the nonce size supported on the TPM.
-    pub policy_ref: vec<u8>,
+    pub policy_Ref: Vec<u8>,
 
     /// Time when authorization will expire, measured in seconds from the time that nonceTPM
     /// was generated
@@ -18748,52 +16137,43 @@ pub struct TPM2_PolicySecret_REQUEST {
 impl Default for TPM2_PolicySecret_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            policySession = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicySecret_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        policy_session: tpm_handle
-        ,
-        nonce_tpm: vec<u8>
-        ,
-        cp_hash_a: vec<u8>
-        ,
-        policy_ref: vec<u8>
-        ,
-        expiration: i32
+        auth_Handle: TPM_HANDLE,
+        policy_Session: TPM_HANDLE,
+        nonce_TPM: Vec<u8>,
+        cp_Hash_A: Vec<u8>,
+        policy_Ref: Vec<u8>,
+        expiration: i32,
         ) -> Self {
         Self {
-            auth_handle,
-            policy_session,
-            nonce_tpm,
-            cp_hash_a,
-            policy_ref,
+            auth_Handle,
+            policy_Session,
+            nonce_TPM,
+            cp_Hash_A,
+            policy_Ref,
             expiration,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command includes a secret-based authorization to a policy. The caller proves
@@ -18803,35 +16183,32 @@ impl TPM2_PolicySecret_REQUEST {
 #[derive(Debug, Clone)]
 pub struct PolicySecretResponse {
     /// Implementation-specific time value used to indicate to the TPM when the ticket expires
-    pub timeout: vec<u8>,
+    pub timeout: Vec<u8>,
 
     /// Produced if the command succeeds and expiration in the command was non-zero ( See
     /// 23.2.5). This ticket will use the TPMT_ST_AUTH_SECRET structure tag
-    pub policy_ticket: tpmt_tk_auth,
+    pub policy_Ticket: TPMT_TK_AUTH,
 }
 
 impl Default for PolicySecretResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl PolicySecretResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is similar to TPM2_PolicySigned() except that it takes a ticket instead
@@ -18841,75 +16218,66 @@ impl PolicySecretResponse {
 pub struct TPM2_PolicyTicket_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// Time when authorization will expire
     /// The contents are TPM specific. This shall be the value returned when ticket was produced.
-    pub timeout: vec<u8>,
+    pub timeout: Vec<u8>,
 
     /// Digest of the command parameters to which this authorization is limited
     /// If it is not limited, the parameter will be the Empty Buffer.
-    pub cp_hash_a: vec<u8>,
+    pub cp_Hash_A: Vec<u8>,
 
     /// Reference to a qualifier for the policy may be the Empty Buffer
-    pub policy_ref: vec<u8>,
+    pub policy_Ref: Vec<u8>,
 
     /// Name of the object that provided the authorization
-    pub auth_name: vec<u8>,
+    pub auth_Name: Vec<u8>,
 
     /// An authorization ticket returned by the TPM in response to a TPM2_PolicySigned() or
     /// TPM2_PolicySecret()
-    pub ticket: tpmt_tk_auth,
+    pub ticket: TPMT_TK_AUTH,
 }
 
 impl Default for TPM2_PolicyTicket_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyTicket_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        timeout: vec<u8>
-        ,
-        cp_hash_a: vec<u8>
-        ,
-        policy_ref: vec<u8>
-        ,
-        auth_name: vec<u8>
-        ,
-        ticket: tpmt_tk_auth
+        policy_Session: TPM_HANDLE,
+        timeout: Vec<u8>,
+        cp_Hash_A: Vec<u8>,
+        policy_Ref: Vec<u8>,
+        auth_Name: Vec<u8>,
+        ticket: TPMT_TK_AUTH,
         ) -> Self {
         Self {
-            policy_session,
+            policy_Session,
             timeout,
-            cp_hash_a,
-            policy_ref,
-            auth_name,
+            cp_Hash_A,
+            policy_Ref,
+            auth_Name,
             ticket,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows options in authorizations without requiring that the TPM evaluate
@@ -18920,48 +16288,43 @@ impl TPM2_PolicyTicket_REQUEST {
 pub struct TPM2_PolicyOR_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The list of hashes to check for a match
-    pub phashlist: vec<tpm2_b_digest>,
+    pub pHashList: Vec<TPM2B_DIGEST>,
 }
 
 impl Default for TPM2_PolicyOR_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyOR_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        phashlist: vec<tpm2_b_digest>
+        policy_Session: TPM_HANDLE,
+        pHashList: Vec<TPM2B_DIGEST>,
         ) -> Self {
         Self {
-            policy_session,
-            phashlist,
+            policy_Session,
+            pHashList,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to cause conditional gating of a policy based on PCR. This
@@ -18972,55 +16335,49 @@ impl TPM2_PolicyOR_REQUEST {
 pub struct TPM2_PolicyPCR_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// Expected digest value of the selected PCR using the hash algorithm of the session; may
     /// be zero length
-    pub pcr_digest: vec<u8>,
+    pub pcr_Digest: Vec<u8>,
 
     /// The PCR to include in the check digest
-    pub pcrs: vec<tpms_pcr_selection>,
+    pub pcrs: Vec<TPMS_PCR_SELECTION>,
 }
 
 impl Default for TPM2_PolicyPCR_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyPCR_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        pcr_digest: vec<u8>
-        ,
-        pcrs: vec<tpms_pcr_selection>
+        policy_Session: TPM_HANDLE,
+        pcr_Digest: Vec<u8>,
+        pcrs: Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            policy_session,
-            pcr_digest,
+            policy_Session,
+            pcr_Digest,
             pcrs,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command indicates that the authorization will be limited to a specific locality.
@@ -19028,48 +16385,43 @@ impl TPM2_PolicyPCR_REQUEST {
 pub struct TPM2_PolicyLocality_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The allowed localities for the policy
-    pub locality: tpma_locality,
+    pub locality: TPMA_LOCALITY,
 }
 
 impl Default for TPM2_PolicyLocality_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyLocality_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        locality: tpma_locality
+        policy_Session: TPM_HANDLE,
+        locality: TPMA_LOCALITY,
         ) -> Self {
         Self {
-            policy_session,
+            policy_Session,
             locality,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to cause conditional gating of a policy based on the contents of
@@ -19080,76 +16432,67 @@ pub struct TPM2_PolicyNV_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The NV Index of the area to read
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The second operand
-    pub operand_b: vec<u8>,
+    pub operand_B: Vec<u8>,
 
     /// The octet offset in the NV Index for the start of operand A
     pub offset: u16,
 
     /// The comparison to make
-    pub operation: tpm_eo,
+    pub operation: TPM_EO,
 }
 
 impl Default for TPM2_PolicyNV_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
-            policySession = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyNV_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
-        ,
-        policy_session: tpm_handle
-        ,
-        operand_b: vec<u8>
-        ,
-        offset: u16
-        ,
-        operation: tpm_eo
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
+        policy_Session: TPM_HANDLE,
+        operand_B: Vec<u8>,
+        offset: u16,
+        operation: TPM_EO,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
-            policy_session,
-            operand_b,
+            auth_Handle,
+            nv_Index,
+            policy_Session,
+            operand_B,
             offset,
             operation,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to cause conditional gating of a policy based on the contents of
@@ -19158,60 +16501,53 @@ impl TPM2_PolicyNV_REQUEST {
 pub struct TPM2_PolicyCounterTimer_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The second operand
-    pub operand_b: vec<u8>,
+    pub operand_B: Vec<u8>,
 
     /// The octet offset in the TPMS_TIME_INFO structure for the start of operand A
     pub offset: u16,
 
     /// The comparison to make
-    pub operation: tpm_eo,
+    pub operation: TPM_EO,
 }
 
 impl Default for TPM2_PolicyCounterTimer_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyCounterTimer_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        operand_b: vec<u8>
-        ,
-        offset: u16
-        ,
-        operation: tpm_eo
+        policy_Session: TPM_HANDLE,
+        operand_B: Vec<u8>,
+        offset: u16,
+        operation: TPM_EO,
         ) -> Self {
         Self {
-            policy_session,
-            operand_b,
+            policy_Session,
+            operand_B,
             offset,
             operation,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command indicates that the authorization will be limited to a specific command code.
@@ -19219,48 +16555,43 @@ impl TPM2_PolicyCounterTimer_REQUEST {
 pub struct TPM2_PolicyCommandCode_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The allowed commandCode
-    pub code: tpm_cc,
+    pub code: TPM_CC,
 }
 
 impl Default for TPM2_PolicyCommandCode_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyCommandCode_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        code: tpm_cc
+        policy_Session: TPM_HANDLE,
+        code: TPM_CC,
         ) -> Self {
         Self {
-            policy_session,
+            policy_Session,
             code,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command indicates that physical presence will need to be asserted at the time the
@@ -19269,42 +16600,38 @@ impl TPM2_PolicyCommandCode_REQUEST {
 pub struct TPM2_PolicyPhysicalPresence_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 }
 
 impl Default for TPM2_PolicyPhysicalPresence_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyPhysicalPresence_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
+        policy_Session: TPM_HANDLE,
         ) -> Self {
         Self {
-            policy_session,
+            policy_Session,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to allow a policy to be bound to a specific command and command parameters.
@@ -19312,48 +16639,43 @@ impl TPM2_PolicyPhysicalPresence_REQUEST {
 pub struct TPM2_PolicyCpHash_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The cpHash added to the policy
-    pub cp_hash_a: vec<u8>,
+    pub cp_Hash_A: Vec<u8>,
 }
 
 impl Default for TPM2_PolicyCpHash_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyCpHash_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        cp_hash_a: vec<u8>
+        policy_Session: TPM_HANDLE,
+        cp_Hash_A: Vec<u8>,
         ) -> Self {
         Self {
-            policy_session,
-            cp_hash_a,
+            policy_Session,
+            cp_Hash_A,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows a policy to be bound to a specific set of TPM entities without
@@ -19363,48 +16685,43 @@ impl TPM2_PolicyCpHash_REQUEST {
 pub struct TPM2_PolicyNameHash_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The digest to be added to the policy
-    pub name_hash: vec<u8>,
+    pub name_Hash: Vec<u8>,
 }
 
 impl Default for TPM2_PolicyNameHash_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyNameHash_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        name_hash: vec<u8>
+        policy_Session: TPM_HANDLE,
+        name_Hash: Vec<u8>,
         ) -> Self {
         Self {
-            policy_session,
-            name_hash,
+            policy_Session,
+            name_Hash,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows qualification of duplication to allow duplication to a selected
@@ -19413,60 +16730,53 @@ impl TPM2_PolicyNameHash_REQUEST {
 pub struct TPM2_PolicyDuplicationSelect_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The Name of the object to be duplicated
-    pub object_name: vec<u8>,
+    pub object_Name: Vec<u8>,
 
     /// The Name of the new parent
-    pub new_parent_name: vec<u8>,
+    pub new_Parent_Name: Vec<u8>,
 
     /// If YES, the objectName will be included in the value in policySessionpolicyDigest
-    pub include_object: u8,
+    pub include_Object: u8,
 }
 
 impl Default for TPM2_PolicyDuplicationSelect_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyDuplicationSelect_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        object_name: vec<u8>
-        ,
-        new_parent_name: vec<u8>
-        ,
-        include_object: u8
+        policy_Session: TPM_HANDLE,
+        object_Name: Vec<u8>,
+        new_Parent_Name: Vec<u8>,
+        include_Object: u8,
         ) -> Self {
         Self {
-            policy_session,
-            object_name,
-            new_parent_name,
-            include_object,
+            policy_Session,
+            object_Name,
+            new_Parent_Name,
+            include_Object,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows policies to change. If a policy were static, then it would be
@@ -19476,66 +16786,58 @@ impl TPM2_PolicyDuplicationSelect_REQUEST {
 pub struct TPM2_PolicyAuthorize_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// Digest of the policy being approved
-    pub approved_policy: vec<u8>,
+    pub approved_Policy: Vec<u8>,
 
     /// A policy qualifier
-    pub policy_ref: vec<u8>,
+    pub policy_Ref: Vec<u8>,
 
     /// Name of a key that can sign a policy addition
-    pub key_sign: vec<u8>,
+    pub key_Sign: Vec<u8>,
 
     /// Ticket validating that approvedPolicy and policyRef were signed by keySign
-    pub check_ticket: tpmt_tk_verified,
+    pub check_Ticket: TPMT_TK_VERIFIED,
 }
 
 impl Default for TPM2_PolicyAuthorize_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyAuthorize_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        approved_policy: vec<u8>
-        ,
-        policy_ref: vec<u8>
-        ,
-        key_sign: vec<u8>
-        ,
-        check_ticket: tpmt_tk_verified
+        policy_Session: TPM_HANDLE,
+        approved_Policy: Vec<u8>,
+        policy_Ref: Vec<u8>,
+        key_Sign: Vec<u8>,
+        check_Ticket: TPMT_TK_VERIFIED,
         ) -> Self {
         Self {
-            policy_session,
-            approved_policy,
-            policy_ref,
-            key_sign,
-            check_ticket,
+            policy_Session,
+            approved_Policy,
+            policy_Ref,
+            key_Sign,
+            check_Ticket,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows a policy to be bound to the authorization value of the authorized entity.
@@ -19543,42 +16845,38 @@ impl TPM2_PolicyAuthorize_REQUEST {
 pub struct TPM2_PolicyAuthValue_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 }
 
 impl Default for TPM2_PolicyAuthValue_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyAuthValue_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
+        policy_Session: TPM_HANDLE,
         ) -> Self {
         Self {
-            policy_session,
+            policy_Session,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows a policy to be bound to the authorization value of the authorized object.
@@ -19586,42 +16884,38 @@ impl TPM2_PolicyAuthValue_REQUEST {
 pub struct TPM2_PolicyPassword_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 }
 
 impl Default for TPM2_PolicyPassword_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyPassword_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
+        policy_Session: TPM_HANDLE,
         ) -> Self {
         Self {
-            policy_session,
+            policy_Session,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the current policyDigest of the session. This command allows the
@@ -19630,42 +16924,38 @@ impl TPM2_PolicyPassword_REQUEST {
 pub struct TPM2_PolicyGetDigest_REQUEST {
     /// Handle for the policy session
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 }
 
 impl Default for TPM2_PolicyGetDigest_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyGetDigest_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
+        policy_Session: TPM_HANDLE,
         ) -> Self {
         Self {
-            policy_session,
+            policy_Session,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns the current policyDigest of the session. This command allows the
@@ -19673,31 +16963,28 @@ impl TPM2_PolicyGetDigest_REQUEST {
 #[derive(Debug, Clone)]
 pub struct PolicyGetDigestResponse {
     /// The current value of the policySessionpolicyDigest
-    pub policy_digest: vec<u8>,
+    pub policy_Digest: Vec<u8>,
 }
 
 impl Default for PolicyGetDigestResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl PolicyGetDigestResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows a policy to be bound to the TPMA_NV_WRITTEN attributes. This is a
@@ -19707,49 +16994,44 @@ impl PolicyGetDigestResponse {
 pub struct TPM2_PolicyNvWritten_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// YES if NV Index is required to have been written
     /// NO if NV Index is required not to have been written
-    pub written_set: u8,
+    pub written_Set: u8,
 }
 
 impl Default for TPM2_PolicyNvWritten_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyNvWritten_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        written_set: u8
+        policy_Session: TPM_HANDLE,
+        written_Set: u8,
         ) -> Self {
         Self {
-            policy_session,
-            written_set,
+            policy_Session,
+            written_Set,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows a policy to be bound to a specific creation template. This is most
@@ -19759,48 +17041,43 @@ impl TPM2_PolicyNvWritten_REQUEST {
 pub struct TPM2_PolicyTemplate_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The digest to be added to the policy
-    pub template_hash: vec<u8>,
+    pub template_Hash: Vec<u8>,
 }
 
 impl Default for TPM2_PolicyTemplate_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyTemplate_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        template_hash: vec<u8>
+        policy_Session: TPM_HANDLE,
+        template_Hash: Vec<u8>,
         ) -> Self {
         Self {
-            policy_session,
-            template_hash,
+            policy_Session,
+            template_Hash,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command provides a capability that is the equivalent of a revocable policy. With
@@ -19812,58 +17089,52 @@ pub struct TPM2_PolicyAuthorizeNV_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The NV Index of the area to read
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 }
 
 impl Default for TPM2_PolicyAuthorizeNV_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
-            policySession = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PolicyAuthorizeNV_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
-        ,
-        policy_session: tpm_handle
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
+        policy_Session: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
-            policy_session,
+            auth_Handle,
+            nv_Index,
+            policy_Session,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to create a Primary Object under one of the Primary Seeds or a
@@ -19876,67 +17147,59 @@ pub struct TPM2_CreatePrimary_REQUEST {
     /// TPM_RH_ENDORSEMENT, TPM_RH_OWNER, TPM_RH_PLATFORM+{PP}, or TPM_RH_NULL
     /// Auth Index: 1
     /// Auth Role: USER
-    pub primary_handle: tpm_handle,
+    pub primary_Handle: TPM_HANDLE,
 
     /// The sensitive data, see TPM 2.0 Part 1 Sensitive Values
-    pub in_sensitive: tpms_sensitive_create,
+    pub in_Sensitive: TPMS_SENSITIVE_CREATE,
 
     /// The public template
-    pub in_public: tpmt_public,
+    pub in_Public: TPMT_PUBLIC,
 
     /// Data that will be included in the creation data for this object to provide permanent,
     /// verifiable linkage between this object and some object owner data
-    pub outside_info: vec<u8>,
+    pub outside_Info: Vec<u8>,
 
     /// PCR that will be used in creation data
-    pub creation_pcr: vec<tpms_pcr_selection>,
+    pub creation_PCR: Vec<TPMS_PCR_SELECTION>,
 }
 
 impl Default for TPM2_CreatePrimary_REQUEST {
     fn default() -> Self {
         Self {
-            primaryHandle = TPM_HANDLE();
+            primaryHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_CreatePrimary_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        primary_handle: tpm_handle
-        ,
-        in_sensitive: tpms_sensitive_create
-        ,
-        in_public: tpmt_public
-        ,
-        outside_info: vec<u8>
-        ,
-        creation_pcr: vec<tpms_pcr_selection>
+        primary_Handle: TPM_HANDLE,
+        in_Sensitive: TPMS_SENSITIVE_CREATE,
+        in_Public: TPMT_PUBLIC,
+        outside_Info: Vec<u8>,
+        creation_PCR: Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            primary_handle,
-            in_sensitive,
-            in_public,
-            outside_info,
-            creation_pcr,
+            primary_Handle,
+            in_Sensitive,
+            in_Public,
+            outside_Info,
+            creation_PCR,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to create a Primary Object under one of the Primary Seeds or a
@@ -19947,48 +17210,45 @@ impl TPM2_CreatePrimary_REQUEST {
 #[derive(Debug, Clone)]
 pub struct CreatePrimaryResponse {
     /// Handle of type TPM_HT_TRANSIENT for created Primary Object
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// The public portion of the created object
-    pub out_public: tpmt_public,
+    pub out_Public: TPMT_PUBLIC,
 
     /// Contains a TPMT_CREATION_DATA
-    pub creation_data: tpms_creation_data,
+    pub creation_Data: TPMS_CREATION_DATA,
 
     /// Digest of creationData using nameAlg of outPublic
-    pub creation_hash: vec<u8>,
+    pub creation_Hash: Vec<u8>,
 
     /// Ticket used by TPM2_CertifyCreation() to validate that the creation data was produced
     /// by the TPM
-    pub creation_ticket: tpmt_tk_creation,
+    pub creation_Ticket: TPMT_TK_CREATION,
 
     /// The name of the created object
-    pub name: vec<u8>,
+    pub name: Vec<u8>,
 }
 
 impl Default for CreatePrimaryResponse {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl CreatePrimaryResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command enables and disables use of a hierarchy and its associated NV storage.
@@ -19999,11 +17259,11 @@ pub struct TPM2_HierarchyControl_REQUEST {
     /// TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The enable being modified
     /// TPM_RH_ENDORSEMENT, TPM_RH_OWNER, TPM_RH_PLATFORM, or TPM_RH_PLATFORM_NV
-    pub enable: tpm_handle,
+    pub enable: TPM_HANDLE,
 
     /// YES if the enable should be SET, NO if the enable should be CLEAR
     pub state: u8,
@@ -20012,43 +17272,37 @@ pub struct TPM2_HierarchyControl_REQUEST {
 impl Default for TPM2_HierarchyControl_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            enable = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            enable: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_HierarchyControl_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        enable: tpm_handle
-        ,
-        state: u8
+        auth_Handle: TPM_HANDLE,
+        enable: TPM_HANDLE,
+        state: u8,
         ) -> Self {
         Self {
-            auth_handle,
+            auth_Handle,
             enable,
             state,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows setting of the authorization policy for the lockout
@@ -20061,57 +17315,51 @@ pub struct TPM2_SetPrimaryPolicy_REQUEST {
     /// TPM_RH_LOCKOUT, TPM_RH_ENDORSEMENT, TPM_RH_OWNER, TPMI_RH_ACT or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// An authorization policy digest; may be the Empty Buffer
     /// If hashAlg is TPM_ALG_NULL, then this shall be an Empty Buffer.
-    pub auth_policy: vec<u8>,
+    pub auth_Policy: Vec<u8>,
 
     /// The hash algorithm to use for the policy
     /// If the authPolicy is an Empty Buffer, then this field shall be TPM_ALG_NULL.
-    pub hash_alg: tpm_alg_id,
+    pub hash_Alg: TPM_ALG_ID,
 }
 
 impl Default for TPM2_SetPrimaryPolicy_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            hashAlg = TPM_ALG_ID:NULL;
+            authHandle: TPM_HANDLE::default(),
+            hashAlg: TPM_ALG_ID::NULL,
         }
-
     }
-
 }
 
 impl TPM2_SetPrimaryPolicy_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        auth_policy: vec<u8>
-        ,
-        hash_alg: tpm_alg_id
+        auth_Handle: TPM_HANDLE,
+        auth_Policy: Vec<u8>,
+        hash_Alg: TPM_ALG_ID,
         ) -> Self {
         Self {
-            auth_handle,
-            auth_policy,
-            hash_alg,
+            auth_Handle,
+            auth_Policy,
+            hash_Alg,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This replaces the current platform primary seed (PPS) with a value from the RNG and
@@ -20121,42 +17369,38 @@ pub struct TPM2_ChangePPS_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_ChangePPS_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ChangePPS_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
+        auth_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
+            auth_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This replaces the current endorsement primary seed (EPS) with a value from the RNG and
@@ -20170,42 +17414,38 @@ pub struct TPM2_ChangeEPS_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_ChangeEPS_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ChangeEPS_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
+        auth_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
+            auth_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command removes all TPM context associated with a specific Owner.
@@ -20214,42 +17454,38 @@ pub struct TPM2_Clear_REQUEST {
     /// TPM_RH_LOCKOUT or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_Clear_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Clear_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
+        auth_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
+            auth_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// TPM2_ClearControl() disables and enables the execution of TPM2_Clear().
@@ -20258,7 +17494,7 @@ pub struct TPM2_ClearControl_REQUEST {
     /// TPM_RH_LOCKOUT or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
     /// Auth Role: USER
-    pub auth: tpm_handle,
+    pub auth: TPM_HANDLE,
 
     /// YES if the disableOwnerClear flag is to be SET, NO if the flag is to be CLEAR.
     pub disable: u8,
@@ -20267,39 +17503,34 @@ pub struct TPM2_ClearControl_REQUEST {
 impl Default for TPM2_ClearControl_REQUEST {
     fn default() -> Self {
         Self {
-            auth = TPM_HANDLE();
+            auth: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ClearControl_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: tpm_handle
-        ,
-        disable: u8
+        auth: TPM_HANDLE,
+        disable: u8,
         ) -> Self {
         Self {
             auth,
             disable,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows the authorization secret for a hierarchy or lockout to be changed
@@ -20309,48 +17540,43 @@ pub struct TPM2_HierarchyChangeAuth_REQUEST {
     /// TPM_RH_LOCKOUT, TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// New authorization value
-    pub new_auth: vec<u8>,
+    pub new_Auth: Vec<u8>,
 }
 
 impl Default for TPM2_HierarchyChangeAuth_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_HierarchyChangeAuth_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        new_auth: vec<u8>
+        auth_Handle: TPM_HANDLE,
+        new_Auth: Vec<u8>,
         ) -> Self {
         Self {
-            auth_handle,
-            new_auth,
+            auth_Handle,
+            new_Auth,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command cancels the effect of a TPM lockout due to a number of successive
@@ -20361,42 +17587,38 @@ pub struct TPM2_DictionaryAttackLockReset_REQUEST {
     /// TPM_RH_LOCKOUT
     /// Auth Index: 1
     /// Auth Role: USER
-    pub lock_handle: tpm_handle,
+    pub lock_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_DictionaryAttackLockReset_REQUEST {
     fn default() -> Self {
         Self {
-            lockHandle = TPM_HANDLE();
+            lockHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_DictionaryAttackLockReset_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        lock_handle: tpm_handle
+        lock_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            lock_handle,
+            lock_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command changes the lockout parameters.
@@ -20405,62 +17627,55 @@ pub struct TPM2_DictionaryAttackParameters_REQUEST {
     /// TPM_RH_LOCKOUT
     /// Auth Index: 1
     /// Auth Role: USER
-    pub lock_handle: tpm_handle,
+    pub lock_Handle: TPM_HANDLE,
 
     /// Count of authorization failures before the lockout is imposed
-    pub new_max_tries: u32,
+    pub new_Max_Tries: u32,
 
     /// Time in seconds before the authorization failure count is automatically decremented
     /// A value of zero indicates that DA protection is disabled.
-    pub new_recovery_time: u32,
+    pub new_Recovery_Time: u32,
 
     /// Time in seconds after a lockoutAuth failure before use of lockoutAuth is allowed
     /// A value of zero indicates that a reboot is required.
-    pub lockout_recovery: u32,
+    pub lockout_Recovery: u32,
 }
 
 impl Default for TPM2_DictionaryAttackParameters_REQUEST {
     fn default() -> Self {
         Self {
-            lockHandle = TPM_HANDLE();
+            lockHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_DictionaryAttackParameters_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        lock_handle: tpm_handle
-        ,
-        new_max_tries: u32
-        ,
-        new_recovery_time: u32
-        ,
-        lockout_recovery: u32
+        lock_Handle: TPM_HANDLE,
+        new_Max_Tries: u32,
+        new_Recovery_Time: u32,
+        lockout_Recovery: u32,
         ) -> Self {
         Self {
-            lock_handle,
-            new_max_tries,
-            new_recovery_time,
-            lockout_recovery,
+            lock_Handle,
+            new_Max_Tries,
+            new_Recovery_Time,
+            lockout_Recovery,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to determine which commands require assertion of Physical
@@ -20470,54 +17685,48 @@ pub struct TPM2_PP_Commands_REQUEST {
     /// TPM_RH_PLATFORM+PP
     /// Auth Index: 1
     /// Auth Role: USER + Physical Presence
-    pub auth: tpm_handle,
+    pub auth: TPM_HANDLE,
 
     /// List of commands to be added to those that will require that Physical Presence be asserted
-    pub set_list: vec<tpm_cc>,
+    pub set_List: Vec<TPM_CC>,
 
     /// List of commands that will no longer require that Physical Presence be asserted
-    pub clear_list: vec<tpm_cc>,
+    pub clear_List: Vec<TPM_CC>,
 }
 
 impl Default for TPM2_PP_Commands_REQUEST {
     fn default() -> Self {
         Self {
-            auth = TPM_HANDLE();
+            auth: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_PP_Commands_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: tpm_handle
-        ,
-        set_list: vec<tpm_cc>
-        ,
-        clear_list: vec<tpm_cc>
+        auth: TPM_HANDLE,
+        set_List: Vec<TPM_CC>,
+        clear_List: Vec<TPM_CC>,
         ) -> Self {
         Self {
             auth,
-            set_list,
-            clear_list,
+            set_List,
+            clear_List,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows the platform to change the set of algorithms that are used by the
@@ -20527,48 +17736,43 @@ pub struct TPM2_SetAlgorithmSet_REQUEST {
     /// TPM_RH_PLATFORM
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// A TPM vendor-dependent value indicating the algorithm set selection
-    pub algorithm_set: u32,
+    pub algorithm_Set: u32,
 }
 
 impl Default for TPM2_SetAlgorithmSet_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_SetAlgorithmSet_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        algorithm_set: u32
+        auth_Handle: TPM_HANDLE,
+        algorithm_Set: u32,
         ) -> Self {
         Self {
-            auth_handle,
-            algorithm_set,
+            auth_Handle,
+            algorithm_Set,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command uses platformPolicy and a TPM Vendor Authorization Key to authorize a
@@ -20578,15 +17782,15 @@ pub struct TPM2_FieldUpgradeStart_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index:1
     /// Auth Role: ADMIN
-    pub authorization: tpm_handle,
+    pub authorization: TPM_HANDLE,
 
     /// Handle of a public area that contains the TPM Vendor Authorization Key that will be
     /// used to validate manifestSignature
     /// Auth Index: None
-    pub key_handle: tpm_handle,
+    pub key_Handle: TPM_HANDLE,
 
     /// Digest of the first block in the field upgrade sequence
-    pub fu_digest: vec<u8>,
+    pub fu_Digest: Vec<u8>,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -20594,43 +17798,37 @@ pub struct TPM2_FieldUpgradeStart_REQUEST {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub manifest_signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub manifest_Signature: TPMU_SIGNATURE,
 }
 
 impl Default for TPM2_FieldUpgradeStart_REQUEST {
     fn default() -> Self {
         Self {
-            authorization = TPM_HANDLE();
-            keyHandle = TPM_HANDLE();
+            authorization: TPM_HANDLE::default(),
+            keyHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_FieldUpgradeStart_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authorization: tpm_handle
-        ,
-        key_handle: tpm_handle
-        ,
-        fu_digest: vec<u8>
-        ,
-        manifest_signature: Option<Box<dyn TPMU_SIGNATURE>>
+        authorization: TPM_HANDLE,
+        key_Handle: TPM_HANDLE,
+        fu_Digest: Vec<u8>,
+        manifest_Signature: TPMU_SIGNATURE,
         ) -> Self {
         Self {
             authorization,
-            key_handle,
-            fu_digest,
-            manifest_signature,
+            key_Handle,
+            fu_Digest,
+            manifest_Signature,
         }
-
     }
 
     /// Get the manifestSignatureSigAlg selector value
-    pub fn manifest_signature_sig_alg(&self) -> TPM_ALG_ID {
-        match &self.manifest_signature {
+    pub fn manifest_Signature_Sig_Alg(&self) -> TPM_ALG_ID {
+        match &self.manifest_Signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -20639,16 +17837,15 @@ impl TPM2_FieldUpgradeStart_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command will take the actual field upgrade image to be installed on the TPM. The
@@ -20658,41 +17855,37 @@ impl TPM2_FieldUpgradeStart_REQUEST {
 #[derive(Debug, Clone)]
 pub struct TPM2_FieldUpgradeData_REQUEST {
     /// Field upgrade image data
-    pub fu_data: vec<u8>,
+    pub fu_Data: Vec<u8>,
 }
 
 impl Default for TPM2_FieldUpgradeData_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_FieldUpgradeData_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        fu_data: vec<u8>
+        fu_Data: Vec<u8>,
         ) -> Self {
         Self {
-            fu_data,
+            fu_Data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command will take the actual field upgrade image to be installed on the TPM. The
@@ -20703,34 +17896,31 @@ impl TPM2_FieldUpgradeData_REQUEST {
 pub struct FieldUpgradeDataResponse {
     /// Tagged digest of the next block
     /// TPM_ALG_NULL if field update is complete
-    pub next_digest: tpmt_ha,
+    pub next_Digest: TPMT_HA,
 
     /// Tagged digest of the first block of the sequence
-    pub first_digest: tpmt_ha,
+    pub first_Digest: TPMT_HA,
 }
 
 impl Default for FieldUpgradeDataResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl FieldUpgradeDataResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to read a copy of the current firmware installed in the TPM.
@@ -20738,72 +17928,65 @@ impl FieldUpgradeDataResponse {
 pub struct TPM2_FirmwareRead_REQUEST {
     /// The number of previous calls to this command in this sequence
     /// set to 0 on the first call
-    pub sequence_number: u32,
+    pub sequence_Number: u32,
 }
 
 impl Default for TPM2_FirmwareRead_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_FirmwareRead_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sequence_number: u32
+        sequence_Number: u32,
         ) -> Self {
         Self {
-            sequence_number,
+            sequence_Number,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to read a copy of the current firmware installed in the TPM.
 #[derive(Debug, Clone)]
 pub struct FirmwareReadResponse {
     /// Field upgrade image data
-    pub fu_data: vec<u8>,
+    pub fu_Data: Vec<u8>,
 }
 
 impl Default for FirmwareReadResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl FirmwareReadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command saves a session context, object context, or sequence object context
@@ -20812,146 +17995,132 @@ impl FirmwareReadResponse {
 pub struct TPM2_ContextSave_REQUEST {
     /// Handle of the resource to save
     /// Auth Index: None
-    pub save_handle: tpm_handle,
+    pub save_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_ContextSave_REQUEST {
     fn default() -> Self {
         Self {
-            saveHandle = TPM_HANDLE();
+            saveHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ContextSave_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        save_handle: tpm_handle
+        save_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            save_handle,
+            save_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command saves a session context, object context, or sequence object context
 /// outside the TPM.
 #[derive(Debug, Clone)]
 pub struct ContextSaveResponse {
-    pub context: tpms_context,
+    pub context: TPMS_CONTEXT,
 }
 
 impl Default for ContextSaveResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ContextSaveResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to reload a context that has been saved by TPM2_ContextSave().
 #[derive(Debug, Clone)]
 pub struct TPM2_ContextLoad_REQUEST {
     /// The context blob
-    pub context: tpms_context,
+    pub context: TPMS_CONTEXT,
 }
 
 impl Default for TPM2_ContextLoad_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_ContextLoad_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        context: tpms_context
+        context: TPMS_CONTEXT,
         ) -> Self {
         Self {
             context,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to reload a context that has been saved by TPM2_ContextSave().
 #[derive(Debug, Clone)]
 pub struct ContextLoadResponse {
     /// The handle assigned to the resource after it has been successfully loaded
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 }
 
 impl Default for ContextLoadResponse {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl ContextLoadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command causes all context associated with a loaded object, sequence object, or
@@ -20960,42 +18129,38 @@ impl ContextLoadResponse {
 pub struct TPM2_FlushContext_REQUEST {
     /// The handle of the item to flush
     /// NOTE This is a use of a handle as a parameter.
-    pub flush_handle: tpm_handle,
+    pub flush_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_FlushContext_REQUEST {
     fn default() -> Self {
         Self {
-            flushHandle = TPM_HANDLE();
+            flushHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_FlushContext_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        flush_handle: tpm_handle
+        flush_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            flush_handle,
+            flush_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows certain Transient Objects to be made persistent or a persistent
@@ -21005,60 +18170,54 @@ pub struct TPM2_EvictControl_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
     /// Auth Role: USER
-    pub auth: tpm_handle,
+    pub auth: TPM_HANDLE,
 
     /// The handle of a loaded object
     /// Auth Index: None
-    pub object_handle: tpm_handle,
+    pub object_Handle: TPM_HANDLE,
 
     /// If objectHandle is a transient object handle, then this is the persistent handle for
     /// the object
     /// if objectHandle is a persistent object handle, then it shall be the same value as
     /// persistentHandle
-    pub persistent_handle: tpm_handle,
+    pub persistent_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_EvictControl_REQUEST {
     fn default() -> Self {
         Self {
-            auth = TPM_HANDLE();
-            objectHandle = TPM_HANDLE();
-            persistentHandle = TPM_HANDLE();
+            auth: TPM_HANDLE::default(),
+            objectHandle: TPM_HANDLE::default(),
+            persistentHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_EvictControl_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: tpm_handle
-        ,
-        object_handle: tpm_handle
-        ,
-        persistent_handle: tpm_handle
+        auth: TPM_HANDLE,
+        object_Handle: TPM_HANDLE,
+        persistent_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
             auth,
-            object_handle,
-            persistent_handle,
+            object_Handle,
+            persistent_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command reads the current TPMS_TIME_INFO structure that contains the current
@@ -21071,55 +18230,49 @@ impl Default for TPM2_ReadClock_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_ReadClock_REQUEST {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command reads the current TPMS_TIME_INFO structure that contains the current
 /// setting of Time, Clock, resetCount, and restartCount.
 #[derive(Debug, Clone)]
 pub struct ReadClockResponse {
-    pub current_time: tpms_time_info,
+    pub current_Time: TPMS_TIME_INFO,
 }
 
 impl Default for ReadClockResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl ReadClockResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to advance the value of the TPMs Clock. The command will fail if
@@ -21131,48 +18284,43 @@ pub struct TPM2_ClockSet_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
     /// Auth Role: USER
-    pub auth: tpm_handle,
+    pub auth: TPM_HANDLE,
 
     /// New Clock setting in milliseconds
-    pub new_time: u64,
+    pub new_Time: u64,
 }
 
 impl Default for TPM2_ClockSet_REQUEST {
     fn default() -> Self {
         Self {
-            auth = TPM_HANDLE();
+            auth: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ClockSet_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: tpm_handle
-        ,
-        new_time: u64
+        auth: TPM_HANDLE,
+        new_Time: u64,
         ) -> Self {
         Self {
             auth,
-            new_time,
+            new_Time,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command adjusts the rate of advance of Clock and Time to provide a better
@@ -21182,108 +18330,97 @@ pub struct TPM2_ClockRateAdjust_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
     /// Auth Role: USER
-    pub auth: tpm_handle,
+    pub auth: TPM_HANDLE,
 
     /// Adjustment to current Clock update rate
-    pub rate_adjust: tpm_clock_adjust,
+    pub rate_Adjust: TPM_CLOCK_ADJUST,
 }
 
 impl Default for TPM2_ClockRateAdjust_REQUEST {
     fn default() -> Self {
         Self {
-            auth = TPM_HANDLE();
+            auth: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ClockRateAdjust_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: tpm_handle
-        ,
-        rate_adjust: tpm_clock_adjust
+        auth: TPM_HANDLE,
+        rate_Adjust: TPM_CLOCK_ADJUST,
         ) -> Self {
         Self {
             auth,
-            rate_adjust,
+            rate_Adjust,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns various information regarding the TPM and its current state.
 #[derive(Debug, Clone)]
 pub struct TPM2_GetCapability_REQUEST {
     /// Group selection; determines the format of the response
-    pub capability: tpm_cap,
+    pub capability: TPM_CAP,
 
     /// Further definition of information
     pub property: u32,
 
     /// Number of properties of the indicated type to return
-    pub property_count: u32,
+    pub property_Count: u32,
 }
 
 impl Default for TPM2_GetCapability_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_GetCapability_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        capability: tpm_cap
-        ,
-        property: u32
-        ,
-        property_count: u32
+        capability: TPM_CAP,
+        property: u32,
+        property_Count: u32,
         ) -> Self {
         Self {
             capability,
             property,
-            property_count,
+            property_Count,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command returns various information regarding the TPM and its current state.
 #[derive(Debug, Clone)]
 pub struct GetCapabilityResponse {
     /// Flag to indicate if there are more values of this type
-    pub more_data: u8,
+    pub more_Data: u8,
 
     /// The capability
 
@@ -21291,22 +18428,20 @@ pub struct GetCapabilityResponse {
     /// One of: TPML_ALG_PROPERTY, TPML_HANDLE, TPML_CCA, TPML_CC, TPML_PCR_SELECTION,
     /// TPML_TAGGED_TPM_PROPERTY, TPML_TAGGED_PCR_PROPERTY, TPML_ECC_CURVE,
     /// TPML_TAGGED_POLICY, TPML_ACT_DATA.
-    pub capability_data: Option<Box<dyn TPMU_CAPABILITIES>>,
+    pub capability_Data: TPMU_CAPABILITIES,
 }
 
 impl Default for GetCapabilityResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl GetCapabilityResponse {
     /// Get the capabilityDataCapability selector value
-    pub fn capability_data_capability(&self) -> TPM_CAP {
-        match &self.capability_data {
+    pub fn capability_Data_Capability(&self) -> TPM_CAP {
+        match &self.capability_Data {
         Some(u) => u.get_union_selector() as _,
             None => 0 as _,
         }
@@ -21315,16 +18450,15 @@ impl GetCapabilityResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to check to see if specific combinations of algorithm parameters
@@ -21336,31 +18470,28 @@ pub struct TPM2_TestParms_REQUEST {
     /// Algorithm parameters to be validated
     /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
     /// TPMS_ASYM_PARMS.
-    pub parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>,
+    pub parameters: TPMU_PUBLIC_PARMS,
 }
 
 impl Default for TPM2_TestParms_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_TestParms_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>
+        parameters: TPMU_PUBLIC_PARMS,
         ) -> Self {
         Self {
             parameters,
         }
-
     }
 
     /// Get the parametersType selector value
-    pub fn parameters_type(&self) -> TPM_ALG_ID {
+    pub fn parameters_Type(&self) -> TPM_ALG_ID {
         match &self.parameters {
         Some(u) => u.get_union_selector() as _,
             None => 0 as _,
@@ -21370,16 +18501,15 @@ impl TPM2_TestParms_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command defines the attributes of an NV Index and causes the TPM to reserve space
@@ -21390,54 +18520,48 @@ pub struct TPM2_NV_DefineSpace_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The authorization value
-    pub auth: vec<u8>,
+    pub auth: Vec<u8>,
 
     /// The public parameters of the NV area
-    pub public_info: tpms_nv_public,
+    pub public_Info: TPMS_NV_PUBLIC,
 }
 
 impl Default for TPM2_NV_DefineSpace_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_DefineSpace_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        auth: vec<u8>
-        ,
-        public_info: tpms_nv_public
+        auth_Handle: TPM_HANDLE,
+        auth: Vec<u8>,
+        public_Info: TPMS_NV_PUBLIC,
         ) -> Self {
         Self {
-            auth_handle,
+            auth_Handle,
             auth,
-            public_info,
+            public_Info,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command removes an Index from the TPM.
@@ -21446,50 +18570,45 @@ pub struct TPM2_NV_UndefineSpace_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The NV Index to remove from NV space
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 }
 
 impl Default for TPM2_NV_UndefineSpace_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_UndefineSpace_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
+            auth_Handle,
+            nv_Index,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows removal of a platform-created NV Index that has
@@ -21499,51 +18618,46 @@ pub struct TPM2_NV_UndefineSpaceSpecial_REQUEST {
     /// Index to be deleted
     /// Auth Index: 1
     /// Auth Role: ADMIN
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// TPM_RH_PLATFORM + {PP}
     /// Auth Index: 2
     /// Auth Role: USER
-    pub platform: tpm_handle,
+    pub platform: TPM_HANDLE,
 }
 
 impl Default for TPM2_NV_UndefineSpaceSpecial_REQUEST {
     fn default() -> Self {
         Self {
-            nvIndex = TPM_HANDLE();
-            platform = TPM_HANDLE();
+            nvIndex: TPM_HANDLE::default(),
+            platform: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_UndefineSpaceSpecial_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        nv_index: tpm_handle
-        ,
-        platform: tpm_handle
+        nv_Index: TPM_HANDLE,
+        platform: TPM_HANDLE,
         ) -> Self {
         Self {
-            nv_index,
+            nv_Index,
             platform,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to read the public area and Name of an NV Index. The public area
@@ -21552,42 +18666,38 @@ impl TPM2_NV_UndefineSpaceSpecial_REQUEST {
 pub struct TPM2_NV_ReadPublic_REQUEST {
     /// The NV Index
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 }
 
 impl Default for TPM2_NV_ReadPublic_REQUEST {
     fn default() -> Self {
         Self {
-            nvIndex = TPM_HANDLE();
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_ReadPublic_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        nv_index: tpm_handle
+        nv_Index: TPM_HANDLE,
         ) -> Self {
         Self {
-            nv_index,
+            nv_Index,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to read the public area and Name of an NV Index. The public area
@@ -21595,34 +18705,31 @@ impl TPM2_NV_ReadPublic_REQUEST {
 #[derive(Debug, Clone)]
 pub struct NV_ReadPublicResponse {
     /// The public area of the NV Index
-    pub nv_public: tpms_nv_public,
+    pub nv_Public: TPMS_NV_PUBLIC,
 
     /// The Name of the nvIndex
-    pub nv_name: vec<u8>,
+    pub nv_Name: Vec<u8>,
 }
 
 impl Default for NV_ReadPublicResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl NV_ReadPublicResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command writes a value to an area in NV memory that was previously defined by
@@ -21632,14 +18739,14 @@ pub struct TPM2_NV_Write_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The NV Index of the area to write
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// The data to write
-    pub data: vec<u8>,
+    pub data: Vec<u8>,
 
     /// The octet offset into the NV Area
     pub offset: u16,
@@ -21648,46 +18755,39 @@ pub struct TPM2_NV_Write_REQUEST {
 impl Default for TPM2_NV_Write_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_Write_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
-        ,
-        data: vec<u8>
-        ,
-        offset: u16
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
+        data: Vec<u8>,
+        offset: u16,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
+            auth_Handle,
+            nv_Index,
             data,
             offset,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to increment the value in an NV Index that has the TPM_NT_COUNTER
@@ -21697,50 +18797,45 @@ pub struct TPM2_NV_Increment_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The NV Index to increment
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 }
 
 impl Default for TPM2_NV_Increment_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_Increment_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
+            auth_Handle,
+            nv_Index,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command extends a value to an area in NV memory that was previously defined by
@@ -21750,56 +18845,50 @@ pub struct TPM2_NV_Extend_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The NV Index to extend
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// The data to extend
-    pub data: vec<u8>,
+    pub data: Vec<u8>,
 }
 
 impl Default for TPM2_NV_Extend_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_Extend_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
-        ,
-        data: vec<u8>
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
+        data: Vec<u8>,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
+            auth_Handle,
+            nv_Index,
             data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to SET bits in an NV Index that was created as a bit field. Any
@@ -21810,11 +18899,11 @@ pub struct TPM2_NV_SetBits_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// NV Index of the area in which the bit is to be set
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// The data to OR with the current contents
     pub bits: u64,
@@ -21823,43 +18912,37 @@ pub struct TPM2_NV_SetBits_REQUEST {
 impl Default for TPM2_NV_SetBits_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_SetBits_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
-        ,
-        bits: u64
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
+        bits: u64,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
+            auth_Handle,
+            nv_Index,
             bits,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// If the TPMA_NV_WRITEDEFINE or TPMA_NV_WRITE_STCLEAR attributes of an NV location are
@@ -21869,50 +18952,45 @@ pub struct TPM2_NV_WriteLock_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The NV Index of the area to lock
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 }
 
 impl Default for TPM2_NV_WriteLock_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_WriteLock_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
+            auth_Handle,
+            nv_Index,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The command will SET TPMA_NV_WRITELOCKED for all indexes that have their
@@ -21922,42 +19000,38 @@ pub struct TPM2_NV_GlobalWriteLock_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 }
 
 impl Default for TPM2_NV_GlobalWriteLock_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_GlobalWriteLock_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
+        auth_Handle: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
+            auth_Handle,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command reads a value from an area in NV memory previously defined by TPM2_NV_DefineSpace().
@@ -21966,11 +19040,11 @@ pub struct TPM2_NV_Read_REQUEST {
     /// The handle indicating the source of the authorization value
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The NV Index to be read
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// Number of octets to read
     pub size: u16,
@@ -21983,77 +19057,67 @@ pub struct TPM2_NV_Read_REQUEST {
 impl Default for TPM2_NV_Read_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_Read_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
-        ,
-        size: u16
-        ,
-        offset: u16
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
+        size: u16,
+        offset: u16,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
+            auth_Handle,
+            nv_Index,
             size,
             offset,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command reads a value from an area in NV memory previously defined by TPM2_NV_DefineSpace().
 #[derive(Debug, Clone)]
 pub struct NV_ReadResponse {
     /// The data read
-    pub data: vec<u8>,
+    pub data: Vec<u8>,
 }
 
 impl Default for NV_ReadResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl NV_ReadResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// If TPMA_NV_READ_STCLEAR is SET in an Index, then this command may be used to prevent
@@ -22063,50 +19127,45 @@ pub struct TPM2_NV_ReadLock_REQUEST {
     /// The handle indicating the source of the authorization value
     /// Auth Index: 1
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// The NV Index to be locked
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 }
 
 impl Default for TPM2_NV_ReadLock_REQUEST {
     fn default() -> Self {
         Self {
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_ReadLock_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
         ) -> Self {
         Self {
-            auth_handle,
-            nv_index,
+            auth_Handle,
+            nv_Index,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows the authorization secret for an NV Index to be changed.
@@ -22115,48 +19174,43 @@ pub struct TPM2_NV_ChangeAuth_REQUEST {
     /// Handle of the entity
     /// Auth Index: 1
     /// Auth Role: ADMIN
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// New authorization value
-    pub new_auth: vec<u8>,
+    pub new_Auth: Vec<u8>,
 }
 
 impl Default for TPM2_NV_ChangeAuth_REQUEST {
     fn default() -> Self {
         Self {
-            nvIndex = TPM_HANDLE();
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_ChangeAuth_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        nv_index: tpm_handle
-        ,
-        new_auth: vec<u8>
+        nv_Index: TPM_HANDLE,
+        new_Auth: Vec<u8>,
         ) -> Self {
         Self {
-            nv_index,
-            new_auth,
+            nv_Index,
+            new_Auth,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to certify the contents of an NV Index or portion of an
@@ -22166,19 +19220,19 @@ pub struct TPM2_NV_Certify_REQUEST {
     /// Handle of the key used to sign the attestation structure
     /// Auth Index: 1
     /// Auth Role: USER
-    pub sign_handle: tpm_handle,
+    pub sign_Handle: TPM_HANDLE,
 
     /// Handle indicating the source of the authorization value for the NV Index
     /// Auth Index: 2
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// Index for the area to be certified
     /// Auth Index: None
-    pub nv_index: tpm_handle,
+    pub nv_Index: TPM_HANDLE,
 
     /// User-provided qualifying data
-    pub qualifying_data: vec<u8>,
+    pub qualifying_Data: Vec<u8>,
 
     /// Scheme selector
 
@@ -22186,7 +19240,7 @@ pub struct TPM2_NV_Certify_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
+    pub in_Scheme: TPMU_SIG_SCHEME,
 
     /// Number of octets to certify
     pub size: u16,
@@ -22199,47 +19253,38 @@ pub struct TPM2_NV_Certify_REQUEST {
 impl Default for TPM2_NV_Certify_REQUEST {
     fn default() -> Self {
         Self {
-            signHandle = TPM_HANDLE();
-            authHandle = TPM_HANDLE();
-            nvIndex = TPM_HANDLE();
+            signHandle: TPM_HANDLE::default(),
+            authHandle: TPM_HANDLE::default(),
+            nvIndex: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_NV_Certify_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sign_handle: tpm_handle
-        ,
-        auth_handle: tpm_handle
-        ,
-        nv_index: tpm_handle
-        ,
-        qualifying_data: vec<u8>
-        ,
-        in_scheme: Option<Box<dyn TPMU_SIG_SCHEME>>
-        ,
-        size: u16
-        ,
-        offset: u16
+        sign_Handle: TPM_HANDLE,
+        auth_Handle: TPM_HANDLE,
+        nv_Index: TPM_HANDLE,
+        qualifying_Data: Vec<u8>,
+        in_Scheme: TPMU_SIG_SCHEME,
+        size: u16,
+        offset: u16,
         ) -> Self {
         Self {
-            sign_handle,
-            auth_handle,
-            nv_index,
-            qualifying_data,
-            in_scheme,
+            sign_Handle,
+            auth_Handle,
+            nv_Index,
+            qualifying_Data,
+            in_Scheme,
             size,
             offset,
         }
-
     }
 
     /// Get the inSchemeScheme selector value
-    pub fn in_scheme_scheme(&self) -> TPM_ALG_ID {
-        match &self.in_scheme {
+    pub fn in_Scheme_Scheme(&self) -> TPM_ALG_ID {
+        match &self.in_Scheme {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
         }
@@ -22248,16 +19293,15 @@ impl TPM2_NV_Certify_REQUEST {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to certify the contents of an NV Index or portion of an
@@ -22265,7 +19309,7 @@ impl TPM2_NV_Certify_REQUEST {
 #[derive(Debug, Clone)]
 pub struct NV_CertifyResponse {
     /// The structure that was signed
-    pub certify_info: tpms_attest,
+    pub certify_Info: TPMS_ATTEST,
 
     /// Selector of the algorithm used to construct the signature
 
@@ -22273,21 +19317,19 @@ pub struct NV_CertifyResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
+    pub signature: TPMU_SIGNATURE,
 }
 
 impl Default for NV_CertifyResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl NV_CertifyResponse {
     /// Get the signatureSigAlg selector value
-    pub fn signature_sig_alg(&self) -> TPM_ALG_ID {
+    pub fn signature_Sig_Alg(&self) -> TPM_ALG_ID {
         match &self.signature {
         Some(u) => u.get_union_selector() as _,
             None => TPM_ALG_ID:NULL as _,
@@ -22297,16 +19339,15 @@ impl NV_CertifyResponse {
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to obtain information about an Attached Component
@@ -22315,10 +19356,10 @@ impl NV_CertifyResponse {
 pub struct TPM2_AC_GetCapability_REQUEST {
     /// Handle indicating the Attached Component
     /// Auth Index: None
-    pub ac: tpm_handle,
+    pub ac: TPM_HANDLE,
 
     /// Starting info type
-    pub capability: tpm_at,
+    pub capability: TPM_AT,
 
     /// Maximum number of values to return
     pub count: u32,
@@ -22327,42 +19368,36 @@ pub struct TPM2_AC_GetCapability_REQUEST {
 impl Default for TPM2_AC_GetCapability_REQUEST {
     fn default() -> Self {
         Self {
-            ac = TPM_HANDLE();
+            ac: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_AC_GetCapability_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        ac: tpm_handle
-        ,
-        capability: tpm_at
-        ,
-        count: u32
+        ac: TPM_HANDLE,
+        capability: TPM_AT,
+        count: u32,
         ) -> Self {
         Self {
             ac,
             capability,
             count,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to obtain information about an Attached Component
@@ -22370,34 +19405,31 @@ impl TPM2_AC_GetCapability_REQUEST {
 #[derive(Debug, Clone)]
 pub struct AC_GetCapabilityResponse {
     /// Flag to indicate whether there are more values
-    pub more_data: u8,
+    pub more_Data: u8,
 
     /// List of capabilities
-    pub capabilities_data: vec<tpms_ac_output>,
+    pub capabilities_Data: Vec<TPMS_AC_OUTPUT>,
 }
 
 impl Default for AC_GetCapabilityResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl AC_GetCapabilityResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to send (copy) a loaded object from the TPM to an
@@ -22407,65 +19439,58 @@ pub struct TPM2_AC_Send_REQUEST {
     /// Handle of the object being sent to ac
     /// Auth Index: 1
     /// Auth Role: DUP
-    pub send_object: tpm_handle,
+    pub send_Object: TPM_HANDLE,
 
     /// The handle indicating the source of the authorization value
     /// Auth Index: 2
     /// Auth Role: USER
-    pub auth_handle: tpm_handle,
+    pub auth_Handle: TPM_HANDLE,
 
     /// Handle indicating the Attached Component to which the object will be sent
     /// Auth Index: None
-    pub ac: tpm_handle,
+    pub ac: TPM_HANDLE,
 
     /// Optional non sensitive information related to the object
-    pub ac_data_in: vec<u8>,
+    pub ac_Data_In: Vec<u8>,
 }
 
 impl Default for TPM2_AC_Send_REQUEST {
     fn default() -> Self {
         Self {
-            sendObject = TPM_HANDLE();
-            authHandle = TPM_HANDLE();
-            ac = TPM_HANDLE();
+            sendObject: TPM_HANDLE::default(),
+            authHandle: TPM_HANDLE::default(),
+            ac: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_AC_Send_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        send_object: tpm_handle
-        ,
-        auth_handle: tpm_handle
-        ,
-        ac: tpm_handle
-        ,
-        ac_data_in: vec<u8>
+        send_Object: TPM_HANDLE,
+        auth_Handle: TPM_HANDLE,
+        ac: TPM_HANDLE,
+        ac_Data_In: Vec<u8>,
         ) -> Self {
         Self {
-            send_object,
-            auth_handle,
+            send_Object,
+            auth_Handle,
             ac,
-            ac_data_in,
+            ac_Data_In,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// The purpose of this command is to send (copy) a loaded object from the TPM to an
@@ -22473,31 +19498,28 @@ impl TPM2_AC_Send_REQUEST {
 #[derive(Debug, Clone)]
 pub struct AC_SendResponse {
     /// May include AC specific data or information about an error.
-    pub ac_data_out: tpms_ac_output,
+    pub ac_Data_Out: TPMS_AC_OUTPUT,
 }
 
 impl Default for AC_SendResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl AC_SendResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command allows qualification of the sending (copying) of an Object to an Attached
@@ -22508,66 +19530,58 @@ impl AC_SendResponse {
 pub struct TPM2_Policy_AC_SendSelect_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
-    pub policy_session: tpm_handle,
+    pub policy_Session: TPM_HANDLE,
 
     /// The Name of the Object to be sent
-    pub object_name: vec<u8>,
+    pub object_Name: Vec<u8>,
 
     /// The Name associated with authHandle used in the TPM2_AC_Send() command
-    pub auth_handle_name: vec<u8>,
+    pub auth_Handle_Name: Vec<u8>,
 
     /// The Name of the Attached Component to which the Object will be sent
-    pub ac_name: vec<u8>,
+    pub ac_Name: Vec<u8>,
 
     /// If SET, objectName will be included in the value in policySessionpolicyDigest
-    pub include_object: u8,
+    pub include_Object: u8,
 }
 
 impl Default for TPM2_Policy_AC_SendSelect_REQUEST {
     fn default() -> Self {
         Self {
-            policySession = TPM_HANDLE();
+            policySession: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_Policy_AC_SendSelect_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policy_session: tpm_handle
-        ,
-        object_name: vec<u8>
-        ,
-        auth_handle_name: vec<u8>
-        ,
-        ac_name: vec<u8>
-        ,
-        include_object: u8
+        policy_Session: TPM_HANDLE,
+        object_Name: Vec<u8>,
+        auth_Handle_Name: Vec<u8>,
+        ac_Name: Vec<u8>,
+        include_Object: u8,
         ) -> Self {
         Self {
-            policy_session,
-            object_name,
-            auth_handle_name,
-            ac_name,
-            include_object,
+            policy_Session,
+            object_Name,
+            auth_Handle_Name,
+            ac_Name,
+            include_Object,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This command is used to set the time remaining before an Authenticated Countdown Timer
@@ -22577,120 +19591,108 @@ pub struct TPM2_ACT_SetTimeout_REQUEST {
     /// Handle of the selected ACT
     /// Auth Index: 1
     /// Auth Role: USER
-    pub act_handle: tpm_handle,
+    pub act_Handle: TPM_HANDLE,
 
     /// The start timeout value for the ACT in seconds
-    pub start_timeout: u32,
+    pub start_Timeout: u32,
 }
 
 impl Default for TPM2_ACT_SetTimeout_REQUEST {
     fn default() -> Self {
         Self {
-            actHandle = TPM_HANDLE();
+            actHandle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl TPM2_ACT_SetTimeout_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        act_handle: tpm_handle
-        ,
-        start_timeout: u32
+        act_Handle: TPM_HANDLE,
+        start_Timeout: u32,
         ) -> Self {
         Self {
-            act_handle,
-            start_timeout,
+            act_Handle,
+            start_Timeout,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is a placeholder to allow testing of the dispatch code.
 #[derive(Debug, Clone)]
 pub struct TPM2_Vendor_TCG_Test_REQUEST {
     /// Dummy data
-    pub input_data: vec<u8>,
+    pub input_Data: Vec<u8>,
 }
 
 impl Default for TPM2_Vendor_TCG_Test_REQUEST {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2_Vendor_TCG_Test_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        input_data: vec<u8>
+        input_Data: Vec<u8>,
         ) -> Self {
         Self {
-            input_data,
+            input_Data,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// This is a placeholder to allow testing of the dispatch code.
 #[derive(Debug, Clone)]
 pub struct Vendor_TCG_TestResponse {
     /// Dummy data
-    pub output_data: vec<u8>,
+    pub output_Data: Vec<u8>,
 }
 
 impl Default for Vendor_TCG_TestResponse {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl Vendor_TCG_TestResponse {
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// These are the RSA schemes that only need a hash algorithm as a scheme parameter.
@@ -22751,53 +19753,47 @@ pub type TPMS_SCHEME_KDF1_SP800_108 = TPMS_KDF_SCHEME_KDF1_SP800_108;
 #[derive(Debug, Clone)]
 pub struct TssObject {
     /// Public part of key
-    pub public: tpmt_public,
+    pub Public: TPMT_PUBLIC,
 
     /// Sensitive part of key
-    pub sensitive: tpmt_sensitive,
+    pub Sensitive: TPMT_SENSITIVE,
 
     /// Private part is the encrypted sensitive part of key
-    pub private: tpm2b_private,
+    pub Private: TPM2B_PRIVATE,
 }
 
 impl Default for TssObject {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TssObject {
     /// Creates a new instance with the specified values
     pub fn new(
-        public: tpmt_public
-        ,
-        sensitive: tpmt_sensitive
-        ,
-        private: tpm2b_private
+        Public: TPMT_PUBLIC,
+        Sensitive: TPMT_SENSITIVE,
+        Private: TPM2B_PRIVATE,
         ) -> Self {
         Self {
-            public,
-            sensitive,
-            private,
+            Public,
+            Sensitive,
+            Private,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Contains a PCR index and associated hash(pcr-value) [TSS]
@@ -22807,257 +19803,228 @@ pub struct PcrValue {
     pub index: u32,
 
     /// PCR Value
-    pub value: tpmt_ha,
+    pub value: TPMT_HA,
 }
 
 impl Default for PcrValue {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl PcrValue {
     /// Creates a new instance with the specified values
     pub fn new(
-        index: u32
-        ,
-        value: tpmt_ha
+        index: u32,
+        value: TPMT_HA,
         ) -> Self {
         Self {
             index,
             value,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Structure representing a session block in a command buffer [TSS]
 #[derive(Debug, Clone)]
 pub struct SessionIn {
     /// Session handle
-    pub handle: tpm_handle,
+    pub handle: TPM_HANDLE,
 
     /// Caller nonce
-    pub nonce_caller: vec<u8>,
+    pub nonce_Caller: Vec<u8>,
 
     /// Session attributes
-    pub attributes: tpma_session,
+    pub attributes: TPMA_SESSION,
 
     /// AuthValue (or HMAC)
-    pub auth: vec<u8>,
+    pub auth: Vec<u8>,
 }
 
 impl Default for SessionIn {
     fn default() -> Self {
         Self {
-            handle = TPM_HANDLE();
+            handle: TPM_HANDLE::default(),
         }
-
     }
-
 }
 
 impl SessionIn {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: tpm_handle
-        ,
-        nonce_caller: vec<u8>
-        ,
-        attributes: tpma_session
-        ,
-        auth: vec<u8>
+        handle: TPM_HANDLE,
+        nonce_Caller: Vec<u8>,
+        attributes: TPMA_SESSION,
+        auth: Vec<u8>,
         ) -> Self {
         Self {
             handle,
-            nonce_caller,
+            nonce_Caller,
             attributes,
             auth,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Structure representing a session block in a response buffer [TSS]
 #[derive(Debug, Clone)]
 pub struct SessionOut {
     /// TPM nonce
-    pub nonce_tpm: vec<u8>,
+    pub nonce_Tpm: Vec<u8>,
 
     /// Session attributes
-    pub attributes: tpma_session,
+    pub attributes: TPMA_SESSION,
 
     /// HMAC value
-    pub auth: vec<u8>,
+    pub auth: Vec<u8>,
 }
 
 impl Default for SessionOut {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl SessionOut {
     /// Creates a new instance with the specified values
     pub fn new(
-        nonce_tpm: vec<u8>
-        ,
-        attributes: tpma_session
-        ,
-        auth: vec<u8>
+        nonce_Tpm: Vec<u8>,
+        attributes: TPMA_SESSION,
+        auth: Vec<u8>,
         ) -> Self {
         Self {
-            nonce_tpm,
+            nonce_Tpm,
             attributes,
             auth,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Command header [TSS]
 #[derive(Debug, Clone)]
 pub struct CommandHeader {
     /// Command tag (sessions, or no sessions)
-    pub tag: tpm_st,
+    pub Tag: TPM_ST,
 
     /// Total command buffer length
-    pub command_size: u32,
+    pub Command_Size: u32,
 
     /// Command code
-    pub command_code: tpm_cc,
+    pub Command_Code: TPM_CC,
 }
 
 impl Default for CommandHeader {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl CommandHeader {
     /// Creates a new instance with the specified values
     pub fn new(
-        tag: tpm_st
-        ,
-        command_size: u32
-        ,
-        command_code: tpm_cc
+        Tag: TPM_ST,
+        Command_Size: u32,
+        Command_Code: TPM_CC,
         ) -> Self {
         Self {
-            tag,
-            command_size,
-            command_code,
+            Tag,
+            Command_Size,
+            Command_Code,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Contains the public and private part of a TPM key
 #[derive(Debug, Clone)]
 pub struct TSS_KEY {
     /// Public part of key
-    pub public_part: tpmt_public,
+    pub public_Part: TPMT_PUBLIC,
 
     /// Private part is the encrypted sensitive part of key
-    pub private_part: vec<u8>,
+    pub private_Part: Vec<u8>,
 }
 
 impl Default for TSS_KEY {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TSS_KEY {
     /// Creates a new instance with the specified values
     pub fn new(
-        public_part: tpmt_public
-        ,
-        private_part: vec<u8>
+        public_Part: TPMT_PUBLIC,
+        private_Part: Vec<u8>,
         ) -> Self {
         Self {
-            public_part,
-            private_part,
+            public_Part,
+            private_Part,
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Auto-derived from TPM2B_DIGEST to provide unique GetUnionSelector() implementation
@@ -23069,9 +20036,7 @@ impl Default for TPM2B_DIGEST_SYMCIPHER {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_DIGEST_SYMCIPHER {
@@ -23079,23 +20044,21 @@ impl TPM2B_DIGEST_SYMCIPHER {
     impl TpmUnion for TPM2B_DIGEST_SYMCIPHER {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_PUBLIC_ID::SYMCIPHER as u32
+            TPMU_PUBLIC_ID::SYMCIPHER as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 
 /// Auto-derived from TPM2B_DIGEST
@@ -23107,9 +20070,7 @@ impl Default for TPM2B_DIGEST_KEYEDHASH {
     fn default() -> Self {
         Self {
         }
-
     }
-
 }
 
 impl TPM2B_DIGEST_KEYEDHASH {
@@ -23117,22 +20078,20 @@ impl TPM2B_DIGEST_KEYEDHASH {
     impl TpmUnion for TPM2B_DIGEST_KEYEDHASH {
         /// TpmUnion trait implementation
         fn get_union_selector(&self) -> u32 {
-        TPMU_PUBLIC_ID::KEYEDHASH as u32
+            TPMU_PUBLIC_ID::KEYEDHASH as u32
         }
-
     }
 
     /// Serialize this structure to a TPM buffer
     pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
-    // Implement serialization
+        // Implement serialization
         Ok(())
     }
 
     /// Deserialize this structure from a TPM buffer
     pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-    // Implement deserialization
+        // Implement deserialization
         Ok(Self::default())
     }
-
 }
 

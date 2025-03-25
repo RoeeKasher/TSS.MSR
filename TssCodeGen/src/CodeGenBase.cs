@@ -45,13 +45,14 @@ namespace CodeGen
         internal abstract void Generate();
 
 
-        static void AddBitfieldElt(List<TpmNamedConstant> elements,  string name, int val, 
+        static void AddBitfieldElt(List<TpmNamedConstant> elements,  string name, long val, 
                                    string comment = null, string oldStyleName = null, bool custom = false)
         {
             // Comment is null only for custom enumerators "XXX_BIT_OFFSET" and "XXX_BIT_LENGTH"
-            var nc = new TpmNamedConstant(null, custom ? null : name, null, comment);
+            var value = comment == null ? val.ToString() : ToHex(val);
+            var nc = new TpmNamedConstant(null, custom ? null : name, value, comment);
             nc.Name = name;
-            nc.Value = comment == null ? val.ToString() : ToHex(val);
+            nc.Value = value;
             nc.OldStyleName = oldStyleName ?? name;
             elements.Add(nc);
         }
@@ -351,11 +352,11 @@ namespace CodeGen
             return Object.ReferenceEquals(list.Last(), elem) ? term : sep;
         }
 
-        internal static string ToHex(int value)
+        internal static string ToHex(long value)
         {
             return "0x" + Convert.ToString(value, 16).ToUpper();
         }
-        internal static string ToHex(uint value) { return ToHex((int)value); }
+        internal static string ToHex(ulong value) { return ToHex((int)value); }
 
         internal static string WireNameForInt(int size)
         {

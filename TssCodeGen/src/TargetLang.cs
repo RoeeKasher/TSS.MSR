@@ -92,13 +92,13 @@ namespace CodeGen
         public static bool IsOneOf(params Lang[] toCompare) => Current.IsOneOf(toCompare);
 
         // Standalone "this" reference (as used, e.g. to pass it as a function argument)
-        public static string This => Py ? "self" : Rust ? "self" : "this";
+        public static string This => (Py | Rust) ? "self" : "this";
         public static string ThisMember => _thisQual;
-        public static string ClassMember => Cpp ? "::" : Rust ? ":" : ".";
+        public static string ClassMember => (Cpp | Rust) ? "::" : ".";
         public static string Member => Cpp ? "->" : ".";
         public static string Null => _null;
-        public static string Neg => Py ? "not " : Rust ? "!" : "!";
-        public static string LineComment => Py ? "#" : Rust ? "//" : "//";
+        public static string Neg => Py ? "not " : "!";
+        public static string LineComment => Py ? "#" : "//";
 
         public static string If(string cond) => Py ? $"if {cond}:" : $"if ({cond})";
 
@@ -109,7 +109,7 @@ namespace CodeGen
         public static string LocalVar(string varName, string typeName)
             => Py ? varName : Node ? $"let {varName}: {typeName}" : Rust ? $"let {varName}: {typeName}" : $"{typeName} {varName}";
 
-        public static string NewObject(string type) => $"{_new}{type}()";
+        public static string NewObject(string type) => Rust ? $"{type}::default()" : $"{_new}{type}()";
 
         public static string DigestSize(string hashAlgField) => $"{_digestSize}({_thisQual}{hashAlgField})";
 
