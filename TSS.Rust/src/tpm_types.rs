@@ -22,6 +22,7 @@
 
 use crate::error::TpmError;
 use crate::tpm_buffer::TpmBuffer;
+use crate::crypto::Crypto;
 use std::fmt;
 use num_enum::TryFromPrimitive;
 use std::collections::HashMap;
@@ -49,197 +50,182 @@ pub trait TpmStructure {
 /// Trait for TPM union types
 pub trait TpmUnion : TpmStructure { }
 
-lazy_static::lazy_static! {
-    /// Maps enum type IDs to a map of values to string representations
-    static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u32, &'static str>> = {
-    let mut map = HashMap::new();
-        map
-    };
-
-    /// Maps enum type IDs to a map of string representations to values
-    static ref STR_TO_ENUM_MAP: HashMap<std::any::TypeId, HashMap<&'static str, u32>> = {
-    let mut map = HashMap::new();
-        map
-    };
-
-}
-
 /// Factory for creating TPM union types from selector values
 pub struct UnionFactory;
 
 impl UnionFactory {
     /// Creates a new union instance based on the selector value
-    pub fn create<U: TpmUnion + ?Sized, S: TpmEnum>(selector: S) -> Result<Option<Box<U>>, TpmError> {
+    pub fn create<U: TpmUnion + ?Sized, S: TpmEnum>(selector: S) -> Result<Option<Box<dyn U>>, TpmError> {
         let type_id = std::any::TypeId::of::<U>();
 
         if type_id == std::any::TypeId::of::<dyn TPMU_CAPABILITIES>() {
             match selector {
-                TPM_CAP::ALGS => Some(Box::new(TPMU_CAPABILITIES::algorithms(TPML_ALG_PROPERTY::default()))),
-                TPM_CAP::HANDLES => Some(Box::new(TPMU_CAPABILITIES::handles(TPML_HANDLE::default()))),
-                TPM_CAP::COMMANDS => Some(Box::new(TPMU_CAPABILITIES::command(TPML_CCA::default()))),
-                TPM_CAP::PP_COMMANDS => Some(Box::new(TPMU_CAPABILITIES::ppCommands(TPML_CC::default()))),
-                TPM_CAP::AUDIT_COMMANDS => Some(Box::new(TPMU_CAPABILITIES::auditCommands(TPML_CC::default()))),
-                TPM_CAP::PCRS => Some(Box::new(TPMU_CAPABILITIES::assignedPCR(TPML_PCR_SELECTION::default()))),
-                TPM_CAP::TPM_PROPERTIES => Some(Box::new(TPMU_CAPABILITIES::tpmProperties(TPML_TAGGED_TPM_PROPERTY::default()))),
-                TPM_CAP::PCR_PROPERTIES => Some(Box::new(TPMU_CAPABILITIES::pcrProperties(TPML_TAGGED_PCR_PROPERTY::default()))),
-                TPM_CAP::ECC_CURVES => Some(Box::new(TPMU_CAPABILITIES::eccCurves(TPML_ECC_CURVE::default()))),
-                TPM_CAP::AUTH_POLICIES => Some(Box::new(TPMU_CAPABILITIES::authPolicies(TPML_TAGGED_POLICY::default()))),
-                TPM_CAP::ACT => Some(Box::new(TPMU_CAPABILITIES::actData(TPML_ACT_DATA::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_CAP::ALGS => Ok(Some(Box::new(TPML_ALG_PROPERTY::default()) as Box<dyn U>)),
+                TPM_CAP::HANDLES => Ok(Some(Box::new(TPML_HANDLE::default()) as Box<dyn U>)),
+                TPM_CAP::COMMANDS => Ok(Some(Box::new(TPML_CCA::default()) as Box<dyn U>)),
+                TPM_CAP::PP_COMMANDS => Ok(Some(Box::new(TPML_CC::default()) as Box<dyn U>)),
+                TPM_CAP::AUDIT_COMMANDS => Ok(Some(Box::new(TPML_CC::default()) as Box<dyn U>)),
+                TPM_CAP::PCRS => Ok(Some(Box::new(TPML_PCR_SELECTION::default()) as Box<dyn U>)),
+                TPM_CAP::TPM_PROPERTIES => Ok(Some(Box::new(TPML_TAGGED_TPM_PROPERTY::default()) as Box<dyn U>)),
+                TPM_CAP::PCR_PROPERTIES => Ok(Some(Box::new(TPML_TAGGED_PCR_PROPERTY::default()) as Box<dyn U>)),
+                TPM_CAP::ECC_CURVES => Ok(Some(Box::new(TPML_ECC_CURVE::default()) as Box<dyn U>)),
+                TPM_CAP::AUTH_POLICIES => Ok(Some(Box::new(TPML_TAGGED_POLICY::default()) as Box<dyn U>)),
+                TPM_CAP::ACT => Ok(Some(Box::new(TPML_ACT_DATA::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_ATTEST>() {
             match selector {
-                TPM_ST::ATTEST_CERTIFY => Some(Box::new(TPMU_ATTEST::certify(TPMS_CERTIFY_INFO::default()))),
-                TPM_ST::ATTEST_CREATION => Some(Box::new(TPMU_ATTEST::creation(TPMS_CREATION_INFO::default()))),
-                TPM_ST::ATTEST_QUOTE => Some(Box::new(TPMU_ATTEST::quote(TPMS_QUOTE_INFO::default()))),
-                TPM_ST::ATTEST_COMMAND_AUDIT => Some(Box::new(TPMU_ATTEST::commandAudit(TPMS_COMMAND_AUDIT_INFO::default()))),
-                TPM_ST::ATTEST_SESSION_AUDIT => Some(Box::new(TPMU_ATTEST::sessionAudit(TPMS_SESSION_AUDIT_INFO::default()))),
-                TPM_ST::ATTEST_TIME => Some(Box::new(TPMU_ATTEST::time(TPMS_TIME_ATTEST_INFO::default()))),
-                TPM_ST::ATTEST_NV => Some(Box::new(TPMU_ATTEST::nv(TPMS_NV_CERTIFY_INFO::default()))),
-                TPM_ST::ATTEST_NV_DIGEST => Some(Box::new(TPMU_ATTEST::nvDigest(TPMS_NV_DIGEST_CERTIFY_INFO::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ST::ATTEST_CERTIFY => Ok(Some(Box::new(TPMS_CERTIFY_INFO::default()) as Box<dyn U>)),
+                TPM_ST::ATTEST_CREATION => Ok(Some(Box::new(TPMS_CREATION_INFO::default()) as Box<dyn U>)),
+                TPM_ST::ATTEST_QUOTE => Ok(Some(Box::new(TPMS_QUOTE_INFO::default()) as Box<dyn U>)),
+                TPM_ST::ATTEST_COMMAND_AUDIT => Ok(Some(Box::new(TPMS_COMMAND_AUDIT_INFO::default()) as Box<dyn U>)),
+                TPM_ST::ATTEST_SESSION_AUDIT => Ok(Some(Box::new(TPMS_SESSION_AUDIT_INFO::default()) as Box<dyn U>)),
+                TPM_ST::ATTEST_TIME => Ok(Some(Box::new(TPMS_TIME_ATTEST_INFO::default()) as Box<dyn U>)),
+                TPM_ST::ATTEST_NV => Ok(Some(Box::new(TPMS_NV_CERTIFY_INFO::default()) as Box<dyn U>)),
+                TPM_ST::ATTEST_NV_DIGEST => Ok(Some(Box::new(TPMS_NV_DIGEST_CERTIFY_INFO::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_SYM_DETAILS>() {
             match selector {
-                TPM_ALG_ID::TDES => Some(Box::new(TPMU_SYM_DETAILS::tdes(TPMS_TDES_SYM_DETAILS::default()))),
-                TPM_ALG_ID::AES => Some(Box::new(TPMU_SYM_DETAILS::aes(TPMS_AES_SYM_DETAILS::default()))),
-                TPM_ALG_ID::SM4 => Some(Box::new(TPMU_SYM_DETAILS::sm4(TPMS_SM4_SYM_DETAILS::default()))),
-                TPM_ALG_ID::CAMELLIA => Some(Box::new(TPMU_SYM_DETAILS::camellia(TPMS_CAMELLIA_SYM_DETAILS::default()))),
-                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SYM_DETAILS::sym(TPMS_ANY_SYM_DETAILS::default()))),
-                TPM_ALG_ID::XOR => Some(Box::new(TPMU_SYM_DETAILS::xor(TPMS_XOR_SYM_DETAILS::default()))),
-                TPM_ALG_ID::NULL => Some(Box::new(TPMU_SYM_DETAILS::null(TPMS_NULL_SYM_DETAILS::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::TDES => Ok(Some(Box::new(TPMS_TDES_SYM_DETAILS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::AES => Ok(Some(Box::new(TPMS_AES_SYM_DETAILS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::SM4 => Ok(Some(Box::new(TPMS_SM4_SYM_DETAILS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::CAMELLIA => Ok(Some(Box::new(TPMS_CAMELLIA_SYM_DETAILS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ANY => Ok(Some(Box::new(TPMS_ANY_SYM_DETAILS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::XOR => Ok(Some(Box::new(TPMS_XOR_SYM_DETAILS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::NULL => Ok(Some(Box::new(TPMS_NULL_SYM_DETAILS::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_SENSITIVE_CREATE>() {
             match selector {
-                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SENSITIVE_CREATE::create)),
-                TPM_ALG_ID::ANY2 => Some(Box::new(TPMU_SENSITIVE_CREATE::derive(TPMS_DERIVE::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::ANY => Ok(Some(Box::new(TPMU_SENSITIVE_CREATE::create))),
+                TPM_ALG_ID::ANY2 => Ok(Some(Box::new(TPMS_DERIVE::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_SCHEME_KEYEDHASH>() {
             match selector {
-                TPM_ALG_ID::HMAC => Some(Box::new(TPMU_SCHEME_KEYEDHASH::hmac(TPMS_SCHEME_HMAC::default()))),
-                TPM_ALG_ID::XOR => Some(Box::new(TPMU_SCHEME_KEYEDHASH::xor(TPMS_SCHEME_XOR::default()))),
-                TPM_ALG_ID::NULL => Some(Box::new(TPMU_SCHEME_KEYEDHASH::null(TPMS_NULL_SCHEME_KEYEDHASH::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::HMAC => Ok(Some(Box::new(TPMS_SCHEME_HMAC::default()) as Box<dyn U>)),
+                TPM_ALG_ID::XOR => Ok(Some(Box::new(TPMS_SCHEME_XOR::default()) as Box<dyn U>)),
+                TPM_ALG_ID::NULL => Ok(Some(Box::new(TPMS_NULL_SCHEME_KEYEDHASH::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_SIG_SCHEME>() {
             match selector {
-                TPM_ALG_ID::RSASSA => Some(Box::new(TPMU_SIG_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA::default()))),
-                TPM_ALG_ID::RSAPSS => Some(Box::new(TPMU_SIG_SCHEME::rsapss(TPMS_SIG_SCHEME_RSAPSS::default()))),
-                TPM_ALG_ID::ECDSA => Some(Box::new(TPMU_SIG_SCHEME::ecdsa(TPMS_SIG_SCHEME_ECDSA::default()))),
-                TPM_ALG_ID::ECDAA => Some(Box::new(TPMU_SIG_SCHEME::ecdaa(TPMS_SIG_SCHEME_ECDAA::default()))),
-                TPM_ALG_ID::SM2 => Some(Box::new(TPMU_SIG_SCHEME::sm2(TPMS_SIG_SCHEME_SM2::default()))),
-                TPM_ALG_ID::ECSCHNORR => Some(Box::new(TPMU_SIG_SCHEME::ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR::default()))),
-                TPM_ALG_ID::HMAC => Some(Box::new(TPMU_SIG_SCHEME::hmac(TPMS_SCHEME_HMAC::default()))),
-                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SIG_SCHEME::any(TPMS_SCHEME_HASH::default()))),
-                TPM_ALG_ID::NULL => Some(Box::new(TPMU_SIG_SCHEME::null(TPMS_NULL_SIG_SCHEME::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::RSASSA => Ok(Some(Box::new(TPMS_SIG_SCHEME_RSASSA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::RSAPSS => Ok(Some(Box::new(TPMS_SIG_SCHEME_RSAPSS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECDSA => Ok(Some(Box::new(TPMS_SIG_SCHEME_ECDSA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECDAA => Ok(Some(Box::new(TPMS_SIG_SCHEME_ECDAA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::SM2 => Ok(Some(Box::new(TPMS_SIG_SCHEME_SM2::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECSCHNORR => Ok(Some(Box::new(TPMS_SIG_SCHEME_ECSCHNORR::default()) as Box<dyn U>)),
+                TPM_ALG_ID::HMAC => Ok(Some(Box::new(TPMS_SCHEME_HMAC::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ANY => Ok(Some(Box::new(TPMS_SCHEME_HASH::default()) as Box<dyn U>)),
+                TPM_ALG_ID::NULL => Ok(Some(Box::new(TPMS_NULL_SIG_SCHEME::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_KDF_SCHEME>() {
             match selector {
-                TPM_ALG_ID::MGF1 => Some(Box::new(TPMU_KDF_SCHEME::mgf1(TPMS_KDF_SCHEME_MGF1::default()))),
-                TPM_ALG_ID::KDF1_SP800_56A => Some(Box::new(TPMU_KDF_SCHEME::kdf1_sp800_56a(TPMS_KDF_SCHEME_KDF1_SP800_56A::default()))),
-                TPM_ALG_ID::KDF2 => Some(Box::new(TPMU_KDF_SCHEME::kdf2(TPMS_KDF_SCHEME_KDF2::default()))),
-                TPM_ALG_ID::KDF1_SP800_108 => Some(Box::new(TPMU_KDF_SCHEME::kdf1_sp800_108(TPMS_KDF_SCHEME_KDF1_SP800_108::default()))),
-                TPM_ALG_ID::ANY => Some(Box::new(TPMU_KDF_SCHEME::anyKdf(TPMS_SCHEME_HASH::default()))),
-                TPM_ALG_ID::NULL => Some(Box::new(TPMU_KDF_SCHEME::null(TPMS_NULL_KDF_SCHEME::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::MGF1 => Ok(Some(Box::new(TPMS_KDF_SCHEME_MGF1::default()) as Box<dyn U>)),
+                TPM_ALG_ID::KDF1_SP800_56A => Ok(Some(Box::new(TPMS_KDF_SCHEME_KDF1_SP800_56A::default()) as Box<dyn U>)),
+                TPM_ALG_ID::KDF2 => Ok(Some(Box::new(TPMS_KDF_SCHEME_KDF2::default()) as Box<dyn U>)),
+                TPM_ALG_ID::KDF1_SP800_108 => Ok(Some(Box::new(TPMS_KDF_SCHEME_KDF1_SP800_108::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ANY => Ok(Some(Box::new(TPMS_SCHEME_HASH::default()) as Box<dyn U>)),
+                TPM_ALG_ID::NULL => Ok(Some(Box::new(TPMS_NULL_KDF_SCHEME::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_ASYM_SCHEME>() {
             match selector {
-                TPM_ALG_ID::ECDH => Some(Box::new(TPMU_ASYM_SCHEME::ecdh(TPMS_KEY_SCHEME_ECDH::default()))),
-                TPM_ALG_ID::ECMQV => Some(Box::new(TPMU_ASYM_SCHEME::ecmqv(TPMS_KEY_SCHEME_ECMQV::default()))),
-                TPM_ALG_ID::RSASSA => Some(Box::new(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA::default()))),
-                TPM_ALG_ID::RSAPSS => Some(Box::new(TPMU_ASYM_SCHEME::rsapss(TPMS_SIG_SCHEME_RSAPSS::default()))),
-                TPM_ALG_ID::ECDSA => Some(Box::new(TPMU_ASYM_SCHEME::ecdsa(TPMS_SIG_SCHEME_ECDSA::default()))),
-                TPM_ALG_ID::ECDAA => Some(Box::new(TPMU_ASYM_SCHEME::ecdaa(TPMS_SIG_SCHEME_ECDAA::default()))),
-                TPM_ALG_ID::SM2 => Some(Box::new(TPMU_ASYM_SCHEME::sm2(TPMS_SIG_SCHEME_SM2::default()))),
-                TPM_ALG_ID::ECSCHNORR => Some(Box::new(TPMU_ASYM_SCHEME::ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR::default()))),
-                TPM_ALG_ID::RSAES => Some(Box::new(TPMU_ASYM_SCHEME::rsaes(TPMS_ENC_SCHEME_RSAES::default()))),
-                TPM_ALG_ID::OAEP => Some(Box::new(TPMU_ASYM_SCHEME::oaep(TPMS_ENC_SCHEME_OAEP::default()))),
-                TPM_ALG_ID::ANY => Some(Box::new(TPMU_ASYM_SCHEME::anySig(TPMS_SCHEME_HASH::default()))),
-                TPM_ALG_ID::NULL => Some(Box::new(TPMU_ASYM_SCHEME::null(TPMS_NULL_ASYM_SCHEME::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::ECDH => Ok(Some(Box::new(TPMS_KEY_SCHEME_ECDH::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECMQV => Ok(Some(Box::new(TPMS_KEY_SCHEME_ECMQV::default()) as Box<dyn U>)),
+                TPM_ALG_ID::RSASSA => Ok(Some(Box::new(TPMS_SIG_SCHEME_RSASSA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::RSAPSS => Ok(Some(Box::new(TPMS_SIG_SCHEME_RSAPSS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECDSA => Ok(Some(Box::new(TPMS_SIG_SCHEME_ECDSA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECDAA => Ok(Some(Box::new(TPMS_SIG_SCHEME_ECDAA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::SM2 => Ok(Some(Box::new(TPMS_SIG_SCHEME_SM2::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECSCHNORR => Ok(Some(Box::new(TPMS_SIG_SCHEME_ECSCHNORR::default()) as Box<dyn U>)),
+                TPM_ALG_ID::RSAES => Ok(Some(Box::new(TPMS_ENC_SCHEME_RSAES::default()) as Box<dyn U>)),
+                TPM_ALG_ID::OAEP => Ok(Some(Box::new(TPMS_ENC_SCHEME_OAEP::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ANY => Ok(Some(Box::new(TPMS_SCHEME_HASH::default()) as Box<dyn U>)),
+                TPM_ALG_ID::NULL => Ok(Some(Box::new(TPMS_NULL_ASYM_SCHEME::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_SIGNATURE>() {
             match selector {
-                TPM_ALG_ID::RSASSA => Some(Box::new(TPMU_SIGNATURE::rsassa(TPMS_SIGNATURE_RSASSA::default()))),
-                TPM_ALG_ID::RSAPSS => Some(Box::new(TPMU_SIGNATURE::rsapss(TPMS_SIGNATURE_RSAPSS::default()))),
-                TPM_ALG_ID::ECDSA => Some(Box::new(TPMU_SIGNATURE::ecdsa(TPMS_SIGNATURE_ECDSA::default()))),
-                TPM_ALG_ID::ECDAA => Some(Box::new(TPMU_SIGNATURE::ecdaa(TPMS_SIGNATURE_ECDAA::default()))),
-                TPM_ALG_ID::SM2 => Some(Box::new(TPMU_SIGNATURE::sm2(TPMS_SIGNATURE_SM2::default()))),
-                TPM_ALG_ID::ECSCHNORR => Some(Box::new(TPMU_SIGNATURE::ecschnorr(TPMS_SIGNATURE_ECSCHNORR::default()))),
-                TPM_ALG_ID::HMAC => Some(Box::new(TPMU_SIGNATURE::hmac(TPMT_HA::default()))),
-                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SIGNATURE::any(TPMS_SCHEME_HASH::default()))),
-                TPM_ALG_ID::NULL => Some(Box::new(TPMU_SIGNATURE::null(TPMS_NULL_SIGNATURE::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::RSASSA => Ok(Some(Box::new(TPMS_SIGNATURE_RSASSA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::RSAPSS => Ok(Some(Box::new(TPMS_SIGNATURE_RSAPSS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECDSA => Ok(Some(Box::new(TPMS_SIGNATURE_ECDSA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECDAA => Ok(Some(Box::new(TPMS_SIGNATURE_ECDAA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::SM2 => Ok(Some(Box::new(TPMS_SIGNATURE_SM2::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECSCHNORR => Ok(Some(Box::new(TPMS_SIGNATURE_ECSCHNORR::default()) as Box<dyn U>)),
+                TPM_ALG_ID::HMAC => Ok(Some(Box::new(TPMT_HA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ANY => Ok(Some(Box::new(TPMS_SCHEME_HASH::default()) as Box<dyn U>)),
+                TPM_ALG_ID::NULL => Ok(Some(Box::new(TPMS_NULL_SIGNATURE::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_PUBLIC_ID>() {
             match selector {
-                TPM_ALG_ID::KEYEDHASH => Some(Box::new(TPMU_PUBLIC_ID::keyedHash(TPM2B_DIGEST_KEYEDHASH::default()))),
-                TPM_ALG_ID::SYMCIPHER => Some(Box::new(TPMU_PUBLIC_ID::sym(TPM2B_DIGEST_SYMCIPHER::default()))),
-                TPM_ALG_ID::RSA => Some(Box::new(TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default()))),
-                TPM_ALG_ID::ECC => Some(Box::new(TPMU_PUBLIC_ID::ecc(TPMS_ECC_POINT::default()))),
-                TPM_ALG_ID::ANY => Some(Box::new(TPMU_PUBLIC_ID::derive(TPMS_DERIVE::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::KEYEDHASH => Ok(Some(Box::new(TPM2B_DIGEST_KEYEDHASH::default()) as Box<dyn U>)),
+                TPM_ALG_ID::SYMCIPHER => Ok(Some(Box::new(TPM2B_DIGEST_SYMCIPHER::default()) as Box<dyn U>)),
+                TPM_ALG_ID::RSA => Ok(Some(Box::new(TPM2B_PUBLIC_KEY_RSA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECC => Ok(Some(Box::new(TPMS_ECC_POINT::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ANY => Ok(Some(Box::new(TPMS_DERIVE::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_PUBLIC_PARMS>() {
             match selector {
-                TPM_ALG_ID::KEYEDHASH => Some(Box::new(TPMU_PUBLIC_PARMS::keyedHashDetail(TPMS_KEYEDHASH_PARMS::default()))),
-                TPM_ALG_ID::SYMCIPHER => Some(Box::new(TPMU_PUBLIC_PARMS::symDetail(TPMS_SYMCIPHER_PARMS::default()))),
-                TPM_ALG_ID::RSA => Some(Box::new(TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::default()))),
-                TPM_ALG_ID::ECC => Some(Box::new(TPMU_PUBLIC_PARMS::eccDetail(TPMS_ECC_PARMS::default()))),
-                TPM_ALG_ID::ANY => Some(Box::new(TPMU_PUBLIC_PARMS::asymDetail(TPMS_ASYM_PARMS::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::KEYEDHASH => Ok(Some(Box::new(TPMS_KEYEDHASH_PARMS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::SYMCIPHER => Ok(Some(Box::new(TPMS_SYMCIPHER_PARMS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::RSA => Ok(Some(Box::new(TPMS_RSA_PARMS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECC => Ok(Some(Box::new(TPMS_ECC_PARMS::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ANY => Ok(Some(Box::new(TPMS_ASYM_PARMS::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         if type_id == std::any::TypeId::of::<dyn TPMU_SENSITIVE_COMPOSITE>() {
             match selector {
-                TPM_ALG_ID::RSA => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::rsa(TPM2B_PRIVATE_KEY_RSA::default()))),
-                TPM_ALG_ID::ECC => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::ecc(TPM2B_ECC_PARAMETER::default()))),
-                TPM_ALG_ID::KEYEDHASH => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::bits(TPM2B_SENSITIVE_DATA::default()))),
-                TPM_ALG_ID::SYMCIPHER => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::sym(TPM2B_SYM_KEY::default()))),
-                TPM_ALG_ID::ANY => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::any(TPM2B_PRIVATE_VENDOR_SPECIFIC::default()))),
-                _ => TpmError::InvalidUnion,
+                TPM_ALG_ID::RSA => Ok(Some(Box::new(TPM2B_PRIVATE_KEY_RSA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ECC => Ok(Some(Box::new(TPM2B_ECC_PARAMETER::default()) as Box<dyn U>)),
+                TPM_ALG_ID::KEYEDHASH => Ok(Some(Box::new(TPM2B_SENSITIVE_DATA::default()) as Box<dyn U>)),
+                TPM_ALG_ID::SYMCIPHER => Ok(Some(Box::new(TPM2B_SYM_KEY::default()) as Box<dyn U>)),
+                TPM_ALG_ID::ANY => Ok(Some(Box::new(TPM2B_PRIVATE_VENDOR_SPECIFIC::default()) as Box<dyn U>)),
+                _ => Err(TpmError::InvalidUnion),
             }
 
         } else 
 
         {
-        TpmError::InvalidUnion
+            Err(TpmError::InvalidUnion)
         }
 
     }
@@ -251,7 +237,7 @@ impl UnionFactory {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_ALG_ID(pub i16);
+pub struct TPM_ALG_ID(pub u16);
 
 impl TPM_ALG_ID {
     /// Should not occur
@@ -449,23 +435,21 @@ impl TPM_ALG_ID {
 
 impl TpmEnum for TPM_ALG_ID {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_ALG_ID> for u32 {
     fn from(value: TPM_ALG_ID) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_ALG_ID> for i32 {
     fn from(value: TPM_ALG_ID) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_ALG_ID {
@@ -928,7 +912,7 @@ impl fmt::Display for SHA3_512 {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct Logic(pub i8);
+pub struct Logic(pub u8);
 
 impl Logic {
     pub const TRUE: Self = Self(0x1); // Original value: 1
@@ -951,23 +935,21 @@ impl Logic {
 
 impl TpmEnum for Logic {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<Logic> for u32 {
     fn from(value: Logic) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<Logic> for i32 {
     fn from(value: Logic) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for Logic {
@@ -1078,7 +1060,7 @@ impl fmt::Display for TPM_GENERATED {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_CC(pub i32);
+pub struct TPM_CC(pub u32);
 
 impl TPM_CC {
     /// Compile variable. May decrease based on implementation.
@@ -1398,7 +1380,6 @@ impl TPM_CC {
             409 => Ok(Self::ECC_Encrypt), // Original value: 0x00000199
             410 => Ok(Self::ECC_Decrypt), // Original value: 0x0000019A
             536870912 => Ok(Self::CC_VEND), // Original value: 0x20000000
-            536870912 => Ok(Self::Vendor_TCG_Test), // Original value: CC_VEND+0x0000
             _ => Err(TpmError::InvalidEnumValue),
         }
 
@@ -1408,23 +1389,21 @@ impl TPM_CC {
 
 impl TpmEnum for TPM_CC {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_CC> for u32 {
     fn from(value: TPM_CC) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_CC> for i32 {
     fn from(value: TPM_CC) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_CC {
@@ -1561,7 +1540,7 @@ impl fmt::Display for TPM_CC {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct ImplementationConstants(pub i32);
+pub struct ImplementationConstants(pub u32);
 
 impl ImplementationConstants {
     pub const Ossl: Self = Self(0x1); // Original value: 1
@@ -1598,9 +1577,7 @@ impl ImplementationConstants {
             32 => Ok(Self::MAX_SYM_KEY_BYTES), // Original value: ((MAX_SYM_KEY_BITS + 7) / 8)
             16 => Ok(Self::MAX_SYM_BLOCK_SIZE), // Original value: 16
             410 => Ok(Self::MAX_CAP_CC), // Original value: TPM_CC::LAST
-            32 => Ok(Self::MAX_AES_KEY_BYTES), // Original value: 32
             48 => Ok(Self::MAX_ECC_KEY_BYTES), // Original value: 48
-            4 => Ok(Self::_TPM_CAP_SIZE), // Original value: 0x4 /* sizeof(UINT32) */
             1016 => Ok(Self::MAX_CAP_DATA), // Original value: (Implementation::MAX_CAP_BUFFER-_TPM_CAP_SIZE-0x4) /* (MAX_CAP_BUFFER-_TPM_CAP_SIZE-sizeof(UINT32)) */
             169 => Ok(Self::MAX_CAP_ALGS), // Original value: (MAX_CAP_DATA / 0x6) /* (MAX_CAP_DATA / sizeof(TPMS_ALG_PROPERTY)) */
             254 => Ok(Self::MAX_CAP_HANDLES), // Original value: (MAX_CAP_DATA / 0x4) /* (MAX_CAP_DATA / sizeof(TPM_HANDLE)) */
@@ -1608,7 +1585,6 @@ impl ImplementationConstants {
             203 => Ok(Self::MAX_PCR_PROPERTIES), // Original value: (MAX_CAP_DATA / 0x5) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PCR_SELECT)) */
             508 => Ok(Self::MAX_ECC_CURVES), // Original value: (MAX_CAP_DATA / 0x2) /* (MAX_CAP_DATA / sizeof(TPM_ECC_CURVE)) */
             14 => Ok(Self::MAX_TAGGED_POLICIES), // Original value: (MAX_CAP_DATA / 0x46) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_POLICY)) */
-            127 => Ok(Self::MAX_AC_CAPABILITIES), // Original value: (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_AC_OUTPUT)) */
             84 => Ok(Self::MAX_ACT_DATA), // Original value: MAX_CAP_DATA / 0xC /* MAX_CAP_DATA / sizeof(TPMS_ACT_DATA) */
             _ => Err(TpmError::InvalidEnumValue),
         }
@@ -1619,23 +1595,21 @@ impl ImplementationConstants {
 
 impl TpmEnum for ImplementationConstants {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<ImplementationConstants> for u32 {
     fn from(value: ImplementationConstants) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<ImplementationConstants> for i32 {
     fn from(value: ImplementationConstants) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for ImplementationConstants {
@@ -1672,7 +1646,7 @@ impl fmt::Display for ImplementationConstants {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_RC(pub i32);
+pub struct TPM_RC(pub u32);
 
 impl TPM_RC {
     pub const SUCCESS: Self = Self(0x0); // Original value: 0x000
@@ -2184,7 +2158,6 @@ impl TPM_RC {
             0 => Ok(Self::SUCCESS), // Original value: 0x000
             30 => Ok(Self::BAD_TAG), // Original value: 0x01E
             256 => Ok(Self::RC_VER1), // Original value: 0x100
-            256 => Ok(Self::INITIALIZE), // Original value: RC_VER1 + 0x000
             257 => Ok(Self::FAILURE), // Original value: RC_VER1 + 0x001
             259 => Ok(Self::SEQUENCE), // Original value: RC_VER1 + 0x003
             267 => Ok(Self::PRIVATE), // Original value: RC_VER1 + 0x00B
@@ -2343,23 +2316,21 @@ impl TPM_RC {
 
 impl TpmEnum for TPM_RC {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_RC> for u32 {
     fn from(value: TPM_RC) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_RC> for i32 {
     fn from(value: TPM_RC) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_RC {
@@ -2899,7 +2870,7 @@ impl fmt::Display for TPM_SE {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_CAP(pub i32);
+pub struct TPM_CAP(pub u32);
 
 impl TPM_CAP {
     pub const FIRST: Self = Self(0x0); // Original value: 0x00000000
@@ -2964,23 +2935,21 @@ impl TPM_CAP {
 
 impl TpmEnum for TPM_CAP {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_CAP> for u32 {
     fn from(value: TPM_CAP) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_CAP> for i32 {
     fn from(value: TPM_CAP) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_CAP {
@@ -3010,7 +2979,7 @@ impl fmt::Display for TPM_CAP {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_PT(pub i32);
+pub struct TPM_PT(pub u32);
 
 impl TPM_PT {
     /// Indicates no property type
@@ -3310,8 +3279,6 @@ impl TPM_PT {
         match value {
             0 => Ok(Self::NONE), // Original value: 0x00000000
             256 => Ok(Self::PT_GROUP), // Original value: 0x00000100
-            256 => Ok(Self::PT_FIXED), // Original value: PT_GROUP * 1
-            256 => Ok(Self::FAMILY_INDICATOR), // Original value: PT_FIXED + 0
             257 => Ok(Self::LEVEL), // Original value: PT_FIXED + 1
             258 => Ok(Self::REVISION), // Original value: PT_FIXED + 2
             259 => Ok(Self::DAY_OF_YEAR), // Original value: PT_FIXED + 3
@@ -3358,7 +3325,6 @@ impl TPM_PT {
             301 => Ok(Self::MODES), // Original value: PT_FIXED + 45
             302 => Ok(Self::MAX_CAP_BUFFER), // Original value: PT_FIXED + 46
             512 => Ok(Self::PT_VAR), // Original value: PT_GROUP * 2
-            512 => Ok(Self::PERMANENT), // Original value: PT_VAR + 0
             513 => Ok(Self::STARTUP_CLEAR), // Original value: PT_VAR + 1
             514 => Ok(Self::HR_NV_INDEX), // Original value: PT_VAR + 2
             515 => Ok(Self::HR_LOADED), // Original value: PT_VAR + 3
@@ -3388,23 +3354,21 @@ impl TPM_PT {
 
 impl TpmEnum for TPM_PT {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_PT> for u32 {
     fn from(value: TPM_PT) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_PT> for i32 {
     fn from(value: TPM_PT) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_PT {
@@ -3492,7 +3456,7 @@ impl fmt::Display for TPM_PT {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_PT_PCR(pub i32);
+pub struct TPM_PT_PCR(pub u32);
 
 impl TPM_PT_PCR {
     /// Bottom of the range of TPM_PT_PCR properties
@@ -3596,23 +3560,21 @@ impl TPM_PT_PCR {
 
 impl TpmEnum for TPM_PT_PCR {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_PT_PCR> for u32 {
     fn from(value: TPM_PT_PCR) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_PT_PCR> for i32 {
     fn from(value: TPM_PT_PCR) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_PT_PCR {
@@ -3744,7 +3706,7 @@ impl fmt::Display for TPM_PS {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_HT(pub i8);
+pub struct TPM_HT(pub u8);
 
 impl TPM_HT {
     /// PCR consecutive numbers, starting at 0, that reference the PCR registers
@@ -3802,23 +3764,21 @@ impl TPM_HT {
 
 impl TpmEnum for TPM_HT {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_HT> for u32 {
     fn from(value: TPM_HT) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_HT> for i32 {
     fn from(value: TPM_HT) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_HT {
@@ -3844,7 +3804,7 @@ impl fmt::Display for TPM_HT {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_RH(pub i32);
+pub struct TPM_RH(pub u32);
 
 impl TPM_RH {
     pub const FIRST: Self = Self(0x40000000);
@@ -3942,23 +3902,21 @@ impl TPM_RH {
 
 impl TpmEnum for TPM_RH {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_RH> for u32 {
     fn from(value: TPM_RH) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_RH> for i32 {
     fn from(value: TPM_RH) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_RH {
@@ -4194,7 +4152,7 @@ impl fmt::Display for PLATFORM {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct Implementation(pub i32);
+pub struct Implementation(pub u32);
 
 impl Implementation {
     /// Temporary define
@@ -4338,14 +4296,10 @@ impl Implementation {
             1 => Ok(Self::HASH_LIB), // Original value: ImplementationConstants::Ossl
             24 => Ok(Self::IMPLEMENTATION_PCR), // Original value: 24
             3 => Ok(Self::PCR_SELECT_MAX), // Original value: ((IMPLEMENTATION_PCR+7)/8)
-            3 => Ok(Self::PCR_SELECT_MIN), // Original value: ((PLATFORM_PCR + 7) / 8)
             17 => Ok(Self::DRTM_PCR), // Original value: 17
-            0 => Ok(Self::HCRTM_PCR), // Original value: 0
             5 => Ok(Self::NUM_LOCALITIES), // Original value: 5
-            3 => Ok(Self::MAX_HANDLE_NUM), // Original value: 3
             64 => Ok(Self::MAX_ACTIVE_SESSIONS), // Original value: 64
             2 => Ok(Self::MIN_EVICT_OBJECTS), // Original value: 2
-            1 => Ok(Self::NUM_POLICY_PCR_GROUP), // Original value: 1
             1264 => Ok(Self::MAX_CONTEXT_SIZE), // Original value: 1264
             1024 => Ok(Self::MAX_DIGEST_BUFFER), // Original value: 1024
             2048 => Ok(Self::MAX_NV_INDEX_SIZE), // Original value: 2048
@@ -4359,12 +4313,9 @@ impl Implementation {
             128 => Ok(Self::MAX_SYM_DATA), // Original value: 128
             512 => Ok(Self::RAM_INDEX_SPACE), // Original value: 512
             65537 => Ok(Self::RSA_DEFAULT_PUBLIC_EXPONENT), // Original value: 0x00010001
-            1 => Ok(Self::ENABLE_PCR_NO_INCREMENT), // Original value: Logic::YES
             8192 => Ok(Self::MAX_DERIVATION_BITS), // Original value: 8192
-            128 => Ok(Self::RSA_MAX_PRIME), // Original value: (ImplementationConstants::MAX_RSA_KEY_BYTES/2)
             640 => Ok(Self::RSA_PRIVATE_SIZE), // Original value: (RSA_MAX_PRIME * 5)
             20 => Ok(Self::SIZE_OF_X509_SERIAL_NUMBER), // Original value: 20
-            640 => Ok(Self::PRIVATE_VENDOR_SPECIFIC_BYTES), // Original value: RSA_PRIVATE_SIZE
             _ => Err(TpmError::InvalidEnumValue),
         }
 
@@ -4374,23 +4325,21 @@ impl Implementation {
 
 impl TpmEnum for Implementation {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<Implementation> for u32 {
     fn from(value: Implementation) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<Implementation> for i32 {
     fn from(value: Implementation) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for Implementation {
@@ -4431,7 +4380,7 @@ impl fmt::Display for Implementation {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_HC(pub i32);
+pub struct TPM_HC(pub u32);
 
 impl TPM_HC {
     /// To mask off the HR
@@ -4531,30 +4480,17 @@ impl TPM_HC {
             2164260864 => Ok(Self::HR_PERSISTENT), // Original value: (TPM_HT::PERSISTENT  <<  HR_SHIFT)
             16777216 => Ok(Self::HR_NV_INDEX), // Original value: (TPM_HT::NV_INDEX  <<  HR_SHIFT)
             1073741824 => Ok(Self::HR_PERMANENT), // Original value: (TPM_HT::PERMANENT  <<  HR_SHIFT)
-            0 => Ok(Self::PCR_FIRST), // Original value: (HR_PCR + 0)
             23 => Ok(Self::PCR_LAST), // Original value: (PCR_FIRST + Implementation::IMPLEMENTATION_PCR-1)
-            33554432 => Ok(Self::HMAC_SESSION_FIRST), // Original value: (HR_HMAC_SESSION + 0)
             33554495 => Ok(Self::HMAC_SESSION_LAST), // Original value: (HMAC_SESSION_FIRST+Implementation::MAX_ACTIVE_SESSIONS-1)
-            33554432 => Ok(Self::LOADED_SESSION_FIRST), // Original value: HMAC_SESSION_FIRST
-            33554495 => Ok(Self::LOADED_SESSION_LAST), // Original value: HMAC_SESSION_LAST
-            50331648 => Ok(Self::POLICY_SESSION_FIRST), // Original value: (HR_POLICY_SESSION + 0)
             50331711 => Ok(Self::POLICY_SESSION_LAST), // Original value: (POLICY_SESSION_FIRST + Implementation::MAX_ACTIVE_SESSIONS-1)
-            2147483648 => Ok(Self::TRANSIENT_FIRST), // Original value: (HR_TRANSIENT + 0)
-            50331648 => Ok(Self::ACTIVE_SESSION_FIRST), // Original value: POLICY_SESSION_FIRST
-            50331711 => Ok(Self::ACTIVE_SESSION_LAST), // Original value: POLICY_SESSION_LAST
             2147483650 => Ok(Self::TRANSIENT_LAST), // Original value: (TRANSIENT_FIRST+Implementation::MAX_LOADED_OBJECTS-1)
-            2164260864 => Ok(Self::PERSISTENT_FIRST), // Original value: (HR_PERSISTENT + 0)
             2181038079 => Ok(Self::PERSISTENT_LAST), // Original value: (PERSISTENT_FIRST + 0x00FFFFFF)
             2172649472 => Ok(Self::PLATFORM_PERSISTENT), // Original value: (PERSISTENT_FIRST + 0x00800000)
-            16777216 => Ok(Self::NV_INDEX_FIRST), // Original value: (HR_NV_INDEX + 0)
             33554431 => Ok(Self::NV_INDEX_LAST), // Original value: (NV_INDEX_FIRST + 0x00FFFFFF)
-            1073741824 => Ok(Self::PERMANENT_FIRST), // Original value: TPM_RH::FIRST
             1073742111 => Ok(Self::PERMANENT_LAST), // Original value: TPM_RH::LAST
             30408704 => Ok(Self::HR_NV_AC), // Original value: ((TPM_HT::NV_INDEX  <<  HR_SHIFT) + 0xD00000)
-            30408704 => Ok(Self::NV_AC_FIRST), // Original value: (HR_NV_AC + 0)
             30474239 => Ok(Self::NV_AC_LAST), // Original value: (HR_NV_AC + 0x0000FFFF)
             2415919104 => Ok(Self::HR_AC), // Original value: (TPM_HT::AC  <<  HR_SHIFT)
-            2415919104 => Ok(Self::AC_FIRST), // Original value: (HR_AC + 0)
             2415984639 => Ok(Self::AC_LAST), // Original value: (HR_AC + 0x0000FFFF)
             _ => Err(TpmError::InvalidEnumValue),
         }
@@ -4565,23 +4501,21 @@ impl TPM_HC {
 
 impl TpmEnum for TPM_HC {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_HC> for u32 {
     fn from(value: TPM_HC) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_HC> for i32 {
     fn from(value: TPM_HC) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_HC {
@@ -4708,7 +4642,7 @@ fn from(value: u32) -> Self {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPMA_OBJECT(pub i32);
+pub struct TPMA_OBJECT(pub u32);
 
 impl TPMA_OBJECT {
     /// SET (1): The hierarchy of the object, as indicated by its Qualified Name, may not change.
@@ -4801,23 +4735,21 @@ impl TPMA_OBJECT {
 
 impl TpmEnum for TPMA_OBJECT {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPMA_OBJECT> for u32 {
     fn from(value: TPMA_OBJECT) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPMA_OBJECT> for i32 {
     fn from(value: TPMA_OBJECT) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_OBJECT {
@@ -4843,18 +4775,18 @@ impl fmt::Display for TPMA_OBJECT {
 }
 
 impl std::ops::BitOr for TPMA_OBJECT {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    Self(self.0 | rhs.0)
+        Self(self.0 | rhs.0)
     }
 
 }
 
-impl From<i32> for TPMA_OBJECT {
-fn from(value: i32) -> Self {
-    Self(value)
+impl From<u32> for TPMA_OBJECT {
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// This octet in each session is used to identify the session type, indicate its
@@ -5470,7 +5402,7 @@ fn from(value: u32) -> Self {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPMA_X509_KEY_USAGE(pub i32);
+pub struct TPMA_X509_KEY_USAGE(pub u32);
 
 impl TPMA_X509_KEY_USAGE {
     /// Attributes.Decrypt SET
@@ -5513,7 +5445,7 @@ impl TPMA_X509_KEY_USAGE {
             268435456 => Ok(Self::dataEncipherment), // Original value: 0x10000000
             536870912 => Ok(Self::keyEncipherment), // Original value: 0x20000000
             1073741824 => Ok(Self::nonrepudiation), // Original value: 0x40000000
-            -2147483648 => Ok(Self::digitalSignature), // Original value: 0xFFFFFFFF80000000
+            18446744071562067968 => Ok(Self::digitalSignature), // Original value: 0xFFFFFFFF80000000
             _ => Err(TpmError::InvalidEnumValue),
         }
 
@@ -5523,23 +5455,21 @@ impl TPMA_X509_KEY_USAGE {
 
 impl TpmEnum for TPMA_X509_KEY_USAGE {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPMA_X509_KEY_USAGE> for u32 {
     fn from(value: TPMA_X509_KEY_USAGE) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPMA_X509_KEY_USAGE> for i32 {
     fn from(value: TPMA_X509_KEY_USAGE) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_X509_KEY_USAGE {
@@ -5553,7 +5483,7 @@ impl fmt::Display for TPMA_X509_KEY_USAGE {
             268435456 => write!(f, "dataEncipherment"),
             536870912 => write!(f, "keyEncipherment"),
             1073741824 => write!(f, "One of <nonrepudiation, contentCommitment>"),
-            -2147483648 => write!(f, "digitalSignature"),
+            18446744071562067968 => write!(f, "digitalSignature"),
             _ => write!(f, "Unknown({:?})", self.0),
         }
 
@@ -5562,18 +5492,18 @@ impl fmt::Display for TPMA_X509_KEY_USAGE {
 }
 
 impl std::ops::BitOr for TPMA_X509_KEY_USAGE {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    Self(self.0 | rhs.0)
+        Self(self.0 | rhs.0)
     }
 
 }
 
-impl From<i32> for TPMA_X509_KEY_USAGE {
-fn from(value: i32) -> Self {
-    Self(value)
+impl From<u32> for TPMA_X509_KEY_USAGE {
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// This attribute is used to report the ACT state. This attribute may be read using
@@ -5645,7 +5575,7 @@ fn from(value: u32) -> Self {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPM_NV_INDEX(pub i32);
+pub struct TPM_NV_INDEX(pub u32);
 
 impl TPM_NV_INDEX {
     /// The Index of the NV location
@@ -5663,7 +5593,7 @@ impl TPM_NV_INDEX {
             16777215 => Ok(Self::index_BIT_MASK), // Original value: 0xFFFFFF
             0 => Ok(Self::index_BIT_OFFSET), // Original value: 0
             24 => Ok(Self::index_BIT_LENGTH), // Original value: 24
-            -16777216 => Ok(Self::RhNv_BIT_MASK), // Original value: 0xFFFFFFFFFF000000
+            18446744073692774400 => Ok(Self::RhNv_BIT_MASK), // Original value: 0xFFFFFFFFFF000000
             8 => Ok(Self::RhNv_BIT_LENGTH), // Original value: 8
             _ => Err(TpmError::InvalidEnumValue),
         }
@@ -5674,23 +5604,21 @@ impl TPM_NV_INDEX {
 
 impl TpmEnum for TPM_NV_INDEX {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPM_NV_INDEX> for u32 {
     fn from(value: TPM_NV_INDEX) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPM_NV_INDEX> for i32 {
     fn from(value: TPM_NV_INDEX) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_NV_INDEX {
@@ -5699,7 +5627,7 @@ impl fmt::Display for TPM_NV_INDEX {
             16777215 => write!(f, "index_BIT_MASK"),
             0 => write!(f, "index_BIT_OFFSET"),
             24 => write!(f, "One of <index_BIT_LENGTH, RhNv_BIT_OFFSET>"),
-            -16777216 => write!(f, "RhNv_BIT_MASK"),
+            18446744073692774400 => write!(f, "RhNv_BIT_MASK"),
             8 => write!(f, "RhNv_BIT_LENGTH"),
             _ => write!(f, "Unknown({:?})", self.0),
         }
@@ -5709,18 +5637,18 @@ impl fmt::Display for TPM_NV_INDEX {
 }
 
 impl std::ops::BitOr for TPM_NV_INDEX {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    Self(self.0 | rhs.0)
+        Self(self.0 | rhs.0)
     }
 
 }
 
-impl From<i32> for TPM_NV_INDEX {
-fn from(value: i32) -> Self {
-    Self(value)
+impl From<u32> for TPM_NV_INDEX {
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// This structure allows the TPM to keep track of the data and permissions to manipulate
@@ -5728,7 +5656,7 @@ fn from(value: i32) -> Self {
 
 /// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct TPMA_NV(pub i32);
+pub struct TPMA_NV(pub u32);
 
 impl TPMA_NV {
     /// SET (1): The Index data can be written if Platform Authorization is provided.
@@ -5880,7 +5808,6 @@ impl TPMA_NV {
             128 => Ok(Self::PIN_FAIL), // Original value: 0x80
             144 => Ok(Self::PIN_PASS), // Original value: 0x90
             240 => Ok(Self::TpmNt_BIT_MASK), // Original value: 0xF0
-            4 => Ok(Self::TpmNt_BIT_OFFSET), // Original value: 4
             1024 => Ok(Self::POLICY_DELETE), // Original value: 0x400
             2048 => Ok(Self::WRITELOCKED), // Original value: 0x800
             4096 => Ok(Self::WRITEALL), // Original value: 0x1000
@@ -5897,7 +5824,7 @@ impl TPMA_NV {
             268435456 => Ok(Self::READLOCKED), // Original value: 0x10000000
             536870912 => Ok(Self::WRITTEN), // Original value: 0x20000000
             1073741824 => Ok(Self::PLATFORMCREATE), // Original value: 0x40000000
-            -2147483648 => Ok(Self::READ_STCLEAR), // Original value: 0xFFFFFFFF80000000
+            18446744071562067968 => Ok(Self::READ_STCLEAR), // Original value: 0xFFFFFFFF80000000
             _ => Err(TpmError::InvalidEnumValue),
         }
 
@@ -5907,23 +5834,21 @@ impl TPMA_NV {
 
 impl TpmEnum for TPMA_NV {
     fn get_value(&self) -> u32 {
-        self.0 as u32
+        self.0.into()
     }
 
 }
 
 impl From<TPMA_NV> for u32 {
     fn from(value: TPMA_NV) -> Self {
-        value.0 as u32
+        value.0.into()
     }
-
 }
 
 impl From<TPMA_NV> for i32 {
     fn from(value: TPMA_NV) -> Self {
-        value.0
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_NV {
@@ -5956,7 +5881,7 @@ impl fmt::Display for TPMA_NV {
             268435456 => write!(f, "READLOCKED"),
             536870912 => write!(f, "WRITTEN"),
             1073741824 => write!(f, "PLATFORMCREATE"),
-            -2147483648 => write!(f, "READ_STCLEAR"),
+            18446744071562067968 => write!(f, "READ_STCLEAR"),
             _ => write!(f, "Unknown({:?})", self.0),
         }
 
@@ -5965,18 +5890,18 @@ impl fmt::Display for TPMA_NV {
 }
 
 impl std::ops::BitOr for TPMA_NV {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    Self(self.0 | rhs.0)
+        Self(self.0 | rhs.0)
     }
 
 }
 
-impl From<i32> for TPMA_NV {
-fn from(value: i32) -> Self {
-    Self(value)
+impl From<u32> for TPMA_NV {
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// Table 119 Definition of TPMU_CAPABILITIES Union [OUT]
@@ -6149,7 +6074,7 @@ impl Debug for dyn TPMU_SENSITIVE_COMPOSITE {
 }
 
 /// Handle of a loaded TPM key or other object [TSS]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM_HANDLE {
     /// Handle value
     pub handle: u32,
@@ -6206,7 +6131,7 @@ impl TpmStructure for TPM_HANDLE {
 /// An empty union element does not contain any data to marshal.
 /// This data structure can be used in place of any other union
 /// initialized with its own empty element.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NULL_UNION {
 }
 
@@ -6293,7 +6218,7 @@ impl TPMU_SIGNATURE for TPMS_NULL_UNION {
 /// This structure is used as a placeholder. In some cases, a union will have a selector
 /// value with no data to unmarshal when that type is selected. Rather than leave the
 /// entry empty, TPMS_EMPTY may be selected.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_EMPTY {
 }
 
@@ -6343,7 +6268,7 @@ impl TPMU_ASYM_SCHEME for TPMS_EMPTY {
 }
 
 /// This structure is a return value for a TPM2_GetCapability() that reads the installed algorithms.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ALGORITHM_DESCRIPTION {
     /// An algorithm
     pub alg: TPM_ALG_ID,
@@ -6406,7 +6331,7 @@ impl TpmStructure for TPMS_ALGORITHM_DESCRIPTION {
 /// Table 80 shows the basic hash-agile structure used in this specification. To handle
 /// hash agility, this structure uses the hashAlg parameter to indicate the algorithm used
 /// to compute the digest and, by implication, the size of the digest.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_HA {
     /// Selector of the hash contained in the digest that implies the size of the digest
     /// NOTE The leading + on the type indicates that this structure should pass an indication
@@ -6463,7 +6388,7 @@ impl TpmStructure for TPMT_HA {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.hashAlg = buf.readShort();
-        self.digest = buf.readByteBuf(digest_size(self.hashAlg));
+        self.digest = buf.readByteBuf(Crypto::digestSize(self.hashAlg));
         Ok(())
     }
 
@@ -6480,7 +6405,7 @@ impl TPMU_SIGNATURE for TPMT_HA {
 
 /// This structure is used for a sized buffer that cannot be larger than the largest
 /// digest produced by any hash algorithm implemented on the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_DIGEST {
     /// The buffer area that can be no larger than a digest
     pub buffer: Vec<u8>,
@@ -6544,7 +6469,7 @@ impl TPMU_PUBLIC_ID for TPM2B_DIGEST {
 
 /// This structure is used for a data buffer that is required to be no larger than the
 /// size of the Name of an object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_DATA {
     pub buffer: Vec<u8>,
 }
@@ -6613,7 +6538,7 @@ pub type TPM2B_AUTH = TPM2B_DIGEST;
 pub type TPM2B_OPERAND = TPM2B_DIGEST;
 
 /// This type is a sized buffer that can hold event data.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_EVENT {
     /// The operand
     pub buffer: Vec<u8>,
@@ -6668,7 +6593,7 @@ impl TpmStructure for TPM2B_EVENT {
 
 /// This type is a sized buffer that can hold a maximally sized buffer for commands that
 /// use a large data buffer such as TPM2_Hash(), TPM2_SequenceUpdate(), or TPM2_FieldUpgradeData().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_MAX_BUFFER {
     /// The operand
     pub buffer: Vec<u8>,
@@ -6723,7 +6648,7 @@ impl TpmStructure for TPM2B_MAX_BUFFER {
 
 /// This type is a sized buffer that can hold a maximally sized buffer for NV data
 /// commands such as TPM2_NV_Read(), TPM2_NV_Write(), and TPM2_NV_Certify().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_MAX_NV_BUFFER {
     /// The operand
     /// NOTE MAX_NV_BUFFER_SIZE is TPM-dependent
@@ -6779,7 +6704,7 @@ impl TpmStructure for TPM2B_MAX_NV_BUFFER {
 
 /// This TPM-dependent structure is used to provide the timeout value for an
 /// authorization. The size shall be 8 or less.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_TIMEOUT {
     /// The timeout value
     pub buffer: Vec<u8>,
@@ -6835,7 +6760,7 @@ impl TpmStructure for TPM2B_TIMEOUT {
 /// This structure is used for passing an initial value for a symmetric block cipher to or
 /// from the TPM. The size is set to be the largest block size of any implemented
 /// symmetric cipher implemented on the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_IV {
     /// The IV value
     pub buffer: Vec<u8>,
@@ -6889,7 +6814,7 @@ impl TpmStructure for TPM2B_IV {
 }
 
 /// This buffer holds a Name for any entity type.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_NAME {
     /// The Name structure
     pub name: Vec<u8>,
@@ -6943,7 +6868,7 @@ impl TpmStructure for TPM2B_NAME {
 }
 
 /// This structure provides a standard method of specifying a list of PCR.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_PCR_SELECT {
     /// The bit map of selected PCR
     pub pcrSelect: Vec<u8>,
@@ -6997,7 +6922,7 @@ impl TpmStructure for TPMS_PCR_SELECT {
 }
 
 /// Table 94 Definition of TPMS_PCR_SELECTION Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_PCR_SELECTION {
     /// The hash algorithm associated with the selection
     pub hash: TPM_ALG_ID,
@@ -7059,7 +6984,7 @@ impl TpmStructure for TPMS_PCR_SELECTION {
 
 /// This ticket is produced by TPM2_Create() or TPM2_CreatePrimary(). It is used to bind
 /// the creation data to the object to which it applies. The ticket is computed by
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_TK_CREATION {
     /// The hierarchy containing name
     pub hierarchy: TPM_HANDLE,
@@ -7124,7 +7049,7 @@ impl TpmStructure for TPMT_TK_CREATION {
 /// This ticket is produced by TPM2_VerifySignature(). This formulation is used for
 /// multiple ticket uses. The ticket provides evidence that the TPM has validated that a
 /// digest was signed by a key with the Name of keyName. The ticket is computed by
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_TK_VERIFIED {
     /// The hierarchy containing keyName
     pub hierarchy: TPM_HANDLE,
@@ -7189,7 +7114,7 @@ impl TpmStructure for TPMT_TK_VERIFIED {
 /// This ticket is produced by TPM2_PolicySigned() and TPM2_PolicySecret() when the
 /// authorization has an expiration time. If nonceTPM was provided in the policy command,
 /// the ticket is computed by
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_TK_AUTH {
     /// Ticket structure tag
     pub tag: TPM_ST,
@@ -7258,7 +7183,7 @@ impl TpmStructure for TPMT_TK_AUTH {
 
 /// This ticket is produced by TPM2_SequenceComplete() or TPM2_Hash() when the message
 /// that was digested did not start with TPM_GENERATED_VALUE. The ticket is computed by
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_TK_HASHCHECK {
     /// The hierarchy
     pub hierarchy: TPM_HANDLE,
@@ -7322,7 +7247,7 @@ impl TpmStructure for TPMT_TK_HASHCHECK {
 
 /// This structure is used to report the properties of an algorithm identifier. It is
 /// returned in response to a TPM2_GetCapability() with capability = TPM_CAP_ALG.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ALG_PROPERTY {
     /// An algorithm identifier
     pub alg: TPM_ALG_ID,
@@ -7384,7 +7309,7 @@ impl TpmStructure for TPMS_ALG_PROPERTY {
 
 /// This structure is used to report the properties that are UINT32 values. It is returned
 /// in response to a TPM2_GetCapability().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_TAGGED_PROPERTY {
     /// A property identifier
     pub property: TPM_PT,
@@ -7445,7 +7370,7 @@ impl TpmStructure for TPMS_TAGGED_PROPERTY {
 }
 
 /// This structure is used in TPM2_GetCapability() to return the attributes of the PCR.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_TAGGED_PCR_SELECT {
     /// The property identifier
     pub tag: TPM_PT_PCR,
@@ -7507,7 +7432,7 @@ impl TpmStructure for TPMS_TAGGED_PCR_SELECT {
 
 /// This structure is used in TPM2_GetCapability() to return the policy associated with a
 /// permanent handle.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_TAGGED_POLICY {
     /// A permanent handle
     pub handle: TPM_HANDLE,
@@ -7568,7 +7493,7 @@ impl TpmStructure for TPMS_TAGGED_POLICY {
 }
 
 /// This structure is used in TPM2_GetCapability() to return the ACT data.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ACT_DATA {
     /// A permanent handle
     pub handle: TPM_HANDLE,
@@ -7637,7 +7562,7 @@ impl TpmStructure for TPMS_ACT_DATA {
 
 /// A list of command codes may be input to the TPM or returned by the TPM depending on
 /// the command.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_CC {
     /// A list of command codes
     /// The maximum only applies to a command code list in a command. The response size is
@@ -7702,7 +7627,7 @@ impl TPMU_CAPABILITIES for TPML_CC {
 }
 
 /// This list is only used in TPM2_GetCapability(capability = TPM_CAP_COMMANDS).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_CCA {
     /// A list of command codes attributes
     pub commandAttributes: Vec<TPMA_CC>,
@@ -7765,7 +7690,7 @@ impl TPMU_CAPABILITIES for TPML_CCA {
 }
 
 /// This list is returned by TPM2_IncrementalSelfTest().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_ALG {
     /// A list of algorithm IDs
     /// The maximum only applies to an algorithm list in a command. The response size is
@@ -7822,7 +7747,7 @@ impl TpmStructure for TPML_ALG {
 
 /// This structure is used when the TPM returns a list of loaded handles when the
 /// capability in TPM2_GetCapability() is TPM_CAP_HANDLE.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_HANDLE {
     /// An array of handles
     pub handle: Vec<TPM_HANDLE>,
@@ -7886,7 +7811,7 @@ impl TPMU_CAPABILITIES for TPML_HANDLE {
 
 /// This list is used to convey a list of digest values. This type is used in
 /// TPM2_PolicyOR() and in TPM2_PCR_Read().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_DIGEST {
     /// A list of digests
     /// For TPM2_PolicyOR(), all digests will have been computed using the digest of the
@@ -7944,7 +7869,7 @@ impl TpmStructure for TPML_DIGEST {
 
 /// This list is used to convey a list of digest values. This type is returned by
 /// TPM2_PCR_Event() and TPM2_EventSequenceComplete() and is an input for TPM2_PCR_Extend().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_DIGEST_VALUES {
     /// A list of tagged digests
     pub digests: Vec<TPMT_HA>,
@@ -7999,7 +7924,7 @@ impl TpmStructure for TPML_DIGEST_VALUES {
 
 /// This list is used to indicate the PCR that are included in a selection when more than
 /// one PCR value may be selected.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_PCR_SELECTION {
     /// List of selections
     pub pcrSelections: Vec<TPMS_PCR_SELECTION>,
@@ -8063,7 +7988,7 @@ impl TPMU_CAPABILITIES for TPML_PCR_SELECTION {
 
 /// This list is used to report on a list of algorithm attributes. It is returned in a
 /// TPM2_GetCapability().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_ALG_PROPERTY {
     /// List of properties
     pub algProperties: Vec<TPMS_ALG_PROPERTY>,
@@ -8127,7 +8052,7 @@ impl TPMU_CAPABILITIES for TPML_ALG_PROPERTY {
 
 /// This list is used to report on a list of properties that are TPMS_TAGGED_PROPERTY
 /// values. It is returned by a TPM2_GetCapability().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_TAGGED_TPM_PROPERTY {
     /// An array of tagged properties
     pub tpmProperty: Vec<TPMS_TAGGED_PROPERTY>,
@@ -8191,7 +8116,7 @@ impl TPMU_CAPABILITIES for TPML_TAGGED_TPM_PROPERTY {
 
 /// This list is used to report on a list of properties that are TPMS_PCR_SELECT values.
 /// It is returned by a TPM2_GetCapability().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_TAGGED_PCR_PROPERTY {
     /// A tagged PCR selection
     pub pcrProperty: Vec<TPMS_TAGGED_PCR_SELECT>,
@@ -8255,7 +8180,7 @@ impl TPMU_CAPABILITIES for TPML_TAGGED_PCR_PROPERTY {
 
 /// This list is used to report the ECC curve ID values supported by the TPM. It is
 /// returned by a TPM2_GetCapability().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_ECC_CURVE {
     /// Array of ECC curve identifiers
     pub eccCurves: Vec<TPM_ECC_CURVE>,
@@ -8320,7 +8245,7 @@ impl TPMU_CAPABILITIES for TPML_ECC_CURVE {
 /// This list is used to report the authorization policy values for permanent handles.
 /// This is list may be generated by TPM2_GetCapabiltiy(). A permanent handle that cannot
 /// have a policy is not included in the list.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_TAGGED_POLICY {
     /// Array of tagged policies
     pub policies: Vec<TPMS_TAGGED_POLICY>,
@@ -8384,7 +8309,7 @@ impl TPMU_CAPABILITIES for TPML_TAGGED_POLICY {
 
 /// This list is used to report the timeout and state for the ACT. This list may be
 /// generated by TPM2_GetCapabilty(). Only implemented ACT are present in the list
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_ACT_DATA {
     /// Array of ACT data
     pub actData: Vec<TPMS_ACT_DATA>,
@@ -8447,7 +8372,7 @@ impl TPMU_CAPABILITIES for TPML_ACT_DATA {
 }
 
 /// This data area is returned in response to a TPM2_GetCapability().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_CAPABILITY_DATA {
     /// The capability
 
@@ -8510,7 +8435,7 @@ impl TpmStructure for TPMS_CAPABILITY_DATA {
 }
 
 /// This structure is used in each of the attestation commands.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_CLOCK_INFO {
     /// Time value in milliseconds that advances while the TPM is powered
     /// NOTE The interpretation of the time-origin (clock=0) is out of the scope of this
@@ -8592,7 +8517,7 @@ impl TpmStructure for TPMS_CLOCK_INFO {
 }
 
 /// This structure is used in, e.g., the TPM2_GetTime() attestation and TPM2_ReadClock().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_TIME_INFO {
     /// Time in milliseconds since the TIme circuit was last reset
     /// This structure element is used to report on the TPM's Time value.
@@ -8654,7 +8579,7 @@ impl TpmStructure for TPMS_TIME_INFO {
 }
 
 /// This structure is used when the TPM performs TPM2_GetTime.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_TIME_ATTEST_INFO {
     /// The Time, Clock, resetCount, restartCount, and Safe indicator
     pub time: TPMS_TIME_INFO,
@@ -8724,7 +8649,7 @@ impl TPMU_ATTEST for TPMS_TIME_ATTEST_INFO {
 }
 
 /// This is the attested data for TPM2_Certify().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_CERTIFY_INFO {
     /// Name of the certified object
     pub name: Vec<u8>,
@@ -8794,7 +8719,7 @@ impl TPMU_ATTEST for TPMS_CERTIFY_INFO {
 }
 
 /// This is the attested data for TPM2_Quote().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_QUOTE_INFO {
     /// Information on algID, PCR selected and digest
     pub pcrSelect: Vec<TPMS_PCR_SELECTION>,
@@ -8864,7 +8789,7 @@ impl TPMU_ATTEST for TPMS_QUOTE_INFO {
 }
 
 /// This is the attested data for TPM2_GetCommandAuditDigest().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_COMMAND_AUDIT_INFO {
     /// The monotonic audit counter
     pub auditCounter: u64,
@@ -8948,7 +8873,7 @@ impl TPMU_ATTEST for TPMS_COMMAND_AUDIT_INFO {
 }
 
 /// This is the attested data for TPM2_GetSessionAuditDigest().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SESSION_AUDIT_INFO {
     /// Current exclusive status of the session
     /// TRUE if all of the commands recorded in the sessionDigest were executed without any
@@ -9020,7 +8945,7 @@ impl TPMU_ATTEST for TPMS_SESSION_AUDIT_INFO {
 }
 
 /// This is the attested data for TPM2_CertifyCreation().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_CREATION_INFO {
     /// Name of the object
     pub objectName: Vec<u8>,
@@ -9091,7 +9016,7 @@ impl TPMU_ATTEST for TPMS_CREATION_INFO {
 
 /// This structure contains the Name and contents of the selected NV Index that is
 /// certified by TPM2_NV_Certify().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NV_CERTIFY_INFO {
     /// Name of the NV Index
     pub indexName: Vec<u8>,
@@ -9169,7 +9094,7 @@ impl TPMU_ATTEST for TPMS_NV_CERTIFY_INFO {
 
 /// This structure contains the Name and hash of the contents of the selected NV Index
 /// that is certified by TPM2_NV_Certify(). The data is hashed using hash of the signing scheme.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NV_DIGEST_CERTIFY_INFO {
     /// Name of the NV Index
     pub indexName: Vec<u8>,
@@ -9240,7 +9165,7 @@ impl TPMU_ATTEST for TPMS_NV_DIGEST_CERTIFY_INFO {
 
 /// This structure is used on each TPM-generated signed structure. The signature is over
 /// this structure.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ATTEST {
     /// The indication that this structure was created by a TPM (always TPM_GENERATED_VALUE)
     pub magic: TPM_GENERATED,
@@ -9341,7 +9266,7 @@ impl TpmStructure for TPMS_ATTEST {
 
 /// This sized buffer to contain the signed structure. The attestationData is the signed
 /// portion of the structure. The size parameter is not signed.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_ATTEST {
     /// The signed structure
     pub attestationData: TPMS_ATTEST,
@@ -9395,7 +9320,7 @@ impl TpmStructure for TPM2B_ATTEST {
 }
 
 /// This is the format used for each of the authorizations in the session area of a command.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_AUTH_COMMAND {
     /// The session handle
     pub sessionHandle: TPM_HANDLE,
@@ -9472,7 +9397,7 @@ impl TpmStructure for TPMS_AUTH_COMMAND {
 /// This is the format for each of the authorizations in the session area of the response.
 /// If the TPM returns TPM_RC_SUCCESS, then the session area of the response contains the
 /// same number of authorizations as the command and the authorizations are in the same order.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_AUTH_RESPONSE {
     /// The session nonce, may be the Empty Buffer
     pub nonce: Vec<u8>,
@@ -9541,7 +9466,7 @@ impl TpmStructure for TPMS_AUTH_RESPONSE {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_TDES for the union TPMU_SYM_DETAILS
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_TDES_SYM_DETAILS {
 }
 
@@ -9592,7 +9517,7 @@ impl TPMU_SYM_DETAILS for TPMS_TDES_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_AES for the union TPMU_SYM_DETAILS
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_AES_SYM_DETAILS {
 }
 
@@ -9643,7 +9568,7 @@ impl TPMU_SYM_DETAILS for TPMS_AES_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_SM4 for the union TPMU_SYM_DETAILS
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SM4_SYM_DETAILS {
 }
 
@@ -9694,7 +9619,7 @@ impl TPMU_SYM_DETAILS for TPMS_SM4_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_CAMELLIA for the union TPMU_SYM_DETAILS
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_CAMELLIA_SYM_DETAILS {
 }
 
@@ -9745,7 +9670,7 @@ impl TPMU_SYM_DETAILS for TPMS_CAMELLIA_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_ANY for the union TPMU_SYM_DETAILS
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ANY_SYM_DETAILS {
 }
 
@@ -9796,7 +9721,7 @@ impl TPMU_SYM_DETAILS for TPMS_ANY_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_XOR for the union TPMU_SYM_DETAILS
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_XOR_SYM_DETAILS {
 }
 
@@ -9847,7 +9772,7 @@ impl TPMU_SYM_DETAILS for TPMS_XOR_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SYM_DETAILS
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NULL_SYM_DETAILS {
 }
 
@@ -9898,7 +9823,7 @@ impl TPMU_SYM_DETAILS for TPMS_NULL_SYM_DETAILS {
 
 /// The TPMT_SYM_DEF structure is used to select an algorithm to be used for parameter
 /// encryption in those cases when different symmetric algorithms may be selected.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_SYM_DEF {
     /// Indicates a symmetric algorithm
     pub algorithm: TPM_ALG_ID,
@@ -9970,7 +9895,7 @@ impl TpmStructure for TPMT_SYM_DEF {
 /// This structure is used when different symmetric block cipher (not XOR) algorithms may
 /// be selected. If the Object can be an ordinary parent (not a derivation parent), this
 /// must be the first field in the Object's parameter (see 12.2.3.7) field.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_SYM_DEF_OBJECT {
     /// Selects a symmetric block cipher
     /// When used in the parameter area of a parent object, this shall be a supported block
@@ -10043,7 +9968,7 @@ impl TpmStructure for TPMT_SYM_DEF_OBJECT {
 }
 
 /// This structure is used to hold a symmetric key in the sensitive area of an asymmetric object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_SYM_KEY {
     /// The key
     pub buffer: Vec<u8>,
@@ -10106,7 +10031,7 @@ impl TPMU_SENSITIVE_COMPOSITE for TPM2B_SYM_KEY {
 }
 
 /// This structure contains the parameters for a symmetric block cipher object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SYMCIPHER_PARMS {
     /// A symmetric block cipher
     pub sym: TPMT_SYM_DEF_OBJECT,
@@ -10171,7 +10096,7 @@ impl TPMU_PUBLIC_PARMS for TPMS_SYMCIPHER_PARMS {
 /// This buffer holds a label or context value. For interoperability and backwards
 /// compatibility, LABEL_MAX_BUFFER is the minimum of the largest digest on the device and
 /// the largest ECC parameter (MAX_ECC_KEY_BYTES) but no more than 32 bytes.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_LABEL {
     /// Symmetric data for a created object or the label and context for a derived object
     pub buffer: Vec<u8>,
@@ -10227,7 +10152,7 @@ impl TpmStructure for TPM2B_LABEL {
 /// This structure contains the label and context fields for a derived object. These
 /// values are used in the derivation KDF. The values in the unique field of inPublic area
 /// template take precedence over the values in the inSensitive parameter.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_DERIVE {
     pub label: Vec<u8>,
     pub context: Vec<u8>,
@@ -10301,7 +10226,7 @@ impl TPMU_PUBLIC_ID for TPMS_DERIVE {
 }
 
 /// Table 147 Definition of TPM2B_DERIVE Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_DERIVE {
     /// Symmetric data for a created object or the label and context for a derived object
     pub buffer: TPMS_DERIVE,
@@ -10355,7 +10280,7 @@ impl TpmStructure for TPM2B_DERIVE {
 }
 
 /// This buffer wraps the TPMU_SENSITIVE_CREATE structure.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_SENSITIVE_DATA {
     /// Symmetric data for a created object or the label and context for a derived object
     pub buffer: Vec<u8>,
@@ -10419,7 +10344,7 @@ impl TPMU_SENSITIVE_COMPOSITE for TPM2B_SENSITIVE_DATA {
 
 /// This structure defines the values to be placed in the sensitive area of a created
 /// object. This structure is only used within a TPM2B_SENSITIVE_CREATE structure.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SENSITIVE_CREATE {
     /// The USER auth secret value
     pub userAuth: Vec<u8>,
@@ -10482,7 +10407,7 @@ impl TpmStructure for TPMS_SENSITIVE_CREATE {
 /// This structure contains the sensitive creation data in a sized buffer. This structure
 /// is defined so that both the userAuth and data values of the TPMS_SENSITIVE_CREATE may
 /// be passed as a single parameter for parameter encryption purposes.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_SENSITIVE_CREATE {
     /// Data to be sealed or a symmetric key value.
     pub sensitive: TPMS_SENSITIVE_CREATE,
@@ -10537,7 +10462,7 @@ impl TpmStructure for TPM2B_SENSITIVE_CREATE {
 
 /// This structure is the scheme data for schemes that only require a hash to complete
 /// their definition.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SCHEME_HASH {
     /// The hash algorithm used to digest the message
     pub hashAlg: TPM_ALG_ID,
@@ -10628,7 +10553,7 @@ impl TPMU_SIGNATURE for TPMS_SCHEME_HASH {
 }
 
 /// This definition is for split signing schemes that require a commit count.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SCHEME_ECDAA {
     /// The hash algorithm used to digest the message
     pub hashAlg: TPM_ALG_ID,
@@ -10705,7 +10630,7 @@ impl TPMU_ASYM_SCHEME for TPMS_SCHEME_ECDAA {
 }
 
 /// Table 155 Definition of Types for HMAC_SIG_SCHEME
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SCHEME_HMAC {
 }
 
@@ -10762,7 +10687,7 @@ impl TPMU_SIG_SCHEME for TPMS_SCHEME_HMAC {
 }
 
 /// This structure is for the XOR encryption scheme.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SCHEME_XOR {
     /// The hash algorithm used to digest the message
     pub hashAlg: TPM_ALG_ID,
@@ -10833,7 +10758,7 @@ impl TPMU_SCHEME_KEYEDHASH for TPMS_SCHEME_XOR {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SCHEME_KEYEDHASH
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NULL_SCHEME_KEYEDHASH {
 }
 
@@ -10883,7 +10808,7 @@ impl TPMU_SCHEME_KEYEDHASH for TPMS_NULL_SCHEME_KEYEDHASH {
 }
 
 /// This structure is used for a hash signing object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_KEYEDHASH_SCHEME {
     /// Selects the scheme
 
@@ -10944,7 +10869,7 @@ impl TpmStructure for TPMT_KEYEDHASH_SCHEME {
 }
 
 /// These are the RSA schemes that only need a hash algorithm as a scheme parameter.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIG_SCHEME_RSASSA {
 }
 
@@ -11001,7 +10926,7 @@ impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_RSASSA {
 }
 
 /// These are the RSA schemes that only need a hash algorithm as a scheme parameter.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIG_SCHEME_RSAPSS {
 }
 
@@ -11060,7 +10985,7 @@ impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_RSAPSS {
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
 /// definition and can be typed as TPMS_SCHEME_HASH. Anonymous algorithms also require a
 /// count value so they are typed to be TPMS_SCHEME_ECDAA.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIG_SCHEME_ECDSA {
 }
 
@@ -11119,7 +11044,7 @@ impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_ECDSA {
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
 /// definition and can be typed as TPMS_SCHEME_HASH. Anonymous algorithms also require a
 /// count value so they are typed to be TPMS_SCHEME_ECDAA.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIG_SCHEME_SM2 {
 }
 
@@ -11178,7 +11103,7 @@ impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_SM2 {
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
 /// definition and can be typed as TPMS_SCHEME_HASH. Anonymous algorithms also require a
 /// count value so they are typed to be TPMS_SCHEME_ECDAA.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIG_SCHEME_ECSCHNORR {
 }
 
@@ -11237,7 +11162,7 @@ impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_ECSCHNORR {
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
 /// definition and can be typed as TPMS_SCHEME_HASH. Anonymous algorithms also require a
 /// count value so they are typed to be TPMS_SCHEME_ECDAA.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIG_SCHEME_ECDAA {
 }
 
@@ -11295,7 +11220,7 @@ impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_ECDAA {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SIG_SCHEME
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NULL_SIG_SCHEME {
 }
 
@@ -11345,7 +11270,7 @@ impl TPMU_SIG_SCHEME for TPMS_NULL_SIG_SCHEME {
 }
 
 /// Table 162 Definition of TPMT_SIG_SCHEME Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_SIG_SCHEME {
     /// Scheme selector
 
@@ -11408,7 +11333,7 @@ impl TpmStructure for TPMT_SIG_SCHEME {
 }
 
 /// These are the RSA encryption schemes that only need a hash algorithm as a controlling parameter.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ENC_SCHEME_OAEP {
 }
 
@@ -11458,7 +11383,7 @@ impl TPMU_ASYM_SCHEME for TPMS_ENC_SCHEME_OAEP {
 }
 
 /// These are the RSA encryption schemes that only need a hash algorithm as a controlling parameter.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ENC_SCHEME_RSAES {
 }
 
@@ -11508,7 +11433,7 @@ impl TPMU_ASYM_SCHEME for TPMS_ENC_SCHEME_RSAES {
 }
 
 /// These are the ECC schemes that only need a hash algorithm as a controlling parameter.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_KEY_SCHEME_ECDH {
 }
 
@@ -11558,7 +11483,7 @@ impl TPMU_ASYM_SCHEME for TPMS_KEY_SCHEME_ECDH {
 }
 
 /// These are the ECC schemes that only need a hash algorithm as a controlling parameter.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_KEY_SCHEME_ECMQV {
 }
 
@@ -11610,7 +11535,7 @@ impl TPMU_ASYM_SCHEME for TPMS_KEY_SCHEME_ECMQV {
 /// These structures are used to define the key derivation for symmetric secret sharing
 /// using asymmetric methods. A secret sharing scheme is required in any asymmetric key
 /// with the decrypt attribute SET.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_KDF_SCHEME_MGF1 {
 }
 
@@ -11662,7 +11587,7 @@ impl TPMU_KDF_SCHEME for TPMS_KDF_SCHEME_MGF1 {
 /// These structures are used to define the key derivation for symmetric secret sharing
 /// using asymmetric methods. A secret sharing scheme is required in any asymmetric key
 /// with the decrypt attribute SET.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_KDF_SCHEME_KDF1_SP800_56A {
 }
 
@@ -11714,7 +11639,7 @@ impl TPMU_KDF_SCHEME for TPMS_KDF_SCHEME_KDF1_SP800_56A {
 /// These structures are used to define the key derivation for symmetric secret sharing
 /// using asymmetric methods. A secret sharing scheme is required in any asymmetric key
 /// with the decrypt attribute SET.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_KDF_SCHEME_KDF2 {
 }
 
@@ -11766,7 +11691,7 @@ impl TPMU_KDF_SCHEME for TPMS_KDF_SCHEME_KDF2 {
 /// These structures are used to define the key derivation for symmetric secret sharing
 /// using asymmetric methods. A secret sharing scheme is required in any asymmetric key
 /// with the decrypt attribute SET.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_KDF_SCHEME_KDF1_SP800_108 {
 }
 
@@ -11817,7 +11742,7 @@ impl TPMU_KDF_SCHEME for TPMS_KDF_SCHEME_KDF1_SP800_108 {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_KDF_SCHEME
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NULL_KDF_SCHEME {
 }
 
@@ -11867,7 +11792,7 @@ impl TPMU_KDF_SCHEME for TPMS_NULL_KDF_SCHEME {
 }
 
 /// Table 167 Definition of TPMT_KDF_SCHEME Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_KDF_SCHEME {
     /// Scheme selector
 
@@ -11930,7 +11855,7 @@ impl TpmStructure for TPMT_KDF_SCHEME {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_ASYM_SCHEME
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NULL_ASYM_SCHEME {
 }
 
@@ -11982,7 +11907,7 @@ impl TPMU_ASYM_SCHEME for TPMS_NULL_ASYM_SCHEME {
 /// This structure is defined to allow overlay of all of the schemes for any asymmetric
 /// object. This structure is not sent on the interface. It is defined so that common
 /// functions may operate on any similar scheme structure.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_ASYM_SCHEME {
     /// Scheme selector
 
@@ -12046,7 +11971,7 @@ impl TpmStructure for TPMT_ASYM_SCHEME {
 }
 
 /// Table 172 Definition of {RSA} TPMT_RSA_SCHEME Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_RSA_SCHEME {
     /// Scheme selector
 
@@ -12110,7 +12035,7 @@ impl TpmStructure for TPMT_RSA_SCHEME {
 }
 
 /// Table 174 Definition of {RSA} TPMT_RSA_DECRYPT Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_RSA_DECRYPT {
     /// Scheme selector
 
@@ -12174,7 +12099,7 @@ impl TpmStructure for TPMT_RSA_DECRYPT {
 }
 
 /// This sized buffer holds the largest RSA public key supported by the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_PUBLIC_KEY_RSA {
     /// Value
     pub buffer: Vec<u8>,
@@ -12237,7 +12162,7 @@ impl TPMU_PUBLIC_ID for TPM2B_PUBLIC_KEY_RSA {
 }
 
 /// This sized buffer holds the largest RSA prime number supported by the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_PRIVATE_KEY_RSA {
     pub buffer: Vec<u8>,
 }
@@ -12299,7 +12224,7 @@ impl TPMU_SENSITIVE_COMPOSITE for TPM2B_PRIVATE_KEY_RSA {
 }
 
 /// This sized buffer holds the largest ECC parameter (coordinate) supported by the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_ECC_PARAMETER {
     /// The parameter data
     pub buffer: Vec<u8>,
@@ -12362,7 +12287,7 @@ impl TPMU_SENSITIVE_COMPOSITE for TPM2B_ECC_PARAMETER {
 }
 
 /// This structure holds two ECC coordinates that, together, make up an ECC point.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ECC_POINT {
     /// X coordinate
     pub x: Vec<u8>,
@@ -12433,7 +12358,7 @@ impl TPMU_PUBLIC_ID for TPMS_ECC_POINT {
 
 /// This structure is defined to allow a point to be a single sized parameter so that it
 /// may be encrypted.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_ECC_POINT {
     /// Coordinates
     pub point: TPMS_ECC_POINT,
@@ -12487,7 +12412,7 @@ impl TpmStructure for TPM2B_ECC_POINT {
 }
 
 /// Table 183 Definition of (TPMT_SIG_SCHEME) {ECC} TPMT_ECC_SCHEME Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_ECC_SCHEME {
     /// Scheme selector
 
@@ -12552,7 +12477,7 @@ impl TpmStructure for TPMT_ECC_SCHEME {
 
 /// This structure is used to report on the curve parameters of an ECC curve. It is
 /// returned by TPM2_ECC_Parameters().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ALGORITHM_DETAIL_ECC {
     /// Identifier for the curve
     pub curveID: TPM_ECC_CURVE,
@@ -12693,7 +12618,7 @@ impl TpmStructure for TPMS_ALGORITHM_DETAIL_ECC {
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIGNATURE_RSA {
     /// The hash algorithm used to digest the message
     /// TPM_ALG_NULL is not allowed.
@@ -12764,7 +12689,7 @@ impl TPMU_SIGNATURE for TPMS_SIGNATURE_RSA {
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIGNATURE_RSASSA {
 }
 
@@ -12814,7 +12739,7 @@ impl TPMU_SIGNATURE for TPMS_SIGNATURE_RSASSA {
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIGNATURE_RSAPSS {
 }
 
@@ -12864,7 +12789,7 @@ impl TPMU_SIGNATURE for TPMS_SIGNATURE_RSAPSS {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIGNATURE_ECC {
     /// The hash algorithm used in the signature process
     /// TPM_ALG_NULL is not allowed.
@@ -12938,7 +12863,7 @@ impl TPMU_SIGNATURE for TPMS_SIGNATURE_ECC {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIGNATURE_ECDSA {
 }
 
@@ -12988,7 +12913,7 @@ impl TPMU_SIGNATURE for TPMS_SIGNATURE_ECDSA {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIGNATURE_ECDAA {
 }
 
@@ -13038,7 +12963,7 @@ impl TPMU_SIGNATURE for TPMS_SIGNATURE_ECDAA {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIGNATURE_SM2 {
 }
 
@@ -13088,7 +13013,7 @@ impl TPMU_SIGNATURE for TPMS_SIGNATURE_SM2 {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_SIGNATURE_ECSCHNORR {
 }
 
@@ -13139,7 +13064,7 @@ impl TPMU_SIGNATURE for TPMS_SIGNATURE_ECSCHNORR {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SIGNATURE
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NULL_SIGNATURE {
 }
 
@@ -13193,7 +13118,7 @@ impl TPMU_SIGNATURE for TPMS_NULL_SIGNATURE {
 /// signature. This structure is output from commands such as the attestation commands and
 /// TPM2_Sign, and is an input to commands such as TPM2_VerifySignature(),
 /// TPM2_PolicySigned(), and TPM2_FieldUpgradeStart().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_SIGNATURE {
     /// Selector of the algorithm used to construct the signature
 
@@ -13256,7 +13181,7 @@ impl TpmStructure for TPMT_SIGNATURE {
 }
 
 /// Table 192 Definition of TPM2B_ENCRYPTED_SECRET Structure
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_ENCRYPTED_SECRET {
     /// Secret
     pub secret: Vec<u8>,
@@ -13311,7 +13236,7 @@ impl TpmStructure for TPM2B_ENCRYPTED_SECRET {
 
 /// This structure describes the parameters that would appear in the public area of a
 /// KEYEDHASH object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_KEYEDHASH_PARMS {
     /// Selects the scheme
 
@@ -13385,7 +13310,7 @@ impl TPMU_PUBLIC_PARMS for TPMS_KEYEDHASH_PARMS {
 /// This structure contains the common public area parameters for an asymmetric key. The
 /// first two parameters of the parameter definition structures of an asymmetric key shall
 /// have the same two first components.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ASYM_PARMS {
     /// The companion symmetric algorithm for a restricted decryption key and shall be set to
     /// a supported symmetric algorithm
@@ -13473,7 +13398,7 @@ impl TPMU_PUBLIC_PARMS for TPMS_ASYM_PARMS {
 /// default of 216 + 1. Support for other values is optional. Use of other exponents in
 /// duplicated keys is not recommended because the resulting keys would not be
 /// interoperable with other TPMs.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_RSA_PARMS {
     /// For a restricted decryption key, shall be set to a supported symmetric algorithm, key
     /// size, and mode.
@@ -13576,7 +13501,7 @@ impl TPMU_PUBLIC_PARMS for TPMS_RSA_PARMS {
 }
 
 /// This structure contains the parameters for prime modulus ECC.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ECC_PARMS {
     /// For a restricted decryption key, shall be set to a supported symmetric algorithm, key
     /// size. and mode.
@@ -13688,7 +13613,7 @@ impl TPMU_PUBLIC_PARMS for TPMS_ECC_PARMS {
 
 /// This structure is used in TPM2_TestParms() to validate that a set of algorithm
 /// parameters is supported by the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_PUBLIC_PARMS {
     /// The algorithm to be tested
 
@@ -13751,7 +13676,7 @@ impl TpmStructure for TPMT_PUBLIC_PARMS {
 
 /// Table 201 defines the public area structure. The Name of the object is nameAlg
 /// concatenated with the digest of this structure using nameAlg.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_PUBLIC {
     /// Algorithm associated with this object
 
@@ -13850,7 +13775,7 @@ impl TpmStructure for TPMT_PUBLIC {
 
 /// This sized buffer is used to embed a TPMT_PUBLIC in a load command and in any response
 /// that returns a public area.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_PUBLIC {
     /// The public area
     /// NOTE The + indicates that the caller may specify that use of TPM_ALG_NULL is allowed
@@ -13906,7 +13831,7 @@ impl TpmStructure for TPM2B_PUBLIC {
 }
 
 /// This sized buffer is used to embed a TPMT_TEMPLATE for TPM2_CreateLoaded().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_TEMPLATE {
     /// The public area
     pub buffer: Vec<u8>,
@@ -13965,7 +13890,7 @@ impl TpmStructure for TPM2B_TEMPLATE {
 /// values will be computed so that computations using the private key will not need to
 /// start with just one prime factor. This structure can be used to store the results of
 /// such vendor-specific calculations.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_PRIVATE_VENDOR_SPECIFIC {
     pub buffer: Vec<u8>,
 }
@@ -14028,7 +13953,7 @@ impl TPMU_SENSITIVE_COMPOSITE for TPM2B_PRIVATE_VENDOR_SPECIFIC {
 
 /// AuthValue shall not be larger than the size of the digest produced by the nameAlg of
 /// the object. seedValue shall be the size of the digest produced by the nameAlg of the object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMT_SENSITIVE {
     /// Identifier for the sensitive area
     /// This shall be the same as the type parameter of the associated public area.
@@ -14107,7 +14032,7 @@ impl TpmStructure for TPMT_SENSITIVE {
 
 /// The TPM2B_SENSITIVE structure is used as a parameter in TPM2_LoadExternal(). It is an
 /// unencrypted sensitive area but it may be encrypted using parameter encryption.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_SENSITIVE {
     /// An unencrypted sensitive area
     pub sensitiveArea: TPMT_SENSITIVE,
@@ -14162,7 +14087,7 @@ impl TpmStructure for TPM2B_SENSITIVE {
 
 /// This structure is defined to size the contents of a TPM2B_PRIVATE. This structure is
 /// not directly marshaled or unmarshaled.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct _PRIVATE {
     pub integrityOuter: Vec<u8>,
 
@@ -14230,7 +14155,7 @@ impl TpmStructure for _PRIVATE {
 
 /// The TPM2B_PRIVATE structure is used as a parameter in multiple commands that create,
 /// load, and modify the sensitive area of an object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_PRIVATE {
     /// An encrypted private area
     pub buffer: Vec<u8>,
@@ -14284,7 +14209,7 @@ impl TpmStructure for TPM2B_PRIVATE {
 }
 
 /// This structure is used for sizing the TPM2B_ID_OBJECT.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_ID_OBJECT {
     /// HMAC using the nameAlg of the storage key on the target TPM
     pub integrityHMAC: Vec<u8>,
@@ -14350,7 +14275,7 @@ impl TpmStructure for TPMS_ID_OBJECT {
 
 /// This structure is an output from TPM2_MakeCredential() and is an input to
 /// TPM2_ActivateCredential().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_ID_OBJECT {
     /// An encrypted credential area
     pub credential: TPMS_ID_OBJECT,
@@ -14406,7 +14331,7 @@ impl TpmStructure for TPM2B_ID_OBJECT {
 /// This is the data that can be written to and read from a TPM_NT_PIN_PASS or
 /// TPM_NT_PIN_FAIL non-volatile index. pinCount is the most significant octets. pinLimit
 /// is the least significant octets.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NV_PIN_COUNTER_PARAMETERS {
     /// This counter shows the current number of successful authValue authorization attempts
     /// to access a TPM_NT_PIN_PASS index or the current number of unsuccessful authValue
@@ -14470,7 +14395,7 @@ impl TpmStructure for TPMS_NV_PIN_COUNTER_PARAMETERS {
 }
 
 /// This structure describes an NV Index.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_NV_PUBLIC {
     /// The handle of the data area
     pub nvIndex: TPM_HANDLE,
@@ -14556,7 +14481,7 @@ impl TpmStructure for TPMS_NV_PUBLIC {
 }
 
 /// This structure is used when a TPMS_NV_PUBLIC is sent on the TPM interface.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_NV_PUBLIC {
     /// The public area
     pub nvPublic: TPMS_NV_PUBLIC,
@@ -14611,7 +14536,7 @@ impl TpmStructure for TPM2B_NV_PUBLIC {
 
 /// This structure holds the object or session context data. When saved, the full
 /// structure is encrypted.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_CONTEXT_SENSITIVE {
     /// The sensitive data
     pub buffer: Vec<u8>,
@@ -14665,7 +14590,7 @@ impl TpmStructure for TPM2B_CONTEXT_SENSITIVE {
 }
 
 /// This structure holds the integrity value and the encrypted data for a context.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_CONTEXT_DATA {
     /// The integrity value
     pub integrity: Vec<u8>,
@@ -14726,7 +14651,7 @@ impl TpmStructure for TPMS_CONTEXT_DATA {
 }
 
 /// This structure is used in a TPMS_CONTEXT.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_CONTEXT_DATA {
     pub buffer: TPMS_CONTEXT_DATA,
 }
@@ -14781,7 +14706,7 @@ impl TpmStructure for TPM2B_CONTEXT_DATA {
 /// This structure is used in TPM2_ContextLoad() and TPM2_ContextSave(). If the values of
 /// the TPMS_CONTEXT structure in TPM2_ContextLoad() are not the same as the values when
 /// the context was saved (TPM2_ContextSave()), then the TPM shall not load the context.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_CONTEXT {
     /// The sequence number of the context
     /// NOTE Transient object contexts and session contexts used different counters.
@@ -14862,7 +14787,7 @@ impl TpmStructure for TPMS_CONTEXT {
 /// digest of selected PCR. These values represent the environment in which the object was
 /// created. Creation data allows a relying party to determine if an object was created
 /// when some appropriate protections were present.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_CREATION_DATA {
     /// List indicating the PCR included in pcrDigest
     pub pcrSelect: Vec<TPMS_PCR_SELECTION>,
@@ -14965,7 +14890,7 @@ impl TpmStructure for TPMS_CREATION_DATA {
 
 /// This structure is created by TPM2_Create() and TPM2_CreatePrimary(). It is never
 /// entered into the TPM and never has a size of zero.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_CREATION_DATA {
     pub creationData: TPMS_CREATION_DATA,
 }
@@ -15019,7 +14944,7 @@ impl TpmStructure for TPM2B_CREATION_DATA {
 
 /// TPMS_AC_OUTPUT is used to return information about an AC. The tag structure parameter
 /// indicates the type of the data value.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPMS_AC_OUTPUT {
     /// Tag indicating the contents of data
     pub tag: TPM_AT,
@@ -15080,7 +15005,7 @@ impl TpmStructure for TPMS_AC_OUTPUT {
 }
 
 /// This list is only used in TPM2_AC_GetCapability().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPML_AC_CAPABILITIES {
     /// A list of AC values
     pub acCapabilities: Vec<TPMS_AC_OUTPUT>,
@@ -15139,7 +15064,7 @@ impl TpmStructure for TPML_AC_CAPABILITIES {
 /// completed successfully. If a TPM requires TPM2_Startup() and another command is
 /// received, or if the TPM receives TPM2_Startup() when it is not required, the TPM shall
 /// return TPM_RC_INITIALIZE.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Startup_REQUEST {
     /// TPM_SU_CLEAR or TPM_SU_STATE
     pub startupType: TPM_SU,
@@ -15194,7 +15119,7 @@ impl TpmStructure for TPM2_Startup_REQUEST {
 
 /// This command is used to prepare the TPM for a power cycle. The shutdownType parameter
 /// indicates how the subsequent TPM2_Startup() will be processed.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Shutdown_REQUEST {
     /// TPM_SU_CLEAR or TPM_SU_STATE
     pub shutdownType: TPM_SU,
@@ -15250,7 +15175,7 @@ impl TpmStructure for TPM2_Shutdown_REQUEST {
 /// This command causes the TPM to perform a test of its capabilities. If the fullTest is
 /// YES, the TPM will test all functions. If fullTest = NO, the TPM will only test those
 /// functions that have not previously been tested.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_SelfTest_REQUEST {
     /// YES if full test to be performed
     /// NO if only test of untested functions required
@@ -15305,7 +15230,7 @@ impl TpmStructure for TPM2_SelfTest_REQUEST {
 }
 
 /// This command causes the TPM to perform a test of the selected algorithms.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_IncrementalSelfTest_REQUEST {
     /// List of algorithms that should be tested
     pub toTest: Vec<TPM_ALG_ID>,
@@ -15359,7 +15284,7 @@ impl TpmStructure for TPM2_IncrementalSelfTest_REQUEST {
 }
 
 /// This command causes the TPM to perform a test of the selected algorithms.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct IncrementalSelfTestResponse {
     /// List of algorithms that need testing
     pub toDoList: Vec<TPM_ALG_ID>,
@@ -15405,7 +15330,7 @@ impl TpmStructure for IncrementalSelfTestResponse {
 
 /// This command returns manufacturer-specific information regarding the results of a
 /// self-test and an indication of the test status.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_GetTestResult_REQUEST {
 }
 
@@ -15447,7 +15372,7 @@ impl TpmStructure for TPM2_GetTestResult_REQUEST {
 
 /// This command returns manufacturer-specific information regarding the results of a
 /// self-test and an indication of the test status.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct GetTestResultResponse {
     /// Test result data
     /// contains manufacturer-specific information
@@ -15498,7 +15423,7 @@ impl TpmStructure for GetTestResultResponse {
 /// This command is used to start an authorization session using alternative methods of
 /// establishing the session key (sessionKey). The session key is then used to derive
 /// values used for authorization and for encrypting parameters.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_StartAuthSession_REQUEST {
     /// Handle of a loaded decrypt key used to encrypt salt
     /// may be TPM_RH_NULL
@@ -15600,7 +15525,7 @@ impl TpmStructure for TPM2_StartAuthSession_REQUEST {
 /// This command is used to start an authorization session using alternative methods of
 /// establishing the session key (sessionKey). The session key is then used to derive
 /// values used for authorization and for encrypting parameters.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct StartAuthSessionResponse {
     /// Handle for the newly created session
     pub handle: TPM_HANDLE,
@@ -15653,7 +15578,7 @@ impl TpmStructure for StartAuthSessionResponse {
 /// TPM2_PolicyPCR() was executed. Restarting the session allows the authorizations to be
 /// replayed because the session restarts with the same nonceTPM. If the PCR are valid for
 /// the policy, the policy may then succeed.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyRestart_REQUEST {
     /// The handle for the policy session
     pub sessionHandle: TPM_HANDLE,
@@ -15711,7 +15636,7 @@ impl TpmStructure for TPM2_PolicyRestart_REQUEST {
 /// responsibility of the caller. The object will need to be loaded (TPM2_Load()) before
 /// it may be used. The only difference between the inPublic TPMT_PUBLIC template and the
 /// outPublic TPMT_PUBLIC object is in the unique field.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Create_REQUEST {
     /// Handle of parent for new object
     /// Auth Index: 1
@@ -15800,7 +15725,7 @@ impl TpmStructure for TPM2_Create_REQUEST {
 /// responsibility of the caller. The object will need to be loaded (TPM2_Load()) before
 /// it may be used. The only difference between the inPublic TPMT_PUBLIC template and the
 /// outPublic TPMT_PUBLIC object is in the unique field.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct CreateResponse {
     /// The private portion of the object
     pub outPrivate: TPM2B_PRIVATE,
@@ -15868,7 +15793,7 @@ impl TpmStructure for CreateResponse {
 /// This command is used to load objects into the TPM. This command is used when both a
 /// TPM2B_PUBLIC and TPM2B_PRIVATE are to be loaded. If only a TPM2B_PUBLIC is to be
 /// loaded, the TPM2_LoadExternal command is used.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Load_REQUEST {
     /// TPM handle of parent key; shall not be a reserved handle
     /// Auth Index: 1
@@ -15938,7 +15863,7 @@ impl TpmStructure for TPM2_Load_REQUEST {
 /// This command is used to load objects into the TPM. This command is used when both a
 /// TPM2B_PUBLIC and TPM2B_PRIVATE are to be loaded. If only a TPM2B_PUBLIC is to be
 /// loaded, the TPM2_LoadExternal command is used.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct LoadResponse {
     /// Handle of type TPM_HT_TRANSIENT for the loaded object
     pub handle: TPM_HANDLE,
@@ -15987,7 +15912,7 @@ impl TpmStructure for LoadResponse {
 
 /// This command is used to load an object that is not a Protected Object into the TPM.
 /// The command allows loading of a public area or both a public and sensitive area.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_LoadExternal_REQUEST {
     /// The sensitive portion of the object (optional)
     pub inPrivate: TPMT_SENSITIVE,
@@ -16056,7 +15981,7 @@ impl TpmStructure for TPM2_LoadExternal_REQUEST {
 
 /// This command is used to load an object that is not a Protected Object into the TPM.
 /// The command allows loading of a public area or both a public and sensitive area.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct LoadExternalResponse {
     /// Handle of type TPM_HT_TRANSIENT for the loaded object
     pub handle: TPM_HANDLE,
@@ -16104,7 +16029,7 @@ impl TpmStructure for LoadExternalResponse {
 }
 
 /// This command allows access to the public area of a loaded object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ReadPublic_REQUEST {
     /// TPM handle of an object
     /// Auth Index: None
@@ -16157,7 +16082,7 @@ impl TpmStructure for TPM2_ReadPublic_REQUEST {
 }
 
 /// This command allows access to the public area of a loaded object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ReadPublicResponse {
     /// Structure containing the public area of an object
     pub outPublic: TPMT_PUBLIC,
@@ -16213,7 +16138,7 @@ impl TpmStructure for ReadPublicResponse {
 
 /// This command enables the association of a credential with an object in a way that
 /// ensures that the TPM has validated the parameters of the credentialed object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ActivateCredential_REQUEST {
     /// Handle of the object associated with certificate in credentialBlob
     /// Auth Index: 1
@@ -16289,7 +16214,7 @@ impl TpmStructure for TPM2_ActivateCredential_REQUEST {
 
 /// This command enables the association of a credential with an object in a way that
 /// ensures that the TPM has validated the parameters of the credentialed object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ActivateCredentialResponse {
     /// The decrypted certificate information
     /// the data should be no larger than the size of the digest of the nameAlg associated
@@ -16337,7 +16262,7 @@ impl TpmStructure for ActivateCredentialResponse {
 
 /// This command allows the TPM to perform the actions required of a Certificate Authority
 /// (CA) in creating a TPM2B_ID_OBJECT containing an activation credential.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_MakeCredential_REQUEST {
     /// Loaded public area, used to encrypt the sensitive area containing the credential key
     /// Auth Index: None
@@ -16405,7 +16330,7 @@ impl TpmStructure for TPM2_MakeCredential_REQUEST {
 
 /// This command allows the TPM to perform the actions required of a Certificate Authority
 /// (CA) in creating a TPM2B_ID_OBJECT containing an activation credential.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct MakeCredentialResponse {
     /// The credential
     pub credentialBlob: TPMS_ID_OBJECT,
@@ -16455,7 +16380,7 @@ impl TpmStructure for MakeCredentialResponse {
 }
 
 /// This command returns the data in a loaded Sealed Data Object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Unseal_REQUEST {
     /// Handle of a loaded data object
     /// Auth Index: 1
@@ -16509,7 +16434,7 @@ impl TpmStructure for TPM2_Unseal_REQUEST {
 }
 
 /// This command returns the data in a loaded Sealed Data Object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct UnsealResponse {
     /// Unsealed data
     /// Size of outData is limited to be no more than 128 octets.
@@ -16555,7 +16480,7 @@ impl TpmStructure for UnsealResponse {
 }
 
 /// This command is used to change the authorization secret for a TPM-resident object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ObjectChangeAuth_REQUEST {
     /// Handle of the object
     /// Auth Index: 1
@@ -16622,7 +16547,7 @@ impl TpmStructure for TPM2_ObjectChangeAuth_REQUEST {
 }
 
 /// This command is used to change the authorization secret for a TPM-resident object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ObjectChangeAuthResponse {
     /// Private area containing the new authorization value
     pub outPrivate: TPM2B_PRIVATE,
@@ -16671,7 +16596,7 @@ impl TpmStructure for ObjectChangeAuthResponse {
 /// parentHandle. If parentHandle references a Primary Seed, then a Primary Object is
 /// created; if parentHandle references a Storage Parent, then an Ordinary Object is
 /// created; and if parentHandle references a Derivation Parent, then a Derived Object is generated.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_CreateLoaded_REQUEST {
     /// Handle of a transient storage key, a persistent storage key, TPM_RH_ENDORSEMENT,
     /// TPM_RH_OWNER, TPM_RH_PLATFORM+{PP}, or TPM_RH_NULL
@@ -16744,7 +16669,7 @@ impl TpmStructure for TPM2_CreateLoaded_REQUEST {
 /// parentHandle. If parentHandle references a Primary Seed, then a Primary Object is
 /// created; if parentHandle references a Storage Parent, then an Ordinary Object is
 /// created; and if parentHandle references a Derivation Parent, then a Derived Object is generated.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct CreateLoadedResponse {
     /// Handle of type TPM_HT_TRANSIENT for created object
     pub handle: TPM_HANDLE,
@@ -16804,7 +16729,7 @@ impl TpmStructure for CreateLoadedResponse {
 /// This command duplicates a loaded object so that it may be used in a different
 /// hierarchy. The new parent key for the duplicate may be on the same or different TPM or
 /// TPM_RH_NULL. Only the public area of newParentHandle is required to be loaded.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Duplicate_REQUEST {
     /// Loaded object to duplicate
     /// Auth Index: 1
@@ -16883,7 +16808,7 @@ impl TpmStructure for TPM2_Duplicate_REQUEST {
 /// This command duplicates a loaded object so that it may be used in a different
 /// hierarchy. The new parent key for the duplicate may be on the same or different TPM or
 /// TPM_RH_NULL. Only the public area of newParentHandle is required to be loaded.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct DuplicateResponse {
     /// If the caller provided an encryption key or if symmetricAlg was TPM_ALG_NULL, then
     /// this will be the Empty Buffer; otherwise, it shall contain the TPM-generated,
@@ -16945,7 +16870,7 @@ impl TpmStructure for DuplicateResponse {
 /// A new protection seed value is generated according to the methods appropriate for
 /// newParent and the blob is re-encrypted and a new integrity value is computed. The
 /// re-encrypted blob is returned in outDuplicate and the symmetric key returned in outSymKey.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Rewrap_REQUEST {
     /// Parent of object
     /// Auth Index: 1
@@ -17032,7 +16957,7 @@ impl TpmStructure for TPM2_Rewrap_REQUEST {
 /// A new protection seed value is generated according to the methods appropriate for
 /// newParent and the blob is re-encrypted and a new integrity value is computed. The
 /// re-encrypted blob is returned in outDuplicate and the symmetric key returned in outSymKey.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct RewrapResponse {
     /// An object encrypted using symmetric key derived from outSymSeed
     pub outDuplicate: TPM2B_PRIVATE,
@@ -17085,7 +17010,7 @@ impl TpmStructure for RewrapResponse {
 /// a Storage Key. After encryption, the object may be loaded and used in the new
 /// hierarchy. The imported object (duplicate) may be singly encrypted, multiply
 /// encrypted, or unencrypted.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Import_REQUEST {
     /// The handle of the new parent for the object
     /// Auth Index: 1
@@ -17185,7 +17110,7 @@ impl TpmStructure for TPM2_Import_REQUEST {
 /// a Storage Key. After encryption, the object may be loaded and used in the new
 /// hierarchy. The imported object (duplicate) may be singly encrypted, multiply
 /// encrypted, or unencrypted.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ImportResponse {
     /// The sensitive area encrypted with the symmetric key of parentHandle
     pub outPrivate: TPM2B_PRIVATE,
@@ -17233,7 +17158,7 @@ impl TpmStructure for ImportResponse {
 /// IETF RFC 8017. If the scheme of keyHandle is TPM_ALG_NULL, then the caller may use
 /// inScheme to specify the padding scheme. If scheme of keyHandle is not TPM_ALG_NULL,
 /// then inScheme shall either be TPM_ALG_NULL or be the same as scheme (TPM_RC_SCHEME).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_RSA_Encrypt_REQUEST {
     /// Reference to public portion of RSA key to use for encryption
     /// Auth Index: None
@@ -17324,7 +17249,7 @@ impl TpmStructure for TPM2_RSA_Encrypt_REQUEST {
 /// IETF RFC 8017. If the scheme of keyHandle is TPM_ALG_NULL, then the caller may use
 /// inScheme to specify the padding scheme. If scheme of keyHandle is not TPM_ALG_NULL,
 /// then inScheme shall either be TPM_ALG_NULL or be the same as scheme (TPM_RC_SCHEME).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct RSA_EncryptResponse {
     /// Encrypted output
     pub outData: Vec<u8>,
@@ -17370,7 +17295,7 @@ impl TpmStructure for RSA_EncryptResponse {
 
 /// This command performs RSA decryption using the indicated padding scheme according to
 /// IETF RFC 8017 ((PKCS#1).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_RSA_Decrypt_REQUEST {
     /// RSA key to use for decryption
     /// Auth Index: 1
@@ -17456,7 +17381,7 @@ impl TpmStructure for TPM2_RSA_Decrypt_REQUEST {
 
 /// This command performs RSA decryption using the indicated padding scheme according to
 /// IETF RFC 8017 ((PKCS#1).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct RSA_DecryptResponse {
     /// Decrypted output
     pub message: Vec<u8>,
@@ -17503,7 +17428,7 @@ impl TpmStructure for RSA_DecryptResponse {
 /// This command uses the TPM to generate an ephemeral key pair (de, Qe where Qe [de]G).
 /// It uses the private ephemeral key and a loaded public key (QS) to compute the shared
 /// secret value (P [hde]QS).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ECDH_KeyGen_REQUEST {
     /// Handle of a loaded ECC key public area.
     /// Auth Index: None
@@ -17558,7 +17483,7 @@ impl TpmStructure for TPM2_ECDH_KeyGen_REQUEST {
 /// This command uses the TPM to generate an ephemeral key pair (de, Qe where Qe [de]G).
 /// It uses the private ephemeral key and a loaded public key (QS) to compute the shared
 /// secret value (P [hde]QS).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ECDH_KeyGenResponse {
     /// Results of P h[de]Qs
     pub zPoint: TPMS_ECC_POINT,
@@ -17611,7 +17536,7 @@ impl TpmStructure for ECDH_KeyGenResponse {
 /// private key (ds). It will perform the multiplication of the provided inPoint (QB) with
 /// the private key (ds) and return the coordinates of the resultant point (Z = (xZ , yZ)
 /// [hds]QB; where h is the cofactor of the curve).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ECDH_ZGen_REQUEST {
     /// Handle of a loaded ECC key
     /// Auth Index: 1
@@ -17675,7 +17600,7 @@ impl TpmStructure for TPM2_ECDH_ZGen_REQUEST {
 /// private key (ds). It will perform the multiplication of the provided inPoint (QB) with
 /// the private key (ds) and return the coordinates of the resultant point (Z = (xZ , yZ)
 /// [hds]QB; where h is the cofactor of the curve).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ECDH_ZGenResponse {
     /// X and Y coordinates of the product of the multiplication Z = (xZ , yZ) [hdS]QB
     pub outPoint: TPMS_ECC_POINT,
@@ -17720,7 +17645,7 @@ impl TpmStructure for ECDH_ZGenResponse {
 }
 
 /// This command returns the parameters of an ECC curve identified by its TCG-assigned curveID.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ECC_Parameters_REQUEST {
     /// Parameter set selector
     pub curveID: TPM_ECC_CURVE,
@@ -17774,7 +17699,7 @@ impl TpmStructure for TPM2_ECC_Parameters_REQUEST {
 }
 
 /// This command returns the parameters of an ECC curve identified by its TCG-assigned curveID.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ECC_ParametersResponse {
     /// ECC parameters for the selected curve
     pub parameters: TPMS_ALGORITHM_DETAIL_ECC,
@@ -17822,7 +17747,7 @@ impl TpmStructure for ECC_ParametersResponse {
 /// combination with TPM2_EC_Ephemeral(). TPM2_EC_Ephemeral() generates an ephemeral key
 /// and returns the public point of that ephemeral key along with a numeric value that
 /// allows the TPM to regenerate the associated private key.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ZGen_2Phase_REQUEST {
     /// Handle of an unrestricted decryption key ECC
     /// The private key referenced by this handle is used as dS,A
@@ -17908,7 +17833,7 @@ impl TpmStructure for TPM2_ZGen_2Phase_REQUEST {
 /// combination with TPM2_EC_Ephemeral(). TPM2_EC_Ephemeral() generates an ephemeral key
 /// and returns the public point of that ephemeral key along with a numeric value that
 /// allows the TPM to regenerate the associated private key.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ZGen_2PhaseResponse {
     /// X and Y coordinates of the computed value (scheme dependent)
     pub outZ1: TPMS_ECC_POINT,
@@ -17958,7 +17883,7 @@ impl TpmStructure for ZGen_2PhaseResponse {
 }
 
 /// This command performs ECC encryption as described in Part 1, Annex D.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ECC_Encrypt_REQUEST {
     /// Reference to public portion of ECC key to use for encryption
     /// Auth Index: None
@@ -18032,7 +17957,7 @@ impl TpmStructure for TPM2_ECC_Encrypt_REQUEST {
 }
 
 /// This command performs ECC encryption as described in Part 1, Annex D.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ECC_EncryptResponse {
     /// The public ephemeral key used for ECDH
     pub C1: TPMS_ECC_POINT,
@@ -18087,7 +18012,7 @@ impl TpmStructure for ECC_EncryptResponse {
 }
 
 /// This command performs ECC decryption.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ECC_Decrypt_REQUEST {
     /// ECC key to use for decryption
     /// Auth Index: 1
@@ -18176,7 +18101,7 @@ impl TpmStructure for TPM2_ECC_Decrypt_REQUEST {
 }
 
 /// This command performs ECC decryption.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ECC_DecryptResponse {
     /// Decrypted output
     pub plainText: Vec<u8>,
@@ -18222,7 +18147,7 @@ impl TpmStructure for ECC_DecryptResponse {
 
 /// NOTE 1 This command is deprecated, and TPM2_EncryptDecrypt2() is preferred. This
 /// should be reflected in platform-specific specifications.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_EncryptDecrypt_REQUEST {
     /// The symmetric key used for the operation
     /// Auth Index: 1
@@ -18306,7 +18231,7 @@ impl TpmStructure for TPM2_EncryptDecrypt_REQUEST {
 
 /// NOTE 1 This command is deprecated, and TPM2_EncryptDecrypt2() is preferred. This
 /// should be reflected in platform-specific specifications.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct EncryptDecryptResponse {
     /// Encrypted or decrypted output
     pub outData: Vec<u8>,
@@ -18357,7 +18282,7 @@ impl TpmStructure for EncryptDecryptResponse {
 
 /// This command is identical to TPM2_EncryptDecrypt(), except that the inData parameter
 /// is the first parameter. This permits inData to be parameter encrypted.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_EncryptDecrypt2_REQUEST {
     /// The symmetric key used for the operation
     /// Auth Index: 1
@@ -18441,7 +18366,7 @@ impl TpmStructure for TPM2_EncryptDecrypt2_REQUEST {
 
 /// This command is identical to TPM2_EncryptDecrypt(), except that the inData parameter
 /// is the first parameter. This permits inData to be parameter encrypted.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct EncryptDecrypt2Response {
     /// Encrypted or decrypted output
     pub outData: Vec<u8>,
@@ -18491,7 +18416,7 @@ impl TpmStructure for EncryptDecrypt2Response {
 }
 
 /// This command performs a hash operation on a data buffer and returns the results.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Hash_REQUEST {
     /// Data to be hashed
     pub data: Vec<u8>,
@@ -18559,7 +18484,7 @@ impl TpmStructure for TPM2_Hash_REQUEST {
 }
 
 /// This command performs a hash operation on a data buffer and returns the results.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct HashResponse {
     /// Results
     pub outHash: Vec<u8>,
@@ -18611,7 +18536,7 @@ impl TpmStructure for HashResponse {
 }
 
 /// This command performs an HMAC on the supplied data using the indicated hash algorithm.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_HMAC_REQUEST {
     /// Handle for the symmetric signing key providing the HMAC key
     /// Auth Index: 1
@@ -18679,7 +18604,7 @@ impl TpmStructure for TPM2_HMAC_REQUEST {
 }
 
 /// This command performs an HMAC on the supplied data using the indicated hash algorithm.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct HMACResponse {
     /// The returned HMAC in a sized buffer
     pub outHMAC: Vec<u8>,
@@ -18725,7 +18650,7 @@ impl TpmStructure for HMACResponse {
 
 /// This command performs an HMAC or a block cipher MAC on the supplied data using the
 /// indicated algorithm.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_MAC_REQUEST {
     /// Handle for the symmetric signing key providing the MAC key
     /// Auth Index: 1
@@ -18794,7 +18719,7 @@ impl TpmStructure for TPM2_MAC_REQUEST {
 
 /// This command performs an HMAC or a block cipher MAC on the supplied data using the
 /// indicated algorithm.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct MACResponse {
     /// The returned MAC in a sized buffer
     pub outMAC: Vec<u8>,
@@ -18839,7 +18764,7 @@ impl TpmStructure for MACResponse {
 }
 
 /// This command returns the next bytesRequested octets from the random number generator (RNG).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_GetRandom_REQUEST {
     /// Number of octets to return
     pub bytesRequested: u16,
@@ -18893,7 +18818,7 @@ impl TpmStructure for TPM2_GetRandom_REQUEST {
 }
 
 /// This command returns the next bytesRequested octets from the random number generator (RNG).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct GetRandomResponse {
     /// The random octets
     pub randomBytes: Vec<u8>,
@@ -18938,7 +18863,7 @@ impl TpmStructure for GetRandomResponse {
 }
 
 /// This command is used to add "additional information" to the RNG state.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_StirRandom_REQUEST {
     /// Additional information
     pub inData: Vec<u8>,
@@ -18994,7 +18919,7 @@ impl TpmStructure for TPM2_StirRandom_REQUEST {
 /// This command starts an HMAC sequence. The TPM will create and initialize an HMAC
 /// sequence structure, assign a handle to the sequence, and set the authValue of the
 /// sequence object to the value in auth.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_HMAC_Start_REQUEST {
     /// Handle of an HMAC key
     /// Auth Index: 1
@@ -19064,7 +18989,7 @@ impl TpmStructure for TPM2_HMAC_Start_REQUEST {
 /// This command starts an HMAC sequence. The TPM will create and initialize an HMAC
 /// sequence structure, assign a handle to the sequence, and set the authValue of the
 /// sequence object to the value in auth.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct HMAC_StartResponse {
     /// A handle to reference the sequence
     pub handle: TPM_HANDLE,
@@ -19109,7 +19034,7 @@ impl TpmStructure for HMAC_StartResponse {
 /// This command starts a MAC sequence. The TPM will create and initialize a MAC sequence
 /// structure, assign a handle to the sequence, and set the authValue of the sequence
 /// object to the value in auth.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_MAC_Start_REQUEST {
     /// Handle of a MAC key
     /// Auth Index: 1
@@ -19179,7 +19104,7 @@ impl TpmStructure for TPM2_MAC_Start_REQUEST {
 /// This command starts a MAC sequence. The TPM will create and initialize a MAC sequence
 /// structure, assign a handle to the sequence, and set the authValue of the sequence
 /// object to the value in auth.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct MAC_StartResponse {
     /// A handle to reference the sequence
     pub handle: TPM_HANDLE,
@@ -19225,7 +19150,7 @@ impl TpmStructure for MAC_StartResponse {
 /// then a hash sequence is started. If hashAlg is TPM_ALG_NULL, then an Event Sequence is
 /// started. If hashAlg is neither an implemented algorithm nor TPM_ALG_NULL, then the TPM
 /// shall return TPM_RC_HASH.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_HashSequenceStart_REQUEST {
     /// Authorization value for subsequent use of the sequence
     pub auth: Vec<u8>,
@@ -19290,7 +19215,7 @@ impl TpmStructure for TPM2_HashSequenceStart_REQUEST {
 /// then a hash sequence is started. If hashAlg is TPM_ALG_NULL, then an Event Sequence is
 /// started. If hashAlg is neither an implemented algorithm nor TPM_ALG_NULL, then the TPM
 /// shall return TPM_RC_HASH.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct HashSequenceStartResponse {
     /// A handle to reference the sequence
     pub handle: TPM_HANDLE,
@@ -19334,7 +19259,7 @@ impl TpmStructure for HashSequenceStartResponse {
 
 /// This command is used to add data to a hash or HMAC sequence. The amount of data in
 /// buffer may be any size up to the limits of the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_SequenceUpdate_REQUEST {
     /// Handle for the sequence object
     /// Auth Index: 1
@@ -19396,7 +19321,7 @@ impl TpmStructure for TPM2_SequenceUpdate_REQUEST {
 
 /// This command adds the last part of data, if any, to a hash/HMAC sequence and returns
 /// the result.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_SequenceComplete_REQUEST {
     /// Authorization for the sequence
     /// Auth Index: 1
@@ -19465,7 +19390,7 @@ impl TpmStructure for TPM2_SequenceComplete_REQUEST {
 
 /// This command adds the last part of data, if any, to a hash/HMAC sequence and returns
 /// the result.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct SequenceCompleteResponse {
     /// The returned HMAC or digest in a sized buffer
     pub result: Vec<u8>,
@@ -19521,7 +19446,7 @@ impl TpmStructure for SequenceCompleteResponse {
 /// returned digest list is processed in the same manner as the digest list input
 /// parameter to TPM2_PCR_Extend(). That is, if a bank contains a PCR associated with
 /// pcrHandle, it is extended with the associated digest value from the list.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_EventSequenceComplete_REQUEST {
     /// PCR to be extended with the Event data
     /// Auth Index: 1
@@ -19593,7 +19518,7 @@ impl TpmStructure for TPM2_EventSequenceComplete_REQUEST {
 /// returned digest list is processed in the same manner as the digest list input
 /// parameter to TPM2_PCR_Extend(). That is, if a bank contains a PCR associated with
 /// pcrHandle, it is extended with the associated digest value from the list.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct EventSequenceCompleteResponse {
     /// List of digests computed for the PCR
     pub results: Vec<TPMT_HA>,
@@ -19642,7 +19567,7 @@ impl TpmStructure for EventSequenceCompleteResponse {
 /// area with a given Name is self-consistent and associated with a valid sensitive area.
 /// If a relying party has a public area that has the same Name as a Name certified with
 /// this command, then the values in that public area are correct.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Certify_REQUEST {
     /// Handle of the object to be certified
     /// Auth Index: 1
@@ -19729,7 +19654,7 @@ impl TpmStructure for TPM2_Certify_REQUEST {
 /// area with a given Name is self-consistent and associated with a valid sensitive area.
 /// If a relying party has a public area that has the same Name as a Name certified with
 /// this command, then the values in that public area are correct.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct CertifyResponse {
     /// The structure that was signed
     pub certifyInfo: TPMS_ATTEST,
@@ -19790,7 +19715,7 @@ impl TpmStructure for CertifyResponse {
 /// The TPM will validate that the ticket was produced by the TPM and that the ticket
 /// validates the association between a loaded public area and the provided hash of the
 /// creation data (creationHash).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_CertifyCreation_REQUEST {
     /// Handle of the key that will sign the attestation block
     /// Auth Index: 1
@@ -19889,7 +19814,7 @@ impl TpmStructure for TPM2_CertifyCreation_REQUEST {
 /// The TPM will validate that the ticket was produced by the TPM and that the ticket
 /// validates the association between a loaded public area and the provided hash of the
 /// creation data (creationHash).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct CertifyCreationResponse {
     /// The structure that was signed
     pub certifyInfo: TPMS_ATTEST,
@@ -19947,7 +19872,7 @@ impl TpmStructure for CertifyCreationResponse {
 }
 
 /// This command is used to quote PCR values.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Quote_REQUEST {
     /// Handle of key that will perform signature
     /// Auth Index: 1
@@ -20030,7 +19955,7 @@ impl TpmStructure for TPM2_Quote_REQUEST {
 }
 
 /// This command is used to quote PCR values.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct QuoteResponse {
     /// The quoted information
     pub quoted: TPMS_ATTEST,
@@ -20088,7 +20013,7 @@ impl TpmStructure for QuoteResponse {
 }
 
 /// This command returns a digital signature of the audit session digest.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_GetSessionAuditDigest_REQUEST {
     /// Handle of the privacy administrator (TPM_RH_ENDORSEMENT)
     /// Auth Index: 1
@@ -20177,7 +20102,7 @@ impl TpmStructure for TPM2_GetSessionAuditDigest_REQUEST {
 }
 
 /// This command returns a digital signature of the audit session digest.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct GetSessionAuditDigestResponse {
     /// The audit information that was signed
     pub auditInfo: TPMS_ATTEST,
@@ -20237,7 +20162,7 @@ impl TpmStructure for GetSessionAuditDigestResponse {
 /// This command returns the current value of the command audit digest, a digest of the
 /// commands being audited, and the audit hash algorithm. These values are placed in an
 /// attestation structure and signed with the key referenced by signHandle.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_GetCommandAuditDigest_REQUEST {
     /// Handle of the privacy administrator (TPM_RH_ENDORSEMENT)
     /// Auth Index: 1
@@ -20322,7 +20247,7 @@ impl TpmStructure for TPM2_GetCommandAuditDigest_REQUEST {
 /// This command returns the current value of the command audit digest, a digest of the
 /// commands being audited, and the audit hash algorithm. These values are placed in an
 /// attestation structure and signed with the key referenced by signHandle.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct GetCommandAuditDigestResponse {
     /// The auditInfo that was signed
     pub auditInfo: TPMS_ATTEST,
@@ -20380,7 +20305,7 @@ impl TpmStructure for GetCommandAuditDigestResponse {
 }
 
 /// This command returns the current values of Time and Clock.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_GetTime_REQUEST {
     /// Handle of the privacy administrator (TPM_RH_ENDORSEMENT)
     /// Auth Index: 1
@@ -20463,7 +20388,7 @@ impl TpmStructure for TPM2_GetTime_REQUEST {
 }
 
 /// This command returns the current values of Time and Clock.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct GetTimeResponse {
     /// Standard TPM-generated attestation block
     pub timeInfo: TPMS_ATTEST,
@@ -20526,7 +20451,7 @@ impl TpmStructure for GetTimeResponse {
 /// information, TPM2_CertifyX509 encodes the attestation information in a DER-encoded
 /// X.509 certificate that is compliant with RFC5280 Internet X.509 Public Key
 /// Infrastructure Certificate and Certificate Revocation List (CRL) Profile.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_CertifyX509_REQUEST {
     /// Handle of the object to be certified
     /// Auth Index: 1
@@ -20621,7 +20546,7 @@ impl TpmStructure for TPM2_CertifyX509_REQUEST {
 /// information, TPM2_CertifyX509 encodes the attestation information in a DER-encoded
 /// X.509 certificate that is compliant with RFC5280 Internet X.509 Public Key
 /// Infrastructure Certificate and Certificate Revocation List (CRL) Profile.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct CertifyX509Response {
     /// A DER encoded SEQUENCE containing the DER encoded fields added to partialCertificate
     /// to make it a complete RFC5280 TBSCertificate.
@@ -20688,7 +20613,7 @@ impl TpmStructure for CertifyX509Response {
 /// will perform the point multiplications on the provided points and return intermediate
 /// signing values. The signHandle parameter shall refer to an ECC key and the signing
 /// scheme must be anonymous (TPM_RC_SCHEME).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Commit_REQUEST {
     /// Handle of the key that will be used in the signing operation
     /// Auth Index: 1
@@ -20766,7 +20691,7 @@ impl TpmStructure for TPM2_Commit_REQUEST {
 /// will perform the point multiplications on the provided points and return intermediate
 /// signing values. The signHandle parameter shall refer to an ECC key and the signing
 /// scheme must be anonymous (TPM_RC_SCHEME).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct CommitResponse {
     /// ECC point K [ds](x2, y2)
     pub K: TPMS_ECC_POINT,
@@ -20826,7 +20751,7 @@ impl TpmStructure for CommitResponse {
 }
 
 /// TPM2_EC_Ephemeral() creates an ephemeral key for use in a two-phase key exchange protocol.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_EC_Ephemeral_REQUEST {
     /// The curve for the computed ephemeral point
     pub curveID: TPM_ECC_CURVE,
@@ -20880,7 +20805,7 @@ impl TpmStructure for TPM2_EC_Ephemeral_REQUEST {
 }
 
 /// TPM2_EC_Ephemeral() creates an ephemeral key for use in a two-phase key exchange protocol.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct EC_EphemeralResponse {
     /// Ephemeral public key Q [r]G
     pub Q: TPMS_ECC_POINT,
@@ -20931,7 +20856,7 @@ impl TpmStructure for EC_EphemeralResponse {
 
 /// This command uses loaded keys to validate a signature on a message with the message
 /// digest passed to the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_VerifySignature_REQUEST {
     /// Handle of public key that will be used in the validation
     /// Auth Index: None
@@ -21007,7 +20932,7 @@ impl TpmStructure for TPM2_VerifySignature_REQUEST {
 
 /// This command uses loaded keys to validate a signature on a message with the message
 /// digest passed to the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct VerifySignatureResponse {
     pub validation: TPMT_TK_VERIFIED,
 }
@@ -21052,7 +20977,7 @@ impl TpmStructure for VerifySignatureResponse {
 
 /// This command causes the TPM to sign an externally provided hash with the specified
 /// symmetric or asymmetric signing key.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Sign_REQUEST {
     /// Handle of key that will perform signing
     /// Auth Index: 1
@@ -21138,7 +21063,7 @@ impl TpmStructure for TPM2_Sign_REQUEST {
 
 /// This command causes the TPM to sign an externally provided hash with the specified
 /// symmetric or asymmetric signing key.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct SignResponse {
     /// Selector of the algorithm used to construct the signature
 
@@ -21194,7 +21119,7 @@ impl TpmStructure for SignResponse {
 /// This command may be used by the Privacy Administrator or platform to change the audit
 /// status of a command or to set the hash algorithm used for the audit digest, but not
 /// both at the same time.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_SetCommandCodeAuditStatus_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -21272,7 +21197,7 @@ impl TpmStructure for TPM2_SetCommandCodeAuditStatus_REQUEST {
 /// contains one or more tagged digest values identified by an algorithm ID. For each
 /// digest, the PCR associated with pcrHandle is Extended into the bank identified by the
 /// tag (hashAlg).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PCR_Extend_REQUEST {
     /// Handle of the PCR
     /// Auth Handle: 1
@@ -21333,7 +21258,7 @@ impl TpmStructure for TPM2_PCR_Extend_REQUEST {
 }
 
 /// This command is used to cause an update to the indicated PCR.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PCR_Event_REQUEST {
     /// Handle of the PCR
     /// Auth Handle: 1
@@ -21394,7 +21319,7 @@ impl TpmStructure for TPM2_PCR_Event_REQUEST {
 }
 
 /// This command is used to cause an update to the indicated PCR.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct PCR_EventResponse {
     pub digests: Vec<TPMT_HA>,
 }
@@ -21438,7 +21363,7 @@ impl TpmStructure for PCR_EventResponse {
 }
 
 /// This command returns the values of all PCR specified in pcrSelectionIn.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PCR_Read_REQUEST {
     /// The selection of PCR to read
     pub pcrSelectionIn: Vec<TPMS_PCR_SELECTION>,
@@ -21492,7 +21417,7 @@ impl TpmStructure for TPM2_PCR_Read_REQUEST {
 }
 
 /// This command returns the values of all PCR specified in pcrSelectionIn.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct PCR_ReadResponse {
     /// The current value of the PCR update counter
     pub pcrUpdateCounter: u32,
@@ -21548,7 +21473,7 @@ impl TpmStructure for PCR_ReadResponse {
 
 /// This command is used to set the desired PCR allocation of PCR and algorithms. This
 /// command requires Platform Authorization.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PCR_Allocate_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -21610,7 +21535,7 @@ impl TpmStructure for TPM2_PCR_Allocate_REQUEST {
 
 /// This command is used to set the desired PCR allocation of PCR and algorithms. This
 /// command requires Platform Authorization.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct PCR_AllocateResponse {
     /// YES if the allocation succeeded
     pub allocationSuccess: u8,
@@ -21671,7 +21596,7 @@ impl TpmStructure for PCR_AllocateResponse {
 
 /// This command is used to associate a policy with a PCR or group of PCR. The policy
 /// determines the conditions under which a PCR may be extended or reset.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PCR_SetAuthPolicy_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -21746,7 +21671,7 @@ impl TpmStructure for TPM2_PCR_SetAuthPolicy_REQUEST {
 }
 
 /// This command changes the authValue of a PCR or group of PCR.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PCR_SetAuthValue_REQUEST {
     /// Handle for a PCR that may have an authorization value set
     /// Auth Index: 1
@@ -21809,7 +21734,7 @@ impl TpmStructure for TPM2_PCR_SetAuthValue_REQUEST {
 /// If the attribute of a PCR allows the PCR to be reset and proper authorization is
 /// provided, then this command may be used to set the PCR in all banks to zero. The
 /// attributes of the PCR may restrict the locality that can perform the reset operation.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PCR_Reset_REQUEST {
     /// The PCR to reset
     /// Auth Index: 1
@@ -21864,7 +21789,7 @@ impl TpmStructure for TPM2_PCR_Reset_REQUEST {
 
 /// This command includes a signed authorization in a policy. The command ties the policy
 /// to a signing key by including the Name of the signing key in the policyDigest
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicySigned_REQUEST {
     /// Handle for a key that will validate the signature
     /// Auth Index: None
@@ -21973,7 +21898,7 @@ impl TpmStructure for TPM2_PolicySigned_REQUEST {
 
 /// This command includes a signed authorization in a policy. The command ties the policy
 /// to a signing key by including the Name of the signing key in the policyDigest
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct PolicySignedResponse {
     /// Implementation-specific time value, used to indicate to the TPM when the ticket expires
     /// NOTE If policyTicket is a NULL Ticket, then this shall be the Empty Buffer.
@@ -22028,7 +21953,7 @@ impl TpmStructure for PolicySignedResponse {
 /// knowledge of the secret value using an authorization session using the authValue
 /// associated with authHandle. A password session, an HMAC session, or a policy session
 /// containing TPM2_PolicyAuthValue() or TPM2_PolicyPassword() will satisfy this requirement.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicySecret_REQUEST {
     /// Handle for an entity providing the authorization
     /// Auth Index: 1
@@ -22125,7 +22050,7 @@ impl TpmStructure for TPM2_PolicySecret_REQUEST {
 /// knowledge of the secret value using an authorization session using the authValue
 /// associated with authHandle. A password session, an HMAC session, or a policy session
 /// containing TPM2_PolicyAuthValue() or TPM2_PolicyPassword() will satisfy this requirement.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct PolicySecretResponse {
     /// Implementation-specific time value used to indicate to the TPM when the ticket expires
     pub timeout: Vec<u8>,
@@ -22178,7 +22103,7 @@ impl TpmStructure for PolicySecretResponse {
 /// This command is similar to TPM2_PolicySigned() except that it takes a ticket instead
 /// of a signed authorization. The ticket represents a validated authorization that had an
 /// expiration time associated with it.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyTicket_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22272,7 +22197,7 @@ impl TpmStructure for TPM2_PolicyTicket_REQUEST {
 /// all of the options. If a policy may be satisfied by different sets of conditions, the
 /// TPM need only evaluate one set that satisfies the policy. This command will indicate
 /// that one of the required sets of conditions has been satisfied.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyOR_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22335,7 +22260,7 @@ impl TpmStructure for TPM2_PolicyOR_REQUEST {
 /// command together with TPM2_PolicyOR() allows one group of authorizations to occur when
 /// PCR are in one state and a different set of authorizations when the PCR are in a
 /// different state.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyPCR_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22403,7 +22328,7 @@ impl TpmStructure for TPM2_PolicyPCR_REQUEST {
 }
 
 /// This command indicates that the authorization will be limited to a specific locality.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyLocality_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22465,7 +22390,7 @@ impl TpmStructure for TPM2_PolicyLocality_REQUEST {
 /// This command is used to cause conditional gating of a policy based on the contents of
 /// an NV Index. It is an immediate assertion. The NV index is validated during the
 /// TPM2_PolicyNV() command, not when the session is used for authorization.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyNV_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -22553,7 +22478,7 @@ impl TpmStructure for TPM2_PolicyNV_REQUEST {
 
 /// This command is used to cause conditional gating of a policy based on the contents of
 /// the TPMS_TIME_INFO structure.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyCounterTimer_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22627,7 +22552,7 @@ impl TpmStructure for TPM2_PolicyCounterTimer_REQUEST {
 }
 
 /// This command indicates that the authorization will be limited to a specific command code.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyCommandCode_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22688,7 +22613,7 @@ impl TpmStructure for TPM2_PolicyCommandCode_REQUEST {
 
 /// This command indicates that physical presence will need to be asserted at the time the
 /// authorization is performed.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyPhysicalPresence_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22741,7 +22666,7 @@ impl TpmStructure for TPM2_PolicyPhysicalPresence_REQUEST {
 }
 
 /// This command is used to allow a policy to be bound to a specific command and command parameters.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyCpHash_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22803,7 +22728,7 @@ impl TpmStructure for TPM2_PolicyCpHash_REQUEST {
 /// This command allows a policy to be bound to a specific set of TPM entities without
 /// being bound to the parameters of the command. This is most useful for commands such as
 /// TPM2_Duplicate() and for TPM2_PCR_Event() when the referenced PCR requires a policy.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyNameHash_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22864,7 +22789,7 @@ impl TpmStructure for TPM2_PolicyNameHash_REQUEST {
 
 /// This command allows qualification of duplication to allow duplication to a selected
 /// new parent.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyDuplicationSelect_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -22940,7 +22865,7 @@ impl TpmStructure for TPM2_PolicyDuplicationSelect_REQUEST {
 /// This command allows policies to change. If a policy were static, then it would be
 /// difficult to add users to a policy. This command lets a policy authority sign a new
 /// policy so that it may be used in an existing policy.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyAuthorize_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -23021,7 +22946,7 @@ impl TpmStructure for TPM2_PolicyAuthorize_REQUEST {
 }
 
 /// This command allows a policy to be bound to the authorization value of the authorized entity.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyAuthValue_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -23074,7 +22999,7 @@ impl TpmStructure for TPM2_PolicyAuthValue_REQUEST {
 }
 
 /// This command allows a policy to be bound to the authorization value of the authorized object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyPassword_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -23128,7 +23053,7 @@ impl TpmStructure for TPM2_PolicyPassword_REQUEST {
 
 /// This command returns the current policyDigest of the session. This command allows the
 /// TPM to be used to perform the actions required to pre-compute the authPolicy for an object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyGetDigest_REQUEST {
     /// Handle for the policy session
     /// Auth Index: None
@@ -23182,7 +23107,7 @@ impl TpmStructure for TPM2_PolicyGetDigest_REQUEST {
 
 /// This command returns the current policyDigest of the session. This command allows the
 /// TPM to be used to perform the actions required to pre-compute the authPolicy for an object.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct PolicyGetDigestResponse {
     /// The current value of the policySessionpolicyDigest
     pub policyDigest: Vec<u8>,
@@ -23229,7 +23154,7 @@ impl TpmStructure for PolicyGetDigestResponse {
 /// This command allows a policy to be bound to the TPMA_NV_WRITTEN attributes. This is a
 /// deferred assertion. Values are stored in the policy session context and checked when
 /// the policy is used for authorization.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyNvWritten_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -23292,7 +23217,7 @@ impl TpmStructure for TPM2_PolicyNvWritten_REQUEST {
 /// This command allows a policy to be bound to a specific creation template. This is most
 /// useful for an object creation command such as TPM2_Create(), TPM2_CreatePrimary(), or
 /// TPM2_CreateLoaded().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyTemplate_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -23355,7 +23280,7 @@ impl TpmStructure for TPM2_PolicyTemplate_REQUEST {
 /// TPM2_PolicyAuthorize(), the authorization ticket never expires, so the authorization
 /// may not be withdrawn. With this command, the approved policy is kept in an NV Index
 /// location so that the policy may be changed as needed to render the old policy unusable.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PolicyAuthorizeNV_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -23425,7 +23350,7 @@ impl TpmStructure for TPM2_PolicyAuthorizeNV_REQUEST {
 /// the object to be created. The size of the unique field shall not be checked for
 /// consistency with the other object parameters. The command will create and load a
 /// Primary Object. The sensitive area is not returned.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_CreatePrimary_REQUEST {
     /// TPM_RH_ENDORSEMENT, TPM_RH_OWNER, TPM_RH_PLATFORM+{PP}, or TPM_RH_NULL
     /// Auth Index: 1
@@ -23512,7 +23437,7 @@ impl TpmStructure for TPM2_CreatePrimary_REQUEST {
 /// the object to be created. The size of the unique field shall not be checked for
 /// consistency with the other object parameters. The command will create and load a
 /// Primary Object. The sensitive area is not returned.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct CreatePrimaryResponse {
     /// Handle of type TPM_HT_TRANSIENT for created Primary Object
     pub handle: TPM_HANDLE,
@@ -23583,7 +23508,7 @@ impl TpmStructure for CreatePrimaryResponse {
 /// This command enables and disables use of a hierarchy and its associated NV storage.
 /// The command allows phEnable, phEnableNV, shEnable, and ehEnable to be changed when the
 /// proper authorization is provided.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_HierarchyControl_REQUEST {
     /// TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -23656,7 +23581,7 @@ impl TpmStructure for TPM2_HierarchyControl_REQUEST {
 /// (ownerPolicy), and the endorsement hierarchy (endorsementPolicy). On TPMs implementing
 /// Authenticated Countdown Timers (ACT), this command may also be used to set the
 /// authorization policy for an ACT.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_SetPrimaryPolicy_REQUEST {
     /// TPM_RH_LOCKOUT, TPM_RH_ENDORSEMENT, TPM_RH_OWNER, TPMI_RH_ACT or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -23727,7 +23652,7 @@ impl TpmStructure for TPM2_SetPrimaryPolicy_REQUEST {
 
 /// This replaces the current platform primary seed (PPS) with a value from the RNG and
 /// sets platformPolicy to the default initialization value (the Empty Buffer).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ChangePPS_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -23786,7 +23711,7 @@ impl TpmStructure for TPM2_ChangePPS_REQUEST {
 /// Buffer. It will flush any resident objects (transient or persistent) in the
 /// Endorsement hierarchy and not allow objects in the hierarchy associated with the
 /// previous EPS to be loaded.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ChangeEPS_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -23840,7 +23765,7 @@ impl TpmStructure for TPM2_ChangeEPS_REQUEST {
 }
 
 /// This command removes all TPM context associated with a specific Owner.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Clear_REQUEST {
     /// TPM_RH_LOCKOUT or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -23894,7 +23819,7 @@ impl TpmStructure for TPM2_Clear_REQUEST {
 }
 
 /// TPM2_ClearControl() disables and enables the execution of TPM2_Clear().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ClearControl_REQUEST {
     /// TPM_RH_LOCKOUT or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -23956,7 +23881,7 @@ impl TpmStructure for TPM2_ClearControl_REQUEST {
 
 /// This command allows the authorization secret for a hierarchy or lockout to be changed
 /// using the current authorization value as the command authorization.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_HierarchyChangeAuth_REQUEST {
     /// TPM_RH_LOCKOUT, TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -24019,7 +23944,7 @@ impl TpmStructure for TPM2_HierarchyChangeAuth_REQUEST {
 /// This command cancels the effect of a TPM lockout due to a number of successive
 /// authorization failures. If this command is properly authorized, the lockout counter is
 /// set to zero.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_DictionaryAttackLockReset_REQUEST {
     /// TPM_RH_LOCKOUT
     /// Auth Index: 1
@@ -24073,7 +23998,7 @@ impl TpmStructure for TPM2_DictionaryAttackLockReset_REQUEST {
 }
 
 /// This command changes the lockout parameters.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_DictionaryAttackParameters_REQUEST {
     /// TPM_RH_LOCKOUT
     /// Auth Index: 1
@@ -24151,7 +24076,7 @@ impl TpmStructure for TPM2_DictionaryAttackParameters_REQUEST {
 
 /// This command is used to determine which commands require assertion of Physical
 /// Presence (PP) in addition to platformAuth/platformPolicy.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_PP_Commands_REQUEST {
     /// TPM_RH_PLATFORM+PP
     /// Auth Index: 1
@@ -24220,7 +24145,7 @@ impl TpmStructure for TPM2_PP_Commands_REQUEST {
 
 /// This command allows the platform to change the set of algorithms that are used by the
 /// TPM. The algorithmSet setting is a vendor-dependent value.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_SetAlgorithmSet_REQUEST {
     /// TPM_RH_PLATFORM
     /// Auth Index: 1
@@ -24282,7 +24207,7 @@ impl TpmStructure for TPM2_SetAlgorithmSet_REQUEST {
 
 /// This command uses platformPolicy and a TPM Vendor Authorization Key to authorize a
 /// Field Upgrade Manifest.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_FieldUpgradeStart_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index:1
@@ -24368,7 +24293,7 @@ impl TpmStructure for TPM2_FieldUpgradeStart_REQUEST {
 /// exact format of fuData is vendor-specific. This command is only possible following a
 /// successful TPM2_FieldUpgradeStart(). If the TPM has not received a properly authorized
 /// TPM2_FieldUpgradeStart(), then the TPM shall return TPM_RC_FIELDUPGRADE.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_FieldUpgradeData_REQUEST {
     /// Field upgrade image data
     pub fuData: Vec<u8>,
@@ -24425,7 +24350,7 @@ impl TpmStructure for TPM2_FieldUpgradeData_REQUEST {
 /// exact format of fuData is vendor-specific. This command is only possible following a
 /// successful TPM2_FieldUpgradeStart(). If the TPM has not received a properly authorized
 /// TPM2_FieldUpgradeStart(), then the TPM shall return TPM_RC_FIELDUPGRADE.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct FieldUpgradeDataResponse {
     /// Tagged digest of the next block
     /// TPM_ALG_NULL if field update is complete
@@ -24476,7 +24401,7 @@ impl TpmStructure for FieldUpgradeDataResponse {
 }
 
 /// This command is used to read a copy of the current firmware installed in the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_FirmwareRead_REQUEST {
     /// The number of previous calls to this command in this sequence
     /// set to 0 on the first call
@@ -24531,7 +24456,7 @@ impl TpmStructure for TPM2_FirmwareRead_REQUEST {
 }
 
 /// This command is used to read a copy of the current firmware installed in the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct FirmwareReadResponse {
     /// Field upgrade image data
     pub fuData: Vec<u8>,
@@ -24577,7 +24502,7 @@ impl TpmStructure for FirmwareReadResponse {
 
 /// This command saves a session context, object context, or sequence object context
 /// outside the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ContextSave_REQUEST {
     /// Handle of the resource to save
     /// Auth Index: None
@@ -24631,7 +24556,7 @@ impl TpmStructure for TPM2_ContextSave_REQUEST {
 
 /// This command saves a session context, object context, or sequence object context
 /// outside the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ContextSaveResponse {
     pub context: TPMS_CONTEXT,
 }
@@ -24675,7 +24600,7 @@ impl TpmStructure for ContextSaveResponse {
 }
 
 /// This command is used to reload a context that has been saved by TPM2_ContextSave().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ContextLoad_REQUEST {
     /// The context blob
     pub context: TPMS_CONTEXT,
@@ -24729,7 +24654,7 @@ impl TpmStructure for TPM2_ContextLoad_REQUEST {
 }
 
 /// This command is used to reload a context that has been saved by TPM2_ContextSave().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ContextLoadResponse {
     /// The handle assigned to the resource after it has been successfully loaded
     pub handle: TPM_HANDLE,
@@ -24773,7 +24698,7 @@ impl TpmStructure for ContextLoadResponse {
 
 /// This command causes all context associated with a loaded object, sequence object, or
 /// session to be removed from TPM memory.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_FlushContext_REQUEST {
     /// The handle of the item to flush
     /// NOTE This is a use of a handle as a parameter.
@@ -24829,7 +24754,7 @@ impl TpmStructure for TPM2_FlushContext_REQUEST {
 
 /// This command allows certain Transient Objects to be made persistent or a persistent
 /// object to be evicted.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_EvictControl_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -24900,7 +24825,7 @@ impl TpmStructure for TPM2_EvictControl_REQUEST {
 
 /// This command reads the current TPMS_TIME_INFO structure that contains the current
 /// setting of Time, Clock, resetCount, and restartCount.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ReadClock_REQUEST {
 }
 
@@ -24942,7 +24867,7 @@ impl TpmStructure for TPM2_ReadClock_REQUEST {
 
 /// This command reads the current TPMS_TIME_INFO structure that contains the current
 /// setting of Time, Clock, resetCount, and restartCount.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct ReadClockResponse {
     pub currentTime: TPMS_TIME_INFO,
 }
@@ -24989,7 +24914,7 @@ impl TpmStructure for ReadClockResponse {
 /// newTime is less than the current value of Clock or if the new time is greater than
 /// FFFF00000000000016. If both of these checks succeed, Clock is set to newTime. If
 /// either of these checks fails, the TPM shall return TPM_RC_VALUE and make no change to Clock.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ClockSet_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -25051,7 +24976,7 @@ impl TpmStructure for TPM2_ClockSet_REQUEST {
 
 /// This command adjusts the rate of advance of Clock and Time to provide a better
 /// approximation to real time.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ClockRateAdjust_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -25112,7 +25037,7 @@ impl TpmStructure for TPM2_ClockRateAdjust_REQUEST {
 }
 
 /// This command returns various information regarding the TPM and its current state.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_GetCapability_REQUEST {
     /// Group selection; determines the format of the response
     pub capability: TPM_CAP,
@@ -25180,7 +25105,7 @@ impl TpmStructure for TPM2_GetCapability_REQUEST {
 }
 
 /// This command returns various information regarding the TPM and its current state.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct GetCapabilityResponse {
     /// Flag to indicate if there are more values of this type
     pub moreData: u8,
@@ -25239,7 +25164,7 @@ impl TpmStructure for GetCapabilityResponse {
 
 /// This command is used to check to see if specific combinations of algorithm parameters
 /// are supported.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_TestParms_REQUEST {
     /// The algorithm to be tested
 
@@ -25303,7 +25228,7 @@ impl TpmStructure for TPM2_TestParms_REQUEST {
 /// This command defines the attributes of an NV Index and causes the TPM to reserve space
 /// to hold the data associated with the NV Index. If a definition already exists at the
 /// NV Index, the TPM will return TPM_RC_NV_DEFINED.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_DefineSpace_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -25371,7 +25296,7 @@ impl TpmStructure for TPM2_NV_DefineSpace_REQUEST {
 }
 
 /// This command removes an Index from the TPM.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_UndefineSpace_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -25432,7 +25357,7 @@ impl TpmStructure for TPM2_NV_UndefineSpace_REQUEST {
 
 /// This command allows removal of a platform-created NV Index that has
 /// TPMA_NV_POLICY_DELETE SET.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_UndefineSpaceSpecial_REQUEST {
     /// Index to be deleted
     /// Auth Index: 1
@@ -25494,7 +25419,7 @@ impl TpmStructure for TPM2_NV_UndefineSpaceSpecial_REQUEST {
 
 /// This command is used to read the public area and Name of an NV Index. The public area
 /// of an Index is not privacy-sensitive and no authorization is required to read this data.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_ReadPublic_REQUEST {
     /// The NV Index
     /// Auth Index: None
@@ -25548,7 +25473,7 @@ impl TpmStructure for TPM2_NV_ReadPublic_REQUEST {
 
 /// This command is used to read the public area and Name of an NV Index. The public area
 /// of an Index is not privacy-sensitive and no authorization is required to read this data.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct NV_ReadPublicResponse {
     /// The public area of the NV Index
     pub nvPublic: TPMS_NV_PUBLIC,
@@ -25599,7 +25524,7 @@ impl TpmStructure for NV_ReadPublicResponse {
 
 /// This command writes a value to an area in NV memory that was previously defined by
 /// TPM2_NV_DefineSpace().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_Write_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -25674,7 +25599,7 @@ impl TpmStructure for TPM2_NV_Write_REQUEST {
 
 /// This command is used to increment the value in an NV Index that has the TPM_NT_COUNTER
 /// attribute. The data value of the NV Index is incremented by one.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_Increment_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -25735,7 +25660,7 @@ impl TpmStructure for TPM2_NV_Increment_REQUEST {
 
 /// This command extends a value to an area in NV memory that was previously defined by
 /// TPM2_NV_DefineSpace.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_Extend_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -25804,7 +25729,7 @@ impl TpmStructure for TPM2_NV_Extend_REQUEST {
 /// This command is used to SET bits in an NV Index that was created as a bit field. Any
 /// number of bits from 0 to 64 may be SET. The contents of bits are ORed with the current
 /// contents of the NV Index.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_SetBits_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -25872,7 +25797,7 @@ impl TpmStructure for TPM2_NV_SetBits_REQUEST {
 
 /// If the TPMA_NV_WRITEDEFINE or TPMA_NV_WRITE_STCLEAR attributes of an NV location are
 /// SET, then this command may be used to inhibit further writes of the NV Index.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_WriteLock_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -25933,7 +25858,7 @@ impl TpmStructure for TPM2_NV_WriteLock_REQUEST {
 
 /// The command will SET TPMA_NV_WRITELOCKED for all indexes that have their
 /// TPMA_NV_GLOBALLOCK attribute SET.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_GlobalWriteLock_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -25987,7 +25912,7 @@ impl TpmStructure for TPM2_NV_GlobalWriteLock_REQUEST {
 }
 
 /// This command reads a value from an area in NV memory previously defined by TPM2_NV_DefineSpace().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_Read_REQUEST {
     /// The handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -26062,7 +25987,7 @@ impl TpmStructure for TPM2_NV_Read_REQUEST {
 }
 
 /// This command reads a value from an area in NV memory previously defined by TPM2_NV_DefineSpace().
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct NV_ReadResponse {
     /// The data read
     pub data: Vec<u8>,
@@ -26108,7 +26033,7 @@ impl TpmStructure for NV_ReadResponse {
 
 /// If TPMA_NV_READ_STCLEAR is SET in an Index, then this command may be used to prevent
 /// further reads of the NV Index until the next TPM2_Startup (TPM_SU_CLEAR).
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_ReadLock_REQUEST {
     /// The handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -26168,7 +26093,7 @@ impl TpmStructure for TPM2_NV_ReadLock_REQUEST {
 }
 
 /// This command allows the authorization secret for an NV Index to be changed.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_ChangeAuth_REQUEST {
     /// Handle of the entity
     /// Auth Index: 1
@@ -26230,7 +26155,7 @@ impl TpmStructure for TPM2_NV_ChangeAuth_REQUEST {
 
 /// The purpose of this command is to certify the contents of an NV Index or portion of an
 /// NV Index.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_NV_Certify_REQUEST {
     /// Handle of the key used to sign the attestation structure
     /// Auth Index: 1
@@ -26335,7 +26260,7 @@ impl TpmStructure for TPM2_NV_Certify_REQUEST {
 
 /// The purpose of this command is to certify the contents of an NV Index or portion of an
 /// NV Index.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct NV_CertifyResponse {
     /// The structure that was signed
     pub certifyInfo: TPMS_ATTEST,
@@ -26394,7 +26319,7 @@ impl TpmStructure for NV_CertifyResponse {
 
 /// The purpose of this command is to obtain information about an Attached Component
 /// referenced by an AC handle.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_AC_GetCapability_REQUEST {
     /// Handle indicating the Attached Component
     /// Auth Index: None
@@ -26462,7 +26387,7 @@ impl TpmStructure for TPM2_AC_GetCapability_REQUEST {
 
 /// The purpose of this command is to obtain information about an Attached Component
 /// referenced by an AC handle.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct AC_GetCapabilityResponse {
     /// Flag to indicate whether there are more values
     pub moreData: u8,
@@ -26513,7 +26438,7 @@ impl TpmStructure for AC_GetCapabilityResponse {
 
 /// The purpose of this command is to send (copy) a loaded object from the TPM to an
 /// Attached Component.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_AC_Send_REQUEST {
     /// Handle of the object being sent to ac
     /// Auth Index: 1
@@ -26588,7 +26513,7 @@ impl TpmStructure for TPM2_AC_Send_REQUEST {
 
 /// The purpose of this command is to send (copy) a loaded object from the TPM to an
 /// Attached Component.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct AC_SendResponse {
     /// May include AC specific data or information about an error.
     pub acDataOut: TPMS_AC_OUTPUT,
@@ -26636,7 +26561,7 @@ impl TpmStructure for AC_SendResponse {
 /// Component (AC). Qualification includes selection of the receiving AC and the method of
 /// authentication for the AC, and, in certain circumstances, the Object to be sent may be
 /// specified.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Policy_AC_SendSelect_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -26718,7 +26643,7 @@ impl TpmStructure for TPM2_Policy_AC_SendSelect_REQUEST {
 
 /// This command is used to set the time remaining before an Authenticated Countdown Timer
 /// (ACT) expires.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_ACT_SetTimeout_REQUEST {
     /// Handle of the selected ACT
     /// Auth Index: 1
@@ -26779,7 +26704,7 @@ impl TpmStructure for TPM2_ACT_SetTimeout_REQUEST {
 }
 
 /// This is a placeholder to allow testing of the dispatch code.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2_Vendor_TCG_Test_REQUEST {
     /// Dummy data
     pub inputData: Vec<u8>,
@@ -26833,7 +26758,7 @@ impl TpmStructure for TPM2_Vendor_TCG_Test_REQUEST {
 }
 
 /// This is a placeholder to allow testing of the dispatch code.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct Vendor_TCG_TestResponse {
     /// Dummy data
     pub outputData: Vec<u8>,
@@ -26932,7 +26857,7 @@ pub type TPMS_SCHEME_KDF1_SP800_108 = TPMS_KDF_SCHEME_KDF1_SP800_108;
 
 /// Contains the public and the plaintext-sensitive and/or encrypted private part of a TPM
 /// key (or other object)
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TssObject {
     /// Public part of key
     pub Public: TPMT_PUBLIC,
@@ -27000,7 +26925,7 @@ impl TpmStructure for TssObject {
 }
 
 /// Contains a PCR index and associated hash(pcr-value) [TSS]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct PcrValue {
     /// PCR Index
     pub index: u32,
@@ -27061,7 +26986,7 @@ impl TpmStructure for PcrValue {
 }
 
 /// Structure representing a session block in a command buffer [TSS]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct SessionIn {
     /// Session handle
     pub handle: TPM_HANDLE,
@@ -27136,7 +27061,7 @@ impl TpmStructure for SessionIn {
 }
 
 /// Structure representing a session block in a response buffer [TSS]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct SessionOut {
     /// TPM nonce
     pub nonceTpm: Vec<u8>,
@@ -27204,7 +27129,7 @@ impl TpmStructure for SessionOut {
 }
 
 /// Command header [TSS]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct CommandHeader {
     /// Command tag (sessions, or no sessions)
     pub Tag: TPM_ST,
@@ -27272,7 +27197,7 @@ impl TpmStructure for CommandHeader {
 }
 
 /// Contains the public and private part of a TPM key
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TSS_KEY {
     /// Public part of key
     pub publicPart: TPMT_PUBLIC,
@@ -27333,7 +27258,7 @@ impl TpmStructure for TSS_KEY {
 }
 
 /// Auto-derived from TPM2B_DIGEST to provide unique GetUnionSelector() implementation
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_DIGEST_SYMCIPHER {
 }
 
@@ -27383,7 +27308,7 @@ impl TPMU_PUBLIC_ID for TPM2B_DIGEST_SYMCIPHER {
 }
 
 /// Auto-derived from TPM2B_DIGEST
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Default)]
 pub struct TPM2B_DIGEST_KEYEDHASH {
 }
 
@@ -27430,5 +27355,588 @@ impl TPMU_PUBLIC_ID for TPM2B_DIGEST_KEYEDHASH {
     fn GetUnionSelector(&self) -> TPM_ALG_ID {
         TPM_ALG_ID::KEYEDHASH
     }
+}
+
+lazy_static::lazy_static! {
+    /// Maps enum type IDs to a map of values to string representations
+    static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u32, &'static str>> = {
+    let mut map = HashMap::new();
+        let  TPM_ALG_ID_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_ALG_ID>(), TPM_ALG_ID_map);
+
+        let mut TPM_ECC_CURVE_map = HashMap::new();
+        TPM_ECC_CURVE_map.insert(0x0, "NONE");
+        TPM_ECC_CURVE_map.insert(0x1, "NIST_P192");
+        TPM_ECC_CURVE_map.insert(0x2, "NIST_P224");
+        TPM_ECC_CURVE_map.insert(0x3, "NIST_P256");
+        TPM_ECC_CURVE_map.insert(0x4, "NIST_P384");
+        TPM_ECC_CURVE_map.insert(0x5, "NIST_P521");
+        TPM_ECC_CURVE_map.insert(0x10, "BN_P256");
+        TPM_ECC_CURVE_map.insert(0x11, "BN_P638");
+        TPM_ECC_CURVE_map.insert(0x20, "SM2_P256");
+        TPM_ECC_CURVE_map.insert(0x21, "TEST_P192");
+        map.insert(std::any::TypeId::of::<TPM_ECC_CURVE>(), TPM_ECC_CURVE_map);
+
+        let mut SHA1_map = HashMap::new();
+        SHA1_map.insert(0x14, "DIGEST_SIZE");
+        SHA1_map.insert(0x40, "BLOCK_SIZE");
+        map.insert(std::any::TypeId::of::<SHA1>(), SHA1_map);
+
+        let mut SHA256_map = HashMap::new();
+        SHA256_map.insert(0x20, "DIGEST_SIZE");
+        SHA256_map.insert(0x40, "BLOCK_SIZE");
+        map.insert(std::any::TypeId::of::<SHA256>(), SHA256_map);
+
+        let mut SHA384_map = HashMap::new();
+        SHA384_map.insert(0x30, "DIGEST_SIZE");
+        SHA384_map.insert(0x80, "BLOCK_SIZE");
+        map.insert(std::any::TypeId::of::<SHA384>(), SHA384_map);
+
+        let mut SHA512_map = HashMap::new();
+        SHA512_map.insert(0x40, "DIGEST_SIZE");
+        SHA512_map.insert(0x80, "BLOCK_SIZE");
+        map.insert(std::any::TypeId::of::<SHA512>(), SHA512_map);
+
+        let mut SM3_256_map = HashMap::new();
+        SM3_256_map.insert(0x20, "DIGEST_SIZE");
+        SM3_256_map.insert(0x40, "BLOCK_SIZE");
+        map.insert(std::any::TypeId::of::<SM3_256>(), SM3_256_map);
+
+        let mut SHA3_256_map = HashMap::new();
+        SHA3_256_map.insert(0x20, "DIGEST_SIZE");
+        SHA3_256_map.insert(0x88, "BLOCK_SIZE");
+        map.insert(std::any::TypeId::of::<SHA3_256>(), SHA3_256_map);
+
+        let mut SHA3_384_map = HashMap::new();
+        SHA3_384_map.insert(0x30, "DIGEST_SIZE");
+        SHA3_384_map.insert(0x68, "BLOCK_SIZE");
+        map.insert(std::any::TypeId::of::<SHA3_384>(), SHA3_384_map);
+
+        let mut SHA3_512_map = HashMap::new();
+        SHA3_512_map.insert(0x40, "DIGEST_SIZE");
+        SHA3_512_map.insert(0x48, "BLOCK_SIZE");
+        map.insert(std::any::TypeId::of::<SHA3_512>(), SHA3_512_map);
+
+        let  Logic_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<Logic>(), Logic_map);
+
+        let mut TPM_SPEC_map = HashMap::new();
+        TPM_SPEC_map.insert(0x322E3000, "FAMILY");
+        TPM_SPEC_map.insert(0x0, "LEVEL");
+        TPM_SPEC_map.insert(0xA2, "VERSION");
+        TPM_SPEC_map.insert(0x7E3, "YEAR");
+        TPM_SPEC_map.insert(0x168, "DAY_OF_YEAR");
+        map.insert(std::any::TypeId::of::<TPM_SPEC>(), TPM_SPEC_map);
+
+        let mut TPM_GENERATED_map = HashMap::new();
+        TPM_GENERATED_map.insert(0xFF544347, "VALUE");
+        map.insert(std::any::TypeId::of::<TPM_GENERATED>(), TPM_GENERATED_map);
+
+        let  TPM_CC_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_CC>(), TPM_CC_map);
+
+        let  ImplementationConstants_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<ImplementationConstants>(), ImplementationConstants_map);
+
+        let  TPM_RC_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_RC>(), TPM_RC_map);
+
+        let mut TPM_CLOCK_ADJUST_map = HashMap::new();
+        TPM_CLOCK_ADJUST_map.insert(0xFFFFFFFFFFFFFFFD, "COARSE_SLOWER");
+        TPM_CLOCK_ADJUST_map.insert(0xFFFFFFFFFFFFFFFE, "MEDIUM_SLOWER");
+        TPM_CLOCK_ADJUST_map.insert(0xFFFFFFFFFFFFFFFF, "FINE_SLOWER");
+        TPM_CLOCK_ADJUST_map.insert(0x0, "NO_CHANGE");
+        TPM_CLOCK_ADJUST_map.insert(0x1, "FINE_FASTER");
+        TPM_CLOCK_ADJUST_map.insert(0x2, "MEDIUM_FASTER");
+        TPM_CLOCK_ADJUST_map.insert(0x3, "COARSE_FASTER");
+        map.insert(std::any::TypeId::of::<TPM_CLOCK_ADJUST>(), TPM_CLOCK_ADJUST_map);
+
+        let mut TPM_EO_map = HashMap::new();
+        TPM_EO_map.insert(0x0, "EQ");
+        TPM_EO_map.insert(0x1, "NEQ");
+        TPM_EO_map.insert(0x2, "SIGNED_GT");
+        TPM_EO_map.insert(0x3, "UNSIGNED_GT");
+        TPM_EO_map.insert(0x4, "SIGNED_LT");
+        TPM_EO_map.insert(0x5, "UNSIGNED_LT");
+        TPM_EO_map.insert(0x6, "SIGNED_GE");
+        TPM_EO_map.insert(0x7, "UNSIGNED_GE");
+        TPM_EO_map.insert(0x8, "SIGNED_LE");
+        TPM_EO_map.insert(0x9, "UNSIGNED_LE");
+        TPM_EO_map.insert(0xA, "BITSET");
+        TPM_EO_map.insert(0xB, "BITCLEAR");
+        map.insert(std::any::TypeId::of::<TPM_EO>(), TPM_EO_map);
+
+        let mut TPM_ST_map = HashMap::new();
+        TPM_ST_map.insert(0xC4, "RSP_COMMAND");
+        TPM_ST_map.insert(0x8000, "NULL");
+        TPM_ST_map.insert(0x8001, "NO_SESSIONS");
+        TPM_ST_map.insert(0x8002, "SESSIONS");
+        TPM_ST_map.insert(0x8014, "ATTEST_NV");
+        TPM_ST_map.insert(0x8015, "ATTEST_COMMAND_AUDIT");
+        TPM_ST_map.insert(0x8016, "ATTEST_SESSION_AUDIT");
+        TPM_ST_map.insert(0x8017, "ATTEST_CERTIFY");
+        TPM_ST_map.insert(0x8018, "ATTEST_QUOTE");
+        TPM_ST_map.insert(0x8019, "ATTEST_TIME");
+        TPM_ST_map.insert(0x801A, "ATTEST_CREATION");
+        TPM_ST_map.insert(0x801C, "ATTEST_NV_DIGEST");
+        TPM_ST_map.insert(0x8021, "CREATION");
+        TPM_ST_map.insert(0x8022, "VERIFIED");
+        TPM_ST_map.insert(0x8023, "AUTH_SECRET");
+        TPM_ST_map.insert(0x8024, "HASHCHECK");
+        TPM_ST_map.insert(0x8025, "AUTH_SIGNED");
+        TPM_ST_map.insert(0x8029, "FU_MANIFEST");
+        map.insert(std::any::TypeId::of::<TPM_ST>(), TPM_ST_map);
+
+        let mut TPM_SU_map = HashMap::new();
+        TPM_SU_map.insert(0x0, "CLEAR");
+        TPM_SU_map.insert(0x1, "STATE");
+        map.insert(std::any::TypeId::of::<TPM_SU>(), TPM_SU_map);
+
+        let mut TPM_SE_map = HashMap::new();
+        TPM_SE_map.insert(0x0, "HMAC");
+        TPM_SE_map.insert(0x1, "POLICY");
+        TPM_SE_map.insert(0x3, "TRIAL");
+        map.insert(std::any::TypeId::of::<TPM_SE>(), TPM_SE_map);
+
+        let  TPM_CAP_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_CAP>(), TPM_CAP_map);
+
+        let  TPM_PT_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_PT>(), TPM_PT_map);
+
+        let  TPM_PT_PCR_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_PT_PCR>(), TPM_PT_PCR_map);
+
+        let mut TPM_PS_map = HashMap::new();
+        TPM_PS_map.insert(0x0, "MAIN");
+        TPM_PS_map.insert(0x1, "PC");
+        TPM_PS_map.insert(0x2, "PDA");
+        TPM_PS_map.insert(0x3, "CELL_PHONE");
+        TPM_PS_map.insert(0x4, "SERVER");
+        TPM_PS_map.insert(0x5, "PERIPHERAL");
+        TPM_PS_map.insert(0x6, "TSS");
+        TPM_PS_map.insert(0x7, "STORAGE");
+        TPM_PS_map.insert(0x8, "AUTHENTICATION");
+        TPM_PS_map.insert(0x9, "EMBEDDED");
+        TPM_PS_map.insert(0xA, "HARDCOPY");
+        TPM_PS_map.insert(0xB, "INFRASTRUCTURE");
+        TPM_PS_map.insert(0xC, "VIRTUALIZATION");
+        TPM_PS_map.insert(0xD, "TNC");
+        TPM_PS_map.insert(0xE, "MULTI_TENANT");
+        TPM_PS_map.insert(0xF, "TC");
+        map.insert(std::any::TypeId::of::<TPM_PS>(), TPM_PS_map);
+
+        let  TPM_HT_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_HT>(), TPM_HT_map);
+
+        let  TPM_RH_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_RH>(), TPM_RH_map);
+
+        let mut TPM_NT_map = HashMap::new();
+        TPM_NT_map.insert(0x0, "ORDINARY");
+        TPM_NT_map.insert(0x1, "COUNTER");
+        TPM_NT_map.insert(0x2, "BITS");
+        TPM_NT_map.insert(0x4, "EXTEND");
+        TPM_NT_map.insert(0x8, "PIN_FAIL");
+        TPM_NT_map.insert(0x9, "PIN_PASS");
+        map.insert(std::any::TypeId::of::<TPM_NT>(), TPM_NT_map);
+
+        let mut TPM_AT_map = HashMap::new();
+        TPM_AT_map.insert(0x0, "ANY");
+        TPM_AT_map.insert(0x1, "ERROR");
+        TPM_AT_map.insert(0x2, "PV1");
+        TPM_AT_map.insert(0x80000000, "VEND");
+        map.insert(std::any::TypeId::of::<TPM_AT>(), TPM_AT_map);
+
+        let mut TPM_AE_map = HashMap::new();
+        TPM_AE_map.insert(0x0, "NONE");
+        map.insert(std::any::TypeId::of::<TPM_AE>(), TPM_AE_map);
+
+        let mut PLATFORM_map = HashMap::new();
+        PLATFORM_map.insert(0x322E3000, "FAMILY");
+        PLATFORM_map.insert(0x0, "LEVEL");
+        PLATFORM_map.insert(0xA2, "VERSION");
+        PLATFORM_map.insert(0x7E3, "YEAR");
+        PLATFORM_map.insert(0x168, "DAY_OF_YEAR");
+        map.insert(std::any::TypeId::of::<PLATFORM>(), PLATFORM_map);
+
+        let  Implementation_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<Implementation>(), Implementation_map);
+
+        let  TPM_HC_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_HC>(), TPM_HC_map);
+
+        let mut TPMA_ALGORITHM_map = HashMap::new();
+        TPMA_ALGORITHM_map.insert(0x1, "asymmetric");
+        TPMA_ALGORITHM_map.insert(0x2, "symmetric");
+        TPMA_ALGORITHM_map.insert(0x4, "hash");
+        TPMA_ALGORITHM_map.insert(0x8, "object");
+        TPMA_ALGORITHM_map.insert(0x100, "signing");
+        TPMA_ALGORITHM_map.insert(0x200, "encrypting");
+        TPMA_ALGORITHM_map.insert(0x400, "method");
+        map.insert(std::any::TypeId::of::<TPMA_ALGORITHM>(), TPMA_ALGORITHM_map);
+
+        let  TPMA_OBJECT_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPMA_OBJECT>(), TPMA_OBJECT_map);
+
+        let mut TPMA_SESSION_map = HashMap::new();
+        TPMA_SESSION_map.insert(0x1, "continueSession");
+        TPMA_SESSION_map.insert(0x2, "auditExclusive");
+        TPMA_SESSION_map.insert(0x4, "auditReset");
+        TPMA_SESSION_map.insert(0x20, "decrypt");
+        TPMA_SESSION_map.insert(0x40, "encrypt");
+        TPMA_SESSION_map.insert(0x80, "audit");
+        map.insert(std::any::TypeId::of::<TPMA_SESSION>(), TPMA_SESSION_map);
+
+        let mut TPMA_LOCALITY_map = HashMap::new();
+        TPMA_LOCALITY_map.insert(0x1, "LOC_ZERO");
+        TPMA_LOCALITY_map.insert(0x2, "LOC_ONE");
+        TPMA_LOCALITY_map.insert(0x4, "LOC_TWO");
+        TPMA_LOCALITY_map.insert(0x8, "LOC_THREE");
+        TPMA_LOCALITY_map.insert(0x10, "LOC_FOUR");
+        map.insert(std::any::TypeId::of::<TPMA_LOCALITY>(), TPMA_LOCALITY_map);
+
+        let mut TPMA_PERMANENT_map = HashMap::new();
+        TPMA_PERMANENT_map.insert(0x1, "ownerAuthSet");
+        TPMA_PERMANENT_map.insert(0x2, "endorsementAuthSet");
+        TPMA_PERMANENT_map.insert(0x4, "lockoutAuthSet");
+        TPMA_PERMANENT_map.insert(0x100, "disableClear");
+        TPMA_PERMANENT_map.insert(0x200, "inLockout");
+        TPMA_PERMANENT_map.insert(0x400, "tpmGeneratedEPS");
+        map.insert(std::any::TypeId::of::<TPMA_PERMANENT>(), TPMA_PERMANENT_map);
+
+        let mut TPMA_STARTUP_CLEAR_map = HashMap::new();
+        TPMA_STARTUP_CLEAR_map.insert(0x1, "phEnable");
+        TPMA_STARTUP_CLEAR_map.insert(0x2, "shEnable");
+        TPMA_STARTUP_CLEAR_map.insert(0x4, "ehEnable");
+        TPMA_STARTUP_CLEAR_map.insert(0x8, "phEnableNV");
+        TPMA_STARTUP_CLEAR_map.insert(0xFFFFFFFF80000000, "orderly");
+        map.insert(std::any::TypeId::of::<TPMA_STARTUP_CLEAR>(), TPMA_STARTUP_CLEAR_map);
+
+        let mut TPMA_MEMORY_map = HashMap::new();
+        TPMA_MEMORY_map.insert(0x1, "sharedRAM");
+        TPMA_MEMORY_map.insert(0x2, "sharedNV");
+        TPMA_MEMORY_map.insert(0x4, "objectCopiedToRam");
+        map.insert(std::any::TypeId::of::<TPMA_MEMORY>(), TPMA_MEMORY_map);
+
+        let mut TPMA_CC_map = HashMap::new();
+        TPMA_CC_map.insert(0x400000, "nv");
+        TPMA_CC_map.insert(0x800000, "extensive");
+        TPMA_CC_map.insert(0x1000000, "flushed");
+        TPMA_CC_map.insert(0x10000000, "rHandle");
+        TPMA_CC_map.insert(0x20000000, "V");
+        map.insert(std::any::TypeId::of::<TPMA_CC>(), TPMA_CC_map);
+
+        let mut TPMA_MODES_map = HashMap::new();
+        TPMA_MODES_map.insert(0x1, "FIPS_140_2");
+        map.insert(std::any::TypeId::of::<TPMA_MODES>(), TPMA_MODES_map);
+
+        let  TPMA_X509_KEY_USAGE_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPMA_X509_KEY_USAGE>(), TPMA_X509_KEY_USAGE_map);
+
+        let mut TPMA_ACT_map = HashMap::new();
+        TPMA_ACT_map.insert(0x1, "signaled");
+        TPMA_ACT_map.insert(0x2, "preserveSignaled");
+        map.insert(std::any::TypeId::of::<TPMA_ACT>(), TPMA_ACT_map);
+
+        let  TPM_NV_INDEX_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_NV_INDEX>(), TPM_NV_INDEX_map);
+
+        let  TPMA_NV_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPMA_NV>(), TPMA_NV_map);
+
+        map
+    };
+
+    /// Maps enum type IDs to a map of string representations to values
+    static ref STR_TO_ENUM_MAP: HashMap<std::any::TypeId, HashMap<&'static str, u32>> = {
+    let mut map = HashMap::new();
+        let  TPM_ALG_ID_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_ALG_ID>(), TPM_ALG_ID_map);
+
+        let mut TPM_ECC_CURVE_map = HashMap::new();
+        TPM_ECC_CURVE_map.insert("NONE", 0x0);
+        TPM_ECC_CURVE_map.insert("NIST_P192", 0x1);
+        TPM_ECC_CURVE_map.insert("NIST_P224", 0x2);
+        TPM_ECC_CURVE_map.insert("NIST_P256", 0x3);
+        TPM_ECC_CURVE_map.insert("NIST_P384", 0x4);
+        TPM_ECC_CURVE_map.insert("NIST_P521", 0x5);
+        TPM_ECC_CURVE_map.insert("BN_P256", 0x10);
+        TPM_ECC_CURVE_map.insert("BN_P638", 0x11);
+        TPM_ECC_CURVE_map.insert("SM2_P256", 0x20);
+        TPM_ECC_CURVE_map.insert("TEST_P192", 0x21);
+        map.insert(std::any::TypeId::of::<TPM_ECC_CURVE>(), TPM_ECC_CURVE_map);
+
+        let mut SHA1_map = HashMap::new();
+        SHA1_map.insert("DIGEST_SIZE", 0x14);
+        SHA1_map.insert("BLOCK_SIZE", 0x40);
+        map.insert(std::any::TypeId::of::<SHA1>(), SHA1_map);
+
+        let mut SHA256_map = HashMap::new();
+        SHA256_map.insert("DIGEST_SIZE", 0x20);
+        SHA256_map.insert("BLOCK_SIZE", 0x40);
+        map.insert(std::any::TypeId::of::<SHA256>(), SHA256_map);
+
+        let mut SHA384_map = HashMap::new();
+        SHA384_map.insert("DIGEST_SIZE", 0x30);
+        SHA384_map.insert("BLOCK_SIZE", 0x80);
+        map.insert(std::any::TypeId::of::<SHA384>(), SHA384_map);
+
+        let mut SHA512_map = HashMap::new();
+        SHA512_map.insert("DIGEST_SIZE", 0x40);
+        SHA512_map.insert("BLOCK_SIZE", 0x80);
+        map.insert(std::any::TypeId::of::<SHA512>(), SHA512_map);
+
+        let mut SM3_256_map = HashMap::new();
+        SM3_256_map.insert("DIGEST_SIZE", 0x20);
+        SM3_256_map.insert("BLOCK_SIZE", 0x40);
+        map.insert(std::any::TypeId::of::<SM3_256>(), SM3_256_map);
+
+        let mut SHA3_256_map = HashMap::new();
+        SHA3_256_map.insert("DIGEST_SIZE", 0x20);
+        SHA3_256_map.insert("BLOCK_SIZE", 0x88);
+        map.insert(std::any::TypeId::of::<SHA3_256>(), SHA3_256_map);
+
+        let mut SHA3_384_map = HashMap::new();
+        SHA3_384_map.insert("DIGEST_SIZE", 0x30);
+        SHA3_384_map.insert("BLOCK_SIZE", 0x68);
+        map.insert(std::any::TypeId::of::<SHA3_384>(), SHA3_384_map);
+
+        let mut SHA3_512_map = HashMap::new();
+        SHA3_512_map.insert("DIGEST_SIZE", 0x40);
+        SHA3_512_map.insert("BLOCK_SIZE", 0x48);
+        map.insert(std::any::TypeId::of::<SHA3_512>(), SHA3_512_map);
+
+        let  Logic_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<Logic>(), Logic_map);
+
+        let mut TPM_SPEC_map = HashMap::new();
+        TPM_SPEC_map.insert("FAMILY", 0x322E3000);
+        TPM_SPEC_map.insert("LEVEL", 0x0);
+        TPM_SPEC_map.insert("VERSION", 0xA2);
+        TPM_SPEC_map.insert("YEAR", 0x7E3);
+        TPM_SPEC_map.insert("DAY_OF_YEAR", 0x168);
+        map.insert(std::any::TypeId::of::<TPM_SPEC>(), TPM_SPEC_map);
+
+        let mut TPM_GENERATED_map = HashMap::new();
+        TPM_GENERATED_map.insert("VALUE", 0xFF544347);
+        map.insert(std::any::TypeId::of::<TPM_GENERATED>(), TPM_GENERATED_map);
+
+        let  TPM_CC_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_CC>(), TPM_CC_map);
+
+        let  ImplementationConstants_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<ImplementationConstants>(), ImplementationConstants_map);
+
+        let  TPM_RC_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_RC>(), TPM_RC_map);
+
+        let mut TPM_CLOCK_ADJUST_map = HashMap::new();
+        TPM_CLOCK_ADJUST_map.insert("COARSE_SLOWER", 0xFFFFFFFFFFFFFFFD);
+        TPM_CLOCK_ADJUST_map.insert("MEDIUM_SLOWER", 0xFFFFFFFFFFFFFFFE);
+        TPM_CLOCK_ADJUST_map.insert("FINE_SLOWER", 0xFFFFFFFFFFFFFFFF);
+        TPM_CLOCK_ADJUST_map.insert("NO_CHANGE", 0x0);
+        TPM_CLOCK_ADJUST_map.insert("FINE_FASTER", 0x1);
+        TPM_CLOCK_ADJUST_map.insert("MEDIUM_FASTER", 0x2);
+        TPM_CLOCK_ADJUST_map.insert("COARSE_FASTER", 0x3);
+        map.insert(std::any::TypeId::of::<TPM_CLOCK_ADJUST>(), TPM_CLOCK_ADJUST_map);
+
+        let mut TPM_EO_map = HashMap::new();
+        TPM_EO_map.insert("EQ", 0x0);
+        TPM_EO_map.insert("NEQ", 0x1);
+        TPM_EO_map.insert("SIGNED_GT", 0x2);
+        TPM_EO_map.insert("UNSIGNED_GT", 0x3);
+        TPM_EO_map.insert("SIGNED_LT", 0x4);
+        TPM_EO_map.insert("UNSIGNED_LT", 0x5);
+        TPM_EO_map.insert("SIGNED_GE", 0x6);
+        TPM_EO_map.insert("UNSIGNED_GE", 0x7);
+        TPM_EO_map.insert("SIGNED_LE", 0x8);
+        TPM_EO_map.insert("UNSIGNED_LE", 0x9);
+        TPM_EO_map.insert("BITSET", 0xA);
+        TPM_EO_map.insert("BITCLEAR", 0xB);
+        map.insert(std::any::TypeId::of::<TPM_EO>(), TPM_EO_map);
+
+        let mut TPM_ST_map = HashMap::new();
+        TPM_ST_map.insert("RSP_COMMAND", 0xC4);
+        TPM_ST_map.insert("NULL", 0x8000);
+        TPM_ST_map.insert("NO_SESSIONS", 0x8001);
+        TPM_ST_map.insert("SESSIONS", 0x8002);
+        TPM_ST_map.insert("ATTEST_NV", 0x8014);
+        TPM_ST_map.insert("ATTEST_COMMAND_AUDIT", 0x8015);
+        TPM_ST_map.insert("ATTEST_SESSION_AUDIT", 0x8016);
+        TPM_ST_map.insert("ATTEST_CERTIFY", 0x8017);
+        TPM_ST_map.insert("ATTEST_QUOTE", 0x8018);
+        TPM_ST_map.insert("ATTEST_TIME", 0x8019);
+        TPM_ST_map.insert("ATTEST_CREATION", 0x801A);
+        TPM_ST_map.insert("ATTEST_NV_DIGEST", 0x801C);
+        TPM_ST_map.insert("CREATION", 0x8021);
+        TPM_ST_map.insert("VERIFIED", 0x8022);
+        TPM_ST_map.insert("AUTH_SECRET", 0x8023);
+        TPM_ST_map.insert("HASHCHECK", 0x8024);
+        TPM_ST_map.insert("AUTH_SIGNED", 0x8025);
+        TPM_ST_map.insert("FU_MANIFEST", 0x8029);
+        map.insert(std::any::TypeId::of::<TPM_ST>(), TPM_ST_map);
+
+        let mut TPM_SU_map = HashMap::new();
+        TPM_SU_map.insert("CLEAR", 0x0);
+        TPM_SU_map.insert("STATE", 0x1);
+        map.insert(std::any::TypeId::of::<TPM_SU>(), TPM_SU_map);
+
+        let mut TPM_SE_map = HashMap::new();
+        TPM_SE_map.insert("HMAC", 0x0);
+        TPM_SE_map.insert("POLICY", 0x1);
+        TPM_SE_map.insert("TRIAL", 0x3);
+        map.insert(std::any::TypeId::of::<TPM_SE>(), TPM_SE_map);
+
+        let  TPM_CAP_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_CAP>(), TPM_CAP_map);
+
+        let  TPM_PT_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_PT>(), TPM_PT_map);
+
+        let  TPM_PT_PCR_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_PT_PCR>(), TPM_PT_PCR_map);
+
+        let mut TPM_PS_map = HashMap::new();
+        TPM_PS_map.insert("MAIN", 0x0);
+        TPM_PS_map.insert("PC", 0x1);
+        TPM_PS_map.insert("PDA", 0x2);
+        TPM_PS_map.insert("CELL_PHONE", 0x3);
+        TPM_PS_map.insert("SERVER", 0x4);
+        TPM_PS_map.insert("PERIPHERAL", 0x5);
+        TPM_PS_map.insert("TSS", 0x6);
+        TPM_PS_map.insert("STORAGE", 0x7);
+        TPM_PS_map.insert("AUTHENTICATION", 0x8);
+        TPM_PS_map.insert("EMBEDDED", 0x9);
+        TPM_PS_map.insert("HARDCOPY", 0xA);
+        TPM_PS_map.insert("INFRASTRUCTURE", 0xB);
+        TPM_PS_map.insert("VIRTUALIZATION", 0xC);
+        TPM_PS_map.insert("TNC", 0xD);
+        TPM_PS_map.insert("MULTI_TENANT", 0xE);
+        TPM_PS_map.insert("TC", 0xF);
+        map.insert(std::any::TypeId::of::<TPM_PS>(), TPM_PS_map);
+
+        let  TPM_HT_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_HT>(), TPM_HT_map);
+
+        let  TPM_RH_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_RH>(), TPM_RH_map);
+
+        let mut TPM_NT_map = HashMap::new();
+        TPM_NT_map.insert("ORDINARY", 0x0);
+        TPM_NT_map.insert("COUNTER", 0x1);
+        TPM_NT_map.insert("BITS", 0x2);
+        TPM_NT_map.insert("EXTEND", 0x4);
+        TPM_NT_map.insert("PIN_FAIL", 0x8);
+        TPM_NT_map.insert("PIN_PASS", 0x9);
+        map.insert(std::any::TypeId::of::<TPM_NT>(), TPM_NT_map);
+
+        let mut TPM_AT_map = HashMap::new();
+        TPM_AT_map.insert("ANY", 0x0);
+        TPM_AT_map.insert("ERROR", 0x1);
+        TPM_AT_map.insert("PV1", 0x2);
+        TPM_AT_map.insert("VEND", 0x80000000);
+        map.insert(std::any::TypeId::of::<TPM_AT>(), TPM_AT_map);
+
+        let mut TPM_AE_map = HashMap::new();
+        TPM_AE_map.insert("NONE", 0x0);
+        map.insert(std::any::TypeId::of::<TPM_AE>(), TPM_AE_map);
+
+        let mut PLATFORM_map = HashMap::new();
+        PLATFORM_map.insert("FAMILY", 0x322E3000);
+        PLATFORM_map.insert("LEVEL", 0x0);
+        PLATFORM_map.insert("VERSION", 0xA2);
+        PLATFORM_map.insert("YEAR", 0x7E3);
+        PLATFORM_map.insert("DAY_OF_YEAR", 0x168);
+        map.insert(std::any::TypeId::of::<PLATFORM>(), PLATFORM_map);
+
+        let  Implementation_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<Implementation>(), Implementation_map);
+
+        let  TPM_HC_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_HC>(), TPM_HC_map);
+
+        let mut TPMA_ALGORITHM_map = HashMap::new();
+        TPMA_ALGORITHM_map.insert("asymmetric", 0x1);
+        TPMA_ALGORITHM_map.insert("symmetric", 0x2);
+        TPMA_ALGORITHM_map.insert("hash", 0x4);
+        TPMA_ALGORITHM_map.insert("object", 0x8);
+        TPMA_ALGORITHM_map.insert("signing", 0x100);
+        TPMA_ALGORITHM_map.insert("encrypting", 0x200);
+        TPMA_ALGORITHM_map.insert("method", 0x400);
+        map.insert(std::any::TypeId::of::<TPMA_ALGORITHM>(), TPMA_ALGORITHM_map);
+
+        let  TPMA_OBJECT_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPMA_OBJECT>(), TPMA_OBJECT_map);
+
+        let mut TPMA_SESSION_map = HashMap::new();
+        TPMA_SESSION_map.insert("continueSession", 0x1);
+        TPMA_SESSION_map.insert("auditExclusive", 0x2);
+        TPMA_SESSION_map.insert("auditReset", 0x4);
+        TPMA_SESSION_map.insert("decrypt", 0x20);
+        TPMA_SESSION_map.insert("encrypt", 0x40);
+        TPMA_SESSION_map.insert("audit", 0x80);
+        map.insert(std::any::TypeId::of::<TPMA_SESSION>(), TPMA_SESSION_map);
+
+        let mut TPMA_LOCALITY_map = HashMap::new();
+        TPMA_LOCALITY_map.insert("LOC_ZERO", 0x1);
+        TPMA_LOCALITY_map.insert("LOC_ONE", 0x2);
+        TPMA_LOCALITY_map.insert("LOC_TWO", 0x4);
+        TPMA_LOCALITY_map.insert("LOC_THREE", 0x8);
+        TPMA_LOCALITY_map.insert("LOC_FOUR", 0x10);
+        map.insert(std::any::TypeId::of::<TPMA_LOCALITY>(), TPMA_LOCALITY_map);
+
+        let mut TPMA_PERMANENT_map = HashMap::new();
+        TPMA_PERMANENT_map.insert("ownerAuthSet", 0x1);
+        TPMA_PERMANENT_map.insert("endorsementAuthSet", 0x2);
+        TPMA_PERMANENT_map.insert("lockoutAuthSet", 0x4);
+        TPMA_PERMANENT_map.insert("disableClear", 0x100);
+        TPMA_PERMANENT_map.insert("inLockout", 0x200);
+        TPMA_PERMANENT_map.insert("tpmGeneratedEPS", 0x400);
+        map.insert(std::any::TypeId::of::<TPMA_PERMANENT>(), TPMA_PERMANENT_map);
+
+        let mut TPMA_STARTUP_CLEAR_map = HashMap::new();
+        TPMA_STARTUP_CLEAR_map.insert("phEnable", 0x1);
+        TPMA_STARTUP_CLEAR_map.insert("shEnable", 0x2);
+        TPMA_STARTUP_CLEAR_map.insert("ehEnable", 0x4);
+        TPMA_STARTUP_CLEAR_map.insert("phEnableNV", 0x8);
+        TPMA_STARTUP_CLEAR_map.insert("orderly", 0xFFFFFFFF80000000);
+        map.insert(std::any::TypeId::of::<TPMA_STARTUP_CLEAR>(), TPMA_STARTUP_CLEAR_map);
+
+        let mut TPMA_MEMORY_map = HashMap::new();
+        TPMA_MEMORY_map.insert("sharedRAM", 0x1);
+        TPMA_MEMORY_map.insert("sharedNV", 0x2);
+        TPMA_MEMORY_map.insert("objectCopiedToRam", 0x4);
+        map.insert(std::any::TypeId::of::<TPMA_MEMORY>(), TPMA_MEMORY_map);
+
+        let mut TPMA_CC_map = HashMap::new();
+        TPMA_CC_map.insert("nv", 0x400000);
+        TPMA_CC_map.insert("extensive", 0x800000);
+        TPMA_CC_map.insert("flushed", 0x1000000);
+        TPMA_CC_map.insert("rHandle", 0x10000000);
+        TPMA_CC_map.insert("V", 0x20000000);
+        map.insert(std::any::TypeId::of::<TPMA_CC>(), TPMA_CC_map);
+
+        let mut TPMA_MODES_map = HashMap::new();
+        TPMA_MODES_map.insert("FIPS_140_2", 0x1);
+        map.insert(std::any::TypeId::of::<TPMA_MODES>(), TPMA_MODES_map);
+
+        let  TPMA_X509_KEY_USAGE_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPMA_X509_KEY_USAGE>(), TPMA_X509_KEY_USAGE_map);
+
+        let mut TPMA_ACT_map = HashMap::new();
+        TPMA_ACT_map.insert("signaled", 0x1);
+        TPMA_ACT_map.insert("preserveSignaled", 0x2);
+        map.insert(std::any::TypeId::of::<TPMA_ACT>(), TPMA_ACT_map);
+
+        let  TPM_NV_INDEX_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPM_NV_INDEX>(), TPM_NV_INDEX_map);
+
+        let  TPMA_NV_map = HashMap::new();
+        map.insert(std::any::TypeId::of::<TPMA_NV>(), TPMA_NV_map);
+
+        map
+    };
+
 }
 

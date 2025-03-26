@@ -139,7 +139,7 @@ namespace CodeGen
             _null = Py ? "None" : Rust ? "None" : Cpp ? "nullptr" : "null";
             _new = DotNet || Java || Node ? "new " : Rust ? "" : "";
             _quote = Py || Node ? "'" : Rust ? "\"" : "\"";
-            _digestSize = Cpp ? "TPMT_HA::DigestSize" : Rust ? "digest_size" : "Crypto.digestSize";
+            _digestSize = Cpp ? "TPMT_HA::DigestSize" : Rust ? "Crypto::digestSize" : "Crypto.digestSize";
 
             GeneratedEnums = new HashSet<TpmEnum>();
 

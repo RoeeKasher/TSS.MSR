@@ -100,6 +100,7 @@ namespace CodeGen
             Write("");
             Write("use crate::error::TpmError;");
             Write("use crate::tpm_buffer::TpmBuffer;");
+            Write("use crate::crypto::Crypto;");
             Write("use std::fmt;");
             Write("use num_enum::TryFromPrimitive;");
             Write("use std::collections::HashMap;");
@@ -134,8 +135,7 @@ namespace CodeGen
             Write("pub trait TpmUnion : TpmStructure { }");
             Write("");
 
-            // Generate the enum map and union factory
-            GenEnumMap();
+            // Generate union factory
             GenUnionFactory();
 
             // Generate the enums, bitfields, unions, and structs
@@ -150,6 +150,9 @@ namespace CodeGen
 
             foreach (var s in TpmTypes.Get<TpmStruct>())
                 GenStructDecl(s);
+
+            // Generate the enum maps
+            GenEnumMap();
         }
 
         /// <summary>
@@ -181,7 +184,7 @@ namespace CodeGen
                 // Generate a newtype struct with constants for enums with duplicates
                 WriteComment("Enum with duplicated values - using struct with constants");
                 Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
-                Write($"pub struct {e.Name}(pub i{e.GetFinalUnderlyingType().GetSize() * 8});");
+                Write($"pub struct {e.Name}(pub u{e.GetFinalUnderlyingType().GetSize() * 8});");
                 Write("");
                 
                 // Generate constants for each enum value
@@ -208,10 +211,10 @@ namespace CodeGen
                 Write("");
                 TabIn($"pub fn try_from(value: i{e.GetFinalUnderlyingType().GetSize() * 8}) -> Result<Self, TpmError> {{");
                 TabIn("match value {");
-                foreach (var elt in elements.GroupBy(x => x.Value).Select(g => g.First()))
+                foreach (var elt in elements.GroupBy(x => x.NumericValue).Select(g => g.First()))
                 {
                     // Only include first occurrence of each value to avoid duplicate match arms
-                    Write($"{elt.NumericValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
+                    Write($"{(ulong)elt.NumericValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
                 }
                 Write("_ => Err(TpmError::InvalidEnumValue),");
                 TabOut("}");
@@ -223,7 +226,7 @@ namespace CodeGen
                 // Implement TpmEnum trait for the struct
                 TabIn($"impl TpmEnum for {e.Name} {{");
                 TabIn("fn get_value(&self) -> u32 {");
-                Write("self.0 as u32");
+                Write("self.0.into()");
                 TabOut("}");
                 TabOut("}");
                 Write("");
@@ -231,15 +234,15 @@ namespace CodeGen
                 // Add numeric conversions
                 TabIn($"impl From<{e.Name}> for u32 {{");
                 TabIn($"fn from(value: {e.Name}) -> Self {{");
-                Write("value.0 as u32");
-                TabOut("}");
+                Write("value.0.into()");
+                TabOut("}", false);
                 TabOut("}");
                 Write("");
                 
                 TabIn($"impl From<{e.Name}> for i32 {{");
                 TabIn($"fn from(value: {e.Name}) -> Self {{");
-                Write("value.0");
-                TabOut("}");
+                Write("value.0 as i32");
+                TabOut("}", false);
                 TabOut("}");
                 Write("");
                 
@@ -255,13 +258,13 @@ namespace CodeGen
                     if (group.Count() == 1)
                     {
                         // Only one variant for this value
-                        Write($"{group.Key} => write!(f, \"{group.First().Name}\"),");
+                        Write($"{(ulong)group.Key} => write!(f, \"{group.First().Name}\"),");
                     }
                     else
                     {
                         // Multiple variants for this value
                         var variants = group.Select(elt => elt.Name);
-                        Write($"{group.Key} => write!(f, \"One of <{string.Join(", ", variants)}>\"),");
+                        Write($"{(ulong)group.Key} => write!(f, \"One of <{string.Join(", ", variants)}>\"),");
                     }
                 }
                 
@@ -356,20 +359,20 @@ namespace CodeGen
                 GenEnum(bf, bitfieldElements);
                 
                 // Add bitwise operations for flags using the newtype pattern
-                Write($"impl std::ops::BitOr for {bf.Name} {{");
-                TabIn("type Output = Self;");
+                TabIn($"impl std::ops::BitOr for {bf.Name} {{");
+                Write("type Output = Self;");
                 Write("");
-                Write("fn bitor(self, rhs: Self) -> Self::Output {");
-                TabIn($"Self(self.0 | rhs.0)");
+                TabIn("fn bitor(self, rhs: Self) -> Self::Output {");
+                Write($"Self(self.0 | rhs.0)");
                 TabOut("}");
                 TabOut("}");
                 Write("");
                 
                 // From impl
-                Write($"impl From<i{bf.GetFinalUnderlyingType().GetSize() * 8}> for {bf.Name} {{");
-                TabIn($"fn from(value: i{bf.GetFinalUnderlyingType().GetSize() * 8}) -> Self {{");
-                TabIn($"Self(value)");
-                TabOut("}");
+                TabIn($"impl From<u{bf.GetFinalUnderlyingType().GetSize() * 8}> for {bf.Name} {{");
+                TabIn($"fn from(value: u{bf.GetFinalUnderlyingType().GetSize() * 8}) -> Self {{");
+                Write($"Self(value.into())");
+                TabOut("}", false);
                 TabOut("}");
                 Write("");
             }
@@ -454,7 +457,7 @@ namespace CodeGen
             }
 
             WriteComment(s);
-            Write($"#[derive(Debug, Clone, Default)]");
+            Write($"#[derive(Debug, Default)]");
             Write($"pub struct {structName} {{");
             TabIn();
 
@@ -882,7 +885,7 @@ namespace CodeGen
             Write("");
             TabIn("impl UnionFactory {");
             Write("/// Creates a new union instance based on the selector value");
-            TabIn("pub fn create<U: TpmUnion + ?Sized, S: TpmEnum>(selector: S) -> Result<Option<Box<U>>, TpmError> {");
+            TabIn("pub fn create<U: TpmUnion + ?Sized, S: TpmEnum>(selector: S) -> Result<Option<Box<dyn U>>, TpmError> {");
             Write("let type_id = std::any::TypeId::of::<U>();");
             Write("");
             
@@ -896,21 +899,21 @@ namespace CodeGen
                     string memberName = ToRustEnumMemberName(m.Name);
                     if (m.Type.IsElementary())
                     {
-                        Write($"{m.SelectorValue.QualifiedName} => Some(Box::new({u.Name}::{memberName})),");
+                        Write($"{m.SelectorValue.QualifiedName} => Ok(Some(Box::new({u.Name}::{memberName}))),");
                     }
                     else
                     {
-                        Write($"{m.SelectorValue.QualifiedName} => Some(Box::new({u.Name}::{memberName}({m.Type.Name}::default()))),");
+                        Write($"{m.SelectorValue.QualifiedName} => Ok(Some(Box::new({m.Type.Name}::default()) as Box<dyn U>)),");
                     }
                 }
                 
-                Write("_ => TpmError::InvalidUnion,");
+                Write("_ => Err(TpmError::InvalidUnion),");
                 TabOut("}");
                 TabOut("} else ");
             }
             
-            Write("{");
-            TabIn("TpmError::InvalidUnion");
+            TabIn("{");
+            Write("Err(TpmError::InvalidUnion)");
             TabOut("}");
             
             TabOut("}");
