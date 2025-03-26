@@ -120,7 +120,10 @@ namespace CodeGen
                             marshalOps.Add($"{fieldName}.toTpm(buf)");
 
                         if (f.Attrs.HasFlag(StructFieldAttr.TermOnNull))
-                            marshalOps.Add(TargetLang.If($"{fieldName} == {TpmTypes.AlgNull}") + " return");
+                        {
+                            string earlyReturnValue = TargetLang.Rust ? "Ok(())" : "";
+                            marshalOps.Add(TargetLang.If($"{fieldName} == {TpmTypes.AlgNull}") + $" {{ return {earlyReturnValue} }}");
+                        }
                         break;
 
                     case MarshalType.ConstantValue:
@@ -152,7 +155,10 @@ namespace CodeGen
                         // A trick to allow using default-constructed TPMT_SENSITIVE as an empty (non-marshaling) object
                         string unionField = ThisMember + f.RelatedUnion.Name;
                         if (f == fields.First())
-                            marshalOps.Add(TargetLang.If($"{unionField} == {TargetLang.Null}") + " return");
+                        {
+                            string earlyReturnValue = TargetLang.Rust ? "Ok(())" : "";
+                            marshalOps.Add(TargetLang.IfNull(unionField) + $" {{ return {earlyReturnValue} }}");
+                        }
                         marshalOps.Add($"buf.write{WireNameForInt(size)}({unionField}{TargetLang.Member}GetUnionSelector())");
                         break;
 
@@ -181,11 +187,14 @@ namespace CodeGen
                         if (f.IsValueType())
                             marshalOps.Add($"{fieldName} = buf.read{WireNameForInt(size)}()");
                         else
-                            marshalOps.Add(TargetLang.Cpp ? $"{fieldName}.initFromTpm(buf)"
+                            marshalOps.Add(TargetLang.Cpp || TargetLang.Rust ? $"{fieldName}.initFromTpm(buf)"
                                                           : $"{fieldName} = {f.TypeName}.fromTpm(buf)");
 
                         if (f.Attrs.HasFlag(StructFieldAttr.TermOnNull))
-                            marshalOps.Add(TargetLang.If($"{fieldName} == {TpmTypes.AlgNull}") + " return");
+                        {
+                            string earlyReturnValue = TargetLang.Rust ? "Ok(())" : "";
+                            marshalOps.Add(TargetLang.If($"{fieldName} == {TpmTypes.AlgNull}") + $" {{ return {earlyReturnValue} }}");
+                        }
                         break;
 
                     case MarshalType.ConstantValue:
@@ -195,7 +204,7 @@ namespace CodeGen
 
                     case MarshalType.SizedStruct:
                         Debug.Assert(f.SizeTagField != null);
-                        marshalOps.Add(TargetLang.Cpp ? $"buf.readSizedObj({fieldName})"
+                        marshalOps.Add(TargetLang.Cpp || TargetLang.Rust ? $"buf.readSizedObj({fieldName})"
                                                       : $"{fieldName} = buf.createSizedObj({TargetLang.TypeInfo(f.TypeName)})");
                         break;
 
@@ -214,10 +223,10 @@ namespace CodeGen
                         if (f.IsByteBuffer())
                             marshalOps.Add($"{fieldName} = buf.readSizedByteBuf(" + (sizeTagLen == 2 ? ")" : $"{sizeTagLen})"));
                         else if (f.IsValueType())
-                            marshalOps.Add(TargetLang.Cpp ? $"buf.readValArr({fieldName}, {f.Type.GetSize()})"
+                            marshalOps.Add(TargetLang.Cpp || TargetLang.Rust ? $"buf.readValArr({fieldName}, {f.Type.GetSize()})"
                                                           : $"{fieldName} = buf.readValArr({f.Type.GetSize()})");
                         else
-                            marshalOps.Add(TargetLang.Cpp ? $"buf.readObjArr({fieldName})"
+                            marshalOps.Add(TargetLang.Cpp || TargetLang.Rust ? $"buf.readObjArr({fieldName})"
                                                           : $"{fieldName} = buf.readObjArr({TargetLang.TypeInfo(f.TypeName.TrimEnd('[', ']'))})");
                         break;
 
@@ -228,9 +237,15 @@ namespace CodeGen
                         break;
 
                     case MarshalType.UnionObject:
-                        var selector = (f as UnionField).UnionSelector.Name;
-                        marshalOps.Add(TargetLang.Cpp ? $"UnionFactory::Create({fieldName}, {selector})"
-                                                      : $"{fieldName} = UnionFactory.create({TargetLang.Quote(f.TypeName)}, {selector})");
+                        var selector = (f as UnionField).UnionSelector;
+                        var selectorName = selector.Name;
+                        if (TargetLang.Cpp)
+                            marshalOps.Add($"UnionFactory::Create({fieldName}, {selectorName})");
+                        else if (TargetLang.Rust)
+                            marshalOps.Add($"{fieldName} = UnionFactory::create::<dyn {f.TypeName}, {selector.TypeName}>(r#{selectorName})?");
+                        else
+                            marshalOps.Add($"{fieldName} = UnionFactory.create({TargetLang.Quote(f.TypeName)}, {selectorName})");
+                        
                         marshalOps.Add($"{fieldName}{TargetLang.Member}initFromTpm(buf)");
                         break;
                     default:

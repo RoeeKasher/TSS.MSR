@@ -159,9 +159,10 @@ map<size_t, map<uint32_t, string>> Enum2StrMap {
             {0x8028400F,"TBS_TPM_NOT_FOUND"}, {0x80284010,"TBS_SERVICE_DISABLED"},
             {0x80284012,"TBS_ACCESS_DENIED"}, {0x80284014,"TBS_PPI_FUNCTION_NOT_SUPPORTED"},
             {0x80284015,"TBS_OWNER_AUTH_NOT_FOUND"} } },
-    { typeid(TPM_CLOCK_ADJUST).hash_code(), { {0xFFFFFFFD,"COARSE_SLOWER"},
-            {0xFFFFFFFE,"MEDIUM_SLOWER"}, {0xFFFFFFFF,"FINE_SLOWER"}, {0x0,"NO_CHANGE"},
-            {0x1,"FINE_FASTER"}, {0x2,"MEDIUM_FASTER"}, {0x3,"COARSE_FASTER"} } },
+    { typeid(TPM_CLOCK_ADJUST).hash_code(), { {0xFFFFFFFFFFFFFFFD,"COARSE_SLOWER"},
+            {0xFFFFFFFFFFFFFFFE,"MEDIUM_SLOWER"}, {0xFFFFFFFFFFFFFFFF,"FINE_SLOWER"},
+            {0x0,"NO_CHANGE"}, {0x1,"FINE_FASTER"}, {0x2,"MEDIUM_FASTER"},
+            {0x3,"COARSE_FASTER"} } },
     { typeid(TPM_EO).hash_code(), { {0x0,"EQ"}, {0x1,"NEQ"}, {0x2,"SIGNED_GT"},
             {0x3,"UNSIGNED_GT"}, {0x4,"SIGNED_LT"}, {0x5,"UNSIGNED_LT"}, {0x6,"SIGNED_GE"},
             {0x7,"UNSIGNED_GE"}, {0x8,"SIGNED_LE"}, {0x9,"UNSIGNED_LE"}, {0xA,"BITSET"},
@@ -283,7 +284,7 @@ map<size_t, map<uint32_t, string>> Enum2StrMap {
             {0x4,"lockoutAuthSet"}, {0x100,"disableClear"}, {0x200,"inLockout"},
             {0x400,"tpmGeneratedEPS"} } },
     { typeid(TPMA_STARTUP_CLEAR).hash_code(), { {0x1,"phEnable"}, {0x2,"shEnable"},
-            {0x4,"ehEnable"}, {0x8,"phEnableNV"}, {0x80000000,"orderly"} } },
+            {0x4,"ehEnable"}, {0x8,"phEnableNV"}, {0xFFFFFFFF80000000,"orderly"} } },
     { typeid(TPMA_MEMORY).hash_code(), { {0x1,"sharedRAM"}, {0x2,"sharedNV"},
             {0x4,"objectCopiedToRam"} } },
     { typeid(TPMA_CC).hash_code(), { {0x400000,"nv"}, {0x800000,"extensive"},
@@ -293,7 +294,7 @@ map<size_t, map<uint32_t, string>> Enum2StrMap {
             {0x1000000,"encipherOnly"}, {0x2000000,"cRLSign"}, {0x4000000,"keyCertSign"},
             {0x8000000,"keyAgreement"}, {0x10000000,"dataEncipherment"},
             {0x20000000,"keyEncipherment"}, {0x40000000,"nonrepudiation"},
-            {0x40000000,"contentCommitment"}, {0x80000000,"digitalSignature"} } },
+            {0x40000000,"contentCommitment"}, {0xFFFFFFFF80000000,"digitalSignature"} } },
     { typeid(TPMA_ACT).hash_code(), { {0x1,"signaled"}, {0x2,"preserveSignaled"} } },
     { typeid(TPM_NV_INDEX).hash_code(), { } },
     { typeid(TPMA_NV).hash_code(), { {0x1,"PPWRITE"}, {0x2,"OWNERWRITE"}, {0x4,"AUTHWRITE"},
@@ -304,7 +305,7 @@ map<size_t, map<uint32_t, string>> Enum2StrMap {
             {0x20000,"OWNERREAD"}, {0x40000,"AUTHREAD"}, {0x80000,"POLICYREAD"},
             {0x2000000,"NO_DA"}, {0x4000000,"ORDERLY"}, {0x8000000,"CLEAR_STCLEAR"},
             {0x10000000,"READLOCKED"}, {0x20000000,"WRITTEN"}, {0x40000000,"PLATFORMCREATE"},
-            {0x80000000,"READ_STCLEAR"} } }
+            {0xFFFFFFFF80000000,"READ_STCLEAR"} } }
 };
 
 map<size_t, map<string, uint32_t>> Str2EnumMap {
@@ -439,9 +440,10 @@ map<size_t, map<string, uint32_t>> Str2EnumMap {
             {"TBS_TPM_NOT_FOUND",0x8028400F}, {"TBS_SERVICE_DISABLED",0x80284010},
             {"TBS_ACCESS_DENIED",0x80284012}, {"TBS_PPI_FUNCTION_NOT_SUPPORTED",0x80284014},
             {"TBS_OWNER_AUTH_NOT_FOUND",0x80284015} } },
-    { typeid(TPM_CLOCK_ADJUST).hash_code(), { {"COARSE_SLOWER",0xFFFFFFFD},
-            {"MEDIUM_SLOWER",0xFFFFFFFE}, {"FINE_SLOWER",0xFFFFFFFF}, {"NO_CHANGE",0x0},
-            {"FINE_FASTER",0x1}, {"MEDIUM_FASTER",0x2}, {"COARSE_FASTER",0x3} } },
+    { typeid(TPM_CLOCK_ADJUST).hash_code(), { {"COARSE_SLOWER",0xFFFFFFFFFFFFFFFD},
+            {"MEDIUM_SLOWER",0xFFFFFFFFFFFFFFFE}, {"FINE_SLOWER",0xFFFFFFFFFFFFFFFF},
+            {"NO_CHANGE",0x0}, {"FINE_FASTER",0x1}, {"MEDIUM_FASTER",0x2},
+            {"COARSE_FASTER",0x3} } },
     { typeid(TPM_EO).hash_code(), { {"EQ",0x0}, {"NEQ",0x1}, {"SIGNED_GT",0x2},
             {"UNSIGNED_GT",0x3}, {"SIGNED_LT",0x4}, {"UNSIGNED_LT",0x5}, {"SIGNED_GE",0x6},
             {"UNSIGNED_GE",0x7}, {"SIGNED_LE",0x8}, {"UNSIGNED_LE",0x9}, {"BITSET",0xA},
@@ -563,7 +565,7 @@ map<size_t, map<string, uint32_t>> Str2EnumMap {
             {"lockoutAuthSet",0x4}, {"disableClear",0x100}, {"inLockout",0x200},
             {"tpmGeneratedEPS",0x400} } },
     { typeid(TPMA_STARTUP_CLEAR).hash_code(), { {"phEnable",0x1}, {"shEnable",0x2},
-            {"ehEnable",0x4}, {"phEnableNV",0x8}, {"orderly",0x80000000} } },
+            {"ehEnable",0x4}, {"phEnableNV",0x8}, {"orderly",0xFFFFFFFF80000000} } },
     { typeid(TPMA_MEMORY).hash_code(), { {"sharedRAM",0x1}, {"sharedNV",0x2},
             {"objectCopiedToRam",0x4} } },
     { typeid(TPMA_CC).hash_code(), { {"nv",0x400000}, {"extensive",0x800000},
@@ -573,7 +575,7 @@ map<size_t, map<string, uint32_t>> Str2EnumMap {
             {"encipherOnly",0x1000000}, {"cRLSign",0x2000000}, {"keyCertSign",0x4000000},
             {"keyAgreement",0x8000000}, {"dataEncipherment",0x10000000},
             {"keyEncipherment",0x20000000}, {"nonrepudiation",0x40000000},
-            {"contentCommitment",0x40000000}, {"digitalSignature",0x80000000} } },
+            {"contentCommitment",0x40000000}, {"digitalSignature",0xFFFFFFFF80000000} } },
     { typeid(TPMA_ACT).hash_code(), { {"signaled",0x1}, {"preserveSignaled",0x2} } },
     { typeid(TPM_NV_INDEX).hash_code(), { } },
     { typeid(TPMA_NV).hash_code(), { {"PPWRITE",0x1}, {"OWNERWRITE",0x2}, {"AUTHWRITE",0x4},
@@ -584,7 +586,7 @@ map<size_t, map<string, uint32_t>> Str2EnumMap {
             {"OWNERREAD",0x20000}, {"AUTHREAD",0x40000}, {"POLICYREAD",0x80000},
             {"NO_DA",0x2000000}, {"ORDERLY",0x4000000}, {"CLEAR_STCLEAR",0x8000000},
             {"READLOCKED",0x10000000}, {"WRITTEN",0x20000000}, {"PLATFORMCREATE",0x40000000},
-            {"READ_STCLEAR",0x80000000} } }
+            {"READ_STCLEAR",0xFFFFFFFF80000000} } }
 };
 
 /// Holds static factory method for instantiating TPM unions.
@@ -1216,7 +1218,7 @@ void TPML_ACT_DATA::Deserialize(Serializer& buf) { buf.with("actData", "TPMS_ACT
 
 void TPMS_CAPABILITY_DATA::toTpm(TpmBuffer& buf) const
 {
-    if (data == nullptr) return;
+    if (data == nullptr == nullptr) return ;
     buf.writeInt(data->GetUnionSelector());
     data->toTpm(buf);
 }
@@ -1833,7 +1835,7 @@ void TPMS_SCHEME_XOR::Deserialize(Serializer& buf)
 
 void TPMT_KEYEDHASH_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr) return;
+    if (details == nullptr == nullptr) return ;
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1862,7 +1864,7 @@ void TPMT_KEYEDHASH_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_SIG_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr) return;
+    if (details == nullptr == nullptr) return ;
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1891,7 +1893,7 @@ void TPMT_SIG_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_KDF_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr) return;
+    if (details == nullptr == nullptr) return ;
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1920,7 +1922,7 @@ void TPMT_KDF_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_ASYM_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr) return;
+    if (details == nullptr == nullptr) return ;
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1949,7 +1951,7 @@ void TPMT_ASYM_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_RSA_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr) return;
+    if (details == nullptr == nullptr) return ;
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1978,7 +1980,7 @@ void TPMT_RSA_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_RSA_DECRYPT::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr) return;
+    if (details == nullptr == nullptr) return ;
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -2063,7 +2065,7 @@ void TPM2B_ECC_POINT::Deserialize(Serializer& buf) { buf.with("point", "TPMS_ECC
 
 void TPMT_ECC_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr) return;
+    if (details == nullptr == nullptr) return ;
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -2220,7 +2222,7 @@ void TPMS_SIGNATURE_ECC::Deserialize(Serializer& buf)
 
 void TPMT_SIGNATURE::toTpm(TpmBuffer& buf) const
 {
-    if (signature == nullptr) return;
+    if (signature == nullptr == nullptr) return ;
     buf.writeShort(signature->GetUnionSelector());
     signature->toTpm(buf);
 }
@@ -2257,7 +2259,7 @@ void TPM2B_ENCRYPTED_SECRET::Deserialize(Serializer& buf) { secret = buf.with("s
 
 void TPMS_KEYEDHASH_PARMS::toTpm(TpmBuffer& buf) const
 {
-    if (scheme == nullptr) return;
+    if (scheme == nullptr == nullptr) return ;
     buf.writeShort(scheme->GetUnionSelector());
     scheme->toTpm(buf);
 }
@@ -2406,7 +2408,7 @@ void TPMS_ECC_PARMS::Deserialize(Serializer& buf)
 
 void TPMT_PUBLIC_PARMS::toTpm(TpmBuffer& buf) const
 {
-    if (parameters == nullptr) return;
+    if (parameters == nullptr == nullptr) return ;
     buf.writeShort(parameters->GetUnionSelector());
     parameters->toTpm(buf);
 }
@@ -2435,7 +2437,7 @@ void TPMT_PUBLIC_PARMS::Deserialize(Serializer& buf)
 
 void TPMT_PUBLIC::toTpm(TpmBuffer& buf) const
 {
-    if (parameters == nullptr) return;
+    if (parameters == nullptr == nullptr) return ;
     buf.writeShort(parameters->GetUnionSelector());
     buf.writeShort(nameAlg);
     buf.writeInt(objectAttributes);
@@ -2507,7 +2509,7 @@ void TPM2B_PRIVATE_VENDOR_SPECIFIC::Deserialize(Serializer& buf) { buffer = buf.
 
 void TPMT_SENSITIVE::toTpm(TpmBuffer& buf) const
 {
-    if (sensitive == nullptr) return;
+    if (sensitive == nullptr == nullptr) return ;
     buf.writeShort(sensitive->GetUnionSelector());
     buf.writeSizedByteBuf(authValue);
     buf.writeSizedByteBuf(seedValue);
@@ -4934,7 +4936,7 @@ void TPM2_Sign_REQUEST::Deserialize(Serializer& buf)
 
 void SignResponse::toTpm(TpmBuffer& buf) const
 {
-    if (signature == nullptr) return;
+    if (signature == nullptr == nullptr) return ;
     buf.writeShort(signature->GetUnionSelector());
     signature->toTpm(buf);
 }
@@ -6119,7 +6121,7 @@ void GetCapabilityResponse::Deserialize(Serializer& buf)
 
 void TPM2_TestParms_REQUEST::toTpm(TpmBuffer& buf) const
 {
-    if (parameters == nullptr) return;
+    if (parameters == nullptr == nullptr) return ;
     buf.writeShort(parameters->GetUnionSelector());
     parameters->toTpm(buf);
 }

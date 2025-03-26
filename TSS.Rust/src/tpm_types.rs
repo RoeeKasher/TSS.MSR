@@ -24,6 +24,8 @@ use crate::error::TpmError;
 use crate::tpm_buffer::TpmBuffer;
 use std::fmt;
 use num_enum::TryFromPrimitive;
+use std::collections::HashMap;
+use std::fmt::Debug;
 
 /// Common trait for all TPM enumeration types
 pub trait TpmEnum {
@@ -38,17 +40,14 @@ pub trait TpmStructure {
 
     /// Deserialize the structure from a TPM buffer
     fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;
-    pub fn toTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;
-    pub fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError>;
-    pub fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError>;
-    pub fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError>;
+    fn toTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError>;
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError>;
 }
 
 /// Trait for TPM union types
-pub trait TpmUnion : TpmStructure {
-/// Get the union selector value
-    fn get_union_selector(&self) -> u32;
-}
+pub trait TpmUnion : TpmStructure { }
 
 lazy_static::lazy_static! {
     /// Maps enum type IDs to a map of values to string representations
@@ -70,10 +69,10 @@ pub struct UnionFactory;
 
 impl UnionFactory {
     /// Creates a new union instance based on the selector value
-    pub fn create<U: TpmUnion, S: TpmEnum>(selector: S) -> Result<(Option<U>>), TpmError> {
+    pub fn create<U: TpmUnion + ?Sized, S: TpmEnum>(selector: S) -> Result<Option<Box<U>>, TpmError> {
         let type_id = std::any::TypeId::of::<U>();
 
-        if type_id == std::any::TypeId::of::<TPMU_CAPABILITIES>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_CAPABILITIES>() {
             match selector {
                 TPM_CAP::ALGS => Some(Box::new(TPMU_CAPABILITIES::algorithms(TPML_ALG_PROPERTY::default()))),
                 TPM_CAP::HANDLES => Some(Box::new(TPMU_CAPABILITIES::handles(TPML_HANDLE::default()))),
@@ -91,7 +90,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_ATTEST>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_ATTEST>() {
             match selector {
                 TPM_ST::ATTEST_CERTIFY => Some(Box::new(TPMU_ATTEST::certify(TPMS_CERTIFY_INFO::default()))),
                 TPM_ST::ATTEST_CREATION => Some(Box::new(TPMU_ATTEST::creation(TPMS_CREATION_INFO::default()))),
@@ -106,7 +105,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_SYM_DETAILS>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_SYM_DETAILS>() {
             match selector {
                 TPM_ALG_ID::TDES => Some(Box::new(TPMU_SYM_DETAILS::tdes(TPMS_TDES_SYM_DETAILS::default()))),
                 TPM_ALG_ID::AES => Some(Box::new(TPMU_SYM_DETAILS::aes(TPMS_AES_SYM_DETAILS::default()))),
@@ -120,7 +119,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_SENSITIVE_CREATE>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_SENSITIVE_CREATE>() {
             match selector {
                 TPM_ALG_ID::ANY => Some(Box::new(TPMU_SENSITIVE_CREATE::create)),
                 TPM_ALG_ID::ANY2 => Some(Box::new(TPMU_SENSITIVE_CREATE::derive(TPMS_DERIVE::default()))),
@@ -129,7 +128,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_SCHEME_KEYEDHASH>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_SCHEME_KEYEDHASH>() {
             match selector {
                 TPM_ALG_ID::HMAC => Some(Box::new(TPMU_SCHEME_KEYEDHASH::hmac(TPMS_SCHEME_HMAC::default()))),
                 TPM_ALG_ID::XOR => Some(Box::new(TPMU_SCHEME_KEYEDHASH::xor(TPMS_SCHEME_XOR::default()))),
@@ -139,7 +138,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_SIG_SCHEME>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_SIG_SCHEME>() {
             match selector {
                 TPM_ALG_ID::RSASSA => Some(Box::new(TPMU_SIG_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA::default()))),
                 TPM_ALG_ID::RSAPSS => Some(Box::new(TPMU_SIG_SCHEME::rsapss(TPMS_SIG_SCHEME_RSAPSS::default()))),
@@ -155,7 +154,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_KDF_SCHEME>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_KDF_SCHEME>() {
             match selector {
                 TPM_ALG_ID::MGF1 => Some(Box::new(TPMU_KDF_SCHEME::mgf1(TPMS_KDF_SCHEME_MGF1::default()))),
                 TPM_ALG_ID::KDF1_SP800_56A => Some(Box::new(TPMU_KDF_SCHEME::kdf1_sp800_56a(TPMS_KDF_SCHEME_KDF1_SP800_56A::default()))),
@@ -168,7 +167,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_ASYM_SCHEME>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_ASYM_SCHEME>() {
             match selector {
                 TPM_ALG_ID::ECDH => Some(Box::new(TPMU_ASYM_SCHEME::ecdh(TPMS_KEY_SCHEME_ECDH::default()))),
                 TPM_ALG_ID::ECMQV => Some(Box::new(TPMU_ASYM_SCHEME::ecmqv(TPMS_KEY_SCHEME_ECMQV::default()))),
@@ -187,7 +186,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_SIGNATURE>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_SIGNATURE>() {
             match selector {
                 TPM_ALG_ID::RSASSA => Some(Box::new(TPMU_SIGNATURE::rsassa(TPMS_SIGNATURE_RSASSA::default()))),
                 TPM_ALG_ID::RSAPSS => Some(Box::new(TPMU_SIGNATURE::rsapss(TPMS_SIGNATURE_RSAPSS::default()))),
@@ -203,7 +202,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_PUBLIC_ID>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_PUBLIC_ID>() {
             match selector {
                 TPM_ALG_ID::KEYEDHASH => Some(Box::new(TPMU_PUBLIC_ID::keyedHash(TPM2B_DIGEST_KEYEDHASH::default()))),
                 TPM_ALG_ID::SYMCIPHER => Some(Box::new(TPMU_PUBLIC_ID::sym(TPM2B_DIGEST_SYMCIPHER::default()))),
@@ -215,7 +214,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_PUBLIC_PARMS>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_PUBLIC_PARMS>() {
             match selector {
                 TPM_ALG_ID::KEYEDHASH => Some(Box::new(TPMU_PUBLIC_PARMS::keyedHashDetail(TPMS_KEYEDHASH_PARMS::default()))),
                 TPM_ALG_ID::SYMCIPHER => Some(Box::new(TPMU_PUBLIC_PARMS::symDetail(TPMS_SYMCIPHER_PARMS::default()))),
@@ -227,7 +226,7 @@ impl UnionFactory {
 
         } else 
 
-        if type_id == std::any::TypeId::of::<TPMU_SENSITIVE_COMPOSITE>() {
+        if type_id == std::any::TypeId::of::<dyn TPMU_SENSITIVE_COMPOSITE>() {
             match selector {
                 TPM_ALG_ID::RSA => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::rsa(TPM2B_PRIVATE_KEY_RSA::default()))),
                 TPM_ALG_ID::ECC => Some(Box::new(TPMU_SENSITIVE_COMPOSITE::ecc(TPM2B_ECC_PARAMETER::default()))),
@@ -5984,53 +5983,13 @@ fn from(value: i32) -> Self {
 /// One of: TPML_ALG_PROPERTY, TPML_HANDLE, TPML_CCA, TPML_CC, TPML_PCR_SELECTION,
 /// TPML_TAGGED_TPM_PROPERTY, TPML_TAGGED_PCR_PROPERTY, TPML_ECC_CURVE,
 /// TPML_TAGGED_POLICY, TPML_ACT_DATA.
-pub enum TPMU_CAPABILITIES {
-    algorithms(TPML_ALG_PROPERTY),
-    handles(TPML_HANDLE),
-    command(TPML_CCA),
-    ppCommands(TPML_CC),
-    auditCommands(TPML_CC),
-    assignedPCR(TPML_PCR_SELECTION),
-    tpmProperties(TPML_TAGGED_TPM_PROPERTY),
-    pcrProperties(TPML_TAGGED_PCR_PROPERTY),
-    eccCurves(TPML_ECC_CURVE),
-    authPolicies(TPML_TAGGED_POLICY),
-    actData(TPML_ACT_DATA),
+pub trait TPMU_CAPABILITIES : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_CAP;
 }
 
-impl TpmUnion for TPMU_CAPABILITIES {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::algorithms(_) => TPM_CAP::ALGS.get_value(),
-            Self::handles(_) => TPM_CAP::HANDLES.get_value(),
-            Self::command(_) => TPM_CAP::COMMANDS.get_value(),
-            Self::ppCommands(_) => TPM_CAP::PP_COMMANDS.get_value(),
-            Self::auditCommands(_) => TPM_CAP::AUDIT_COMMANDS.get_value(),
-            Self::assignedPCR(_) => TPM_CAP::PCRS.get_value(),
-            Self::tpmProperties(_) => TPM_CAP::TPM_PROPERTIES.get_value(),
-            Self::pcrProperties(_) => TPM_CAP::PCR_PROPERTIES.get_value(),
-            Self::eccCurves(_) => TPM_CAP::ECC_CURVES.get_value(),
-            Self::authPolicies(_) => TPM_CAP::AUTH_POLICIES.get_value(),
-            Self::actData(_) => TPM_CAP::ACT.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_CAPABILITIES {
+impl Debug for dyn TPMU_CAPABILITIES {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::algorithms(inner) => write!(f, "TPMU_CAPABILITIES::algorithms({:?})", inner),
-            Self::handles(inner) => write!(f, "TPMU_CAPABILITIES::handles({:?})", inner),
-            Self::command(inner) => write!(f, "TPMU_CAPABILITIES::command({:?})", inner),
-            Self::ppCommands(inner) => write!(f, "TPMU_CAPABILITIES::ppCommands({:?})", inner),
-            Self::auditCommands(inner) => write!(f, "TPMU_CAPABILITIES::auditCommands({:?})", inner),
-            Self::assignedPCR(inner) => write!(f, "TPMU_CAPABILITIES::assignedPCR({:?})", inner),
-            Self::tpmProperties(inner) => write!(f, "TPMU_CAPABILITIES::tpmProperties({:?})", inner),
-            Self::pcrProperties(inner) => write!(f, "TPMU_CAPABILITIES::pcrProperties({:?})", inner),
-            Self::eccCurves(inner) => write!(f, "TPMU_CAPABILITIES::eccCurves({:?})", inner),
-            Self::authPolicies(inner) => write!(f, "TPMU_CAPABILITIES::authPolicies({:?})", inner),
-            Self::actData(inner) => write!(f, "TPMU_CAPABILITIES::actData({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
@@ -6038,44 +5997,13 @@ impl fmt::Debug for TPMU_CAPABILITIES {
 /// One of: TPMS_CERTIFY_INFO, TPMS_CREATION_INFO, TPMS_QUOTE_INFO,
 /// TPMS_COMMAND_AUDIT_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO,
 /// TPMS_NV_CERTIFY_INFO, TPMS_NV_DIGEST_CERTIFY_INFO.
-pub enum TPMU_ATTEST {
-    certify(TPMS_CERTIFY_INFO),
-    creation(TPMS_CREATION_INFO),
-    quote(TPMS_QUOTE_INFO),
-    commandAudit(TPMS_COMMAND_AUDIT_INFO),
-    sessionAudit(TPMS_SESSION_AUDIT_INFO),
-    time(TPMS_TIME_ATTEST_INFO),
-    nv(TPMS_NV_CERTIFY_INFO),
-    nvDigest(TPMS_NV_DIGEST_CERTIFY_INFO),
+pub trait TPMU_ATTEST : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ST;
 }
 
-impl TpmUnion for TPMU_ATTEST {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::certify(_) => TPM_ST::ATTEST_CERTIFY.get_value(),
-            Self::creation(_) => TPM_ST::ATTEST_CREATION.get_value(),
-            Self::quote(_) => TPM_ST::ATTEST_QUOTE.get_value(),
-            Self::commandAudit(_) => TPM_ST::ATTEST_COMMAND_AUDIT.get_value(),
-            Self::sessionAudit(_) => TPM_ST::ATTEST_SESSION_AUDIT.get_value(),
-            Self::time(_) => TPM_ST::ATTEST_TIME.get_value(),
-            Self::nv(_) => TPM_ST::ATTEST_NV.get_value(),
-            Self::nvDigest(_) => TPM_ST::ATTEST_NV_DIGEST.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_ATTEST {
+impl Debug for dyn TPMU_ATTEST {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::certify(inner) => write!(f, "TPMU_ATTEST::certify({:?})", inner),
-            Self::creation(inner) => write!(f, "TPMU_ATTEST::creation({:?})", inner),
-            Self::quote(inner) => write!(f, "TPMU_ATTEST::quote({:?})", inner),
-            Self::commandAudit(inner) => write!(f, "TPMU_ATTEST::commandAudit({:?})", inner),
-            Self::sessionAudit(inner) => write!(f, "TPMU_ATTEST::sessionAudit({:?})", inner),
-            Self::time(inner) => write!(f, "TPMU_ATTEST::time({:?})", inner),
-            Self::nv(inner) => write!(f, "TPMU_ATTEST::nv({:?})", inner),
-            Self::nvDigest(inner) => write!(f, "TPMU_ATTEST::nvDigest({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
@@ -6083,41 +6011,13 @@ impl fmt::Debug for TPMU_ATTEST {
 /// no additional parameters are required for any of the symmetric algorithms.
 /// One of: TPMS_TDES_SYM_DETAILS, TPMS_AES_SYM_DETAILS, TPMS_SM4_SYM_DETAILS,
 /// TPMS_CAMELLIA_SYM_DETAILS, TPMS_ANY_SYM_DETAILS, TPMS_XOR_SYM_DETAILS, TPMS_NULL_SYM_DETAILS.
-pub enum TPMU_SYM_DETAILS {
-    tdes(TPMS_TDES_SYM_DETAILS),
-    aes(TPMS_AES_SYM_DETAILS),
-    sm4(TPMS_SM4_SYM_DETAILS),
-    camellia(TPMS_CAMELLIA_SYM_DETAILS),
-    sym(TPMS_ANY_SYM_DETAILS),
-    xor(TPMS_XOR_SYM_DETAILS),
-    null(TPMS_NULL_SYM_DETAILS),
+pub trait TPMU_SYM_DETAILS : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_SYM_DETAILS {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::tdes(_) => TPM_ALG_ID::TDES.get_value(),
-            Self::aes(_) => TPM_ALG_ID::AES.get_value(),
-            Self::sm4(_) => TPM_ALG_ID::SM4.get_value(),
-            Self::camellia(_) => TPM_ALG_ID::CAMELLIA.get_value(),
-            Self::sym(_) => TPM_ALG_ID::ANY.get_value(),
-            Self::xor(_) => TPM_ALG_ID::XOR.get_value(),
-            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_SYM_DETAILS {
+impl Debug for dyn TPMU_SYM_DETAILS {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::tdes(inner) => write!(f, "TPMU_SYM_DETAILS::tdes({:?})", inner),
-            Self::aes(inner) => write!(f, "TPMU_SYM_DETAILS::aes({:?})", inner),
-            Self::sm4(inner) => write!(f, "TPMU_SYM_DETAILS::sm4({:?})", inner),
-            Self::camellia(inner) => write!(f, "TPMU_SYM_DETAILS::camellia({:?})", inner),
-            Self::sym(inner) => write!(f, "TPMU_SYM_DETAILS::sym({:?})", inner),
-            Self::xor(inner) => write!(f, "TPMU_SYM_DETAILS::xor({:?})", inner),
-            Self::null(inner) => write!(f, "TPMU_SYM_DETAILS::null({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
@@ -6125,54 +6025,25 @@ impl fmt::Debug for TPMU_SYM_DETAILS {
 /// TPM2B_SENSITVE_DATA or a TPM2B_DERIVE structure. The contents of the union are
 /// determined by context. When an object is being derived, the derivation values are present.
 /// One of: u8, TPMS_DERIVE.
-pub enum TPMU_SENSITIVE_CREATE {
-    create,
-    derive(TPMS_DERIVE),
+pub trait TPMU_SENSITIVE_CREATE : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_SENSITIVE_CREATE {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::create => TPM_ALG_ID::ANY.get_value(),
-            Self::derive(_) => TPM_ALG_ID::ANY2.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_SENSITIVE_CREATE {
+impl Debug for dyn TPMU_SENSITIVE_CREATE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::create => write!(f, "TPMU_SENSITIVE_CREATE::create"),
-            Self::derive(inner) => write!(f, "TPMU_SENSITIVE_CREATE::derive({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
 /// Table 157 Definition of TPMU_SCHEME_KEYEDHASH Union [IN/OUT]
 /// One of: TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_NULL_SCHEME_KEYEDHASH.
-pub enum TPMU_SCHEME_KEYEDHASH {
-    hmac(TPMS_SCHEME_HMAC),
-    xor(TPMS_SCHEME_XOR),
-    null(TPMS_NULL_SCHEME_KEYEDHASH),
+pub trait TPMU_SCHEME_KEYEDHASH : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_SCHEME_KEYEDHASH {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::hmac(_) => TPM_ALG_ID::HMAC.get_value(),
-            Self::xor(_) => TPM_ALG_ID::XOR.get_value(),
-            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_SCHEME_KEYEDHASH {
+impl Debug for dyn TPMU_SCHEME_KEYEDHASH {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::hmac(inner) => write!(f, "TPMU_SCHEME_KEYEDHASH::hmac({:?})", inner),
-            Self::xor(inner) => write!(f, "TPMU_SCHEME_KEYEDHASH::xor({:?})", inner),
-            Self::null(inner) => write!(f, "TPMU_SCHEME_KEYEDHASH::null({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
@@ -6180,85 +6051,26 @@ impl fmt::Debug for TPMU_SCHEME_KEYEDHASH {
 /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
 /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
 /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-pub enum TPMU_SIG_SCHEME {
-    rsassa(TPMS_SIG_SCHEME_RSASSA),
-    rsapss(TPMS_SIG_SCHEME_RSAPSS),
-    ecdsa(TPMS_SIG_SCHEME_ECDSA),
-    ecdaa(TPMS_SIG_SCHEME_ECDAA),
-    sm2(TPMS_SIG_SCHEME_SM2),
-    ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR),
-    hmac(TPMS_SCHEME_HMAC),
-    any(TPMS_SCHEME_HASH),
-    null(TPMS_NULL_SIG_SCHEME),
+pub trait TPMU_SIG_SCHEME : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_SIG_SCHEME {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::rsassa(_) => TPM_ALG_ID::RSASSA.get_value(),
-            Self::rsapss(_) => TPM_ALG_ID::RSAPSS.get_value(),
-            Self::ecdsa(_) => TPM_ALG_ID::ECDSA.get_value(),
-            Self::ecdaa(_) => TPM_ALG_ID::ECDAA.get_value(),
-            Self::sm2(_) => TPM_ALG_ID::SM2.get_value(),
-            Self::ecschnorr(_) => TPM_ALG_ID::ECSCHNORR.get_value(),
-            Self::hmac(_) => TPM_ALG_ID::HMAC.get_value(),
-            Self::any(_) => TPM_ALG_ID::ANY.get_value(),
-            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_SIG_SCHEME {
+impl Debug for dyn TPMU_SIG_SCHEME {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::rsassa(inner) => write!(f, "TPMU_SIG_SCHEME::rsassa({:?})", inner),
-            Self::rsapss(inner) => write!(f, "TPMU_SIG_SCHEME::rsapss({:?})", inner),
-            Self::ecdsa(inner) => write!(f, "TPMU_SIG_SCHEME::ecdsa({:?})", inner),
-            Self::ecdaa(inner) => write!(f, "TPMU_SIG_SCHEME::ecdaa({:?})", inner),
-            Self::sm2(inner) => write!(f, "TPMU_SIG_SCHEME::sm2({:?})", inner),
-            Self::ecschnorr(inner) => write!(f, "TPMU_SIG_SCHEME::ecschnorr({:?})", inner),
-            Self::hmac(inner) => write!(f, "TPMU_SIG_SCHEME::hmac({:?})", inner),
-            Self::any(inner) => write!(f, "TPMU_SIG_SCHEME::any({:?})", inner),
-            Self::null(inner) => write!(f, "TPMU_SIG_SCHEME::null({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
 /// Table 166 Definition of TPMU_KDF_SCHEME Union [IN/OUT]
 /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
 /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-pub enum TPMU_KDF_SCHEME {
-    mgf1(TPMS_KDF_SCHEME_MGF1),
-    kdf1_sp800_56a(TPMS_KDF_SCHEME_KDF1_SP800_56A),
-    kdf2(TPMS_KDF_SCHEME_KDF2),
-    kdf1_sp800_108(TPMS_KDF_SCHEME_KDF1_SP800_108),
-    anyKdf(TPMS_SCHEME_HASH),
-    null(TPMS_NULL_KDF_SCHEME),
+pub trait TPMU_KDF_SCHEME : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_KDF_SCHEME {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::mgf1(_) => TPM_ALG_ID::MGF1.get_value(),
-            Self::kdf1_sp800_56a(_) => TPM_ALG_ID::KDF1_SP800_56A.get_value(),
-            Self::kdf2(_) => TPM_ALG_ID::KDF2.get_value(),
-            Self::kdf1_sp800_108(_) => TPM_ALG_ID::KDF1_SP800_108.get_value(),
-            Self::anyKdf(_) => TPM_ALG_ID::ANY.get_value(),
-            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_KDF_SCHEME {
+impl Debug for dyn TPMU_KDF_SCHEME {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::mgf1(inner) => write!(f, "TPMU_KDF_SCHEME::mgf1({:?})", inner),
-            Self::kdf1_sp800_56a(inner) => write!(f, "TPMU_KDF_SCHEME::kdf1_sp800_56a({:?})", inner),
-            Self::kdf2(inner) => write!(f, "TPMU_KDF_SCHEME::kdf2({:?})", inner),
-            Self::kdf1_sp800_108(inner) => write!(f, "TPMU_KDF_SCHEME::kdf1_sp800_108({:?})", inner),
-            Self::anyKdf(inner) => write!(f, "TPMU_KDF_SCHEME::anyKdf({:?})", inner),
-            Self::null(inner) => write!(f, "TPMU_KDF_SCHEME::null({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
@@ -6269,56 +6081,13 @@ impl fmt::Debug for TPMU_KDF_SCHEME {
 /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
 /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
 /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-pub enum TPMU_ASYM_SCHEME {
-    ecdh(TPMS_KEY_SCHEME_ECDH),
-    ecmqv(TPMS_KEY_SCHEME_ECMQV),
-    rsassa(TPMS_SIG_SCHEME_RSASSA),
-    rsapss(TPMS_SIG_SCHEME_RSAPSS),
-    ecdsa(TPMS_SIG_SCHEME_ECDSA),
-    ecdaa(TPMS_SIG_SCHEME_ECDAA),
-    sm2(TPMS_SIG_SCHEME_SM2),
-    ecschnorr(TPMS_SIG_SCHEME_ECSCHNORR),
-    rsaes(TPMS_ENC_SCHEME_RSAES),
-    oaep(TPMS_ENC_SCHEME_OAEP),
-    anySig(TPMS_SCHEME_HASH),
-    null(TPMS_NULL_ASYM_SCHEME),
+pub trait TPMU_ASYM_SCHEME : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_ASYM_SCHEME {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::ecdh(_) => TPM_ALG_ID::ECDH.get_value(),
-            Self::ecmqv(_) => TPM_ALG_ID::ECMQV.get_value(),
-            Self::rsassa(_) => TPM_ALG_ID::RSASSA.get_value(),
-            Self::rsapss(_) => TPM_ALG_ID::RSAPSS.get_value(),
-            Self::ecdsa(_) => TPM_ALG_ID::ECDSA.get_value(),
-            Self::ecdaa(_) => TPM_ALG_ID::ECDAA.get_value(),
-            Self::sm2(_) => TPM_ALG_ID::SM2.get_value(),
-            Self::ecschnorr(_) => TPM_ALG_ID::ECSCHNORR.get_value(),
-            Self::rsaes(_) => TPM_ALG_ID::RSAES.get_value(),
-            Self::oaep(_) => TPM_ALG_ID::OAEP.get_value(),
-            Self::anySig(_) => TPM_ALG_ID::ANY.get_value(),
-            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_ASYM_SCHEME {
+impl Debug for dyn TPMU_ASYM_SCHEME {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::ecdh(inner) => write!(f, "TPMU_ASYM_SCHEME::ecdh({:?})", inner),
-            Self::ecmqv(inner) => write!(f, "TPMU_ASYM_SCHEME::ecmqv({:?})", inner),
-            Self::rsassa(inner) => write!(f, "TPMU_ASYM_SCHEME::rsassa({:?})", inner),
-            Self::rsapss(inner) => write!(f, "TPMU_ASYM_SCHEME::rsapss({:?})", inner),
-            Self::ecdsa(inner) => write!(f, "TPMU_ASYM_SCHEME::ecdsa({:?})", inner),
-            Self::ecdaa(inner) => write!(f, "TPMU_ASYM_SCHEME::ecdaa({:?})", inner),
-            Self::sm2(inner) => write!(f, "TPMU_ASYM_SCHEME::sm2({:?})", inner),
-            Self::ecschnorr(inner) => write!(f, "TPMU_ASYM_SCHEME::ecschnorr({:?})", inner),
-            Self::rsaes(inner) => write!(f, "TPMU_ASYM_SCHEME::rsaes({:?})", inner),
-            Self::oaep(inner) => write!(f, "TPMU_ASYM_SCHEME::oaep({:?})", inner),
-            Self::anySig(inner) => write!(f, "TPMU_ASYM_SCHEME::anySig({:?})", inner),
-            Self::null(inner) => write!(f, "TPMU_ASYM_SCHEME::null({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
@@ -6328,82 +6097,26 @@ impl fmt::Debug for TPMU_ASYM_SCHEME {
 /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
 /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
 /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-pub enum TPMU_SIGNATURE {
-    rsassa(TPMS_SIGNATURE_RSASSA),
-    rsapss(TPMS_SIGNATURE_RSAPSS),
-    ecdsa(TPMS_SIGNATURE_ECDSA),
-    ecdaa(TPMS_SIGNATURE_ECDAA),
-    sm2(TPMS_SIGNATURE_SM2),
-    ecschnorr(TPMS_SIGNATURE_ECSCHNORR),
-    hmac(TPMT_HA),
-    any(TPMS_SCHEME_HASH),
-    null(TPMS_NULL_SIGNATURE),
+pub trait TPMU_SIGNATURE : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_SIGNATURE {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::rsassa(_) => TPM_ALG_ID::RSASSA.get_value(),
-            Self::rsapss(_) => TPM_ALG_ID::RSAPSS.get_value(),
-            Self::ecdsa(_) => TPM_ALG_ID::ECDSA.get_value(),
-            Self::ecdaa(_) => TPM_ALG_ID::ECDAA.get_value(),
-            Self::sm2(_) => TPM_ALG_ID::SM2.get_value(),
-            Self::ecschnorr(_) => TPM_ALG_ID::ECSCHNORR.get_value(),
-            Self::hmac(_) => TPM_ALG_ID::HMAC.get_value(),
-            Self::any(_) => TPM_ALG_ID::ANY.get_value(),
-            Self::null(_) => TPM_ALG_ID::NULL.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_SIGNATURE {
+impl Debug for dyn TPMU_SIGNATURE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::rsassa(inner) => write!(f, "TPMU_SIGNATURE::rsassa({:?})", inner),
-            Self::rsapss(inner) => write!(f, "TPMU_SIGNATURE::rsapss({:?})", inner),
-            Self::ecdsa(inner) => write!(f, "TPMU_SIGNATURE::ecdsa({:?})", inner),
-            Self::ecdaa(inner) => write!(f, "TPMU_SIGNATURE::ecdaa({:?})", inner),
-            Self::sm2(inner) => write!(f, "TPMU_SIGNATURE::sm2({:?})", inner),
-            Self::ecschnorr(inner) => write!(f, "TPMU_SIGNATURE::ecschnorr({:?})", inner),
-            Self::hmac(inner) => write!(f, "TPMU_SIGNATURE::hmac({:?})", inner),
-            Self::any(inner) => write!(f, "TPMU_SIGNATURE::any({:?})", inner),
-            Self::null(inner) => write!(f, "TPMU_SIGNATURE::null({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
 /// This is the union of all values allowed in in the unique field of a TPMT_PUBLIC.
 /// One of: TPM2B_DIGEST_KEYEDHASH, TPM2B_DIGEST_SYMCIPHER, TPM2B_PUBLIC_KEY_RSA,
 /// TPMS_ECC_POINT, TPMS_DERIVE.
-pub enum TPMU_PUBLIC_ID {
-    keyedHash(TPM2B_DIGEST_KEYEDHASH),
-    sym(TPM2B_DIGEST_SYMCIPHER),
-    rsa(TPM2B_PUBLIC_KEY_RSA),
-    ecc(TPMS_ECC_POINT),
-    derive(TPMS_DERIVE),
+pub trait TPMU_PUBLIC_ID : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_PUBLIC_ID {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::keyedHash(_) => TPM_ALG_ID::KEYEDHASH.get_value(),
-            Self::sym(_) => TPM_ALG_ID::SYMCIPHER.get_value(),
-            Self::rsa(_) => TPM_ALG_ID::RSA.get_value(),
-            Self::ecc(_) => TPM_ALG_ID::ECC.get_value(),
-            Self::derive(_) => TPM_ALG_ID::ANY.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_PUBLIC_ID {
+impl Debug for dyn TPMU_PUBLIC_ID {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::keyedHash(inner) => write!(f, "TPMU_PUBLIC_ID::keyedHash({:?})", inner),
-            Self::sym(inner) => write!(f, "TPMU_PUBLIC_ID::sym({:?})", inner),
-            Self::rsa(inner) => write!(f, "TPMU_PUBLIC_ID::rsa({:?})", inner),
-            Self::ecc(inner) => write!(f, "TPMU_PUBLIC_ID::ecc({:?})", inner),
-            Self::derive(inner) => write!(f, "TPMU_PUBLIC_ID::derive({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
@@ -6412,70 +6125,26 @@ impl fmt::Debug for TPMU_PUBLIC_ID {
 /// a TPMT_SYM_DEF_OBJECT. See 11.1.7.
 /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
 /// TPMS_ASYM_PARMS.
-pub enum TPMU_PUBLIC_PARMS {
-    keyedHashDetail(TPMS_KEYEDHASH_PARMS),
-    symDetail(TPMS_SYMCIPHER_PARMS),
-    rsaDetail(TPMS_RSA_PARMS),
-    eccDetail(TPMS_ECC_PARMS),
-    asymDetail(TPMS_ASYM_PARMS),
+pub trait TPMU_PUBLIC_PARMS : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_PUBLIC_PARMS {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::keyedHashDetail(_) => TPM_ALG_ID::KEYEDHASH.get_value(),
-            Self::symDetail(_) => TPM_ALG_ID::SYMCIPHER.get_value(),
-            Self::rsaDetail(_) => TPM_ALG_ID::RSA.get_value(),
-            Self::eccDetail(_) => TPM_ALG_ID::ECC.get_value(),
-            Self::asymDetail(_) => TPM_ALG_ID::ANY.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_PUBLIC_PARMS {
+impl Debug for dyn TPMU_PUBLIC_PARMS {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::keyedHashDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::keyedHashDetail({:?})", inner),
-            Self::symDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::symDetail({:?})", inner),
-            Self::rsaDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::rsaDetail({:?})", inner),
-            Self::eccDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::eccDetail({:?})", inner),
-            Self::asymDetail(inner) => write!(f, "TPMU_PUBLIC_PARMS::asymDetail({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
 /// Table 205 Definition of TPMU_SENSITIVE_COMPOSITE Union [IN/OUT]
 /// One of: TPM2B_PRIVATE_KEY_RSA, TPM2B_ECC_PARAMETER, TPM2B_SENSITIVE_DATA,
 /// TPM2B_SYM_KEY, TPM2B_PRIVATE_VENDOR_SPECIFIC.
-pub enum TPMU_SENSITIVE_COMPOSITE {
-    rsa(TPM2B_PRIVATE_KEY_RSA),
-    ecc(TPM2B_ECC_PARAMETER),
-    bits(TPM2B_SENSITIVE_DATA),
-    sym(TPM2B_SYM_KEY),
-    any(TPM2B_PRIVATE_VENDOR_SPECIFIC),
+pub trait TPMU_SENSITIVE_COMPOSITE : TpmUnion {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID;
 }
 
-impl TpmUnion for TPMU_SENSITIVE_COMPOSITE {
-    fn get_union_selector(&self) -> u32 {
-        match self {
-            Self::rsa(_) => TPM_ALG_ID::RSA.get_value(),
-            Self::ecc(_) => TPM_ALG_ID::ECC.get_value(),
-            Self::bits(_) => TPM_ALG_ID::KEYEDHASH.get_value(),
-            Self::sym(_) => TPM_ALG_ID::SYMCIPHER.get_value(),
-            Self::any(_) => TPM_ALG_ID::ANY.get_value(),
-        }
-    }
-}
-
-impl fmt::Debug for TPMU_SENSITIVE_COMPOSITE {
+impl Debug for dyn TPMU_SENSITIVE_COMPOSITE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::rsa(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::rsa({:?})", inner),
-            Self::ecc(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::ecc({:?})", inner),
-            Self::bits(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::bits({:?})", inner),
-            Self::sym(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::sym({:?})", inner),
-            Self::any(inner) => write!(f, "TPMU_SENSITIVE_COMPOSITE::any({:?})", inner),
-        }
+        write!(f, "{}", self.GetUnionSelector())
     }
 }
 
@@ -6505,18 +6174,17 @@ impl TpmStructure for TPM_HANDLE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM_HANDLE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM_HANDLE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -6552,18 +6220,17 @@ impl TpmStructure for TPMS_NULL_UNION {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NULL_UNION>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NULL_UNION>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -6579,46 +6246,47 @@ impl TpmStructure for TPMS_NULL_UNION {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_NULL_UNION {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+impl TpmUnion for TPMS_NULL_UNION { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SYM_DETAILS for TPMS_NULL_UNION {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
-impl TpmUnion for TPMS_NULL_UNION {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_SCHEME_KEYEDHASH for TPMS_NULL_UNION {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
-impl TpmUnion for TPMS_NULL_UNION {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_NULL_UNION {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
-impl TpmUnion for TPMS_NULL_UNION {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_KDF_SCHEME for TPMS_NULL_UNION {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
-impl TpmUnion for TPMS_NULL_UNION {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_NULL_UNION {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
-impl TpmUnion for TPMS_NULL_UNION {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_NULL_UNION {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
@@ -6639,18 +6307,17 @@ impl TpmStructure for TPMS_EMPTY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_EMPTY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_EMPTY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -6666,11 +6333,12 @@ impl TpmStructure for TPMS_EMPTY {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_EMPTY {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSAES.get_value()
+impl TpmUnion for TPMS_EMPTY { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_EMPTY {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSAES
     }
 }
 
@@ -6705,18 +6373,17 @@ impl TpmStructure for TPMS_ALGORITHM_DESCRIPTION {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ALGORITHM_DESCRIPTION>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ALGORITHM_DESCRIPTION>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -6772,18 +6439,17 @@ impl TpmStructure for TPMT_HA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_HA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_HA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -6803,11 +6469,12 @@ impl TpmStructure for TPMT_HA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMT_HA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::HMAC.get_value()
+impl TpmUnion for TPMT_HA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMT_HA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::HMAC
     }
 }
 
@@ -6838,18 +6505,17 @@ impl TpmStructure for TPM2B_DIGEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_DIGEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_DIGEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -6867,11 +6533,12 @@ impl TpmStructure for TPM2B_DIGEST {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPM2B_DIGEST {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::KEYEDHASH.get_value()
+impl TpmUnion for TPM2B_DIGEST { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_ID for TPM2B_DIGEST {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::KEYEDHASH
     }
 }
 
@@ -6901,18 +6568,17 @@ impl TpmStructure for TPM2B_DATA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_DATA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_DATA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -6972,18 +6638,17 @@ impl TpmStructure for TPM2B_EVENT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_EVENT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_EVENT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7028,18 +6693,17 @@ impl TpmStructure for TPM2B_MAX_BUFFER {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_MAX_BUFFER>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_MAX_BUFFER>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7085,18 +6749,17 @@ impl TpmStructure for TPM2B_MAX_NV_BUFFER {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_MAX_NV_BUFFER>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_MAX_NV_BUFFER>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7141,18 +6804,17 @@ impl TpmStructure for TPM2B_TIMEOUT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_TIMEOUT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_TIMEOUT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7198,18 +6860,17 @@ impl TpmStructure for TPM2B_IV {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_IV>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_IV>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7253,18 +6914,17 @@ impl TpmStructure for TPM2B_NAME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_NAME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_NAME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7308,18 +6968,17 @@ impl TpmStructure for TPMS_PCR_SELECT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_PCR_SELECT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_PCR_SELECT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7368,18 +7027,17 @@ impl TpmStructure for TPMS_PCR_SELECTION {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_PCR_SELECTION>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_PCR_SELECTION>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7431,18 +7089,17 @@ impl TpmStructure for TPMT_TK_CREATION {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_TK_CREATION>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_TK_CREATION>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7457,7 +7114,7 @@ impl TpmStructure for TPMT_TK_CREATION {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readShort();
-        self.hierarchy = TPM_HANDLE.fromTpm(buf);
+        self.hierarchy.initFromTpm(buf);
         self.digest = buf.readSizedByteBuf();
         Ok(())
     }
@@ -7497,18 +7154,17 @@ impl TpmStructure for TPMT_TK_VERIFIED {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_TK_VERIFIED>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_TK_VERIFIED>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7523,7 +7179,7 @@ impl TpmStructure for TPMT_TK_VERIFIED {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readShort();
-        self.hierarchy = TPM_HANDLE.fromTpm(buf);
+        self.hierarchy.initFromTpm(buf);
         self.digest = buf.readSizedByteBuf();
         Ok(())
     }
@@ -7568,18 +7224,17 @@ impl TpmStructure for TPMT_TK_AUTH {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_TK_AUTH>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_TK_AUTH>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7594,7 +7249,7 @@ impl TpmStructure for TPMT_TK_AUTH {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.tag = buf.readShort();
-        self.hierarchy = TPM_HANDLE.fromTpm(buf);
+        self.hierarchy.initFromTpm(buf);
         self.digest = buf.readSizedByteBuf();
         Ok(())
     }
@@ -7633,18 +7288,17 @@ impl TpmStructure for TPMT_TK_HASHCHECK {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_TK_HASHCHECK>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_TK_HASHCHECK>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7659,7 +7313,7 @@ impl TpmStructure for TPMT_TK_HASHCHECK {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readShort();
-        self.hierarchy = TPM_HANDLE.fromTpm(buf);
+        self.hierarchy.initFromTpm(buf);
         self.digest = buf.readSizedByteBuf();
         Ok(())
     }
@@ -7698,18 +7352,17 @@ impl TpmStructure for TPMS_ALG_PROPERTY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ALG_PROPERTY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ALG_PROPERTY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7761,18 +7414,17 @@ impl TpmStructure for TPMS_TAGGED_PROPERTY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_TAGGED_PROPERTY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_TAGGED_PROPERTY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7823,18 +7475,17 @@ impl TpmStructure for TPMS_TAGGED_PCR_SELECT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_TAGGED_PCR_SELECT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_TAGGED_PCR_SELECT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7886,18 +7537,17 @@ impl TpmStructure for TPMS_TAGGED_POLICY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_TAGGED_POLICY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_TAGGED_POLICY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7910,8 +7560,8 @@ impl TpmStructure for TPMS_TAGGED_POLICY {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.handle = TPM_HANDLE.fromTpm(buf);
-        self.policyHash = TPMT_HA.fromTpm(buf);
+        self.handle.initFromTpm(buf);
+        self.policyHash.initFromTpm(buf);
         Ok(())
     }
 
@@ -7953,18 +7603,17 @@ impl TpmStructure for TPMS_ACT_DATA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ACT_DATA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ACT_DATA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -7978,7 +7627,7 @@ impl TpmStructure for TPMS_ACT_DATA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.handle = TPM_HANDLE.fromTpm(buf);
+        self.handle.initFromTpm(buf);
         self.timeout = buf.readInt();
         self.attributes = buf.readInt();
         Ok(())
@@ -8015,18 +7664,17 @@ impl TpmStructure for TPML_CC {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_CC>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_CC>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8044,11 +7692,12 @@ impl TpmStructure for TPML_CC {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_CC {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::PP_COMMANDS.get_value()
+impl TpmUnion for TPML_CC { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_CC {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::PP_COMMANDS
     }
 }
 
@@ -8078,18 +7727,17 @@ impl TpmStructure for TPML_CCA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_CCA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_CCA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8107,11 +7755,12 @@ impl TpmStructure for TPML_CCA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_CCA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::COMMANDS.get_value()
+impl TpmUnion for TPML_CCA { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_CCA {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::COMMANDS
     }
 }
 
@@ -8143,18 +7792,17 @@ impl TpmStructure for TPML_ALG {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_ALG>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_ALG>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8199,18 +7847,17 @@ impl TpmStructure for TPML_HANDLE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_HANDLE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_HANDLE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8228,11 +7875,12 @@ impl TpmStructure for TPML_HANDLE {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_HANDLE {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::HANDLES.get_value()
+impl TpmUnion for TPML_HANDLE { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_HANDLE {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::HANDLES
     }
 }
 
@@ -8266,18 +7914,17 @@ impl TpmStructure for TPML_DIGEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_DIGEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_DIGEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8322,18 +7969,17 @@ impl TpmStructure for TPML_DIGEST_VALUES {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_DIGEST_VALUES>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_DIGEST_VALUES>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8378,18 +8024,17 @@ impl TpmStructure for TPML_PCR_SELECTION {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_PCR_SELECTION>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_PCR_SELECTION>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8407,11 +8052,12 @@ impl TpmStructure for TPML_PCR_SELECTION {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_PCR_SELECTION {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::PCRS.get_value()
+impl TpmUnion for TPML_PCR_SELECTION { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_PCR_SELECTION {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::PCRS
     }
 }
 
@@ -8442,18 +8088,17 @@ impl TpmStructure for TPML_ALG_PROPERTY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_ALG_PROPERTY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_ALG_PROPERTY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8471,11 +8116,12 @@ impl TpmStructure for TPML_ALG_PROPERTY {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_ALG_PROPERTY {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::ALGS.get_value()
+impl TpmUnion for TPML_ALG_PROPERTY { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_ALG_PROPERTY {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::ALGS
     }
 }
 
@@ -8506,18 +8152,17 @@ impl TpmStructure for TPML_TAGGED_TPM_PROPERTY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_TAGGED_TPM_PROPERTY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_TAGGED_TPM_PROPERTY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8535,11 +8180,12 @@ impl TpmStructure for TPML_TAGGED_TPM_PROPERTY {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_TAGGED_TPM_PROPERTY {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::TPM_PROPERTIES.get_value()
+impl TpmUnion for TPML_TAGGED_TPM_PROPERTY { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_TAGGED_TPM_PROPERTY {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::TPM_PROPERTIES
     }
 }
 
@@ -8570,18 +8216,17 @@ impl TpmStructure for TPML_TAGGED_PCR_PROPERTY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_TAGGED_PCR_PROPERTY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_TAGGED_PCR_PROPERTY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8599,11 +8244,12 @@ impl TpmStructure for TPML_TAGGED_PCR_PROPERTY {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_TAGGED_PCR_PROPERTY {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::PCR_PROPERTIES.get_value()
+impl TpmUnion for TPML_TAGGED_PCR_PROPERTY { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_TAGGED_PCR_PROPERTY {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::PCR_PROPERTIES
     }
 }
 
@@ -8634,18 +8280,17 @@ impl TpmStructure for TPML_ECC_CURVE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_ECC_CURVE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_ECC_CURVE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8663,11 +8308,12 @@ impl TpmStructure for TPML_ECC_CURVE {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_ECC_CURVE {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::ECC_CURVES.get_value()
+impl TpmUnion for TPML_ECC_CURVE { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_ECC_CURVE {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::ECC_CURVES
     }
 }
 
@@ -8699,18 +8345,17 @@ impl TpmStructure for TPML_TAGGED_POLICY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_TAGGED_POLICY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_TAGGED_POLICY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8728,11 +8373,12 @@ impl TpmStructure for TPML_TAGGED_POLICY {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_TAGGED_POLICY {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::AUTH_POLICIES.get_value()
+impl TpmUnion for TPML_TAGGED_POLICY { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_TAGGED_POLICY {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::AUTH_POLICIES
     }
 }
 
@@ -8763,18 +8409,17 @@ impl TpmStructure for TPML_ACT_DATA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_ACT_DATA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_ACT_DATA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8792,11 +8437,12 @@ impl TpmStructure for TPML_ACT_DATA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPML_ACT_DATA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_CAP::ACT.get_value()
+impl TpmUnion for TPML_ACT_DATA { }
+
+/// TPM_CAP trait implementation
+impl TPMU_CAPABILITIES for TPML_ACT_DATA {
+    fn GetUnionSelector(&self) -> TPM_CAP {
+        TPM_CAP::ACT
     }
 }
 
@@ -8809,24 +8455,16 @@ pub struct TPMS_CAPABILITY_DATA {
     /// One of: TPML_ALG_PROPERTY, TPML_HANDLE, TPML_CCA, TPML_CC, TPML_PCR_SELECTION,
     /// TPML_TAGGED_TPM_PROPERTY, TPML_TAGGED_PCR_PROPERTY, TPML_ECC_CURVE,
     /// TPML_TAGGED_POLICY, TPML_ACT_DATA.
-    pub data: Option<TPMU_CAPABILITIES>,
+    pub data: Option<Box<dyn TPMU_CAPABILITIES>>,
 }
 
 impl TPMS_CAPABILITY_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        data: Option<TPMU_CAPABILITIES>,
+        data: Option<Box<dyn TPMU_CAPABILITIES>>,
         ) -> Self {
         Self {
             data,
-        }
-    }
-
-    /// Get the capability selector value
-    pub fn capability(&self) -> TPM_CAP {
-        match &self.data {
-            Some(u) => TPM_CAP.try_from(u.get_union_selector())?,
-            None => 0 as _,
         }
     }
 
@@ -8839,18 +8477,17 @@ impl TpmStructure for TPMS_CAPABILITY_DATA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_CAPABILITY_DATA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_CAPABILITY_DATA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8864,8 +8501,8 @@ impl TpmStructure for TPMS_CAPABILITY_DATA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let capability: TPM_CAP = buf.readInt();
-        self.data = UnionFactory::create::<TPMU_CAPABILITIES, TPM_CAP>(capability)?;
+        let r#capability: TPM_CAP = buf.readInt();
+        self.data = UnionFactory::create::<dyn TPMU_CAPABILITIES, TPM_CAP>(r#capability)?;
         self.data.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -8920,18 +8557,17 @@ impl TpmStructure for TPMS_CLOCK_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_CLOCK_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_CLOCK_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -8987,18 +8623,17 @@ impl TpmStructure for TPMS_TIME_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_TIME_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_TIME_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9012,7 +8647,7 @@ impl TpmStructure for TPMS_TIME_INFO {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.time = buf.readInt64();
-        self.clockInfo = TPMS_CLOCK_INFO.fromTpm(buf);
+        self.clockInfo.initFromTpm(buf);
         Ok(())
     }
 
@@ -9049,18 +8684,17 @@ impl TpmStructure for TPMS_TIME_ATTEST_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_TIME_ATTEST_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_TIME_ATTEST_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9073,18 +8707,19 @@ impl TpmStructure for TPMS_TIME_ATTEST_INFO {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.time = TPMS_TIME_INFO.fromTpm(buf);
+        self.time.initFromTpm(buf);
         self.firmwareVersion = buf.readInt64();
         Ok(())
     }
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_TIME_ATTEST_INFO {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ST::ATTEST_TIME.get_value()
+impl TpmUnion for TPMS_TIME_ATTEST_INFO { }
+
+/// TPM_ST trait implementation
+impl TPMU_ATTEST for TPMS_TIME_ATTEST_INFO {
+    fn GetUnionSelector(&self) -> TPM_ST {
+        TPM_ST::ATTEST_TIME
     }
 }
 
@@ -9119,18 +8754,17 @@ impl TpmStructure for TPMS_CERTIFY_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_CERTIFY_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_CERTIFY_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9150,11 +8784,12 @@ impl TpmStructure for TPMS_CERTIFY_INFO {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_CERTIFY_INFO {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ST::ATTEST_CERTIFY.get_value()
+impl TpmUnion for TPMS_CERTIFY_INFO { }
+
+/// TPM_ST trait implementation
+impl TPMU_ATTEST for TPMS_CERTIFY_INFO {
+    fn GetUnionSelector(&self) -> TPM_ST {
+        TPM_ST::ATTEST_CERTIFY
     }
 }
 
@@ -9189,18 +8824,17 @@ impl TpmStructure for TPMS_QUOTE_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_QUOTE_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_QUOTE_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9220,11 +8854,12 @@ impl TpmStructure for TPMS_QUOTE_INFO {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_QUOTE_INFO {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ST::ATTEST_QUOTE.get_value()
+impl TpmUnion for TPMS_QUOTE_INFO { }
+
+/// TPM_ST trait implementation
+impl TPMU_ATTEST for TPMS_QUOTE_INFO {
+    fn GetUnionSelector(&self) -> TPM_ST {
+        TPM_ST::ATTEST_QUOTE
     }
 }
 
@@ -9269,18 +8904,17 @@ impl TpmStructure for TPMS_COMMAND_AUDIT_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_COMMAND_AUDIT_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_COMMAND_AUDIT_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9304,11 +8938,12 @@ impl TpmStructure for TPMS_COMMAND_AUDIT_INFO {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_COMMAND_AUDIT_INFO {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ST::ATTEST_COMMAND_AUDIT.get_value()
+impl TpmUnion for TPMS_COMMAND_AUDIT_INFO { }
+
+/// TPM_ST trait implementation
+impl TPMU_ATTEST for TPMS_COMMAND_AUDIT_INFO {
+    fn GetUnionSelector(&self) -> TPM_ST {
+        TPM_ST::ATTEST_COMMAND_AUDIT
     }
 }
 
@@ -9345,18 +8980,17 @@ impl TpmStructure for TPMS_SESSION_AUDIT_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SESSION_AUDIT_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SESSION_AUDIT_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9376,11 +9010,12 @@ impl TpmStructure for TPMS_SESSION_AUDIT_INFO {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SESSION_AUDIT_INFO {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ST::ATTEST_SESSION_AUDIT.get_value()
+impl TpmUnion for TPMS_SESSION_AUDIT_INFO { }
+
+/// TPM_ST trait implementation
+impl TPMU_ATTEST for TPMS_SESSION_AUDIT_INFO {
+    fn GetUnionSelector(&self) -> TPM_ST {
+        TPM_ST::ATTEST_SESSION_AUDIT
     }
 }
 
@@ -9415,18 +9050,17 @@ impl TpmStructure for TPMS_CREATION_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_CREATION_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_CREATION_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9446,11 +9080,12 @@ impl TpmStructure for TPMS_CREATION_INFO {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_CREATION_INFO {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ST::ATTEST_CREATION.get_value()
+impl TpmUnion for TPMS_CREATION_INFO { }
+
+/// TPM_ST trait implementation
+impl TPMU_ATTEST for TPMS_CREATION_INFO {
+    fn GetUnionSelector(&self) -> TPM_ST {
+        TPM_ST::ATTEST_CREATION
     }
 }
 
@@ -9491,18 +9126,17 @@ impl TpmStructure for TPMS_NV_CERTIFY_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NV_CERTIFY_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NV_CERTIFY_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9524,11 +9158,12 @@ impl TpmStructure for TPMS_NV_CERTIFY_INFO {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_NV_CERTIFY_INFO {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ST::ATTEST_NV.get_value()
+impl TpmUnion for TPMS_NV_CERTIFY_INFO { }
+
+/// TPM_ST trait implementation
+impl TPMU_ATTEST for TPMS_NV_CERTIFY_INFO {
+    fn GetUnionSelector(&self) -> TPM_ST {
+        TPM_ST::ATTEST_NV
     }
 }
 
@@ -9564,18 +9199,17 @@ impl TpmStructure for TPMS_NV_DIGEST_CERTIFY_INFO {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NV_DIGEST_CERTIFY_INFO>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NV_DIGEST_CERTIFY_INFO>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9595,11 +9229,12 @@ impl TpmStructure for TPMS_NV_DIGEST_CERTIFY_INFO {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_NV_DIGEST_CERTIFY_INFO {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ST::ATTEST_NV_DIGEST.get_value()
+impl TpmUnion for TPMS_NV_DIGEST_CERTIFY_INFO { }
+
+/// TPM_ST trait implementation
+impl TPMU_ATTEST for TPMS_NV_DIGEST_CERTIFY_INFO {
+    fn GetUnionSelector(&self) -> TPM_ST {
+        TPM_ST::ATTEST_NV_DIGEST
     }
 }
 
@@ -9631,7 +9266,7 @@ pub struct TPMS_ATTEST {
     /// One of: TPMS_CERTIFY_INFO, TPMS_CREATION_INFO, TPMS_QUOTE_INFO,
     /// TPMS_COMMAND_AUDIT_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO,
     /// TPMS_NV_CERTIFY_INFO, TPMS_NV_DIGEST_CERTIFY_INFO.
-    pub attested: Option<TPMU_ATTEST>,
+    pub attested: Option<Box<dyn TPMU_ATTEST>>,
 }
 
 impl TPMS_ATTEST {
@@ -9642,7 +9277,7 @@ impl TPMS_ATTEST {
         extraData: Vec<u8>,
         clockInfo: TPMS_CLOCK_INFO,
         firmwareVersion: u64,
-        attested: Option<TPMU_ATTEST>,
+        attested: Option<Box<dyn TPMU_ATTEST>>,
         ) -> Self {
         Self {
             magic,
@@ -9651,14 +9286,6 @@ impl TPMS_ATTEST {
             clockInfo,
             firmwareVersion,
             attested,
-        }
-    }
-
-    /// Get the type selector value
-    pub fn type(&self) -> TPM_ST {
-        match &self.attested {
-            Some(u) => TPM_ST.try_from(u.get_union_selector())?,
-            None => 0 as _,
         }
     }
 
@@ -9671,18 +9298,17 @@ impl TpmStructure for TPMS_ATTEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ATTEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ATTEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9701,12 +9327,12 @@ impl TpmStructure for TPMS_ATTEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.magic = buf.readInt();
-        let type: TPM_ST = buf.readShort();
+        let r#type: TPM_ST = buf.readShort();
         self.qualifiedSigner = buf.readSizedByteBuf();
         self.extraData = buf.readSizedByteBuf();
-        self.clockInfo = TPMS_CLOCK_INFO.fromTpm(buf);
+        self.clockInfo.initFromTpm(buf);
         self.firmwareVersion = buf.readInt64();
-        self.attested = UnionFactory::create::<TPMU_ATTEST, TPM_ST>(type)?;
+        self.attested = UnionFactory::create::<dyn TPMU_ATTEST, TPM_ST>(r#type)?;
         self.attested.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -9740,18 +9366,17 @@ impl TpmStructure for TPM2B_ATTEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_ATTEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_ATTEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9810,18 +9435,17 @@ impl TpmStructure for TPMS_AUTH_COMMAND {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_AUTH_COMMAND>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_AUTH_COMMAND>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9836,7 +9460,7 @@ impl TpmStructure for TPMS_AUTH_COMMAND {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.sessionHandle = TPM_HANDLE.fromTpm(buf);
+        self.sessionHandle.initFromTpm(buf);
         self.nonce = buf.readSizedByteBuf();
         self.sessionAttributes = buf.readByte();
         self.hmac = buf.readSizedByteBuf();
@@ -9883,18 +9507,17 @@ impl TpmStructure for TPMS_AUTH_RESPONSE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_AUTH_RESPONSE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_AUTH_RESPONSE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9932,18 +9555,17 @@ impl TpmStructure for TPMS_TDES_SYM_DETAILS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_TDES_SYM_DETAILS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_TDES_SYM_DETAILS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -9959,11 +9581,12 @@ impl TpmStructure for TPMS_TDES_SYM_DETAILS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_TDES_SYM_DETAILS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::TDES.get_value()
+impl TpmUnion for TPMS_TDES_SYM_DETAILS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SYM_DETAILS for TPMS_TDES_SYM_DETAILS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::TDES
     }
 }
 
@@ -9983,18 +9606,17 @@ impl TpmStructure for TPMS_AES_SYM_DETAILS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_AES_SYM_DETAILS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_AES_SYM_DETAILS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10010,11 +9632,12 @@ impl TpmStructure for TPMS_AES_SYM_DETAILS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_AES_SYM_DETAILS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::AES.get_value()
+impl TpmUnion for TPMS_AES_SYM_DETAILS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SYM_DETAILS for TPMS_AES_SYM_DETAILS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::AES
     }
 }
 
@@ -10034,18 +9657,17 @@ impl TpmStructure for TPMS_SM4_SYM_DETAILS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SM4_SYM_DETAILS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SM4_SYM_DETAILS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10061,11 +9683,12 @@ impl TpmStructure for TPMS_SM4_SYM_DETAILS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SM4_SYM_DETAILS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::SM4.get_value()
+impl TpmUnion for TPMS_SM4_SYM_DETAILS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SYM_DETAILS for TPMS_SM4_SYM_DETAILS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::SM4
     }
 }
 
@@ -10085,18 +9708,17 @@ impl TpmStructure for TPMS_CAMELLIA_SYM_DETAILS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_CAMELLIA_SYM_DETAILS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_CAMELLIA_SYM_DETAILS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10112,11 +9734,12 @@ impl TpmStructure for TPMS_CAMELLIA_SYM_DETAILS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_CAMELLIA_SYM_DETAILS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::CAMELLIA.get_value()
+impl TpmUnion for TPMS_CAMELLIA_SYM_DETAILS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SYM_DETAILS for TPMS_CAMELLIA_SYM_DETAILS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::CAMELLIA
     }
 }
 
@@ -10136,18 +9759,17 @@ impl TpmStructure for TPMS_ANY_SYM_DETAILS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ANY_SYM_DETAILS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ANY_SYM_DETAILS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10163,11 +9785,12 @@ impl TpmStructure for TPMS_ANY_SYM_DETAILS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_ANY_SYM_DETAILS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ANY.get_value()
+impl TpmUnion for TPMS_ANY_SYM_DETAILS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SYM_DETAILS for TPMS_ANY_SYM_DETAILS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ANY
     }
 }
 
@@ -10187,18 +9810,17 @@ impl TpmStructure for TPMS_XOR_SYM_DETAILS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_XOR_SYM_DETAILS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_XOR_SYM_DETAILS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10214,11 +9836,12 @@ impl TpmStructure for TPMS_XOR_SYM_DETAILS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_XOR_SYM_DETAILS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::XOR.get_value()
+impl TpmUnion for TPMS_XOR_SYM_DETAILS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SYM_DETAILS for TPMS_XOR_SYM_DETAILS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::XOR
     }
 }
 
@@ -10238,18 +9861,17 @@ impl TpmStructure for TPMS_NULL_SYM_DETAILS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NULL_SYM_DETAILS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NULL_SYM_DETAILS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10265,11 +9887,12 @@ impl TpmStructure for TPMS_NULL_SYM_DETAILS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_NULL_SYM_DETAILS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+impl TpmUnion for TPMS_NULL_SYM_DETAILS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SYM_DETAILS for TPMS_NULL_SYM_DETAILS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
@@ -10310,18 +9933,17 @@ impl TpmStructure for TPMT_SYM_DEF {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_SYM_DEF>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_SYM_DEF>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10386,18 +10008,17 @@ impl TpmStructure for TPMT_SYM_DEF_OBJECT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_SYM_DEF_OBJECT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_SYM_DEF_OBJECT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10447,18 +10068,17 @@ impl TpmStructure for TPM2B_SYM_KEY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_SYM_KEY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_SYM_KEY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10476,11 +10096,12 @@ impl TpmStructure for TPM2B_SYM_KEY {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPM2B_SYM_KEY {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::SYMCIPHER.get_value()
+impl TpmUnion for TPM2B_SYM_KEY { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SENSITIVE_COMPOSITE for TPM2B_SYM_KEY {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::SYMCIPHER
     }
 }
 
@@ -10510,18 +10131,17 @@ impl TpmStructure for TPMS_SYMCIPHER_PARMS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SYMCIPHER_PARMS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SYMCIPHER_PARMS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10533,17 +10153,18 @@ impl TpmStructure for TPMS_SYMCIPHER_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.sym = TPMT_SYM_DEF_OBJECT.fromTpm(buf);
+        self.sym.initFromTpm(buf);
         Ok(())
     }
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SYMCIPHER_PARMS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::SYMCIPHER.get_value()
+impl TpmUnion for TPMS_SYMCIPHER_PARMS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_PARMS for TPMS_SYMCIPHER_PARMS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::SYMCIPHER
     }
 }
 
@@ -10575,18 +10196,17 @@ impl TpmStructure for TPM2B_LABEL {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_LABEL>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_LABEL>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10634,18 +10254,17 @@ impl TpmStructure for TPMS_DERIVE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_DERIVE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_DERIVE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10665,18 +10284,19 @@ impl TpmStructure for TPMS_DERIVE {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_DERIVE {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ANY2.get_value()
+impl TpmUnion for TPMS_DERIVE { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SENSITIVE_CREATE for TPMS_DERIVE {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ANY2
     }
 }
 
-impl TpmUnion for TPMS_DERIVE {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ANY2.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_ID for TPMS_DERIVE {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ANY2
     }
 }
 
@@ -10706,18 +10326,17 @@ impl TpmStructure for TPM2B_DERIVE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_DERIVE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_DERIVE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10761,18 +10380,17 @@ impl TpmStructure for TPM2B_SENSITIVE_DATA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_SENSITIVE_DATA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_SENSITIVE_DATA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10790,11 +10408,12 @@ impl TpmStructure for TPM2B_SENSITIVE_DATA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPM2B_SENSITIVE_DATA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::KEYEDHASH.get_value()
+impl TpmUnion for TPM2B_SENSITIVE_DATA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SENSITIVE_COMPOSITE for TPM2B_SENSITIVE_DATA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::KEYEDHASH
     }
 }
 
@@ -10830,18 +10449,17 @@ impl TpmStructure for TPMS_SENSITIVE_CREATE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SENSITIVE_CREATE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SENSITIVE_CREATE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10889,18 +10507,17 @@ impl TpmStructure for TPM2B_SENSITIVE_CREATE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_SENSITIVE_CREATE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_SENSITIVE_CREATE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10945,18 +10562,17 @@ impl TpmStructure for TPMS_SCHEME_HASH {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SCHEME_HASH>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SCHEME_HASH>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -10974,39 +10590,40 @@ impl TpmStructure for TPMS_SCHEME_HASH {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SCHEME_HASH {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::HMAC.get_value()
+impl TpmUnion for TPMS_SCHEME_HASH { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SCHEME_KEYEDHASH for TPMS_SCHEME_HASH {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::HMAC
     }
 }
 
-impl TpmUnion for TPMS_SCHEME_HASH {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::HMAC.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_SCHEME_HASH {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::HMAC
     }
 }
 
-impl TpmUnion for TPMS_SCHEME_HASH {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::HMAC.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_KDF_SCHEME for TPMS_SCHEME_HASH {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::HMAC
     }
 }
 
-impl TpmUnion for TPMS_SCHEME_HASH {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::HMAC.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_SCHEME_HASH {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::HMAC
     }
 }
 
-impl TpmUnion for TPMS_SCHEME_HASH {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::HMAC.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_SCHEME_HASH {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::HMAC
     }
 }
 
@@ -11041,18 +10658,17 @@ impl TpmStructure for TPMS_SCHEME_ECDAA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SCHEME_ECDAA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SCHEME_ECDAA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11072,18 +10688,19 @@ impl TpmStructure for TPMS_SCHEME_ECDAA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SCHEME_ECDAA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDAA.get_value()
+impl TpmUnion for TPMS_SCHEME_ECDAA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_SCHEME_ECDAA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDAA
     }
 }
 
-impl TpmUnion for TPMS_SCHEME_ECDAA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDAA.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_SCHEME_ECDAA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDAA
     }
 }
 
@@ -11102,18 +10719,17 @@ impl TpmStructure for TPMS_SCHEME_HMAC {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SCHEME_HMAC>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SCHEME_HMAC>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11129,18 +10745,19 @@ impl TpmStructure for TPMS_SCHEME_HMAC {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SCHEME_HMAC {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::HMAC.get_value()
+impl TpmUnion for TPMS_SCHEME_HMAC { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SCHEME_KEYEDHASH for TPMS_SCHEME_HMAC {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::HMAC
     }
 }
 
-impl TpmUnion for TPMS_SCHEME_HMAC {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::HMAC.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_SCHEME_HMAC {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::HMAC
     }
 }
 
@@ -11175,18 +10792,17 @@ impl TpmStructure for TPMS_SCHEME_XOR {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SCHEME_XOR>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SCHEME_XOR>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11206,11 +10822,12 @@ impl TpmStructure for TPMS_SCHEME_XOR {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SCHEME_XOR {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::XOR.get_value()
+impl TpmUnion for TPMS_SCHEME_XOR { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SCHEME_KEYEDHASH for TPMS_SCHEME_XOR {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::XOR
     }
 }
 
@@ -11230,18 +10847,17 @@ impl TpmStructure for TPMS_NULL_SCHEME_KEYEDHASH {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NULL_SCHEME_KEYEDHASH>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NULL_SCHEME_KEYEDHASH>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11257,11 +10873,12 @@ impl TpmStructure for TPMS_NULL_SCHEME_KEYEDHASH {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_NULL_SCHEME_KEYEDHASH {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+impl TpmUnion for TPMS_NULL_SCHEME_KEYEDHASH { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SCHEME_KEYEDHASH for TPMS_NULL_SCHEME_KEYEDHASH {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
@@ -11272,24 +10889,16 @@ pub struct TPMT_KEYEDHASH_SCHEME {
 
     /// The scheme parameters
     /// One of: TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_NULL_SCHEME_KEYEDHASH.
-    pub details: Option<TPMU_SCHEME_KEYEDHASH>,
+    pub details: Option<Box<dyn TPMU_SCHEME_KEYEDHASH>>,
 }
 
 impl TPMT_KEYEDHASH_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_SCHEME_KEYEDHASH>,
+        details: Option<Box<dyn TPMU_SCHEME_KEYEDHASH>>,
         ) -> Self {
         Self {
             details,
-        }
-    }
-
-    /// Get the scheme selector value
-    pub fn scheme(&self) -> TPM_ALG_ID {
-        match &self.details {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -11302,18 +10911,17 @@ impl TpmStructure for TPMT_KEYEDHASH_SCHEME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_KEYEDHASH_SCHEME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_KEYEDHASH_SCHEME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11327,8 +10935,8 @@ impl TpmStructure for TPMT_KEYEDHASH_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let scheme: TPM_ALG_ID = buf.readShort();
-        self.details = UnionFactory::create::<TPMU_SCHEME_KEYEDHASH, TPM_ALG_ID>(scheme)?;
+        let r#scheme: TPM_ALG_ID = buf.readShort();
+        self.details = UnionFactory::create::<dyn TPMU_SCHEME_KEYEDHASH, TPM_ALG_ID>(r#scheme)?;
         self.details.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -11350,18 +10958,17 @@ impl TpmStructure for TPMS_SIG_SCHEME_RSASSA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIG_SCHEME_RSASSA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIG_SCHEME_RSASSA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11377,18 +10984,19 @@ impl TpmStructure for TPMS_SIG_SCHEME_RSASSA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIG_SCHEME_RSASSA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSASSA.get_value()
+impl TpmUnion for TPMS_SIG_SCHEME_RSASSA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_SIG_SCHEME_RSASSA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSASSA
     }
 }
 
-impl TpmUnion for TPMS_SIG_SCHEME_RSASSA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSASSA.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_RSASSA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSASSA
     }
 }
 
@@ -11407,18 +11015,17 @@ impl TpmStructure for TPMS_SIG_SCHEME_RSAPSS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIG_SCHEME_RSAPSS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIG_SCHEME_RSAPSS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11434,18 +11041,19 @@ impl TpmStructure for TPMS_SIG_SCHEME_RSAPSS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIG_SCHEME_RSAPSS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSAPSS.get_value()
+impl TpmUnion for TPMS_SIG_SCHEME_RSAPSS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_SIG_SCHEME_RSAPSS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSAPSS
     }
 }
 
-impl TpmUnion for TPMS_SIG_SCHEME_RSAPSS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSAPSS.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_RSAPSS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSAPSS
     }
 }
 
@@ -11466,18 +11074,17 @@ impl TpmStructure for TPMS_SIG_SCHEME_ECDSA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIG_SCHEME_ECDSA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIG_SCHEME_ECDSA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11493,18 +11100,19 @@ impl TpmStructure for TPMS_SIG_SCHEME_ECDSA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIG_SCHEME_ECDSA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDSA.get_value()
+impl TpmUnion for TPMS_SIG_SCHEME_ECDSA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_SIG_SCHEME_ECDSA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDSA
     }
 }
 
-impl TpmUnion for TPMS_SIG_SCHEME_ECDSA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDSA.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_ECDSA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDSA
     }
 }
 
@@ -11525,18 +11133,17 @@ impl TpmStructure for TPMS_SIG_SCHEME_SM2 {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIG_SCHEME_SM2>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIG_SCHEME_SM2>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11552,18 +11159,19 @@ impl TpmStructure for TPMS_SIG_SCHEME_SM2 {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIG_SCHEME_SM2 {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::SM2.get_value()
+impl TpmUnion for TPMS_SIG_SCHEME_SM2 { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_SIG_SCHEME_SM2 {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::SM2
     }
 }
 
-impl TpmUnion for TPMS_SIG_SCHEME_SM2 {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::SM2.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_SM2 {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::SM2
     }
 }
 
@@ -11584,18 +11192,17 @@ impl TpmStructure for TPMS_SIG_SCHEME_ECSCHNORR {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIG_SCHEME_ECSCHNORR>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIG_SCHEME_ECSCHNORR>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11611,18 +11218,19 @@ impl TpmStructure for TPMS_SIG_SCHEME_ECSCHNORR {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIG_SCHEME_ECSCHNORR {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECSCHNORR.get_value()
+impl TpmUnion for TPMS_SIG_SCHEME_ECSCHNORR { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_SIG_SCHEME_ECSCHNORR {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECSCHNORR
     }
 }
 
-impl TpmUnion for TPMS_SIG_SCHEME_ECSCHNORR {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECSCHNORR.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_ECSCHNORR {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECSCHNORR
     }
 }
 
@@ -11643,18 +11251,17 @@ impl TpmStructure for TPMS_SIG_SCHEME_ECDAA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIG_SCHEME_ECDAA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIG_SCHEME_ECDAA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11670,18 +11277,19 @@ impl TpmStructure for TPMS_SIG_SCHEME_ECDAA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIG_SCHEME_ECDAA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDAA.get_value()
+impl TpmUnion for TPMS_SIG_SCHEME_ECDAA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_SIG_SCHEME_ECDAA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDAA
     }
 }
 
-impl TpmUnion for TPMS_SIG_SCHEME_ECDAA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDAA.get_value()
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_SIG_SCHEME_ECDAA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDAA
     }
 }
 
@@ -11701,18 +11309,17 @@ impl TpmStructure for TPMS_NULL_SIG_SCHEME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NULL_SIG_SCHEME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NULL_SIG_SCHEME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11728,11 +11335,12 @@ impl TpmStructure for TPMS_NULL_SIG_SCHEME {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_NULL_SIG_SCHEME {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+impl TpmUnion for TPMS_NULL_SIG_SCHEME { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIG_SCHEME for TPMS_NULL_SIG_SCHEME {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
@@ -11745,24 +11353,16 @@ pub struct TPMT_SIG_SCHEME {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub details: Option<TPMU_SIG_SCHEME>,
+    pub details: Option<Box<dyn TPMU_SIG_SCHEME>>,
 }
 
 impl TPMT_SIG_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_SIG_SCHEME>,
+        details: Option<Box<dyn TPMU_SIG_SCHEME>>,
         ) -> Self {
         Self {
             details,
-        }
-    }
-
-    /// Get the scheme selector value
-    pub fn scheme(&self) -> TPM_ALG_ID {
-        match &self.details {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -11775,18 +11375,17 @@ impl TpmStructure for TPMT_SIG_SCHEME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_SIG_SCHEME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_SIG_SCHEME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11800,8 +11399,8 @@ impl TpmStructure for TPMT_SIG_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let scheme: TPM_ALG_ID = buf.readShort();
-        self.details = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(scheme)?;
+        let r#scheme: TPM_ALG_ID = buf.readShort();
+        self.details = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#scheme)?;
         self.details.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -11823,18 +11422,17 @@ impl TpmStructure for TPMS_ENC_SCHEME_OAEP {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ENC_SCHEME_OAEP>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ENC_SCHEME_OAEP>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11850,11 +11448,12 @@ impl TpmStructure for TPMS_ENC_SCHEME_OAEP {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_ENC_SCHEME_OAEP {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::OAEP.get_value()
+impl TpmUnion for TPMS_ENC_SCHEME_OAEP { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_ENC_SCHEME_OAEP {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::OAEP
     }
 }
 
@@ -11873,18 +11472,17 @@ impl TpmStructure for TPMS_ENC_SCHEME_RSAES {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ENC_SCHEME_RSAES>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ENC_SCHEME_RSAES>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11900,11 +11498,12 @@ impl TpmStructure for TPMS_ENC_SCHEME_RSAES {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_ENC_SCHEME_RSAES {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSAES.get_value()
+impl TpmUnion for TPMS_ENC_SCHEME_RSAES { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_ENC_SCHEME_RSAES {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSAES
     }
 }
 
@@ -11923,18 +11522,17 @@ impl TpmStructure for TPMS_KEY_SCHEME_ECDH {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_KEY_SCHEME_ECDH>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_KEY_SCHEME_ECDH>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -11950,11 +11548,12 @@ impl TpmStructure for TPMS_KEY_SCHEME_ECDH {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_KEY_SCHEME_ECDH {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDH.get_value()
+impl TpmUnion for TPMS_KEY_SCHEME_ECDH { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_KEY_SCHEME_ECDH {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDH
     }
 }
 
@@ -11973,18 +11572,17 @@ impl TpmStructure for TPMS_KEY_SCHEME_ECMQV {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_KEY_SCHEME_ECMQV>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_KEY_SCHEME_ECMQV>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12000,11 +11598,12 @@ impl TpmStructure for TPMS_KEY_SCHEME_ECMQV {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_KEY_SCHEME_ECMQV {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECMQV.get_value()
+impl TpmUnion for TPMS_KEY_SCHEME_ECMQV { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_KEY_SCHEME_ECMQV {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECMQV
     }
 }
 
@@ -12025,18 +11624,17 @@ impl TpmStructure for TPMS_KDF_SCHEME_MGF1 {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_KDF_SCHEME_MGF1>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_KDF_SCHEME_MGF1>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12052,11 +11650,12 @@ impl TpmStructure for TPMS_KDF_SCHEME_MGF1 {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_KDF_SCHEME_MGF1 {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::MGF1.get_value()
+impl TpmUnion for TPMS_KDF_SCHEME_MGF1 { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_KDF_SCHEME for TPMS_KDF_SCHEME_MGF1 {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::MGF1
     }
 }
 
@@ -12077,18 +11676,17 @@ impl TpmStructure for TPMS_KDF_SCHEME_KDF1_SP800_56A {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_KDF_SCHEME_KDF1_SP800_56A>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_KDF_SCHEME_KDF1_SP800_56A>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12104,11 +11702,12 @@ impl TpmStructure for TPMS_KDF_SCHEME_KDF1_SP800_56A {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_56A {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::KDF1_SP800_56A.get_value()
+impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_56A { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_KDF_SCHEME for TPMS_KDF_SCHEME_KDF1_SP800_56A {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::KDF1_SP800_56A
     }
 }
 
@@ -12129,18 +11728,17 @@ impl TpmStructure for TPMS_KDF_SCHEME_KDF2 {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_KDF_SCHEME_KDF2>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_KDF_SCHEME_KDF2>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12156,11 +11754,12 @@ impl TpmStructure for TPMS_KDF_SCHEME_KDF2 {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_KDF_SCHEME_KDF2 {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::KDF2.get_value()
+impl TpmUnion for TPMS_KDF_SCHEME_KDF2 { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_KDF_SCHEME for TPMS_KDF_SCHEME_KDF2 {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::KDF2
     }
 }
 
@@ -12181,18 +11780,17 @@ impl TpmStructure for TPMS_KDF_SCHEME_KDF1_SP800_108 {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_KDF_SCHEME_KDF1_SP800_108>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_KDF_SCHEME_KDF1_SP800_108>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12208,11 +11806,12 @@ impl TpmStructure for TPMS_KDF_SCHEME_KDF1_SP800_108 {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_108 {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::KDF1_SP800_108.get_value()
+impl TpmUnion for TPMS_KDF_SCHEME_KDF1_SP800_108 { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_KDF_SCHEME for TPMS_KDF_SCHEME_KDF1_SP800_108 {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::KDF1_SP800_108
     }
 }
 
@@ -12232,18 +11831,17 @@ impl TpmStructure for TPMS_NULL_KDF_SCHEME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NULL_KDF_SCHEME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NULL_KDF_SCHEME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12259,11 +11857,12 @@ impl TpmStructure for TPMS_NULL_KDF_SCHEME {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_NULL_KDF_SCHEME {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+impl TpmUnion for TPMS_NULL_KDF_SCHEME { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_KDF_SCHEME for TPMS_NULL_KDF_SCHEME {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
@@ -12275,24 +11874,16 @@ pub struct TPMT_KDF_SCHEME {
     /// Scheme parameters
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub details: Option<TPMU_KDF_SCHEME>,
+    pub details: Option<Box<dyn TPMU_KDF_SCHEME>>,
 }
 
 impl TPMT_KDF_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_KDF_SCHEME>,
+        details: Option<Box<dyn TPMU_KDF_SCHEME>>,
         ) -> Self {
         Self {
             details,
-        }
-    }
-
-    /// Get the scheme selector value
-    pub fn scheme(&self) -> TPM_ALG_ID {
-        match &self.details {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -12305,18 +11896,17 @@ impl TpmStructure for TPMT_KDF_SCHEME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_KDF_SCHEME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_KDF_SCHEME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12330,8 +11920,8 @@ impl TpmStructure for TPMT_KDF_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let scheme: TPM_ALG_ID = buf.readShort();
-        self.details = UnionFactory::create::<TPMU_KDF_SCHEME, TPM_ALG_ID>(scheme)?;
+        let r#scheme: TPM_ALG_ID = buf.readShort();
+        self.details = UnionFactory::create::<dyn TPMU_KDF_SCHEME, TPM_ALG_ID>(r#scheme)?;
         self.details.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -12354,18 +11944,17 @@ impl TpmStructure for TPMS_NULL_ASYM_SCHEME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NULL_ASYM_SCHEME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NULL_ASYM_SCHEME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12381,11 +11970,12 @@ impl TpmStructure for TPMS_NULL_ASYM_SCHEME {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_NULL_ASYM_SCHEME {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+impl TpmUnion for TPMS_NULL_ASYM_SCHEME { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_ASYM_SCHEME for TPMS_NULL_ASYM_SCHEME {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
@@ -12401,24 +11991,16 @@ pub struct TPMT_ASYM_SCHEME {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: Option<TPMU_ASYM_SCHEME>,
+    pub details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 }
 
 impl TPMT_ASYM_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_ASYM_SCHEME>,
+        details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         ) -> Self {
         Self {
             details,
-        }
-    }
-
-    /// Get the scheme selector value
-    pub fn scheme(&self) -> TPM_ALG_ID {
-        match &self.details {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -12431,18 +12013,17 @@ impl TpmStructure for TPMT_ASYM_SCHEME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_ASYM_SCHEME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_ASYM_SCHEME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12456,8 +12037,8 @@ impl TpmStructure for TPMT_ASYM_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let scheme: TPM_ALG_ID = buf.readShort();
-        self.details = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(scheme)?;
+        let r#scheme: TPM_ALG_ID = buf.readShort();
+        self.details = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#scheme)?;
         self.details.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -12474,24 +12055,16 @@ pub struct TPMT_RSA_SCHEME {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: Option<TPMU_ASYM_SCHEME>,
+    pub details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 }
 
 impl TPMT_RSA_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_ASYM_SCHEME>,
+        details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         ) -> Self {
         Self {
             details,
-        }
-    }
-
-    /// Get the scheme selector value
-    pub fn scheme(&self) -> TPM_ALG_ID {
-        match &self.details {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -12504,18 +12077,17 @@ impl TpmStructure for TPMT_RSA_SCHEME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_RSA_SCHEME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_RSA_SCHEME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12529,8 +12101,8 @@ impl TpmStructure for TPMT_RSA_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let scheme: TPM_ALG_ID = buf.readShort();
-        self.details = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(scheme)?;
+        let r#scheme: TPM_ALG_ID = buf.readShort();
+        self.details = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#scheme)?;
         self.details.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -12547,24 +12119,16 @@ pub struct TPMT_RSA_DECRYPT {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: Option<TPMU_ASYM_SCHEME>,
+    pub details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 }
 
 impl TPMT_RSA_DECRYPT {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_ASYM_SCHEME>,
+        details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         ) -> Self {
         Self {
             details,
-        }
-    }
-
-    /// Get the scheme selector value
-    pub fn scheme(&self) -> TPM_ALG_ID {
-        match &self.details {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -12577,18 +12141,17 @@ impl TpmStructure for TPMT_RSA_DECRYPT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_RSA_DECRYPT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_RSA_DECRYPT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12602,8 +12165,8 @@ impl TpmStructure for TPMT_RSA_DECRYPT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let scheme: TPM_ALG_ID = buf.readShort();
-        self.details = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(scheme)?;
+        let r#scheme: TPM_ALG_ID = buf.readShort();
+        self.details = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#scheme)?;
         self.details.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -12636,18 +12199,17 @@ impl TpmStructure for TPM2B_PUBLIC_KEY_RSA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_PUBLIC_KEY_RSA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_PUBLIC_KEY_RSA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12665,11 +12227,12 @@ impl TpmStructure for TPM2B_PUBLIC_KEY_RSA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPM2B_PUBLIC_KEY_RSA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSA.get_value()
+impl TpmUnion for TPM2B_PUBLIC_KEY_RSA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_ID for TPM2B_PUBLIC_KEY_RSA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSA
     }
 }
 
@@ -12698,18 +12261,17 @@ impl TpmStructure for TPM2B_PRIVATE_KEY_RSA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_PRIVATE_KEY_RSA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_PRIVATE_KEY_RSA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12727,11 +12289,12 @@ impl TpmStructure for TPM2B_PRIVATE_KEY_RSA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPM2B_PRIVATE_KEY_RSA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSA.get_value()
+impl TpmUnion for TPM2B_PRIVATE_KEY_RSA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SENSITIVE_COMPOSITE for TPM2B_PRIVATE_KEY_RSA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSA
     }
 }
 
@@ -12761,18 +12324,17 @@ impl TpmStructure for TPM2B_ECC_PARAMETER {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_ECC_PARAMETER>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_ECC_PARAMETER>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12790,11 +12352,12 @@ impl TpmStructure for TPM2B_ECC_PARAMETER {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPM2B_ECC_PARAMETER {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECC.get_value()
+impl TpmUnion for TPM2B_ECC_PARAMETER { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SENSITIVE_COMPOSITE for TPM2B_ECC_PARAMETER {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECC
     }
 }
 
@@ -12829,18 +12392,17 @@ impl TpmStructure for TPMS_ECC_POINT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ECC_POINT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ECC_POINT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12860,11 +12422,12 @@ impl TpmStructure for TPMS_ECC_POINT {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_ECC_POINT {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECC.get_value()
+impl TpmUnion for TPMS_ECC_POINT { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_ID for TPMS_ECC_POINT {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECC
     }
 }
 
@@ -12895,18 +12458,17 @@ impl TpmStructure for TPM2B_ECC_POINT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_ECC_POINT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_ECC_POINT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12934,24 +12496,16 @@ pub struct TPMT_ECC_SCHEME {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub details: Option<TPMU_ASYM_SCHEME>,
+    pub details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 }
 
 impl TPMT_ECC_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_ASYM_SCHEME>,
+        details: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         ) -> Self {
         Self {
             details,
-        }
-    }
-
-    /// Get the scheme selector value
-    pub fn scheme(&self) -> TPM_ALG_ID {
-        match &self.details {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -12964,18 +12518,17 @@ impl TpmStructure for TPMT_ECC_SCHEME {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_ECC_SCHEME>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_ECC_SCHEME>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -12989,8 +12542,8 @@ impl TpmStructure for TPMT_ECC_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let scheme: TPM_ALG_ID = buf.readShort();
-        self.details = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(scheme)?;
+        let r#scheme: TPM_ALG_ID = buf.readShort();
+        self.details = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#scheme)?;
         self.details.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -13012,7 +12565,7 @@ pub struct TPMS_ALGORITHM_DETAIL_ECC {
     /// If not TPM_ALG_NULL, the required KDF and hash algorithm used in secret sharing operations
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub kdf: Option<TPMU_KDF_SCHEME>,
+    pub kdf: Option<Box<dyn TPMU_KDF_SCHEME>>,
 
     /// Scheme selector
 
@@ -13022,7 +12575,7 @@ pub struct TPMS_ALGORITHM_DETAIL_ECC {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub sign: Option<TPMU_ASYM_SCHEME>,
+    pub sign: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 
     /// Fp (the modulus)
     pub p: Vec<u8>,
@@ -13051,8 +12604,8 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
     pub fn new(
         curveID: TPM_ECC_CURVE,
         keySize: u16,
-        kdf: Option<TPMU_KDF_SCHEME>,
-        sign: Option<TPMU_ASYM_SCHEME>,
+        kdf: Option<Box<dyn TPMU_KDF_SCHEME>>,
+        sign: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         p: Vec<u8>,
         a: Vec<u8>,
         b: Vec<u8>,
@@ -13076,22 +12629,6 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
         }
     }
 
-    /// Get the kdfScheme selector value
-    pub fn kdfScheme(&self) -> TPM_ALG_ID {
-        match &self.kdf {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
-    /// Get the signScheme selector value
-    pub fn signScheme(&self) -> TPM_ALG_ID {
-        match &self.sign {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for TPMS_ALGORITHM_DETAIL_ECC {
@@ -13101,18 +12638,17 @@ impl TpmStructure for TPMS_ALGORITHM_DETAIL_ECC {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ALGORITHM_DETAIL_ECC>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ALGORITHM_DETAIL_ECC>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13138,11 +12674,11 @@ impl TpmStructure for TPMS_ALGORITHM_DETAIL_ECC {
         // Deserialize fields
         self.curveID = buf.readShort();
         self.keySize = buf.readShort();
-        let kdfScheme: TPM_ALG_ID = buf.readShort();
-        self.kdf = UnionFactory::create::<TPMU_KDF_SCHEME, TPM_ALG_ID>(kdfScheme)?;
+        let r#kdfScheme: TPM_ALG_ID = buf.readShort();
+        self.kdf = UnionFactory::create::<dyn TPMU_KDF_SCHEME, TPM_ALG_ID>(r#kdfScheme)?;
         self.kdf.unwrap().initFromTpm(buf);
-        let signScheme: TPM_ALG_ID = buf.readShort();
-        self.sign = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(signScheme)?;
+        let r#signScheme: TPM_ALG_ID = buf.readShort();
+        self.sign = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#signScheme)?;
         self.sign.unwrap().initFromTpm(buf);
         self.p = buf.readSizedByteBuf();
         self.a = buf.readSizedByteBuf();
@@ -13188,18 +12724,17 @@ impl TpmStructure for TPMS_SIGNATURE_RSA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIGNATURE_RSA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIGNATURE_RSA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13219,11 +12754,12 @@ impl TpmStructure for TPMS_SIGNATURE_RSA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIGNATURE_RSA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSASSA.get_value()
+impl TpmUnion for TPMS_SIGNATURE_RSA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_SIGNATURE_RSA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSASSA
     }
 }
 
@@ -13242,18 +12778,17 @@ impl TpmStructure for TPMS_SIGNATURE_RSASSA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIGNATURE_RSASSA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIGNATURE_RSASSA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13269,11 +12804,12 @@ impl TpmStructure for TPMS_SIGNATURE_RSASSA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIGNATURE_RSASSA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSASSA.get_value()
+impl TpmUnion for TPMS_SIGNATURE_RSASSA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_SIGNATURE_RSASSA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSASSA
     }
 }
 
@@ -13292,18 +12828,17 @@ impl TpmStructure for TPMS_SIGNATURE_RSAPSS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIGNATURE_RSAPSS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIGNATURE_RSAPSS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13319,11 +12854,12 @@ impl TpmStructure for TPMS_SIGNATURE_RSAPSS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIGNATURE_RSAPSS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSAPSS.get_value()
+impl TpmUnion for TPMS_SIGNATURE_RSAPSS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_SIGNATURE_RSAPSS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSAPSS
     }
 }
 
@@ -13360,18 +12896,17 @@ impl TpmStructure for TPMS_SIGNATURE_ECC {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIGNATURE_ECC>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIGNATURE_ECC>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13393,11 +12928,12 @@ impl TpmStructure for TPMS_SIGNATURE_ECC {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIGNATURE_ECC {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDSA.get_value()
+impl TpmUnion for TPMS_SIGNATURE_ECC { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_SIGNATURE_ECC {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDSA
     }
 }
 
@@ -13416,18 +12952,17 @@ impl TpmStructure for TPMS_SIGNATURE_ECDSA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIGNATURE_ECDSA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIGNATURE_ECDSA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13443,11 +12978,12 @@ impl TpmStructure for TPMS_SIGNATURE_ECDSA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIGNATURE_ECDSA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDSA.get_value()
+impl TpmUnion for TPMS_SIGNATURE_ECDSA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_SIGNATURE_ECDSA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDSA
     }
 }
 
@@ -13466,18 +13002,17 @@ impl TpmStructure for TPMS_SIGNATURE_ECDAA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIGNATURE_ECDAA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIGNATURE_ECDAA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13493,11 +13028,12 @@ impl TpmStructure for TPMS_SIGNATURE_ECDAA {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIGNATURE_ECDAA {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECDAA.get_value()
+impl TpmUnion for TPMS_SIGNATURE_ECDAA { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_SIGNATURE_ECDAA {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECDAA
     }
 }
 
@@ -13516,18 +13052,17 @@ impl TpmStructure for TPMS_SIGNATURE_SM2 {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIGNATURE_SM2>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIGNATURE_SM2>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13543,11 +13078,12 @@ impl TpmStructure for TPMS_SIGNATURE_SM2 {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIGNATURE_SM2 {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::SM2.get_value()
+impl TpmUnion for TPMS_SIGNATURE_SM2 { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_SIGNATURE_SM2 {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::SM2
     }
 }
 
@@ -13566,18 +13102,17 @@ impl TpmStructure for TPMS_SIGNATURE_ECSCHNORR {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_SIGNATURE_ECSCHNORR>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_SIGNATURE_ECSCHNORR>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13593,11 +13128,12 @@ impl TpmStructure for TPMS_SIGNATURE_ECSCHNORR {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_SIGNATURE_ECSCHNORR {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECSCHNORR.get_value()
+impl TpmUnion for TPMS_SIGNATURE_ECSCHNORR { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_SIGNATURE_ECSCHNORR {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECSCHNORR
     }
 }
 
@@ -13617,18 +13153,17 @@ impl TpmStructure for TPMS_NULL_SIGNATURE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NULL_SIGNATURE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NULL_SIGNATURE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13644,11 +13179,12 @@ impl TpmStructure for TPMS_NULL_SIGNATURE {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_NULL_SIGNATURE {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::NULL.get_value()
+impl TpmUnion for TPMS_NULL_SIGNATURE { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SIGNATURE for TPMS_NULL_SIGNATURE {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::NULL
     }
 }
 
@@ -13665,24 +13201,16 @@ pub struct TPMT_SIGNATURE {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl TPMT_SIGNATURE {
     /// Creates a new instance with the specified values
     pub fn new(
-        signature: Option<TPMU_SIGNATURE>,
+        signature: Option<Box<dyn TPMU_SIGNATURE>>,
         ) -> Self {
         Self {
             signature,
-        }
-    }
-
-    /// Get the sigAlg selector value
-    pub fn sigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -13695,18 +13223,17 @@ impl TpmStructure for TPMT_SIGNATURE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_SIGNATURE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_SIGNATURE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13720,8 +13247,8 @@ impl TpmStructure for TPMT_SIGNATURE {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let sigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(sigAlg)?;
+        let r#sigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#sigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -13754,18 +13281,17 @@ impl TpmStructure for TPM2B_ENCRYPTED_SECRET {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_ENCRYPTED_SECRET>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_ENCRYPTED_SECRET>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13793,24 +13319,16 @@ pub struct TPMS_KEYEDHASH_PARMS {
     /// determines the size of the data field for a data object created with TPM2_Create() or
     /// TPM2_CreatePrimary().
     /// One of: TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_NULL_SCHEME_KEYEDHASH.
-    pub scheme: Option<TPMU_SCHEME_KEYEDHASH>,
+    pub scheme: Option<Box<dyn TPMU_SCHEME_KEYEDHASH>>,
 }
 
 impl TPMS_KEYEDHASH_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        scheme: Option<TPMU_SCHEME_KEYEDHASH>,
+        scheme: Option<Box<dyn TPMU_SCHEME_KEYEDHASH>>,
         ) -> Self {
         Self {
             scheme,
-        }
-    }
-
-    /// Get the schemeScheme selector value
-    pub fn schemeScheme(&self) -> TPM_ALG_ID {
-        match &self.scheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -13823,18 +13341,17 @@ impl TpmStructure for TPMS_KEYEDHASH_PARMS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_KEYEDHASH_PARMS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_KEYEDHASH_PARMS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13848,19 +13365,20 @@ impl TpmStructure for TPMS_KEYEDHASH_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let schemeScheme: TPM_ALG_ID = buf.readShort();
-        self.scheme = UnionFactory::create::<TPMU_SCHEME_KEYEDHASH, TPM_ALG_ID>(schemeScheme)?;
+        let r#schemeScheme: TPM_ALG_ID = buf.readShort();
+        self.scheme = UnionFactory::create::<dyn TPMU_SCHEME_KEYEDHASH, TPM_ALG_ID>(r#schemeScheme)?;
         self.scheme.unwrap().initFromTpm(buf);
         Ok(())
     }
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_KEYEDHASH_PARMS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::KEYEDHASH.get_value()
+impl TpmUnion for TPMS_KEYEDHASH_PARMS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_PARMS for TPMS_KEYEDHASH_PARMS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::KEYEDHASH
     }
 }
 
@@ -13884,26 +13402,18 @@ pub struct TPMS_ASYM_PARMS {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub scheme: Option<TPMU_ASYM_SCHEME>,
+    pub scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 }
 
 impl TPMS_ASYM_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
         symmetric: TPMT_SYM_DEF_OBJECT,
-        scheme: Option<TPMU_ASYM_SCHEME>,
+        scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         ) -> Self {
         Self {
             symmetric,
             scheme,
-        }
-    }
-
-    /// Get the schemeScheme selector value
-    pub fn schemeScheme(&self) -> TPM_ALG_ID {
-        match &self.scheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -13916,18 +13426,17 @@ impl TpmStructure for TPMS_ASYM_PARMS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ASYM_PARMS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ASYM_PARMS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -13941,20 +13450,21 @@ impl TpmStructure for TPMS_ASYM_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.symmetric = TPMT_SYM_DEF_OBJECT.fromTpm(buf);
-        let schemeScheme: TPM_ALG_ID = buf.readShort();
-        self.scheme = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(schemeScheme)?;
+        self.symmetric.initFromTpm(buf);
+        let r#schemeScheme: TPM_ALG_ID = buf.readShort();
+        self.scheme = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#schemeScheme)?;
         self.scheme.unwrap().initFromTpm(buf);
         Ok(())
     }
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_ASYM_PARMS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ANY.get_value()
+impl TpmUnion for TPMS_ASYM_PARMS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_PARMS for TPMS_ASYM_PARMS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ANY
     }
 }
 
@@ -13984,7 +13494,7 @@ pub struct TPMS_RSA_PARMS {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub scheme: Option<TPMU_ASYM_SCHEME>,
+    pub scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 
     /// Number of bits in the public modulus
     pub keyBits: u16,
@@ -13998,7 +13508,7 @@ impl TPMS_RSA_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
         symmetric: TPMT_SYM_DEF_OBJECT,
-        scheme: Option<TPMU_ASYM_SCHEME>,
+        scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         keyBits: u16,
         exponent: u32,
         ) -> Self {
@@ -14007,14 +13517,6 @@ impl TPMS_RSA_PARMS {
             scheme,
             keyBits,
             exponent,
-        }
-    }
-
-    /// Get the schemeScheme selector value
-    pub fn schemeScheme(&self) -> TPM_ALG_ID {
-        match &self.scheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -14027,18 +13529,17 @@ impl TpmStructure for TPMS_RSA_PARMS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_RSA_PARMS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_RSA_PARMS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14054,9 +13555,9 @@ impl TpmStructure for TPMS_RSA_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.symmetric = TPMT_SYM_DEF_OBJECT.fromTpm(buf);
-        let schemeScheme: TPM_ALG_ID = buf.readShort();
-        self.scheme = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(schemeScheme)?;
+        self.symmetric.initFromTpm(buf);
+        let r#schemeScheme: TPM_ALG_ID = buf.readShort();
+        self.scheme = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#schemeScheme)?;
         self.scheme.unwrap().initFromTpm(buf);
         self.keyBits = buf.readShort();
         self.exponent = buf.readInt();
@@ -14065,11 +13566,12 @@ impl TpmStructure for TPMS_RSA_PARMS {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_RSA_PARMS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::RSA.get_value()
+impl TpmUnion for TPMS_RSA_PARMS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_PARMS for TPMS_RSA_PARMS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::RSA
     }
 }
 
@@ -14093,7 +13595,7 @@ pub struct TPMS_ECC_PARMS {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub scheme: Option<TPMU_ASYM_SCHEME>,
+    pub scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 
     /// ECC curve ID
     pub curveID: TPM_ECC_CURVE,
@@ -14107,38 +13609,22 @@ pub struct TPMS_ECC_PARMS {
     /// reference code, this field needs to be set to TPM_ALG_NULL.
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub kdf: Option<TPMU_KDF_SCHEME>,
+    pub kdf: Option<Box<dyn TPMU_KDF_SCHEME>>,
 }
 
 impl TPMS_ECC_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
         symmetric: TPMT_SYM_DEF_OBJECT,
-        scheme: Option<TPMU_ASYM_SCHEME>,
+        scheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         curveID: TPM_ECC_CURVE,
-        kdf: Option<TPMU_KDF_SCHEME>,
+        kdf: Option<Box<dyn TPMU_KDF_SCHEME>>,
         ) -> Self {
         Self {
             symmetric,
             scheme,
             curveID,
             kdf,
-        }
-    }
-
-    /// Get the schemeScheme selector value
-    pub fn schemeScheme(&self) -> TPM_ALG_ID {
-        match &self.scheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
-    /// Get the kdfScheme selector value
-    pub fn kdfScheme(&self) -> TPM_ALG_ID {
-        match &self.kdf {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -14151,18 +13637,17 @@ impl TpmStructure for TPMS_ECC_PARMS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ECC_PARMS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ECC_PARMS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14179,24 +13664,25 @@ impl TpmStructure for TPMS_ECC_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.symmetric = TPMT_SYM_DEF_OBJECT.fromTpm(buf);
-        let schemeScheme: TPM_ALG_ID = buf.readShort();
-        self.scheme = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(schemeScheme)?;
+        self.symmetric.initFromTpm(buf);
+        let r#schemeScheme: TPM_ALG_ID = buf.readShort();
+        self.scheme = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#schemeScheme)?;
         self.scheme.unwrap().initFromTpm(buf);
         self.curveID = buf.readShort();
-        let kdfScheme: TPM_ALG_ID = buf.readShort();
-        self.kdf = UnionFactory::create::<TPMU_KDF_SCHEME, TPM_ALG_ID>(kdfScheme)?;
+        let r#kdfScheme: TPM_ALG_ID = buf.readShort();
+        self.kdf = UnionFactory::create::<dyn TPMU_KDF_SCHEME, TPM_ALG_ID>(r#kdfScheme)?;
         self.kdf.unwrap().initFromTpm(buf);
         Ok(())
     }
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPMS_ECC_PARMS {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ECC.get_value()
+impl TpmUnion for TPMS_ECC_PARMS { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_PARMS for TPMS_ECC_PARMS {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ECC
     }
 }
 
@@ -14209,24 +13695,16 @@ pub struct TPMT_PUBLIC_PARMS {
     /// The algorithm details
     /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
     /// TPMS_ASYM_PARMS.
-    pub parameters: Option<TPMU_PUBLIC_PARMS>,
+    pub parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>,
 }
 
 impl TPMT_PUBLIC_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        parameters: Option<TPMU_PUBLIC_PARMS>,
+        parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>,
         ) -> Self {
         Self {
             parameters,
-        }
-    }
-
-    /// Get the type selector value
-    pub fn type(&self) -> TPM_ALG_ID {
-        match &self.parameters {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => 0 as _,
         }
     }
 
@@ -14239,18 +13717,17 @@ impl TpmStructure for TPMT_PUBLIC_PARMS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_PUBLIC_PARMS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_PUBLIC_PARMS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14264,8 +13741,8 @@ impl TpmStructure for TPMT_PUBLIC_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let type: TPM_ALG_ID = buf.readShort();
-        self.parameters = UnionFactory::create::<TPMU_PUBLIC_PARMS, TPM_ALG_ID>(type)?;
+        let r#type: TPM_ALG_ID = buf.readShort();
+        self.parameters = UnionFactory::create::<dyn TPMU_PUBLIC_PARMS, TPM_ALG_ID>(r#type)?;
         self.parameters.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -14294,13 +13771,13 @@ pub struct TPMT_PUBLIC {
     /// The algorithm or structure details
     /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
     /// TPMS_ASYM_PARMS.
-    pub parameters: Option<TPMU_PUBLIC_PARMS>,
+    pub parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>,
 
     /// The unique identifier of the structure
     /// For an asymmetric key, this would be the public key.
     /// One of: TPM2B_DIGEST_KEYEDHASH, TPM2B_DIGEST_SYMCIPHER, TPM2B_PUBLIC_KEY_RSA,
     /// TPMS_ECC_POINT, TPMS_DERIVE.
-    pub unique: Option<TPMU_PUBLIC_ID>,
+    pub unique: Option<Box<dyn TPMU_PUBLIC_ID>>,
 }
 
 impl TPMT_PUBLIC {
@@ -14309,8 +13786,8 @@ impl TPMT_PUBLIC {
         nameAlg: TPM_ALG_ID,
         objectAttributes: TPMA_OBJECT,
         authPolicy: Vec<u8>,
-        parameters: Option<TPMU_PUBLIC_PARMS>,
-        unique: Option<TPMU_PUBLIC_ID>,
+        parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>,
+        unique: Option<Box<dyn TPMU_PUBLIC_ID>>,
         ) -> Self {
         Self {
             nameAlg,
@@ -14318,14 +13795,6 @@ impl TPMT_PUBLIC {
             authPolicy,
             parameters,
             unique,
-        }
-    }
-
-    /// Get the type selector value
-    pub fn type(&self) -> TPM_ALG_ID {
-        match &self.parameters {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => 0 as _,
         }
     }
 
@@ -14338,18 +13807,17 @@ impl TpmStructure for TPMT_PUBLIC {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_PUBLIC>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_PUBLIC>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14367,13 +13835,13 @@ impl TpmStructure for TPMT_PUBLIC {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let type: TPM_ALG_ID = buf.readShort();
+        let r#type: TPM_ALG_ID = buf.readShort();
         self.nameAlg = buf.readShort();
         self.objectAttributes = buf.readInt();
         self.authPolicy = buf.readSizedByteBuf();
-        self.parameters = UnionFactory::create::<TPMU_PUBLIC_PARMS, TPM_ALG_ID>(type)?;
+        self.parameters = UnionFactory::create::<dyn TPMU_PUBLIC_PARMS, TPM_ALG_ID>(r#type)?;
         self.parameters.unwrap().initFromTpm(buf);
-        self.unique = UnionFactory::create::<TPMU_PUBLIC_ID, TPM_ALG_ID>(type)?;
+        self.unique = UnionFactory::create::<dyn TPMU_PUBLIC_ID, TPM_ALG_ID>(r#type)?;
         self.unique.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -14409,18 +13877,17 @@ impl TpmStructure for TPM2B_PUBLIC {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_PUBLIC>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_PUBLIC>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14464,18 +13931,17 @@ impl TpmStructure for TPM2B_TEMPLATE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_TEMPLATE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_TEMPLATE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14523,18 +13989,17 @@ impl TpmStructure for TPM2B_PRIVATE_VENDOR_SPECIFIC {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_PRIVATE_VENDOR_SPECIFIC>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_PRIVATE_VENDOR_SPECIFIC>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14552,11 +14017,12 @@ impl TpmStructure for TPM2B_PRIVATE_VENDOR_SPECIFIC {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPM2B_PRIVATE_VENDOR_SPECIFIC {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::ANY.get_value()
+impl TpmUnion for TPM2B_PRIVATE_VENDOR_SPECIFIC { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_SENSITIVE_COMPOSITE for TPM2B_PRIVATE_VENDOR_SPECIFIC {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::ANY
     }
 }
 
@@ -14577,7 +14043,7 @@ pub struct TPMT_SENSITIVE {
     /// The type-specific private data
     /// One of: TPM2B_PRIVATE_KEY_RSA, TPM2B_ECC_PARAMETER, TPM2B_SENSITIVE_DATA,
     /// TPM2B_SYM_KEY, TPM2B_PRIVATE_VENDOR_SPECIFIC.
-    pub sensitive: Option<TPMU_SENSITIVE_COMPOSITE>,
+    pub sensitive: Option<Box<dyn TPMU_SENSITIVE_COMPOSITE>>,
 }
 
 impl TPMT_SENSITIVE {
@@ -14585,20 +14051,12 @@ impl TPMT_SENSITIVE {
     pub fn new(
         authValue: Vec<u8>,
         seedValue: Vec<u8>,
-        sensitive: Option<TPMU_SENSITIVE_COMPOSITE>,
+        sensitive: Option<Box<dyn TPMU_SENSITIVE_COMPOSITE>>,
         ) -> Self {
         Self {
             authValue,
             seedValue,
             sensitive,
-        }
-    }
-
-    /// Get the sensitiveType selector value
-    pub fn sensitiveType(&self) -> TPM_ALG_ID {
-        match &self.sensitive {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => 0 as _,
         }
     }
 
@@ -14611,18 +14069,17 @@ impl TpmStructure for TPMT_SENSITIVE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMT_SENSITIVE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMT_SENSITIVE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14638,10 +14095,10 @@ impl TpmStructure for TPMT_SENSITIVE {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let sensitiveType: TPM_ALG_ID = buf.readShort();
+        let r#sensitiveType: TPM_ALG_ID = buf.readShort();
         self.authValue = buf.readSizedByteBuf();
         self.seedValue = buf.readSizedByteBuf();
-        self.sensitive = UnionFactory::create::<TPMU_SENSITIVE_COMPOSITE, TPM_ALG_ID>(sensitiveType)?;
+        self.sensitive = UnionFactory::create::<dyn TPMU_SENSITIVE_COMPOSITE, TPM_ALG_ID>(r#sensitiveType)?;
         self.sensitive.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -14675,18 +14132,17 @@ impl TpmStructure for TPM2B_SENSITIVE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_SENSITIVE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_SENSITIVE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14740,18 +14196,17 @@ impl TpmStructure for _PRIVATE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<_PRIVATE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<_PRIVATE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14800,18 +14255,17 @@ impl TpmStructure for TPM2B_PRIVATE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_PRIVATE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_PRIVATE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14864,18 +14318,17 @@ impl TpmStructure for TPMS_ID_OBJECT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_ID_OBJECT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_ID_OBJECT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14922,18 +14375,17 @@ impl TpmStructure for TPM2B_ID_OBJECT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_ID_OBJECT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_ID_OBJECT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -14987,18 +14439,17 @@ impl TpmStructure for TPMS_NV_PIN_COUNTER_PARAMETERS {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NV_PIN_COUNTER_PARAMETERS>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NV_PIN_COUNTER_PARAMETERS>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15068,18 +14519,17 @@ impl TpmStructure for TPMS_NV_PUBLIC {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_NV_PUBLIC>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_NV_PUBLIC>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15095,7 +14545,7 @@ impl TpmStructure for TPMS_NV_PUBLIC {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.nvIndex = TPM_HANDLE.fromTpm(buf);
+        self.nvIndex.initFromTpm(buf);
         self.nameAlg = buf.readShort();
         self.attributes = buf.readInt();
         self.authPolicy = buf.readSizedByteBuf();
@@ -15131,18 +14581,17 @@ impl TpmStructure for TPM2B_NV_PUBLIC {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_NV_PUBLIC>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_NV_PUBLIC>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15187,18 +14636,17 @@ impl TpmStructure for TPM2B_CONTEXT_SENSITIVE {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_CONTEXT_SENSITIVE>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_CONTEXT_SENSITIVE>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15247,18 +14695,17 @@ impl TpmStructure for TPMS_CONTEXT_DATA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_CONTEXT_DATA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_CONTEXT_DATA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15303,18 +14750,17 @@ impl TpmStructure for TPM2B_CONTEXT_DATA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_CONTEXT_DATA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_CONTEXT_DATA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15377,18 +14823,17 @@ impl TpmStructure for TPMS_CONTEXT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_CONTEXT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_CONTEXT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15404,8 +14849,8 @@ impl TpmStructure for TPMS_CONTEXT {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.sequence = buf.readInt64();
-        self.savedHandle = TPM_HANDLE.fromTpm(buf);
-        self.hierarchy = TPM_HANDLE.fromTpm(buf);
+        self.savedHandle.initFromTpm(buf);
+        self.hierarchy.initFromTpm(buf);
         buf.readSizedObj(self.contextBlob);
         Ok(())
     }
@@ -15478,18 +14923,17 @@ impl TpmStructure for TPMS_CREATION_DATA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_CREATION_DATA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_CREATION_DATA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15545,18 +14989,17 @@ impl TpmStructure for TPM2B_CREATION_DATA {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_CREATION_DATA>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_CREATION_DATA>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15606,18 +15049,17 @@ impl TpmStructure for TPMS_AC_OUTPUT {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPMS_AC_OUTPUT>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPMS_AC_OUTPUT>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15663,18 +15105,17 @@ impl TpmStructure for TPML_AC_CAPABILITIES {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPML_AC_CAPABILITIES>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPML_AC_CAPABILITIES>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15723,18 +15164,17 @@ impl TpmStructure for TPM2_Startup_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Startup_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Startup_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15779,18 +15219,17 @@ impl TpmStructure for TPM2_Shutdown_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Shutdown_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Shutdown_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15837,18 +15276,17 @@ impl TpmStructure for TPM2_SelfTest_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_SelfTest_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_SelfTest_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15892,18 +15330,17 @@ impl TpmStructure for TPM2_IncrementalSelfTest_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_IncrementalSelfTest_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_IncrementalSelfTest_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15938,18 +15375,17 @@ impl TpmStructure for IncrementalSelfTestResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<IncrementalSelfTestResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<IncrementalSelfTestResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -15983,18 +15419,17 @@ impl TpmStructure for TPM2_GetTestResult_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_GetTestResult_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_GetTestResult_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16030,18 +15465,17 @@ impl TpmStructure for GetTestResultResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<GetTestResultResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<GetTestResultResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16127,18 +15561,17 @@ impl TpmStructure for TPM2_StartAuthSession_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_StartAuthSession_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_StartAuthSession_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16157,7 +15590,7 @@ impl TpmStructure for TPM2_StartAuthSession_REQUEST {
         self.nonceCaller = buf.readSizedByteBuf();
         self.encryptedSalt = buf.readSizedByteBuf();
         self.sessionType = buf.readByte();
-        self.symmetric = TPMT_SYM_DEF.fromTpm(buf);
+        self.symmetric.initFromTpm(buf);
         self.authHash = buf.readShort();
         Ok(())
     }
@@ -16186,18 +15619,17 @@ impl TpmStructure for StartAuthSessionResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<StartAuthSessionResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<StartAuthSessionResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16246,18 +15678,17 @@ impl TpmStructure for TPM2_PolicyRestart_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyRestart_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyRestart_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16328,18 +15759,17 @@ impl TpmStructure for TPM2_Create_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Create_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Create_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16399,18 +15829,17 @@ impl TpmStructure for CreateResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<CreateResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<CreateResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16426,11 +15855,11 @@ impl TpmStructure for CreateResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.outPrivate = TPM2B_PRIVATE.fromTpm(buf);
+        self.outPrivate.initFromTpm(buf);
         buf.readSizedObj(self.outPublic);
         buf.readSizedObj(self.creationData);
         self.creationHash = buf.readSizedByteBuf();
-        self.creationTicket = TPMT_TK_CREATION.fromTpm(buf);
+        self.creationTicket.initFromTpm(buf);
         Ok(())
     }
 
@@ -16476,18 +15905,17 @@ impl TpmStructure for TPM2_Load_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Load_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Load_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16500,7 +15928,7 @@ impl TpmStructure for TPM2_Load_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.inPrivate = TPM2B_PRIVATE.fromTpm(buf);
+        self.inPrivate.initFromTpm(buf);
         buf.readSizedObj(self.inPublic);
         Ok(())
     }
@@ -16529,18 +15957,17 @@ impl TpmStructure for LoadResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<LoadResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<LoadResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16595,18 +16022,17 @@ impl TpmStructure for TPM2_LoadExternal_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_LoadExternal_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_LoadExternal_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16622,7 +16048,7 @@ impl TpmStructure for TPM2_LoadExternal_REQUEST {
         // Deserialize fields
         buf.readSizedObj(self.inPrivate);
         buf.readSizedObj(self.inPublic);
-        self.hierarchy = TPM_HANDLE.fromTpm(buf);
+        self.hierarchy.initFromTpm(buf);
         Ok(())
     }
 
@@ -16649,18 +16075,17 @@ impl TpmStructure for LoadExternalResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<LoadExternalResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<LoadExternalResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16705,18 +16130,17 @@ impl TpmStructure for TPM2_ReadPublic_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ReadPublic_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ReadPublic_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16755,18 +16179,17 @@ impl TpmStructure for ReadPublicResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ReadPublicResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ReadPublicResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16834,18 +16257,17 @@ impl TpmStructure for TPM2_ActivateCredential_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ActivateCredential_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ActivateCredential_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16885,18 +16307,17 @@ impl TpmStructure for ActivateCredentialResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ActivateCredentialResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ActivateCredentialResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -16952,18 +16373,17 @@ impl TpmStructure for TPM2_MakeCredential_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_MakeCredential_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_MakeCredential_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17004,18 +16424,17 @@ impl TpmStructure for MakeCredentialResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<MakeCredentialResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<MakeCredentialResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17063,18 +16482,17 @@ impl TpmStructure for TPM2_Unseal_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Unseal_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Unseal_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17108,18 +16526,17 @@ impl TpmStructure for UnsealResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<UnsealResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<UnsealResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17176,18 +16593,17 @@ impl TpmStructure for TPM2_ObjectChangeAuth_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ObjectChangeAuth_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ObjectChangeAuth_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17222,18 +16638,17 @@ impl TpmStructure for ObjectChangeAuthResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ObjectChangeAuthResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ObjectChangeAuthResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17245,7 +16660,7 @@ impl TpmStructure for ObjectChangeAuthResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.outPrivate = TPM2B_PRIVATE.fromTpm(buf);
+        self.outPrivate.initFromTpm(buf);
         Ok(())
     }
 
@@ -17294,18 +16709,17 @@ impl TpmStructure for TPM2_CreateLoaded_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_CreateLoaded_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_CreateLoaded_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17355,18 +16769,17 @@ impl TpmStructure for CreateLoadedResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<CreateLoadedResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<CreateLoadedResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17380,7 +16793,7 @@ impl TpmStructure for CreateLoadedResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.outPrivate = TPM2B_PRIVATE.fromTpm(buf);
+        self.outPrivate.initFromTpm(buf);
         buf.readSizedObj(self.outPublic);
         self.name = buf.readSizedByteBuf();
         Ok(())
@@ -17437,18 +16850,17 @@ impl TpmStructure for TPM2_Duplicate_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Duplicate_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Duplicate_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17462,7 +16874,7 @@ impl TpmStructure for TPM2_Duplicate_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.encryptionKeyIn = buf.readSizedByteBuf();
-        self.symmetricAlg = TPMT_SYM_DEF_OBJECT.fromTpm(buf);
+        self.symmetricAlg.initFromTpm(buf);
         Ok(())
     }
 
@@ -17495,18 +16907,17 @@ impl TpmStructure for DuplicateResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<DuplicateResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<DuplicateResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17521,7 +16932,7 @@ impl TpmStructure for DuplicateResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.encryptionKeyOut = buf.readSizedByteBuf();
-        self.duplicate = TPM2B_PRIVATE.fromTpm(buf);
+        self.duplicate.initFromTpm(buf);
         self.outSymSeed = buf.readSizedByteBuf();
         Ok(())
     }
@@ -17583,18 +16994,17 @@ impl TpmStructure for TPM2_Rewrap_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Rewrap_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Rewrap_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17608,7 +17018,7 @@ impl TpmStructure for TPM2_Rewrap_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.inDuplicate = TPM2B_PRIVATE.fromTpm(buf);
+        self.inDuplicate.initFromTpm(buf);
         self.name = buf.readSizedByteBuf();
         self.inSymSeed = buf.readSizedByteBuf();
         Ok(())
@@ -17641,18 +17051,17 @@ impl TpmStructure for RewrapResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<RewrapResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<RewrapResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17665,7 +17074,7 @@ impl TpmStructure for RewrapResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.outDuplicate = TPM2B_PRIVATE.fromTpm(buf);
+        self.outDuplicate.initFromTpm(buf);
         self.outSymSeed = buf.readSizedByteBuf();
         Ok(())
     }
@@ -17736,18 +17145,17 @@ impl TpmStructure for TPM2_Import_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Import_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Import_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17765,9 +17173,9 @@ impl TpmStructure for TPM2_Import_REQUEST {
         // Deserialize fields
         self.encryptionKey = buf.readSizedByteBuf();
         buf.readSizedObj(self.objectPublic);
-        self.duplicate = TPM2B_PRIVATE.fromTpm(buf);
+        self.duplicate.initFromTpm(buf);
         self.inSymSeed = buf.readSizedByteBuf();
-        self.symmetricAlg = TPMT_SYM_DEF_OBJECT.fromTpm(buf);
+        self.symmetricAlg.initFromTpm(buf);
         Ok(())
     }
 
@@ -17793,18 +17201,17 @@ impl TpmStructure for ImportResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ImportResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ImportResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17816,7 +17223,7 @@ impl TpmStructure for ImportResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.outPrivate = TPM2B_PRIVATE.fromTpm(buf);
+        self.outPrivate.initFromTpm(buf);
         Ok(())
     }
 
@@ -17845,7 +17252,7 @@ pub struct TPM2_RSA_Encrypt_REQUEST {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub inScheme: Option<TPMU_ASYM_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 
     /// Optional label L to be associated with the message
     /// Size of the buffer is zero if no label is present
@@ -17858,7 +17265,7 @@ impl TPM2_RSA_Encrypt_REQUEST {
     pub fn new(
         keyHandle: TPM_HANDLE,
         message: Vec<u8>,
-        inScheme: Option<TPMU_ASYM_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         label: Vec<u8>,
         ) -> Self {
         Self {
@@ -17866,14 +17273,6 @@ impl TPM2_RSA_Encrypt_REQUEST {
             message,
             inScheme,
             label,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -17886,18 +17285,17 @@ impl TpmStructure for TPM2_RSA_Encrypt_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_RSA_Encrypt_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_RSA_Encrypt_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17913,8 +17311,8 @@ impl TpmStructure for TPM2_RSA_Encrypt_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.message = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         self.label = buf.readSizedByteBuf();
         Ok(())
@@ -17942,18 +17340,17 @@ impl TpmStructure for RSA_EncryptResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<RSA_EncryptResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<RSA_EncryptResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -17991,7 +17388,7 @@ pub struct TPM2_RSA_Decrypt_REQUEST {
     /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
     /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
     /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
-    pub inScheme: Option<TPMU_ASYM_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
 
     /// Label whose association with the message is to be verified
     pub label: Vec<u8>,
@@ -18002,7 +17399,7 @@ impl TPM2_RSA_Decrypt_REQUEST {
     pub fn new(
         keyHandle: TPM_HANDLE,
         cipherText: Vec<u8>,
-        inScheme: Option<TPMU_ASYM_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_ASYM_SCHEME>>,
         label: Vec<u8>,
         ) -> Self {
         Self {
@@ -18010,14 +17407,6 @@ impl TPM2_RSA_Decrypt_REQUEST {
             cipherText,
             inScheme,
             label,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -18030,18 +17419,17 @@ impl TpmStructure for TPM2_RSA_Decrypt_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_RSA_Decrypt_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_RSA_Decrypt_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18057,8 +17445,8 @@ impl TpmStructure for TPM2_RSA_Decrypt_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.cipherText = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_ASYM_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_ASYM_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         self.label = buf.readSizedByteBuf();
         Ok(())
@@ -18084,18 +17472,17 @@ impl TpmStructure for RSA_DecryptResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<RSA_DecryptResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<RSA_DecryptResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18142,18 +17529,17 @@ impl TpmStructure for TPM2_ECDH_KeyGen_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ECDH_KeyGen_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ECDH_KeyGen_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18191,18 +17577,17 @@ impl TpmStructure for ECDH_KeyGenResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ECDH_KeyGenResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ECDH_KeyGenResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18258,18 +17643,17 @@ impl TpmStructure for TPM2_ECDH_ZGen_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ECDH_ZGen_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ECDH_ZGen_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18307,18 +17691,17 @@ impl TpmStructure for ECDH_ZGenResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ECDH_ZGenResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ECDH_ZGenResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18362,18 +17745,17 @@ impl TpmStructure for TPM2_ECC_Parameters_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ECC_Parameters_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ECC_Parameters_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18408,18 +17790,17 @@ impl TpmStructure for ECC_ParametersResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ECC_ParametersResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ECC_ParametersResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18431,7 +17812,7 @@ impl TpmStructure for ECC_ParametersResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.parameters = TPMS_ALGORITHM_DETAIL_ECC.fromTpm(buf);
+        self.parameters.initFromTpm(buf);
         Ok(())
     }
 
@@ -18489,18 +17870,17 @@ impl TpmStructure for TPM2_ZGen_2Phase_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ZGen_2Phase_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ZGen_2Phase_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18547,18 +17927,17 @@ impl TpmStructure for ZGen_2PhaseResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ZGen_2PhaseResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ZGen_2PhaseResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18593,7 +17972,7 @@ pub struct TPM2_ECC_Encrypt_REQUEST {
     /// The KDF to use if scheme associated with keyHandle is TPM_ALG_NULL
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub inScheme: Option<TPMU_KDF_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_KDF_SCHEME>>,
 }
 
 impl TPM2_ECC_Encrypt_REQUEST {
@@ -18601,20 +17980,12 @@ impl TPM2_ECC_Encrypt_REQUEST {
     pub fn new(
         keyHandle: TPM_HANDLE,
         plainText: Vec<u8>,
-        inScheme: Option<TPMU_KDF_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_KDF_SCHEME>>,
         ) -> Self {
         Self {
             keyHandle,
             plainText,
             inScheme,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -18627,18 +17998,17 @@ impl TpmStructure for TPM2_ECC_Encrypt_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ECC_Encrypt_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ECC_Encrypt_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18653,8 +18023,8 @@ impl TpmStructure for TPM2_ECC_Encrypt_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.plainText = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_KDF_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_KDF_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -18684,18 +18054,17 @@ impl TpmStructure for ECC_EncryptResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ECC_EncryptResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ECC_EncryptResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18739,7 +18108,7 @@ pub struct TPM2_ECC_Decrypt_REQUEST {
     /// The KDF to use if scheme associated with keyHandle is TPM_ALG_NULL
     /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
     /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
-    pub inScheme: Option<TPMU_KDF_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_KDF_SCHEME>>,
 }
 
 impl TPM2_ECC_Decrypt_REQUEST {
@@ -18749,7 +18118,7 @@ impl TPM2_ECC_Decrypt_REQUEST {
         C1: TPMS_ECC_POINT,
         C2: Vec<u8>,
         C3: Vec<u8>,
-        inScheme: Option<TPMU_KDF_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_KDF_SCHEME>>,
         ) -> Self {
         Self {
             keyHandle,
@@ -18757,14 +18126,6 @@ impl TPM2_ECC_Decrypt_REQUEST {
             C2,
             C3,
             inScheme,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -18777,18 +18138,17 @@ impl TpmStructure for TPM2_ECC_Decrypt_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ECC_Decrypt_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ECC_Decrypt_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18807,8 +18167,8 @@ impl TpmStructure for TPM2_ECC_Decrypt_REQUEST {
         buf.readSizedObj(self.C1);
         self.C2 = buf.readSizedByteBuf();
         self.C3 = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_KDF_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_KDF_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -18832,18 +18192,17 @@ impl TpmStructure for ECC_DecryptResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ECC_DecryptResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ECC_DecryptResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18911,18 +18270,17 @@ impl TpmStructure for TPM2_EncryptDecrypt_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_EncryptDecrypt_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_EncryptDecrypt_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -18967,18 +18325,17 @@ impl TpmStructure for EncryptDecryptResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<EncryptDecryptResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<EncryptDecryptResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19048,18 +18405,17 @@ impl TpmStructure for TPM2_EncryptDecrypt2_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_EncryptDecrypt2_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_EncryptDecrypt2_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19104,18 +18460,17 @@ impl TpmStructure for EncryptDecrypt2Response {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<EncryptDecrypt2Response>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<EncryptDecrypt2Response>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19171,18 +18526,17 @@ impl TpmStructure for TPM2_Hash_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Hash_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Hash_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19198,7 +18552,7 @@ impl TpmStructure for TPM2_Hash_REQUEST {
         // Deserialize fields
         self.data = buf.readSizedByteBuf();
         self.hashAlg = buf.readShort();
-        self.hierarchy = TPM_HANDLE.fromTpm(buf);
+        self.hierarchy.initFromTpm(buf);
         Ok(())
     }
 
@@ -19226,18 +18580,17 @@ impl TpmStructure for HashResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<HashResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<HashResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19251,7 +18604,7 @@ impl TpmStructure for HashResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.outHash = buf.readSizedByteBuf();
-        self.validation = TPMT_TK_HASHCHECK.fromTpm(buf);
+        self.validation.initFromTpm(buf);
         Ok(())
     }
 
@@ -19295,18 +18648,17 @@ impl TpmStructure for TPM2_HMAC_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_HMAC_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_HMAC_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19343,18 +18695,17 @@ impl TpmStructure for HMACResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<HMACResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<HMACResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19411,18 +18762,17 @@ impl TpmStructure for TPM2_MAC_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_MAC_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_MAC_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19460,18 +18810,17 @@ impl TpmStructure for MACResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<MACResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<MACResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19515,18 +18864,17 @@ impl TpmStructure for TPM2_GetRandom_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_GetRandom_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_GetRandom_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19561,18 +18909,17 @@ impl TpmStructure for GetRandomResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<GetRandomResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<GetRandomResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19616,18 +18963,17 @@ impl TpmStructure for TPM2_StirRandom_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_StirRandom_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_StirRandom_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19685,18 +19031,17 @@ impl TpmStructure for TPM2_HMAC_Start_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_HMAC_Start_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_HMAC_Start_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19735,18 +19080,17 @@ impl TpmStructure for HMAC_StartResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<HMAC_StartResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<HMAC_StartResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19802,18 +19146,17 @@ impl TpmStructure for TPM2_MAC_Start_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_MAC_Start_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_MAC_Start_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19852,18 +19195,17 @@ impl TpmStructure for MAC_StartResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<MAC_StartResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<MAC_StartResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19914,18 +19256,17 @@ impl TpmStructure for TPM2_HashSequenceStart_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_HashSequenceStart_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_HashSequenceStart_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -19965,18 +19306,17 @@ impl TpmStructure for HashSequenceStartResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<HashSequenceStartResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<HashSequenceStartResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20026,18 +19366,17 @@ impl TpmStructure for TPM2_SequenceUpdate_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_SequenceUpdate_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_SequenceUpdate_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20094,18 +19433,17 @@ impl TpmStructure for TPM2_SequenceComplete_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_SequenceComplete_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_SequenceComplete_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20119,7 +19457,7 @@ impl TpmStructure for TPM2_SequenceComplete_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.buffer = buf.readSizedByteBuf();
-        self.hierarchy = TPM_HANDLE.fromTpm(buf);
+        self.hierarchy.initFromTpm(buf);
         Ok(())
     }
 
@@ -20148,18 +19486,17 @@ impl TpmStructure for SequenceCompleteResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<SequenceCompleteResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<SequenceCompleteResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20173,7 +19510,7 @@ impl TpmStructure for SequenceCompleteResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.result = buf.readSizedByteBuf();
-        self.validation = TPMT_TK_HASHCHECK.fromTpm(buf);
+        self.validation.initFromTpm(buf);
         Ok(())
     }
 
@@ -20223,18 +19560,17 @@ impl TpmStructure for TPM2_EventSequenceComplete_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_EventSequenceComplete_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_EventSequenceComplete_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20273,18 +19609,17 @@ impl TpmStructure for EventSequenceCompleteResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<EventSequenceCompleteResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<EventSequenceCompleteResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20328,7 +19663,7 @@ pub struct TPM2_Certify_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub inScheme: Option<TPMU_SIG_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
 }
 
 impl TPM2_Certify_REQUEST {
@@ -20337,21 +19672,13 @@ impl TPM2_Certify_REQUEST {
         objectHandle: TPM_HANDLE,
         signHandle: TPM_HANDLE,
         qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
         ) -> Self {
         Self {
             objectHandle,
             signHandle,
             qualifyingData,
             inScheme,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -20364,18 +19691,17 @@ impl TpmStructure for TPM2_Certify_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Certify_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Certify_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20390,8 +19716,8 @@ impl TpmStructure for TPM2_Certify_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -20414,18 +19740,10 @@ pub struct CertifyResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl CertifyResponse {
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for CertifyResponse {
@@ -20435,18 +19753,17 @@ impl TpmStructure for CertifyResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<CertifyResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<CertifyResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20461,8 +19778,8 @@ impl TpmStructure for CertifyResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(self.certifyInfo);
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -20496,7 +19813,7 @@ pub struct TPM2_CertifyCreation_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub inScheme: Option<TPMU_SIG_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
 
     /// Ticket produced by TPM2_Create() or TPM2_CreatePrimary()
     pub creationTicket: TPMT_TK_CREATION,
@@ -20509,7 +19826,7 @@ impl TPM2_CertifyCreation_REQUEST {
         objectHandle: TPM_HANDLE,
         qualifyingData: Vec<u8>,
         creationHash: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
         creationTicket: TPMT_TK_CREATION,
         ) -> Self {
         Self {
@@ -20522,14 +19839,6 @@ impl TPM2_CertifyCreation_REQUEST {
         }
     }
 
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for TPM2_CertifyCreation_REQUEST {
@@ -20539,18 +19848,17 @@ impl TpmStructure for TPM2_CertifyCreation_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_CertifyCreation_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_CertifyCreation_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20568,10 +19876,10 @@ impl TpmStructure for TPM2_CertifyCreation_REQUEST {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf();
         self.creationHash = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
-        self.creationTicket = TPMT_TK_CREATION.fromTpm(buf);
+        self.creationTicket.initFromTpm(buf);
         Ok(())
     }
 
@@ -20592,18 +19900,10 @@ pub struct CertifyCreationResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl CertifyCreationResponse {
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for CertifyCreationResponse {
@@ -20613,18 +19913,17 @@ impl TpmStructure for CertifyCreationResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<CertifyCreationResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<CertifyCreationResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20639,8 +19938,8 @@ impl TpmStructure for CertifyCreationResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(self.certifyInfo);
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -20664,7 +19963,7 @@ pub struct TPM2_Quote_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub inScheme: Option<TPMU_SIG_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
 
     /// PCR set to quote
     pub PCRselect: Vec<TPMS_PCR_SELECTION>,
@@ -20675,7 +19974,7 @@ impl TPM2_Quote_REQUEST {
     pub fn new(
         signHandle: TPM_HANDLE,
         qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
         PCRselect: Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
@@ -20683,14 +19982,6 @@ impl TPM2_Quote_REQUEST {
             qualifyingData,
             inScheme,
             PCRselect,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -20703,18 +19994,17 @@ impl TpmStructure for TPM2_Quote_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Quote_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Quote_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20730,8 +20020,8 @@ impl TpmStructure for TPM2_Quote_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         buf.readObjArr(self.PCRselect);
         Ok(())
@@ -20751,18 +20041,10 @@ pub struct QuoteResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl QuoteResponse {
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for QuoteResponse {
@@ -20772,18 +20054,17 @@ impl TpmStructure for QuoteResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<QuoteResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<QuoteResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20798,8 +20079,8 @@ impl TpmStructure for QuoteResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(self.quoted);
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -20832,7 +20113,7 @@ pub struct TPM2_GetSessionAuditDigest_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub inScheme: Option<TPMU_SIG_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
 }
 
 impl TPM2_GetSessionAuditDigest_REQUEST {
@@ -20842,7 +20123,7 @@ impl TPM2_GetSessionAuditDigest_REQUEST {
         signHandle: TPM_HANDLE,
         sessionHandle: TPM_HANDLE,
         qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
         ) -> Self {
         Self {
             privacyAdminHandle,
@@ -20850,14 +20131,6 @@ impl TPM2_GetSessionAuditDigest_REQUEST {
             sessionHandle,
             qualifyingData,
             inScheme,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -20870,18 +20143,17 @@ impl TpmStructure for TPM2_GetSessionAuditDigest_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_GetSessionAuditDigest_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_GetSessionAuditDigest_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20896,8 +20168,8 @@ impl TpmStructure for TPM2_GetSessionAuditDigest_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -20916,18 +20188,10 @@ pub struct GetSessionAuditDigestResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl GetSessionAuditDigestResponse {
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for GetSessionAuditDigestResponse {
@@ -20937,18 +20201,17 @@ impl TpmStructure for GetSessionAuditDigestResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<GetSessionAuditDigestResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<GetSessionAuditDigestResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -20963,8 +20226,8 @@ impl TpmStructure for GetSessionAuditDigestResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(self.auditInfo);
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -20995,7 +20258,7 @@ pub struct TPM2_GetCommandAuditDigest_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub inScheme: Option<TPMU_SIG_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
 }
 
 impl TPM2_GetCommandAuditDigest_REQUEST {
@@ -21004,21 +20267,13 @@ impl TPM2_GetCommandAuditDigest_REQUEST {
         privacyHandle: TPM_HANDLE,
         signHandle: TPM_HANDLE,
         qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
         ) -> Self {
         Self {
             privacyHandle,
             signHandle,
             qualifyingData,
             inScheme,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -21031,18 +20286,17 @@ impl TpmStructure for TPM2_GetCommandAuditDigest_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_GetCommandAuditDigest_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_GetCommandAuditDigest_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21057,8 +20311,8 @@ impl TpmStructure for TPM2_GetCommandAuditDigest_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -21079,18 +20333,10 @@ pub struct GetCommandAuditDigestResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl GetCommandAuditDigestResponse {
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for GetCommandAuditDigestResponse {
@@ -21100,18 +20346,17 @@ impl TpmStructure for GetCommandAuditDigestResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<GetCommandAuditDigestResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<GetCommandAuditDigestResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21126,8 +20371,8 @@ impl TpmStructure for GetCommandAuditDigestResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(self.auditInfo);
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -21156,7 +20401,7 @@ pub struct TPM2_GetTime_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub inScheme: Option<TPMU_SIG_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
 }
 
 impl TPM2_GetTime_REQUEST {
@@ -21165,21 +20410,13 @@ impl TPM2_GetTime_REQUEST {
         privacyAdminHandle: TPM_HANDLE,
         signHandle: TPM_HANDLE,
         qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
         ) -> Self {
         Self {
             privacyAdminHandle,
             signHandle,
             qualifyingData,
             inScheme,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -21192,18 +20429,17 @@ impl TpmStructure for TPM2_GetTime_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_GetTime_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_GetTime_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21218,8 +20454,8 @@ impl TpmStructure for TPM2_GetTime_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -21238,18 +20474,10 @@ pub struct GetTimeResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl GetTimeResponse {
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for GetTimeResponse {
@@ -21259,18 +20487,17 @@ impl TpmStructure for GetTimeResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<GetTimeResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<GetTimeResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21285,8 +20512,8 @@ impl TpmStructure for GetTimeResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(self.timeInfo);
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -21320,7 +20547,7 @@ pub struct TPM2_CertifyX509_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub inScheme: Option<TPMU_SIG_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
 
     /// A DER encoded partial certificate
     pub partialCertificate: Vec<u8>,
@@ -21332,7 +20559,7 @@ impl TPM2_CertifyX509_REQUEST {
         objectHandle: TPM_HANDLE,
         signHandle: TPM_HANDLE,
         reserved: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
         partialCertificate: Vec<u8>,
         ) -> Self {
         Self {
@@ -21341,14 +20568,6 @@ impl TPM2_CertifyX509_REQUEST {
             reserved,
             inScheme,
             partialCertificate,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -21361,18 +20580,17 @@ impl TpmStructure for TPM2_CertifyX509_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_CertifyX509_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_CertifyX509_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21388,8 +20606,8 @@ impl TpmStructure for TPM2_CertifyX509_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.reserved = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         self.partialCertificate = buf.readSizedByteBuf();
         Ok(())
@@ -21418,18 +20636,10 @@ pub struct CertifyX509Response {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl CertifyX509Response {
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for CertifyX509Response {
@@ -21439,18 +20649,17 @@ impl TpmStructure for CertifyX509Response {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<CertifyX509Response>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<CertifyX509Response>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21467,8 +20676,8 @@ impl TpmStructure for CertifyX509Response {
         // Deserialize fields
         self.addedToCertificate = buf.readSizedByteBuf();
         self.tbsDigest = buf.readSizedByteBuf();
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -21521,18 +20730,17 @@ impl TpmStructure for TPM2_Commit_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Commit_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Commit_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21583,18 +20791,17 @@ impl TpmStructure for CommitResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<CommitResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<CommitResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21644,18 +20851,17 @@ impl TpmStructure for TPM2_EC_Ephemeral_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_EC_Ephemeral_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_EC_Ephemeral_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21693,18 +20899,17 @@ impl TpmStructure for EC_EphemeralResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<EC_EphemeralResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<EC_EphemeralResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21741,7 +20946,7 @@ pub struct TPM2_VerifySignature_REQUEST {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl TPM2_VerifySignature_REQUEST {
@@ -21749,20 +20954,12 @@ impl TPM2_VerifySignature_REQUEST {
     pub fn new(
         keyHandle: TPM_HANDLE,
         digest: Vec<u8>,
-        signature: Option<TPMU_SIGNATURE>,
+        signature: Option<Box<dyn TPMU_SIGNATURE>>,
         ) -> Self {
         Self {
             keyHandle,
             digest,
             signature,
-        }
-    }
-
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -21775,18 +20972,17 @@ impl TpmStructure for TPM2_VerifySignature_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_VerifySignature_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_VerifySignature_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21801,8 +20997,8 @@ impl TpmStructure for TPM2_VerifySignature_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.digest = buf.readSizedByteBuf();
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -21826,18 +21022,17 @@ impl TpmStructure for VerifySignatureResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<VerifySignatureResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<VerifySignatureResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21849,7 +21044,7 @@ impl TpmStructure for VerifySignatureResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.validation = TPMT_TK_VERIFIED.fromTpm(buf);
+        self.validation.initFromTpm(buf);
         Ok(())
     }
 
@@ -21873,7 +21068,7 @@ pub struct TPM2_Sign_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub inScheme: Option<TPMU_SIG_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
 
     /// Proof that digest was created by the TPM
     /// If keyHandle is not a restricted signing key, then this may be a NULL Ticket with tag
@@ -21886,7 +21081,7 @@ impl TPM2_Sign_REQUEST {
     pub fn new(
         keyHandle: TPM_HANDLE,
         digest: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
         validation: TPMT_TK_HASHCHECK,
         ) -> Self {
         Self {
@@ -21894,14 +21089,6 @@ impl TPM2_Sign_REQUEST {
             digest,
             inScheme,
             validation,
-        }
-    }
-
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -21914,18 +21101,17 @@ impl TpmStructure for TPM2_Sign_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Sign_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Sign_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -21941,10 +21127,10 @@ impl TpmStructure for TPM2_Sign_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.digest = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
-        self.validation = TPMT_TK_HASHCHECK.fromTpm(buf);
+        self.validation.initFromTpm(buf);
         Ok(())
     }
 
@@ -21960,18 +21146,10 @@ pub struct SignResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl SignResponse {
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for SignResponse {
@@ -21981,18 +21159,17 @@ impl TpmStructure for SignResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<SignResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<SignResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22006,8 +21183,8 @@ impl TpmStructure for SignResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -22059,18 +21236,17 @@ impl TpmStructure for TPM2_SetCommandCodeAuditStatus_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_SetCommandCodeAuditStatus_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_SetCommandCodeAuditStatus_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22128,18 +21304,17 @@ impl TpmStructure for TPM2_PCR_Extend_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PCR_Extend_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PCR_Extend_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22190,18 +21365,17 @@ impl TpmStructure for TPM2_PCR_Event_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PCR_Event_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PCR_Event_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22235,18 +21409,17 @@ impl TpmStructure for PCR_EventResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<PCR_EventResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<PCR_EventResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22290,18 +21463,17 @@ impl TpmStructure for TPM2_PCR_Read_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PCR_Read_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PCR_Read_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22342,18 +21514,17 @@ impl TpmStructure for PCR_ReadResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<PCR_ReadResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<PCR_ReadResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22409,18 +21580,17 @@ impl TpmStructure for TPM2_PCR_Allocate_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PCR_Allocate_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PCR_Allocate_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22465,18 +21635,17 @@ impl TpmStructure for PCR_AllocateResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<PCR_AllocateResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<PCR_AllocateResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22544,18 +21713,17 @@ impl TpmStructure for TPM2_PCR_SetAuthPolicy_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PCR_SetAuthPolicy_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PCR_SetAuthPolicy_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22571,7 +21739,7 @@ impl TpmStructure for TPM2_PCR_SetAuthPolicy_REQUEST {
         // Deserialize fields
         self.authPolicy = buf.readSizedByteBuf();
         self.hashAlg = buf.readShort();
-        self.pcrNum = TPM_HANDLE.fromTpm(buf);
+        self.pcrNum.initFromTpm(buf);
         Ok(())
     }
 
@@ -22610,18 +21778,17 @@ impl TpmStructure for TPM2_PCR_SetAuthValue_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PCR_SetAuthValue_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PCR_SetAuthValue_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22669,18 +21836,17 @@ impl TpmStructure for TPM2_PCR_Reset_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PCR_Reset_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PCR_Reset_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22732,7 +21898,7 @@ pub struct TPM2_PolicySigned_REQUEST {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub auth: Option<TPMU_SIGNATURE>,
+    pub auth: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl TPM2_PolicySigned_REQUEST {
@@ -22744,7 +21910,7 @@ impl TPM2_PolicySigned_REQUEST {
         cpHashA: Vec<u8>,
         policyRef: Vec<u8>,
         expiration: i32,
-        auth: Option<TPMU_SIGNATURE>,
+        auth: Option<Box<dyn TPMU_SIGNATURE>>,
         ) -> Self {
         Self {
             authObject,
@@ -22757,14 +21923,6 @@ impl TPM2_PolicySigned_REQUEST {
         }
     }
 
-    /// Get the authSigAlg selector value
-    pub fn authSigAlg(&self) -> TPM_ALG_ID {
-        match &self.auth {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for TPM2_PolicySigned_REQUEST {
@@ -22774,18 +21932,17 @@ impl TpmStructure for TPM2_PolicySigned_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicySigned_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicySigned_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22806,8 +21963,8 @@ impl TpmStructure for TPM2_PolicySigned_REQUEST {
         self.cpHashA = buf.readSizedByteBuf();
         self.policyRef = buf.readSizedByteBuf();
         self.expiration = buf.readInt();
-        let authSigAlg: TPM_ALG_ID = buf.readShort();
-        self.auth = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(authSigAlg)?;
+        let r#authSigAlg: TPM_ALG_ID = buf.readShort();
+        self.auth = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#authSigAlg)?;
         self.auth.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -22837,18 +21994,17 @@ impl TpmStructure for PolicySignedResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<PolicySignedResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<PolicySignedResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22862,7 +22018,7 @@ impl TpmStructure for PolicySignedResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.timeout = buf.readSizedByteBuf();
-        self.policyTicket = TPMT_TK_AUTH.fromTpm(buf);
+        self.policyTicket.initFromTpm(buf);
         Ok(())
     }
 
@@ -22931,18 +22087,17 @@ impl TpmStructure for TPM2_PolicySecret_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicySecret_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicySecret_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -22990,18 +22145,17 @@ impl TpmStructure for PolicySecretResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<PolicySecretResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<PolicySecretResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23015,7 +22169,7 @@ impl TpmStructure for PolicySecretResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.timeout = buf.readSizedByteBuf();
-        self.policyTicket = TPMT_TK_AUTH.fromTpm(buf);
+        self.policyTicket.initFromTpm(buf);
         Ok(())
     }
 
@@ -23078,18 +22232,17 @@ impl TpmStructure for TPM2_PolicyTicket_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyTicket_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyTicket_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23109,7 +22262,7 @@ impl TpmStructure for TPM2_PolicyTicket_REQUEST {
         self.cpHashA = buf.readSizedByteBuf();
         self.policyRef = buf.readSizedByteBuf();
         self.authName = buf.readSizedByteBuf();
-        self.ticket = TPMT_TK_AUTH.fromTpm(buf);
+        self.ticket.initFromTpm(buf);
         Ok(())
     }
 
@@ -23150,18 +22303,17 @@ impl TpmStructure for TPM2_PolicyOR_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyOR_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyOR_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23220,18 +22372,17 @@ impl TpmStructure for TPM2_PolicyPCR_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyPCR_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyPCR_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23283,18 +22434,17 @@ impl TpmStructure for TPM2_PolicyLocality_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyLocality_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyLocality_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23369,18 +22519,17 @@ impl TpmStructure for TPM2_PolicyNV_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyNV_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyNV_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23445,18 +22594,17 @@ impl TpmStructure for TPM2_PolicyCounterTimer_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyCounterTimer_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyCounterTimer_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23510,18 +22658,17 @@ impl TpmStructure for TPM2_PolicyCommandCode_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyCommandCode_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyCommandCode_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23567,18 +22714,17 @@ impl TpmStructure for TPM2_PolicyPhysicalPresence_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyPhysicalPresence_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyPhysicalPresence_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23626,18 +22772,17 @@ impl TpmStructure for TPM2_PolicyCpHash_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyCpHash_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyCpHash_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23689,18 +22834,17 @@ impl TpmStructure for TPM2_PolicyNameHash_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyNameHash_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyNameHash_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23761,18 +22905,17 @@ impl TpmStructure for TPM2_PolicyDuplicationSelect_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyDuplicationSelect_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyDuplicationSelect_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23843,18 +22986,17 @@ impl TpmStructure for TPM2_PolicyAuthorize_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyAuthorize_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyAuthorize_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23872,7 +23014,7 @@ impl TpmStructure for TPM2_PolicyAuthorize_REQUEST {
         self.approvedPolicy = buf.readSizedByteBuf();
         self.policyRef = buf.readSizedByteBuf();
         self.keySign = buf.readSizedByteBuf();
-        self.checkTicket = TPMT_TK_VERIFIED.fromTpm(buf);
+        self.checkTicket.initFromTpm(buf);
         Ok(())
     }
 
@@ -23905,18 +23047,17 @@ impl TpmStructure for TPM2_PolicyAuthValue_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyAuthValue_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyAuthValue_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -23959,18 +23100,17 @@ impl TpmStructure for TPM2_PolicyPassword_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyPassword_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyPassword_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24014,18 +23154,17 @@ impl TpmStructure for TPM2_PolicyGetDigest_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyGetDigest_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyGetDigest_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24059,18 +23198,17 @@ impl TpmStructure for PolicyGetDigestResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<PolicyGetDigestResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<PolicyGetDigestResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24123,18 +23261,17 @@ impl TpmStructure for TPM2_PolicyNvWritten_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyNvWritten_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyNvWritten_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24186,18 +23323,17 @@ impl TpmStructure for TPM2_PolicyTemplate_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyTemplate_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyTemplate_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24258,18 +23394,17 @@ impl TpmStructure for TPM2_PolicyAuthorizeNV_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PolicyAuthorizeNV_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PolicyAuthorizeNV_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24338,18 +23473,17 @@ impl TpmStructure for TPM2_CreatePrimary_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_CreatePrimary_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_CreatePrimary_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24410,18 +23544,17 @@ impl TpmStructure for CreatePrimaryResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<CreatePrimaryResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<CreatePrimaryResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24440,7 +23573,7 @@ impl TpmStructure for CreatePrimaryResponse {
         buf.readSizedObj(self.outPublic);
         buf.readSizedObj(self.creationData);
         self.creationHash = buf.readSizedByteBuf();
-        self.creationTicket = TPMT_TK_CREATION.fromTpm(buf);
+        self.creationTicket.initFromTpm(buf);
         self.name = buf.readSizedByteBuf();
         Ok(())
     }
@@ -24488,18 +23621,17 @@ impl TpmStructure for TPM2_HierarchyControl_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_HierarchyControl_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_HierarchyControl_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24512,7 +23644,7 @@ impl TpmStructure for TPM2_HierarchyControl_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.enable = TPM_HANDLE.fromTpm(buf);
+        self.enable.initFromTpm(buf);
         self.state = buf.readByte();
         Ok(())
     }
@@ -24563,18 +23695,17 @@ impl TpmStructure for TPM2_SetPrimaryPolicy_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_SetPrimaryPolicy_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_SetPrimaryPolicy_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24623,18 +23754,17 @@ impl TpmStructure for TPM2_ChangePPS_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ChangePPS_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ChangePPS_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24683,18 +23813,17 @@ impl TpmStructure for TPM2_ChangeEPS_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ChangeEPS_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ChangeEPS_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24738,18 +23867,17 @@ impl TpmStructure for TPM2_Clear_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Clear_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Clear_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24798,18 +23926,17 @@ impl TpmStructure for TPM2_ClearControl_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ClearControl_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ClearControl_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24861,18 +23988,17 @@ impl TpmStructure for TPM2_HierarchyChangeAuth_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_HierarchyChangeAuth_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_HierarchyChangeAuth_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24920,18 +24046,17 @@ impl TpmStructure for TPM2_DictionaryAttackLockReset_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_DictionaryAttackLockReset_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_DictionaryAttackLockReset_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -24992,18 +24117,17 @@ impl TpmStructure for TPM2_DictionaryAttackParameters_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_DictionaryAttackParameters_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_DictionaryAttackParameters_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25064,18 +24188,17 @@ impl TpmStructure for TPM2_PP_Commands_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_PP_Commands_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_PP_Commands_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25129,18 +24252,17 @@ impl TpmStructure for TPM2_SetAlgorithmSet_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_SetAlgorithmSet_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_SetAlgorithmSet_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25181,7 +24303,7 @@ pub struct TPM2_FieldUpgradeStart_REQUEST {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub manifestSignature: Option<TPMU_SIGNATURE>,
+    pub manifestSignature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl TPM2_FieldUpgradeStart_REQUEST {
@@ -25190,21 +24312,13 @@ impl TPM2_FieldUpgradeStart_REQUEST {
         authorization: TPM_HANDLE,
         keyHandle: TPM_HANDLE,
         fuDigest: Vec<u8>,
-        manifestSignature: Option<TPMU_SIGNATURE>,
+        manifestSignature: Option<Box<dyn TPMU_SIGNATURE>>,
         ) -> Self {
         Self {
             authorization,
             keyHandle,
             fuDigest,
             manifestSignature,
-        }
-    }
-
-    /// Get the manifestSignatureSigAlg selector value
-    pub fn manifestSignatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.manifestSignature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
         }
     }
 
@@ -25217,18 +24331,17 @@ impl TpmStructure for TPM2_FieldUpgradeStart_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_FieldUpgradeStart_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_FieldUpgradeStart_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25243,8 +24356,8 @@ impl TpmStructure for TPM2_FieldUpgradeStart_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.fuDigest = buf.readSizedByteBuf();
-        let manifestSignatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.manifestSignature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(manifestSignatureSigAlg)?;
+        let r#manifestSignatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.manifestSignature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#manifestSignatureSigAlg)?;
         self.manifestSignature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -25280,18 +24393,17 @@ impl TpmStructure for TPM2_FieldUpgradeData_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_FieldUpgradeData_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_FieldUpgradeData_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25333,18 +24445,17 @@ impl TpmStructure for FieldUpgradeDataResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<FieldUpgradeDataResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<FieldUpgradeDataResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25357,8 +24468,8 @@ impl TpmStructure for FieldUpgradeDataResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.nextDigest = TPMT_HA.fromTpm(buf);
-        self.firstDigest = TPMT_HA.fromTpm(buf);
+        self.nextDigest.initFromTpm(buf);
+        self.firstDigest.initFromTpm(buf);
         Ok(())
     }
 
@@ -25391,18 +24502,17 @@ impl TpmStructure for TPM2_FirmwareRead_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_FirmwareRead_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_FirmwareRead_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25437,18 +24547,17 @@ impl TpmStructure for FirmwareReadResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<FirmwareReadResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<FirmwareReadResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25494,18 +24603,17 @@ impl TpmStructure for TPM2_ContextSave_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ContextSave_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ContextSave_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25538,18 +24646,17 @@ impl TpmStructure for ContextSaveResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ContextSaveResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ContextSaveResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25561,7 +24668,7 @@ impl TpmStructure for ContextSaveResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.context = TPMS_CONTEXT.fromTpm(buf);
+        self.context.initFromTpm(buf);
         Ok(())
     }
 
@@ -25593,18 +24700,17 @@ impl TpmStructure for TPM2_ContextLoad_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ContextLoad_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ContextLoad_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25616,7 +24722,7 @@ impl TpmStructure for TPM2_ContextLoad_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.context = TPMS_CONTEXT.fromTpm(buf);
+        self.context.initFromTpm(buf);
         Ok(())
     }
 
@@ -25639,18 +24745,17 @@ impl TpmStructure for ContextLoadResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ContextLoadResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ContextLoadResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25694,18 +24799,17 @@ impl TpmStructure for TPM2_FlushContext_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_FlushContext_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_FlushContext_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25717,7 +24821,7 @@ impl TpmStructure for TPM2_FlushContext_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.flushHandle = TPM_HANDLE.fromTpm(buf);
+        self.flushHandle.initFromTpm(buf);
         Ok(())
     }
 
@@ -25766,18 +24870,17 @@ impl TpmStructure for TPM2_EvictControl_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_EvictControl_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_EvictControl_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25789,7 +24892,7 @@ impl TpmStructure for TPM2_EvictControl_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.persistentHandle = TPM_HANDLE.fromTpm(buf);
+        self.persistentHandle.initFromTpm(buf);
         Ok(())
     }
 
@@ -25811,18 +24914,17 @@ impl TpmStructure for TPM2_ReadClock_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ReadClock_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ReadClock_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25855,18 +24957,17 @@ impl TpmStructure for ReadClockResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<ReadClockResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<ReadClockResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25878,7 +24979,7 @@ impl TpmStructure for ReadClockResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.currentTime = TPMS_TIME_INFO.fromTpm(buf);
+        self.currentTime.initFromTpm(buf);
         Ok(())
     }
 
@@ -25920,18 +25021,17 @@ impl TpmStructure for TPM2_ClockSet_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ClockSet_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ClockSet_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -25983,18 +25083,17 @@ impl TpmStructure for TPM2_ClockRateAdjust_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ClockRateAdjust_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ClockRateAdjust_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26048,18 +25147,17 @@ impl TpmStructure for TPM2_GetCapability_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_GetCapability_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_GetCapability_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26093,18 +25191,10 @@ pub struct GetCapabilityResponse {
     /// One of: TPML_ALG_PROPERTY, TPML_HANDLE, TPML_CCA, TPML_CC, TPML_PCR_SELECTION,
     /// TPML_TAGGED_TPM_PROPERTY, TPML_TAGGED_PCR_PROPERTY, TPML_ECC_CURVE,
     /// TPML_TAGGED_POLICY, TPML_ACT_DATA.
-    pub capabilityData: Option<TPMU_CAPABILITIES>,
+    pub capabilityData: Option<Box<dyn TPMU_CAPABILITIES>>,
 }
 
 impl GetCapabilityResponse {
-    /// Get the capabilityDataCapability selector value
-    pub fn capabilityDataCapability(&self) -> TPM_CAP {
-        match &self.capabilityData {
-            Some(u) => TPM_CAP.try_from(u.get_union_selector())?,
-            None => 0 as _,
-        }
-    }
-
 }
 
 impl TpmStructure for GetCapabilityResponse {
@@ -26114,18 +25204,17 @@ impl TpmStructure for GetCapabilityResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<GetCapabilityResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<GetCapabilityResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26140,8 +25229,8 @@ impl TpmStructure for GetCapabilityResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.moreData = buf.readByte();
-        let capabilityDataCapability: TPM_CAP = buf.readInt();
-        self.capabilityData = UnionFactory::create::<TPMU_CAPABILITIES, TPM_CAP>(capabilityDataCapability)?;
+        let r#capabilityDataCapability: TPM_CAP = buf.readInt();
+        self.capabilityData = UnionFactory::create::<dyn TPMU_CAPABILITIES, TPM_CAP>(r#capabilityDataCapability)?;
         self.capabilityData.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -26157,24 +25246,16 @@ pub struct TPM2_TestParms_REQUEST {
     /// Algorithm parameters to be validated
     /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
     /// TPMS_ASYM_PARMS.
-    pub parameters: Option<TPMU_PUBLIC_PARMS>,
+    pub parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>,
 }
 
 impl TPM2_TestParms_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parameters: Option<TPMU_PUBLIC_PARMS>,
+        parameters: Option<Box<dyn TPMU_PUBLIC_PARMS>>,
         ) -> Self {
         Self {
             parameters,
-        }
-    }
-
-    /// Get the parametersType selector value
-    pub fn parametersType(&self) -> TPM_ALG_ID {
-        match &self.parameters {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => 0 as _,
         }
     }
 
@@ -26187,18 +25268,17 @@ impl TpmStructure for TPM2_TestParms_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_TestParms_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_TestParms_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26212,8 +25292,8 @@ impl TpmStructure for TPM2_TestParms_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let parametersType: TPM_ALG_ID = buf.readShort();
-        self.parameters = UnionFactory::create::<TPMU_PUBLIC_PARMS, TPM_ALG_ID>(parametersType)?;
+        let r#parametersType: TPM_ALG_ID = buf.readShort();
+        self.parameters = UnionFactory::create::<dyn TPMU_PUBLIC_PARMS, TPM_ALG_ID>(r#parametersType)?;
         self.parameters.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -26260,18 +25340,17 @@ impl TpmStructure for TPM2_NV_DefineSpace_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_DefineSpace_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_DefineSpace_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26325,18 +25404,17 @@ impl TpmStructure for TPM2_NV_UndefineSpace_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_UndefineSpace_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_UndefineSpace_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26388,18 +25466,17 @@ impl TpmStructure for TPM2_NV_UndefineSpaceSpecial_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_UndefineSpaceSpecial_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_UndefineSpaceSpecial_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26443,18 +25520,17 @@ impl TpmStructure for TPM2_NV_ReadPublic_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_ReadPublic_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_ReadPublic_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26491,18 +25567,17 @@ impl TpmStructure for NV_ReadPublicResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<NV_ReadPublicResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<NV_ReadPublicResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26567,18 +25642,17 @@ impl TpmStructure for TPM2_NV_Write_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_Write_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_Write_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26633,18 +25707,17 @@ impl TpmStructure for TPM2_NV_Increment_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_Increment_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_Increment_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26700,18 +25773,17 @@ impl TpmStructure for TPM2_NV_Extend_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_Extend_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_Extend_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26770,18 +25842,17 @@ impl TpmStructure for TPM2_NV_SetBits_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_SetBits_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_SetBits_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26834,18 +25905,17 @@ impl TpmStructure for TPM2_NV_WriteLock_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_WriteLock_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_WriteLock_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26890,18 +25960,17 @@ impl TpmStructure for TPM2_NV_GlobalWriteLock_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_GlobalWriteLock_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_GlobalWriteLock_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -26962,18 +26031,17 @@ impl TpmStructure for TPM2_NV_Read_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_Read_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_Read_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27010,18 +26078,17 @@ impl TpmStructure for NV_ReadResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<NV_ReadResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<NV_ReadResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27074,18 +26141,17 @@ impl TpmStructure for TPM2_NV_ReadLock_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_ReadLock_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_ReadLock_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27134,18 +26200,17 @@ impl TpmStructure for TPM2_NV_ChangeAuth_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_ChangeAuth_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_ChangeAuth_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27190,7 +26255,7 @@ pub struct TPM2_NV_Certify_REQUEST {
     /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
     /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
     /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
-    pub inScheme: Option<TPMU_SIG_SCHEME>,
+    pub inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
 
     /// Number of octets to certify
     pub size: u16,
@@ -27207,7 +26272,7 @@ impl TPM2_NV_Certify_REQUEST {
         authHandle: TPM_HANDLE,
         nvIndex: TPM_HANDLE,
         qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        inScheme: Option<Box<dyn TPMU_SIG_SCHEME>>,
         size: u16,
         offset: u16,
         ) -> Self {
@@ -27222,14 +26287,6 @@ impl TPM2_NV_Certify_REQUEST {
         }
     }
 
-    /// Get the inSchemeScheme selector value
-    pub fn inSchemeScheme(&self) -> TPM_ALG_ID {
-        match &self.inScheme {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for TPM2_NV_Certify_REQUEST {
@@ -27239,18 +26296,17 @@ impl TpmStructure for TPM2_NV_Certify_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_NV_Certify_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_NV_Certify_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27267,8 +26323,8 @@ impl TpmStructure for TPM2_NV_Certify_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf();
-        let inSchemeScheme: TPM_ALG_ID = buf.readShort();
-        self.inScheme = UnionFactory::create::<TPMU_SIG_SCHEME, TPM_ALG_ID>(inSchemeScheme)?;
+        let r#inSchemeScheme: TPM_ALG_ID = buf.readShort();
+        self.inScheme = UnionFactory::create::<dyn TPMU_SIG_SCHEME, TPM_ALG_ID>(r#inSchemeScheme)?;
         self.inScheme.unwrap().initFromTpm(buf);
         self.size = buf.readShort();
         self.offset = buf.readShort();
@@ -27290,18 +26346,10 @@ pub struct NV_CertifyResponse {
     /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
     /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
     /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
-    pub signature: Option<TPMU_SIGNATURE>,
+    pub signature: Option<Box<dyn TPMU_SIGNATURE>>,
 }
 
 impl NV_CertifyResponse {
-    /// Get the signatureSigAlg selector value
-    pub fn signatureSigAlg(&self) -> TPM_ALG_ID {
-        match &self.signature {
-            Some(u) => TPM_ALG_ID.try_from(u.get_union_selector())?,
-            None => TPM_ALG_ID::NULL,
-        }
-    }
-
 }
 
 impl TpmStructure for NV_CertifyResponse {
@@ -27311,18 +26359,17 @@ impl TpmStructure for NV_CertifyResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<NV_CertifyResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<NV_CertifyResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27337,8 +26384,8 @@ impl TpmStructure for NV_CertifyResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(self.certifyInfo);
-        let signatureSigAlg: TPM_ALG_ID = buf.readShort();
-        self.signature = UnionFactory::create::<TPMU_SIGNATURE, TPM_ALG_ID>(signatureSigAlg)?;
+        let r#signatureSigAlg: TPM_ALG_ID = buf.readShort();
+        self.signature = UnionFactory::create::<dyn TPMU_SIGNATURE, TPM_ALG_ID>(r#signatureSigAlg)?;
         self.signature.unwrap().initFromTpm(buf);
         Ok(())
     }
@@ -27383,18 +26430,17 @@ impl TpmStructure for TPM2_AC_GetCapability_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_AC_GetCapability_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_AC_GetCapability_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27435,18 +26481,17 @@ impl TpmStructure for AC_GetCapabilityResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<AC_GetCapabilityResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<AC_GetCapabilityResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27513,18 +26558,17 @@ impl TpmStructure for TPM2_AC_Send_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_AC_Send_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_AC_Send_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27560,18 +26604,17 @@ impl TpmStructure for AC_SendResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<AC_SendResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<AC_SendResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27583,7 +26626,7 @@ impl TpmStructure for AC_SendResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.acDataOut = TPMS_AC_OUTPUT.fromTpm(buf);
+        self.acDataOut.initFromTpm(buf);
         Ok(())
     }
 
@@ -27639,18 +26682,17 @@ impl TpmStructure for TPM2_Policy_AC_SendSelect_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Policy_AC_SendSelect_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Policy_AC_SendSelect_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27708,18 +26750,17 @@ impl TpmStructure for TPM2_ACT_SetTimeout_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_ACT_SetTimeout_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_ACT_SetTimeout_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27763,18 +26804,17 @@ impl TpmStructure for TPM2_Vendor_TCG_Test_REQUEST {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2_Vendor_TCG_Test_REQUEST>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2_Vendor_TCG_Test_REQUEST>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27809,18 +26849,17 @@ impl TpmStructure for Vendor_TCG_TestResponse {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<Vendor_TCG_TestResponse>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<Vendor_TCG_TestResponse>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27928,18 +26967,17 @@ impl TpmStructure for TssObject {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TssObject>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TssObject>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -27953,9 +26991,9 @@ impl TpmStructure for TssObject {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.Public = TPMT_PUBLIC.fromTpm(buf);
-        self.Sensitive = TPMT_SENSITIVE.fromTpm(buf);
-        self.Private = TPM2B_PRIVATE.fromTpm(buf);
+        self.Public.initFromTpm(buf);
+        self.Sensitive.initFromTpm(buf);
+        self.Private.initFromTpm(buf);
         Ok(())
     }
 
@@ -27992,18 +27030,17 @@ impl TpmStructure for PcrValue {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<PcrValue>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<PcrValue>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -28017,7 +27054,7 @@ impl TpmStructure for PcrValue {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.index = buf.readInt();
-        self.value = TPMT_HA.fromTpm(buf);
+        self.value.initFromTpm(buf);
         Ok(())
     }
 
@@ -28064,18 +27101,17 @@ impl TpmStructure for SessionIn {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<SessionIn>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<SessionIn>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -28090,7 +27126,7 @@ impl TpmStructure for SessionIn {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.handle = TPM_HANDLE.fromTpm(buf);
+        self.handle.initFromTpm(buf);
         self.nonceCaller = buf.readSizedByteBuf();
         self.attributes = buf.readByte();
         self.auth = buf.readSizedByteBuf();
@@ -28135,18 +27171,17 @@ impl TpmStructure for SessionOut {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<SessionOut>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<SessionOut>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -28204,18 +27239,17 @@ impl TpmStructure for CommandHeader {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<CommandHeader>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<CommandHeader>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -28268,18 +27302,17 @@ impl TpmStructure for TSS_KEY {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TSS_KEY>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TSS_KEY>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -28292,7 +27325,7 @@ impl TpmStructure for TSS_KEY {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.publicPart = TPMT_PUBLIC.fromTpm(buf);
+        self.publicPart.initFromTpm(buf);
         self.privatePart = buf.readSizedByteBuf();
         Ok(())
     }
@@ -28314,18 +27347,17 @@ impl TpmStructure for TPM2B_DIGEST_SYMCIPHER {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_DIGEST_SYMCIPHER>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_DIGEST_SYMCIPHER>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -28341,11 +27373,12 @@ impl TpmStructure for TPM2B_DIGEST_SYMCIPHER {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPM2B_DIGEST_SYMCIPHER {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::SYMCIPHER.get_value()
+impl TpmUnion for TPM2B_DIGEST_SYMCIPHER { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_ID for TPM2B_DIGEST_SYMCIPHER {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::SYMCIPHER
     }
 }
 
@@ -28364,18 +27397,17 @@ impl TpmStructure for TPM2B_DIGEST_KEYEDHASH {
     }
 
     /// Deserialize this structure from a TPM buffer
-    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<Self, TpmError> {
-        let mut obj = Self::default();
-        obj.deserialize(buffer)?;
-        Ok(obj)
+    fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        self.deserialize(buffer)
     }
 
-    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<Self, TpmError> {
-        Ok(buf.createObj::<TPM2B_DIGEST_KEYEDHASH>())
+    fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        buf.createObj::<TPM2B_DIGEST_KEYEDHASH>();
+        Ok(())
     }
 
-    fn fromBytes(&self, buf: &mut ByteVec) -> Result<Self, TpmError> {
-        Ok(self.initFromTpm(buf))
+    fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {
+        self.initFromTpm(buf)
     }
 
     // Implement serialization/deserialization
@@ -28391,11 +27423,12 @@ impl TpmStructure for TPM2B_DIGEST_KEYEDHASH {
 
 }
 
-// Union trait implementations
-impl TpmUnion for TPM2B_DIGEST_KEYEDHASH {
-    /// TpmUnion trait implementation
-    fn get_union_selector(&self) -> u32 {
-        TPM_ALG_ID::KEYEDHASH.get_value()
+impl TpmUnion for TPM2B_DIGEST_KEYEDHASH { }
+
+/// TPM_ALG_ID trait implementation
+impl TPMU_PUBLIC_ID for TPM2B_DIGEST_KEYEDHASH {
+    fn GetUnionSelector(&self) -> TPM_ALG_ID {
+        TPM_ALG_ID::KEYEDHASH
     }
 }
 

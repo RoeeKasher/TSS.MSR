@@ -92,22 +92,24 @@ namespace CodeGen
         public static bool IsOneOf(params Lang[] toCompare) => Current.IsOneOf(toCompare);
 
         // Standalone "this" reference (as used, e.g. to pass it as a function argument)
-        public static string This => (Py | Rust) ? "self" : "this";
+        public static string This => (Py || Rust) ? "self" : "this";
         public static string ThisMember => _thisQual;
-        public static string ClassMember => (Cpp | Rust) ? "::" : ".";
-        public static string Member => Cpp ? "->" : ".";
+        public static string ClassMember => (Cpp || Rust) ? "::" : ".";
+        public static string Member => Cpp ? "->" : Rust ? ".unwrap()." : ".";
         public static string Null => _null;
         public static string Neg => Py ? "not " : "!";
         public static string LineComment => Py ? "#" : "//";
 
         public static string If(string cond) => Py ? $"if {cond}:" : $"if ({cond})";
+        
+        public static string IfNull(string obj) => TargetLang.If(Rust ? $"{obj}.is_none()" : $"{obj} == {TargetLang.Null}");
 
         public static string Quote(string str) => _quote + str + _quote;
 
         public static string TypeInfo(string typeName) => typeName + (Java ? ".class" : Rust ? "::type_id()" : "");
 
         public static string LocalVar(string varName, string typeName)
-            => Py ? varName : Node ? $"let {varName}: {typeName}" : Rust ? $"let {varName}: {typeName}" : $"{typeName} {varName}";
+            => Py ? varName : Node ? $"let {varName}: {typeName}" : Rust ? $"let r#{varName}: {typeName}" : $"{typeName} {varName}";
 
         public static string NewObject(string type) => Rust ? $"{type}::default()" : $"{_new}{type}()";
 

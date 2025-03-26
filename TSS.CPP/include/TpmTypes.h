@@ -2556,7 +2556,7 @@ struct TPMA_STARTUP_CLEAR : public TpmEnum<UINT32>
     /// NOTE A shutdown is orderly if the TPM receives a TPM2_Shutdown() of any type followed
     /// by a TPM2_Startup() of any type. However, the TPM will return an error if
     /// TPM2_Startup(TPM_SU_STATE) was not preceded by TPM2_Shutdown(TPM_SU_STATE). </summary>
-    orderly = 0x80000000
+    orderly = 0xFFFFFFFF80000000
     TPM_ENUM_EPILOGUE(TPMA_STARTUP_CLEAR)
 };
 
@@ -2628,7 +2628,7 @@ struct TPMA_CC : public TpmEnum<UINT32>
     V = 0x20000000,
 
     /// <summary> Allocated for software; shall be zero </summary>
-    Res_BIT_MASK = 0xC0000000,
+    Res_BIT_MASK = 0xFFFFFFFFC0000000,
     Res_BIT_OFFSET = 30,
     Res_BIT_LENGTH = 2
     TPM_ENUM_EPILOGUE(TPMA_CC)
@@ -2685,7 +2685,7 @@ struct TPMA_X509_KEY_USAGE : public TpmEnum<UINT32>
     contentCommitment = 0x40000000,
 
     /// <summary> Sign SET in Subject Key (objectHandle) </summary>
-    digitalSignature = 0x80000000
+    digitalSignature = 0xFFFFFFFF80000000
     TPM_ENUM_EPILOGUE(TPMA_X509_KEY_USAGE)
 };
 
@@ -2721,7 +2721,7 @@ struct TPM_NV_INDEX : public TpmEnum<UINT32>
     index_BIT_LENGTH = 24,
 
     /// <summary> Constant value of TPM_HT_NV_INDEX indicating the NV Index range </summary>
-    RhNv_BIT_MASK = 0xFF000000,
+    RhNv_BIT_MASK = 0xFFFFFFFFFF000000,
     RhNv_BIT_OFFSET = 24,
     RhNv_BIT_LENGTH = 8
     TPM_ENUM_EPILOGUE(TPM_NV_INDEX)
@@ -2875,7 +2875,7 @@ struct TPMA_NV : public TpmEnum<UINT32>
 
     /// <summary> SET (1): TPM2_NV_ReadLock() may be used to SET TPMA_NV_READLOCKED for this Index.
     /// CLEAR (0): TPM2_NV_ReadLock() has no effect on this Index. </summary>
-    READ_STCLEAR = 0x80000000
+    READ_STCLEAR = 0xFFFFFFFF80000000
     TPM_ENUM_EPILOGUE(TPMA_NV)
 };
 

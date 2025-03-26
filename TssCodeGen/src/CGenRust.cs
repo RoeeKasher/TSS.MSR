@@ -28,9 +28,6 @@ namespace CodeGen
 
             GenerateTpmCommandPrototypes();
             UpdateExistingSource(@"src\tpm2.rs");
-
-            GenerateTpmTypesImpl();
-            UpdateExistingSource(@"src\tpm_types_impl.rs");
         }
 
         /// <summary> Determines whether this struct is represented as a type alias in Rust </summary>
@@ -53,7 +50,7 @@ namespace CodeGen
             // Handle union object types
             if (f.MarshalType == MarshalType.UnionObject)
             {
-                return $"Option<Box<dyn TpmUnion>>";
+                return $"Option<Box<dyn {ToSnakeCase(typeName)}>>";
             }
             
             // Handle types with generics (containers like Vec, Option, etc.)
@@ -105,9 +102,11 @@ namespace CodeGen
             Write("use crate::tpm_buffer::TpmBuffer;");
             Write("use std::fmt;");
             Write("use num_enum::TryFromPrimitive;");
+            Write("use std::collections::HashMap;");
+            Write("use std::fmt::Debug;");
             Write("");
             
-            // Add TpmEnum trait definition first
+            // Generate traits
             WriteComment("Common trait for all TPM enumeration types");
             Write("pub trait TpmEnum {");
             TabIn("/// Get the numeric value of the enum");
@@ -115,18 +114,36 @@ namespace CodeGen
             TabOut("}");
             Write("");
 
+            WriteComment("Trait for structures that can be marshaled to/from TPM wire format");
+            TabIn("pub trait TpmStructure {");
+            Write("/// Serialize the structure to a TPM buffer");
+            Write("fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
+            Write("");
+            Write("/// Deserialize the structure from a TPM buffer");
+            Write("fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
+
+            Write("fn toTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
+            Write("fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
+            Write("fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError>;");
+            Write("fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError>;");
+
+            
+            TabOut("}");
+            
+            WriteComment("Trait for TPM union types");
+            Write("pub trait TpmUnion : TpmStructure { }");
+            Write("");
+
+            // Generate the enum map and union factory
+            GenEnumMap();
+            GenUnionFactory();
+
+            // Generate the enums, bitfields, unions, and structs
             foreach (var e in TpmTypes.Get<TpmEnum>())
                 GenEnum(e);
 
             foreach (var bf in TpmTypes.Get<TpmBitfield>())
                 GenBitfield(bf);
-
-            WriteComment("Base trait for TPM union types");
-            Write("pub trait TpmUnion {");
-            TabIn("/// Get the union selector value");
-            Write("fn get_union_selector(&self) -> u32;");
-            TabOut("}");
-            Write("");
 
             foreach (var u in TpmTypes.Get<TpmUnion>())
                 GenUnion(u);
@@ -140,10 +157,10 @@ namespace CodeGen
         /// </summary>
         private bool HasDuplicateValues(List<TpmNamedConstant> elements)
         {
-            HashSet<string> values = new HashSet<string>();
+            HashSet<long> values = new HashSet<long>();
             foreach (var element in elements)
             {
-                if (!values.Add(element.Value))
+                if (!values.Add(element.NumericValue))
                 {
                     return true; // Found a duplicate
                 }
@@ -163,7 +180,7 @@ namespace CodeGen
             {
                 // Generate a newtype struct with constants for enums with duplicates
                 WriteComment("Enum with duplicated values - using struct with constants");
-                Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]");
+                Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
                 Write($"pub struct {e.Name}(pub i{e.GetFinalUnderlyingType().GetSize() * 8});");
                 Write("");
                 
@@ -194,7 +211,7 @@ namespace CodeGen
                 foreach (var elt in elements.GroupBy(x => x.Value).Select(g => g.First()))
                 {
                     // Only include first occurrence of each value to avoid duplicate match arms
-                    Write($"{elt.Value} => Ok(Self::{elt.Name}),");
+                    Write($"{elt.NumericValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
                 }
                 Write("_ => Err(TpmError::InvalidEnumValue),");
                 TabOut("}");
@@ -232,11 +249,20 @@ namespace CodeGen
                 TabIn("match self.0 {");
                 
                 // Group by value to avoid duplicate match arms
-                var grouped = elements.GroupBy(x => x.Value);
+                var grouped = elements.GroupBy(x => x.NumericValue);
                 foreach (var group in grouped)
                 {
-                    var variants = group.Select(elt => $"Self::{elt.Name}");
-                    Write($"{group.Key} => write!(f, \"{group.First().Name}\"),");
+                    if (group.Count() == 1)
+                    {
+                        // Only one variant for this value
+                        Write($"{group.Key} => write!(f, \"{group.First().Name}\"),");
+                    }
+                    else
+                    {
+                        // Multiple variants for this value
+                        var variants = group.Select(elt => elt.Name);
+                        Write($"{group.Key} => write!(f, \"One of <{string.Join(", ", variants)}>\"),");
+                    }
                 }
                 
                 Write("_ => write!(f, \"Unknown({:?})\", self.0),");
@@ -247,11 +273,12 @@ namespace CodeGen
             else
             {
                 // Original enum generation for types without duplicates
-                Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive)]");
+                Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, Default)]");
                 Write($"#[repr(i{e.GetFinalUnderlyingType().GetSize() * 8})]");
                 Write($"pub enum {e.Name} {{");
                 TabIn();
 
+                Write("#[default]");
                 foreach (var elt in elements)
                 {
                     WriteComment(AsSummary(elt.Comment));
@@ -377,107 +404,38 @@ namespace CodeGen
                 return;
 
             WriteComment(u);
-            Write($"pub enum {u.Name} {{");
-            TabIn();
-            
-            foreach (var m in u.Members)
-            {
-                if (m.Type.IsElementary())
-                {
-                    Write($"{ToRustEnumMemberName(m.Name)},");
-                }
-                else 
-                {
-                    Write($"{ToRustEnumMemberName(m.Name)}({m.Type.Name}),");
-                }
-            }
-            
+            TabIn($"pub trait {u.Name} : TpmUnion {{");
+            Write($"fn GetUnionSelector(&self) -> {GetUnionSelectorType(u)};");
             TabOut("}");
-            Write("");
-            
-            TabIn($"impl TpmUnion for {u.Name} {{");
-            TabIn("fn get_union_selector(&self) -> u32 {");
-            TabIn("match self {");
-            
-            foreach (var m in u.Members)
-            {
-                string memberName = ToRustEnumMemberName(m.Name);
-                if (m.Type.IsElementary())
-                {
-                    // Use get_value() instead of as u32
-                    Write($"Self::{memberName} => {m.SelectorValue.QualifiedName}.get_value(),");
-                }
-                else
-                {
-                    // Use get_value() instead of as u32
-                    Write($"Self::{memberName}(_) => {m.SelectorValue.QualifiedName}.get_value(),");
-                }
-            }
-            
-            TabOut("}", false);
-            TabOut("}", false);
-            TabOut("}", false);
-            Write("");
 
-            // Implement Debug trait
-            TabIn($"impl fmt::Debug for {u.Name} {{");
+            TabIn($"impl Debug for dyn {u.Name} {{");
             TabIn("fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {");
-            TabIn("match self {");
-            foreach (var m in u.Members)
-            {
-                string memberName = ToRustEnumMemberName(m.Name);
-                if (m.Type.IsElementary())
-                {
-                    Write($"Self::{memberName} => write!(f, \"{u.Name}::{memberName}\"),");
-                }
-                else
-                {
-                    Write($"Self::{memberName}(inner) => write!(f, \"{u.Name}::{memberName}({{:?}})\", inner),");
-                }
-            }
+            Write("write!(f, \"{}\", self.GetUnionSelector())");
             TabOut("}", false);
-            TabOut("}", false);
-            TabOut("}", false);
-            Write("");
+            TabOut("}");
         }
-
-        string GetUnionSelectorType(TpmUnion u)
-        {
-            // Take the type from the first member's selector value if available
-            if (u.Members.Count > 0)
-            {
-                var firstMember = u.Members.First();
-                return firstMember.SelectorValue.EnclosingEnum.Name;
-            }
-            return "u32"; // Default
-        }
-
-        string GetUnionMemberSelectorInfo(TpmStruct s, out string selVal)
-        {
-            selVal = null;
-            if (s.ContainingUnions.Count == 0)
-                return null;
-
-            // Find the containing union and the corresponding member
-            var union = s.ContainingUnions.First();
-            var member = union.Members.FirstOrDefault(m => m.Type.SpecName == s.SpecName);
-            if (member == null)
-                return null;
-
-            selVal = $"{union.Name}::{ToRustEnumMemberName(member.SelectorValue.Name)}";
-            return GetUnionSelectorType(union);
-        }
-
+            
         void GenGetUnionSelector(TpmStruct s)
         {
             string selType = GetUnionMemberSelectorInfo(s, out string selVal);
-            if (selType != null)
+            if (selType == null)
             {
-                WriteComment("TpmUnion trait implementation");
-                TabIn("fn get_union_selector(&self) -> u32 {");
-                // Use get_value() instead of as u32
-                Write($"{selVal}.get_value()");
+                return;
+            }
+
+            Write($"impl TpmUnion for {s.Name} {{ }}");
+
+            foreach (var containingUnion in s.ContainingUnions)
+            {
+                WriteComment($"{selType} trait implementation");
+
+                TabIn($"impl {containingUnion.Name} for {s.Name} {{");
+
+                TabIn($"fn GetUnionSelector(&self) -> {selType} {{");
+                Write(selVal);
                 TabOut("}", false);
+
+                TabOut("}");
             }
         }
 
@@ -496,7 +454,7 @@ namespace CodeGen
             }
 
             WriteComment(s);
-            Write($"#[derive(Debug, Clone)]");
+            Write($"#[derive(Debug, Clone, Default)]");
             Write($"pub struct {structName} {{");
             TabIn();
 
@@ -518,32 +476,6 @@ namespace CodeGen
             }
             
             TabOut("}");
-            Write("");
-            
-            // Default implementation
-            TabIn($"impl Default for {structName} {{");
-            TabIn("fn default() -> Self {");
-            TabIn("Self {");
-            
-            var fieldsToInit = s.NonDefaultInitFields;
-            if (fieldsToInit.Count() != 0)
-            {
-                foreach (StructField f in fieldsToInit)
-                    Write($"{f.Name}: {f.GetInitVal()},");
-            }
-
-            // foreach (var f in s.NonSizeFields)
-            // {
-            //     if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
-            //         continue;
-                    
-            //     string defaultValue = GetRustDefaultValue(f);
-            //     Write($"{ToSnakeCase(f.Name)}: {defaultValue},");
-            // }
-            
-            TabOut("}", false);
-            TabOut("}", false);
-            TabOut("}", false);
             Write("");
             
             // Implement struct methods
@@ -581,66 +513,69 @@ namespace CodeGen
                 Write("");
             }
             
-            // Selector methods for unions
-            foreach (var f in s.Fields.Where(f => f.MarshalType == MarshalType.UnionSelector))
-            {
-                var unionField = f.RelatedUnion;
-                var u = (TpmUnion)unionField.Type;
+            // // Selector methods for unions
+            // foreach (var f in s.Fields.Where(f => f.MarshalType == MarshalType.UnionSelector))
+            // {
+            //     var unionField = f.RelatedUnion;
+            //     var u = (TpmUnion)unionField.Type;
                 
-                Write($"/// Get the {f.Name} selector value");
-                Write($"pub fn {ToSnakeCase(f.Name)}(&self) -> {f.TypeName} {{");
-                TabIn();
+            //     Write($"/// Get the {f.Name} selector value");
+            //     Write($"pub fn {ToSnakeCase(f.Name)}(&self) -> {f.TypeName} {{");
+            //     TabIn();
                 
-                if (u.NullSelector == null)
-                {
-                    Write($"match &self.{ToSnakeCase(unionField.Name)} {{");
-                    TabIn("Some(u) => u.get_union_selector() as _,");
-                    Write("None => 0 as _,");
-                    TabOut("}");
-                }
-                else
-                {
-                    Write($"match &self.{ToSnakeCase(unionField.Name)} {{");
-                    TabIn("Some(u) => u.get_union_selector() as _,");
-                    Write($"None => {u.NullSelector.QualifiedName} as _,");
-                    TabOut("}");
-                }
+            //     TabIn($"match &self.{ToSnakeCase(unionField.Name)} {{");
+            //     Write($"Some(u) => {f.TypeName}.try_from(u.GetUnionSelector())?,");
+            //     if (u.NullSelector == null)
+            //     {
+            //         Write("None => 0 as _,");
+            //     }
+            //     else
+            //     {
+            //         Write($"None => {u.NullSelector.QualifiedName},");
+            //     }
                 
-                TabOut("}");
-                Write("");
-            }
+            //     TabOut("}", false);
+            //     TabOut("}", false);
+            //     Write("");
+            // }
 
+            TabOut("}");
+
+            GenTpmStructureImplementation(s);
+
+            GenGetUnionSelector(s);
+
+            Write("");
+        }
+
+        void GenTpmStructureImplementation(TpmStruct s)
+        {
             // Marshaling methods
+            TabIn($"impl TpmStructure for {s.Name} {{");
+
             Write("/// Serialize this structure to a TPM buffer");
-            TabIn("pub fn to_tpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
+            TabIn("fn toTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
             Write("self.serialize(buffer)");
             TabOut("}");
             Write("");
 
             Write("/// Deserialize this structure from a TPM buffer");
-            TabIn("pub fn from_tpm(buffer: &mut TpmBuffer) -> Result<Self, TpmError> {");
-            Write("let mut obj = Self::default();");
-            Write("obj.deserialize(buffer)?;");
-            Write("Ok(obj)");
-            TabOut("}", false);
-
+            TabIn("fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
+            Write("self.deserialize(buffer)");
             TabOut("}");
 
-            // Implement TpmUnion trait if needed
-            if (s.ContainingUnions?.Count > 0)
-            {
-                Write("// Union trait implementations");
-                foreach (var u in s.ContainingUnions)
-                {
-                    Write($"impl TpmUnion for {structName} {{");
-                    TabIn();
-                    GenGetUnionSelector(s);
-                    TabOut("}");
-                }
-                Write("");
-            }
+            TabIn("fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {");
+            Write($"buf.createObj::<{s.Name}>();");
+            Write("Ok(())");
+            TabOut("}");
 
-            Write("");
+            TabIn("fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {");
+            Write($"self.initFromTpm(buf)");
+            TabOut("}");
+
+            GenStructMarshalingImpl(s);
+
+            TabOut("}");
         }
 
         void GenerateTpmCommandPrototypes()
@@ -650,7 +585,6 @@ namespace CodeGen
             Write("use crate::error::TpmError;");
             Write("use crate::tpm_buffer::TpmBuffer;");
             Write("use crate::tpm_types::*;");
-            Write("use crate::tpm_types_impl::*;");
             Write("");
             
             var commands = TpmTypes.Get<TpmStruct>().Where(s => s.Info.IsRequest());
@@ -894,23 +828,6 @@ namespace CodeGen
             Write("");
         }
 
-        void GenerateTpmTypesImpl()
-        {
-            Write("//! TPM types implementation");
-            Write("");
-            Write("use crate::error::TpmError;");
-            Write("use crate::tpm_buffer::TpmBuffer;");
-            Write("use crate::tpm_types::*;");
-            Write("use std::collections::HashMap;");
-            Write("use std::convert::TryFrom;");
-            Write("");
-            
-            GenEnumMap();
-            GenUnionFactory();
-            GenStructsImpl();
-            GenCommandDispatchers();
-        }
-
         void GenEnumMap()
         {
             TabIn("lazy_static::lazy_static! {");
@@ -965,13 +882,13 @@ namespace CodeGen
             Write("");
             TabIn("impl UnionFactory {");
             Write("/// Creates a new union instance based on the selector value");
-            TabIn("pub fn create<U: TpmUnion>(selector: u32) -> Option<Box<dyn TpmUnion>> {");
+            TabIn("pub fn create<U: TpmUnion + ?Sized, S: TpmEnum>(selector: S) -> Result<Option<Box<U>>, TpmError> {");
             Write("let type_id = std::any::TypeId::of::<U>();");
             Write("");
             
             foreach (TpmUnion u in unions)
             {
-                TabIn($"if type_id == std::any::TypeId::of::<{u.Name}>() {{");
+                TabIn($"if type_id == std::any::TypeId::of::<dyn {u.Name}>() {{");
                 TabIn("match selector {");
                 
                 foreach (UnionMember m in u.Members)
@@ -987,13 +904,13 @@ namespace CodeGen
                     }
                 }
                 
-                Write("_ => None,");
+                Write("_ => TpmError::InvalidUnion,");
                 TabOut("}");
                 TabOut("} else ");
             }
             
             Write("{");
-            TabIn("None");
+            TabIn("TpmError::InvalidUnion");
             TabOut("}");
             
             TabOut("}");
@@ -1001,301 +918,56 @@ namespace CodeGen
             Write("");
         }
 
-        void GenStructsImpl()
-        {
-            foreach (var s in TpmTypes.Get<TpmStruct>())
-            {
-                if (IsTypedefStruct(s))
-                    continue;
-                    
-                GenStructMarshalingImpl(s);
-            }
-        }
-
         void GenStructMarshalingImpl(TpmStruct s)
         {
-            TabIn($"impl {s.Name} {{");
+            var fields = s.MarshalFields;
             Write("// Implement serialization/deserialization");
             
-            // If there are no fields to serializa/deserialize, exit early with empty implementations
-            if (s.MarshalFields.Length == 0)
-            {
-                Write("/// No fields to serialize/deserialize");
-                TabIn("pub fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
-                Write("Ok(())");
-                TabOut("}");
-                TabIn("pub fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
-                Write("Ok(())");
-                TabOut("}");
-                TabOut("}");
-                return;
-            }
-
             // To TPM implementation
-            TabIn($"pub fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {{");
+            TabIn("fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {");
             Write("// Serialize fields");
-            foreach (var f in s.MarshalFields)
+            var toTpmOps = GetToTpmFieldsMarshalOps(fields);
+
+            foreach (var op in toTpmOps)
             {
-                if (f.MarshalType == MarshalType.ConstantValue)
-                {
-                    // Serialize constant value
-                    var constVal = ConstTag(f);
-                    Write($"// Constant value: {constVal}");
-                    Write($"buffer.write_u32({constVal})?;");
-                    continue;
-                }
-                
-                string fieldName = ToSnakeCase(f.Name);
-                
-                if (f.Type.IsElementary())
-                {
-                    int size = f.Type.GetSize();
-                    Write($"buffer.write_u{size * 8}(self.{fieldName})?;");
-                }
-                else if (f.IsEnum())
-                {
-                    if (f.MarshalType == MarshalType.UnionSelector)
-                    {
-                        Write($"buffer.write_u32(self.{fieldName}().get_value())?;");
-                    } else {
-                        Write($"buffer.write_u32(self.{fieldName}.get_value())?;");
-                    }
-                }
-                else if (f.MarshalType == MarshalType.UnionObject)
-                {
-                    TabIn($"if let Some(union_obj) = &self.{fieldName} {{");
-                    Write("buffer.write_union(union_obj.as_ref())?;");
-                    TabOut("} else {");
-                    TabIn();
-                    // Write null selector if no union is present
-                    var unionField = f as UnionField;
-                    var nullSelector = ((TpmUnion)unionField.Type).NullSelector?.QualifiedName ?? "0";
-                    Write($"buffer.write_u32({nullSelector})?;");
-                    TabOut("}");
-                }
-                else if (f.IsByteBuffer())
-                {
-                    Write($"buffer.write_sized_buffer(&self.{fieldName})?;");
-                }
-                else if (IsList(f))
-                {
-                    // Handle lists (vectors in Rust)
-                    Write($"// List count");
-                    Write($"buffer.write_u32(self.{fieldName}.len() as u32)?;");
-                    TabIn($"for item in &self.{fieldName} {{");
-                    Write("item.serialize(buffer)?;");
-                    TabOut("}");
-                }
-                else if (f.IsArray())
-                {
-                    // Check if it's a fixed size array or variable length array
-                    int arraySize = GetArraySize(f);
-                    if (arraySize > 0)
-                    {
-                        // Fixed size array
-                        Write($"buffer.write_fixed_array(&self.{fieldName}, {arraySize})?;");
-                    }
-                    else
-                    {
-                        // Variable length array
-                        Write($"buffer.write_sized_array(&self.{fieldName})?;");
-                    }
-                }
-                else if (f.Type is TpmStruct)
-                {
-                    // Normal struct field
-                    Write($"self.{fieldName}.serialize(buffer)?;");
-                }
-                else
-                {
-                    Write($"self.{fieldName}.serialize(buffer)?;");
-                }
+                Write(op + ";");
             }
             Write("Ok(())");
             TabOut("}");
             Write("");
 
             // From TPM implementation
-            TabIn($"pub fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {{");
+            TabIn("fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {");
             Write("// Deserialize fields");
-            
-            // Store selector values during deserialization
-            Write("// Track selector values for unions");
-            Write("let mut selector_values = std::collections::HashMap::new();");
-            Write("");
-            
-            foreach (var f in s.MarshalFields)
+            var fromTpmOps = CodeGenBase.GetFromTpmFieldsMarshalOps(s.MarshalFields);
+            foreach (var op in fromTpmOps)
             {
-                if (f.MarshalType == MarshalType.ConstantValue)
-                {
-                    // Verify constant value
-                    var constVal = ConstTag(f);
-                    Write($"// Constant value: {constVal}");
-                    Write($"let tag = buffer.read_u32()?;");
-                    Write($"if tag != {constVal} {{");
-                    TabIn($"return Err(TpmError::IncorrectTag({constVal}, tag));");
-                    TabOut("}");
-                    continue;
-                }
-                
-                string fieldName = ToSnakeCase(f.Name);
-                
-                if (f.Type.IsElementary())
-                {
-                    int size = f.Type.GetSize();
-                    Write($"self.{fieldName} = buffer.read_u{size * 8}()?;");
-                }
-                else if (f.IsEnum())
-                {
-                    // Check if this is a selector for a union
-                    bool isUnionSelector = s.Fields.Any(field => 
-                        field.MarshalType == MarshalType.UnionSelector && field.Name == f.Name);
-                        
-                    // Read the raw value first
-                    Write($"let {fieldName}_value = buffer.read_u32()?;");
-
-                    // Store selector value if this is a union selector
-                    if (isUnionSelector)
-                    {
-                        Write($"selector_values.insert(\"{f.Name}\", {fieldName}_value);");
-                    } else {
-                        // Check if the enum type has duplicates
-                        var enumType = f.Type as TpmEnum;
-                        bool hasDuplicates = enumType != null && HasDuplicateValues(enumType.Members);
-                        
-                        if (hasDuplicates)
-                        {
-                            Write($"self.{fieldName} = {f.TypeName}::try_from({fieldName}_value as i{f.Type.GetFinalUnderlyingType().GetSize() * 8})?;");
-                        }
-                        else
-                        {
-                            Write($"self.{fieldName} = {f.TypeName}::try_from({fieldName}_value)?;");
-                        }
-                    }
-                }
-                else if (f.MarshalType == MarshalType.UnionObject)
-                {
-                    var unionField = f as UnionField;
-                    var selectorField = unionField.UnionSelector;
-                    string selectorName = ToSnakeCase(selectorField.Name);
-                    
-                    // Get selector value from our stored map
-                    Write($"let selector_value = *selector_values.get(\"{selectorField.Name}\").unwrap_or(&0);");
-                    TabIn($"self.{fieldName} = if selector_value != 0 {{");
-                    TabIn($"let mut obj = UnionFactory::create::<{f.TypeName}>(selector_value)");
-                    TabOut(".ok_or(TpmError::InvalidUnion)?;", false);
-                    Write("buffer.read_union(obj.as_mut())?;");
-                    Write("Some(obj)");
-                    TabOut("} else {", false);
-                    TabIn();
-                    Write("None");
-                    TabOut("};");
-                }
-                else if (f.IsByteBuffer())
-                {
-                    Write($"self.{fieldName} = buffer.read_sized_buffer()?;");
-                }
-                else if (IsList(f))
-                {
-                    // Handle lists (vectors in Rust)
-                    Write($"// List count");
-                    Write($"let {fieldName}_count = buffer.read_u32()? as usize;");
-                    Write($"self.{fieldName}.clear();");
-                    TabIn($"for _ in 0..{fieldName}_count {{");
-                    
-                    // Get element type
-                    TpmType elementType = GetElementType(f);
-                    string elementTypeName = elementType.Name;
-                    
-                    Write($"let mut item = {elementTypeName}::default();");
-                    Write("item.deserialize(buffer)?;");
-                    Write($"self.{fieldName}.push(item);");
-                    TabOut("}");
-                }
-                else if (f.IsArray())
-                {
-                    // Check if it's a fixed size array or variable length array
-                    int arraySize = GetArraySize(f);
-                    if (arraySize > 0)
-                    {
-                        // Fixed size array
-                        Write($"self.{fieldName} = buffer.read_fixed_array({arraySize})?;");
-                    }
-                    else
-                    {
-                        // Variable length array
-                        Write($"self.{fieldName} = buffer.read_sized_array()?;");
-                    }
-                }
-                else if (f.Type is TpmStruct)
-                {
-                    // Normal struct field
-                    Write($"self.{fieldName}.deserialize(buffer)?;");
-                }
-                else
-                {
-                    Write($"self.{fieldName}.deserialize(buffer)?;");
-                }
+                Write(op + ";");
             }
             Write("Ok(())");
             TabOut("}");
-            
-            TabOut("}");
-            Write("");
         }
 
-        void GenCommandDispatchers()
-        {
-            var cmdRequestStructs = TpmTypes.Get<TpmStruct>().Where(s => s.Info.IsRequest());
-
-            Write("/// Trait for structures that can be marshaled to/from TPM wire format");
-            TabIn("pub trait TpmStructure: Sized {");
-            Write("/// Serialize the structure to a TPM buffer");
-            Write("fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
-            Write("");
-            Write("/// Deserialize the structure from a TPM buffer");
-            Write("fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
-            TabOut("}");
-            Write("");
-            
-            // Implement TpmStructure for all generated structs
-            Write("// Implement TpmStructure trait for all TPM structs");
-            foreach (var s in TpmTypes.Get<TpmStruct>())
-            {
-                if (!IsTypedefStruct(s))
-                {
-                    TabIn($"impl TpmStructure for {s.Name} {{");
-                    TabIn("fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
-                    Write("self.serialize(buffer)");
-                    TabOut("}");
-                    Write("");
-                    TabIn("fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
-                    Write("self.deserialize(buffer)");
-                    TabOut("}");
-                    TabOut("}");
-                    Write("");
-                }
-            }
-        }
-        
         // Helper methods for Rust-specific formatting
         
         static string ToSnakeCase(string name)
         {
-            if (string.IsNullOrEmpty(name))
-                return name;
+            return name;
+
+            // if (string.IsNullOrEmpty(name))
+            //     return name;
                 
-            // Special case for single letter followed by uppercase
-            if (name.Length >= 2 && char.IsUpper(name[1]))
-                return name;
+            // // Special case for single letter followed by uppercase
+            // if (name.Length >= 2 && char.IsUpper(name[1]))
+            //     return name;
                 
-            // Insert underscores before uppercase letters
-            var result = Regex.Replace(name, "(?<=[a-z0-9])([A-Z])", "_$1");
+            // // Insert underscores before uppercase letters
+            // var result = Regex.Replace(name, "(?<=[a-z0-9])([A-Z])", "_$1");
             
-            // Handle acronyms (sequences of uppercase letters)
-            result = Regex.Replace(result, "([A-Z])([A-Z]+)", "$1$2");
+            // // Handle acronyms (sequences of uppercase letters)
+            // result = Regex.Replace(result, "([A-Z])([A-Z]+)", "$1$2");
             
-            return result;
+            // return result;
         }
         
         /// <summary>
