@@ -14,6 +14,15 @@ namespace CodeGen
     /// <summary> Rust TSS code generator </summary>
     internal class CGenRust : CodeGenBase
     {
+        static readonly (string, string)[] TpmStructureFunctions = new (string, string)[] {
+            ("serialize", "(&self, buffer: &mut TpmBuffer)"),
+            ("deserialize", "(&mut self, buffer: &mut TpmBuffer)"),
+            ("toTpm", "(&self, buffer: &mut TpmBuffer)"),
+            ("initFromTpm", "(&self, buffer: &mut TpmBuffer)"),
+            ("fromTpm", "(&self, buffer: &mut TpmBuffer)"),
+            ("fromBytes", "(&self, buffer: &mut Vec<u8>)"),
+        };
+        
         // Maps enum type to a map of enumerator names to values
         Dictionary<string, Dictionary<string, string>> EnumMap;
 
@@ -50,7 +59,7 @@ namespace CodeGen
             // Handle union object types
             if (f.MarshalType == MarshalType.UnionObject)
             {
-                return $"Option<Box<dyn {ToSnakeCase(typeName)}>>";
+                return $"Option<{ToSnakeCase(typeName)}>";
             }
             
             // Handle types with generics (containers like Vec, Option, etc.)
@@ -117,26 +126,15 @@ namespace CodeGen
 
             WriteComment("Trait for structures that can be marshaled to/from TPM wire format");
             TabIn("pub trait TpmStructure {");
-            Write("/// Serialize the structure to a TPM buffer");
-            Write("fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
-            Write("");
-            Write("/// Deserialize the structure from a TPM buffer");
-            Write("fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
-
-            Write("fn toTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
-            Write("fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;");
-            Write("fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError>;");
-            Write("fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError>;");
-
-            
+            foreach (var functionNameAndParams in TpmStructureFunctions)
+            {
+                Write("fn " + functionNameAndParams.Item1 + functionNameAndParams.Item2 + " -> Result<(), TpmError>;");
+            }            
             TabOut("}");
             
             WriteComment("Trait for TPM union types");
             Write("pub trait TpmUnion : TpmStructure { }");
             Write("");
-
-            // Generate union factory
-            GenUnionFactory();
 
             // Generate the enums, bitfields, unions, and structs
             foreach (var e in TpmTypes.Get<TpmEnum>())
@@ -406,16 +404,115 @@ namespace CodeGen
             if (!u.Implement)
                 return;
 
-            WriteComment(u);
-            TabIn($"pub trait {u.Name} : TpmUnion {{");
-            Write($"fn GetUnionSelector(&self) -> {GetUnionSelectorType(u)};");
-            TabOut("}");
+            var unionSelectorType = GetUnionSelectorType(u);
 
-            TabIn($"impl Debug for dyn {u.Name} {{");
-            TabIn("fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {");
-            Write("write!(f, \"{}\", self.GetUnionSelector())");
+            WriteComment(u);
+
+            Write($"pub enum {u.Name} {{");
+            TabIn();
+            
+            foreach (var m in u.Members)
+            {
+                if (m.Type.IsElementary())
+                {
+                    Write($"{ToRustEnumMemberName(m.Name)},");
+                }
+                else 
+                {
+                    Write($"{ToRustEnumMemberName(m.Name)}({m.Type.Name}),");
+                }
+            }
+            
+            TabOut("}");
+            Write("");
+
+            WriteComment("Union selector type");
+            TabIn($"impl {u.Name} {{");
+            TabIn($"pub fn GetUnionSelector(&self) -> Option<{unionSelectorType}> {{");
+            TabIn("match self {");
+            foreach (var m in u.Members)
+            {
+                string memberName = ToRustEnumMemberName(m.Name);
+                if (m.Type.IsElementary())
+                {
+                    Write($"Self::{memberName} => None, ");
+                }
+                else
+                {
+                    Write($"Self::{memberName}(_) => {m.Type.Name}::GetUnionSelector(),");
+                }
+            }
             TabOut("}", false);
             TabOut("}");
+
+            TabIn($"fn create(selector: {unionSelectorType}) -> Result<Option<Self>, TpmError> {{");
+            TabIn("match selector {");
+            foreach (var m in u.Members)
+            {
+                string memberName = ToRustEnumMemberName(m.Name);
+                if (m.Type.IsElementary())
+                {
+                    Write($"{m.SelectorValue.QualifiedName} => Ok(None),");
+                }
+                else
+                {
+                    Write($"{m.SelectorValue.QualifiedName} => Ok(Some(Self::{memberName}({m.Type.Name}::default()))),");
+                }
+
+            }
+            Write("_ => Err(TpmError::InvalidUnion),");
+            
+            TabOut("}", false);
+            TabOut("}", false);
+            
+            TabOut("}");
+
+            // Implement Debug trait
+            TabIn($"impl fmt::Debug for {u.Name} {{");
+            TabIn("fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {");
+            TabIn("match self {");
+            foreach (var m in u.Members)
+            {
+                string memberName = ToRustEnumMemberName(m.Name);
+                if (m.Type.IsElementary())
+                {
+                    Write($"Self::{memberName} => write!(f, \"{u.Name}::{memberName}\"),");
+                }
+                else
+                {
+                    Write($"Self::{memberName}(inner) => write!(f, \"{u.Name}::{memberName}({{:?}})\", inner),");
+                }
+            }
+            TabOut("}", false);
+            TabOut("}", false);
+            TabOut("}", false);
+
+            // Marshaling methods
+            TabIn($"impl TpmStructure for {u.Name} {{");
+
+            foreach (var functionNameAndParams in TpmStructureFunctions)
+            {
+                TabIn("fn " + functionNameAndParams.Item1 + functionNameAndParams.Item2 + " -> Result<(), TpmError> {");
+                TabIn("match self {");
+                foreach (var m in u.Members)
+                {
+                    string memberName = ToRustEnumMemberName(m.Name);
+                    if (m.Type.IsElementary())
+                    {
+                        Write($"Self::{memberName} => Ok(()),");
+                    }
+                    else 
+                    {
+                        Write($"Self::{memberName}(inner) => inner.{functionNameAndParams.Item1}(buffer),");
+                    }
+                }
+                TabOut("}", false);
+                TabOut("}");
+            }
+
+            TabOut("}");
+            
+            Write("");
         }
             
         void GenGetUnionSelector(TpmStruct s)
@@ -426,20 +523,9 @@ namespace CodeGen
                 return;
             }
 
-            Write($"impl TpmUnion for {s.Name} {{ }}");
-
-            foreach (var containingUnion in s.ContainingUnions)
-            {
-                WriteComment($"{selType} trait implementation");
-
-                TabIn($"impl {containingUnion.Name} for {s.Name} {{");
-
-                TabIn($"fn GetUnionSelector(&self) -> {selType} {{");
-                Write(selVal);
-                TabOut("}", false);
-
-                TabOut("}");
-            }
+            TabIn($"fn GetUnionSelector() -> Option<{selType}> {{");
+            Write($"Some({selVal})");
+            TabOut("}", false);
         }
 
         void GenStructDecl(TpmStruct s)
@@ -542,11 +628,12 @@ namespace CodeGen
             //     Write("");
             // }
 
+            GenGetUnionSelector(s);
+
             TabOut("}");
 
             GenTpmStructureImplementation(s);
 
-            GenGetUnionSelector(s);
 
             Write("");
         }
@@ -567,13 +654,13 @@ namespace CodeGen
             Write("self.deserialize(buffer)");
             TabOut("}");
 
-            TabIn("fn fromTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {");
-            Write($"buf.createObj::<{s.Name}>();");
+            TabIn("fn fromTpm(&self, buffer: &mut Tpmbuffer) -> Result<(), TpmError> {");
+            Write($"buffer.createObj::<{s.Name}>();");
             Write("Ok(())");
             TabOut("}");
 
-            TabIn("fn fromBytes(&self, buf: &mut Vec<u8>) -> Result<(), TpmError> {");
-            Write($"self.initFromTpm(buf)");
+            TabIn("fn fromBytes(&self, buffer: &mut Vec<u8>) -> Result<(), TpmError> {");
+            Write($"self.initFromTpm(buffer)");
             TabOut("}");
 
             GenStructMarshalingImpl(s);
@@ -872,51 +959,6 @@ namespace CodeGen
             
             Write("map");
             TabOut("};");
-            TabOut("}");
-            Write("");
-        }
-
-        void GenUnionFactory()
-        {
-            var unions = TpmTypes.Get<TpmUnion>().Where(u => u.Implement);
-
-            WriteComment("Factory for creating TPM union types from selector values");
-            Write("pub struct UnionFactory;");
-            Write("");
-            TabIn("impl UnionFactory {");
-            Write("/// Creates a new union instance based on the selector value");
-            TabIn("pub fn create<U: TpmUnion + ?Sized, S: TpmEnum>(selector: S) -> Result<Option<Box<dyn U>>, TpmError> {");
-            Write("let type_id = std::any::TypeId::of::<U>();");
-            Write("");
-            
-            foreach (TpmUnion u in unions)
-            {
-                TabIn($"if type_id == std::any::TypeId::of::<dyn {u.Name}>() {{");
-                TabIn("match selector {");
-                
-                foreach (UnionMember m in u.Members)
-                {
-                    string memberName = ToRustEnumMemberName(m.Name);
-                    if (m.Type.IsElementary())
-                    {
-                        Write($"{m.SelectorValue.QualifiedName} => Ok(Some(Box::new({u.Name}::{memberName}))),");
-                    }
-                    else
-                    {
-                        Write($"{m.SelectorValue.QualifiedName} => Ok(Some(Box::new({m.Type.Name}::default()) as Box<dyn U>)),");
-                    }
-                }
-                
-                Write("_ => Err(TpmError::InvalidUnion),");
-                TabOut("}");
-                TabOut("} else ");
-            }
-            
-            TabIn("{");
-            Write("Err(TpmError::InvalidUnion)");
-            TabOut("}");
-            
-            TabOut("}");
             TabOut("}");
             Write("");
         }

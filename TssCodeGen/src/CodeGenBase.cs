@@ -159,11 +159,13 @@ namespace CodeGen
                             string earlyReturnValue = TargetLang.Rust ? "Ok(())" : "";
                             marshalOps.Add(TargetLang.IfNull(unionField) + $" {{ return {earlyReturnValue} }}");
                         }
-                        marshalOps.Add($"buf.write{WireNameForInt(size)}({unionField}{TargetLang.Member}GetUnionSelector())");
+                        
+                        var unionSelectorSuffix = TargetLang.Rust ? ".unwrap()" : "";
+                        marshalOps.Add($"buf.write{WireNameForInt(size)}({unionField}{TargetLang.UnionMember}GetUnionSelector(){unionSelectorSuffix})");
                         break;
 
                     case MarshalType.UnionObject:
-                        marshalOps.Add($"{fieldName}{TargetLang.Member}toTpm(buf)");
+                        marshalOps.Add($"{fieldName}{TargetLang.UnionMember}toTpm(buf)");
                         break;
 
                     default:
@@ -242,11 +244,11 @@ namespace CodeGen
                         if (TargetLang.Cpp)
                             marshalOps.Add($"UnionFactory::Create({fieldName}, {selectorName})");
                         else if (TargetLang.Rust)
-                            marshalOps.Add($"{fieldName} = UnionFactory::create::<dyn {f.TypeName}, {selector.TypeName}>(r#{selectorName})?");
+                            marshalOps.Add($"{fieldName} = {f.TypeName}::create(r#{selectorName})?");
                         else
                             marshalOps.Add($"{fieldName} = UnionFactory.create({TargetLang.Quote(f.TypeName)}, {selectorName})");
                         
-                        marshalOps.Add($"{fieldName}{TargetLang.Member}initFromTpm(buf)");
+                        marshalOps.Add($"{fieldName}{TargetLang.UnionMember}initFromTpm(buf)");
                         break;
                     default:
                         break;

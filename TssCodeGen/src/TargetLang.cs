@@ -95,7 +95,8 @@ namespace CodeGen
         public static string This => (Py || Rust) ? "self" : "this";
         public static string ThisMember => _thisQual;
         public static string ClassMember => (Cpp || Rust) ? "::" : ".";
-        public static string Member => Cpp ? "->" : Rust ? ".unwrap()." : ".";
+        public static string UnionMember => Rust ? ".unwrap()." : Member;
+        public static string Member => Cpp ? "->" : ".";
         public static string Null => _null;
         public static string Neg => Py ? "not " : "!";
         public static string LineComment => Py ? "#" : "//";

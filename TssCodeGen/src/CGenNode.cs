@@ -162,7 +162,7 @@ namespace CodeGen
             if (selType != null)
             {
                 WriteComment("TpmUnion method");
-                Write($"GetUnionSelector(): {selType} {{ return {selVal}; }}");
+                Write($"GetUnionSelector(): Option<{selType}> {{ return {selVal}; }}");
             }
         }
 
