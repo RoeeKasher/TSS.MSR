@@ -74,11 +74,13 @@ namespace CodeGen
                 { "BOOL",   new ElementaryType(1, "bool",   "BOOL",   "boolean", "boolean", "bool",   "bool")}
         };
 
+        static HashSet<string> ElementaryTypesCurrentLang => 
+            ElementaryTypes.Select(et => et.Value.Names[(int)Current - 1]).ToHashSet();
+
         public static IEnumerable<TpmValueType> GetElementaryTypes()
             => ElementaryTypes.Select(et => new TpmValueType(et.Key, et.Value.Size));
         
         public static string NameFor(string typeName) => ElementaryTypes[typeName].Names[(int)Current - 1];
-
 
         public static Lang Current => _curLang;
 
@@ -95,7 +97,9 @@ namespace CodeGen
         public static string This => (Py || Rust) ? "self" : "this";
         public static string ThisMember => _thisQual;
         public static string ClassMember => (Cpp || Rust) ? "::" : ".";
-        public static string UnionMember => Rust ? ".unwrap()." : Member;
+
+        public static string AsReference(bool isConst) => Rust ? (isConst ? ".as_ref()" : ".as_mut()") : "";
+        public static string UnionMember(bool isConst) => Rust ? AsReference(isConst) + ".unwrap()." : Member;
         public static string Member => Cpp ? "->" : ".";
         public static string Null => _null;
         public static string Neg => Py ? "not " : "!";
@@ -115,6 +119,26 @@ namespace CodeGen
         public static string NewObject(string type) => Rust ? $"{type}::default()" : $"{_new}{type}()";
 
         public static string DigestSize(string hashAlgField) => $"{_digestSize}({_thisQual}{hashAlgField})";
+
+        public static string Cast(string value, string type) => Rust ? $"{value} as {type}" : $"({type})value";
+
+        public static string GetUnionValue(int sizeInBytes) => Rust ? GetEnumValue("", $"u{sizeInBytes}") : "";
+
+        public static string GetEnumValue(string enumValue, string enumTypename, int valueSizeInBytes = 4) {
+            if (!Rust) return enumValue;
+            
+            // In Rust, if the enum type is a primitive type (such as i32), we need to the unsigned version of it
+            // (e.g. u32) using the "as" operator, as into() isn't implemented for such conversions
+            if (ElementaryTypesCurrentLang.Contains(enumTypename))
+                return $"{enumValue} as u{valueSizeInBytes * 8}";
+            
+            // Otherwise, we can use the into() method to convert the enum value to the target type
+            return $"{enumValue}.into()";
+        }
+
+        public static string ParseEnum(string selectorTypeName, string value) => 
+            Rust ? $"{selectorTypeName}::try_from({value}).map_err(|err| TpmError::InvalidEnumValue)?" : $"{value}";
+
 
         public static int MaxCommentLine => TargetLang.Py ? 72 : 90;
 

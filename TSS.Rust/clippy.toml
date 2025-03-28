@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [build]
-rustflags = ["-A", "clippy::non_camel_case_types"]
+rustflags = ["-A", "clippy::non_camel_case_types", "-A", "clippy::unused_variables"]
 
 [lib]
 crate-type = ["cdylib", "lib"]

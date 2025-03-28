@@ -17,10 +17,8 @@ namespace CodeGen
         static readonly (string, string)[] TpmStructureFunctions = new (string, string)[] {
             ("serialize", "(&self, buffer: &mut TpmBuffer)"),
             ("deserialize", "(&mut self, buffer: &mut TpmBuffer)"),
-            ("toTpm", "(&self, buffer: &mut TpmBuffer)"),
-            ("initFromTpm", "(&self, buffer: &mut TpmBuffer)"),
             ("fromTpm", "(&self, buffer: &mut TpmBuffer)"),
-            ("fromBytes", "(&self, buffer: &mut Vec<u8>)"),
+            ("fromBytes", "(&mut self, buffer: &mut Vec<u8>)"),
         };
         
         // Maps enum type to a map of enumerator names to values
@@ -105,27 +103,30 @@ namespace CodeGen
 
         void GenerateTpmTypesRs()
         {
+            Write("#![allow(unused_variables)]");
+            Write("");
             Write("//! TPM type definitions");
             Write("");
-            Write("use crate::error::TpmError;");
-            Write("use crate::tpm_buffer::TpmBuffer;");
+            Write("use crate::error::*;");
+            Write("use crate::tpm_buffer::*;");
             Write("use crate::crypto::Crypto;");
             Write("use std::fmt;");
-            Write("use num_enum::TryFromPrimitive;");
             Write("use std::collections::HashMap;");
             Write("use std::fmt::Debug;");
             Write("");
             
             // Generate traits
             WriteComment("Common trait for all TPM enumeration types");
-            Write("pub trait TpmEnum {");
-            TabIn("/// Get the numeric value of the enum");
+            TabIn("pub trait TpmEnum {");
+            Write("/// Get the numeric value of the enum");
             Write("fn get_value(&self) -> u32;");
+            Write("/// Create enum from a numeric value");
+            Write("fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized;");
             TabOut("}");
             Write("");
 
             WriteComment("Trait for structures that can be marshaled to/from TPM wire format");
-            TabIn("pub trait TpmStructure {");
+            TabIn("pub trait TpmStructure : TpmMarshaller {");
             foreach (var functionNameAndParams in TpmStructureFunctions)
             {
                 Write("fn " + functionNameAndParams.Item1 + functionNameAndParams.Item2 + " -> Result<(), TpmError>;");
@@ -176,13 +177,14 @@ namespace CodeGen
             WriteComment(e);
                
             var enumVals = new Dictionary<string, string>();
+            var sizeInBits = e.GetFinalUnderlyingType().GetSize() * 8;
             
             if (hasDuplicates)
             {
                 // Generate a newtype struct with constants for enums with duplicates
                 WriteComment("Enum with duplicated values - using struct with constants");
                 Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
-                Write($"pub struct {e.Name}(pub u{e.GetFinalUnderlyingType().GetSize() * 8});");
+                Write($"pub struct {e.Name}(pub u{sizeInBits});");
                 Write("");
                 
                 // Generate constants for each enum value
@@ -207,7 +209,7 @@ namespace CodeGen
                 
                 // Add TryFrom implementation for the newtype struct
                 Write("");
-                TabIn($"pub fn try_from(value: i{e.GetFinalUnderlyingType().GetSize() * 8}) -> Result<Self, TpmError> {{");
+                TabIn($"pub fn try_from(value: u{sizeInBits}) -> Result<Self, TpmError> {{");
                 TabIn("match value {");
                 foreach (var elt in elements.GroupBy(x => x.NumericValue).Select(g => g.First()))
                 {
@@ -215,8 +217,8 @@ namespace CodeGen
                     Write($"{(ulong)elt.NumericValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
                 }
                 Write("_ => Err(TpmError::InvalidEnumValue),");
-                TabOut("}");
-                TabOut("}");
+                TabOut("}", false);
+                TabOut("}", false);
                 
                 TabOut("}");
                 Write("");
@@ -226,24 +228,27 @@ namespace CodeGen
                 TabIn("fn get_value(&self) -> u32 {");
                 Write("self.0.into()");
                 TabOut("}");
+                TabIn("fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {");
+                Write($"{e.Name}::try_from(value as u{sizeInBits})");
+                TabOut("}", false);
                 TabOut("}");
                 Write("");
                 
                 // Add numeric conversions
-                TabIn($"impl From<{e.Name}> for u32 {{");
+                TabIn($"impl From<{e.Name}> for u{sizeInBits} {{");
                 TabIn($"fn from(value: {e.Name}) -> Self {{");
                 Write("value.0.into()");
                 TabOut("}", false);
                 TabOut("}");
                 Write("");
                 
-                TabIn($"impl From<{e.Name}> for i32 {{");
+                TabIn($"impl From<{e.Name}> for i{sizeInBits} {{");
                 TabIn($"fn from(value: {e.Name}) -> Self {{");
-                Write("value.0 as i32");
+                Write($"value.0 as i{sizeInBits} ");
                 TabOut("}", false);
                 TabOut("}");
                 Write("");
-                
+                               
                 // Implement Display trait
                 TabIn($"impl fmt::Display for {e.Name} {{");
                 TabIn("fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {");
@@ -274,8 +279,8 @@ namespace CodeGen
             else
             {
                 // Original enum generation for types without duplicates
-                Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TryFromPrimitive, Default)]");
-                Write($"#[repr(i{e.GetFinalUnderlyingType().GetSize() * 8})]");
+                Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
+                Write($"#[repr(u{sizeInBits})]");
                 Write($"pub enum {e.Name} {{");
                 TabIn();
 
@@ -300,25 +305,43 @@ namespace CodeGen
                 }
                 TabOut("}");
                 
+                TabIn($"impl {e.Name} {{");
+                // Add TryFrom implementation for the newtype struct
+                TabIn($"pub fn try_from(value: u{sizeInBits}) -> Result<Self, TpmError> {{");
+                TabIn("match value {");
+                foreach (var elt in elements.GroupBy(x => x.NumericValue).Select(g => g.First()))
+                {
+                    // Only include first occurrence of each value to avoid duplicate match arms
+                    Write($"{(ulong)elt.NumericValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
+                }
+                Write("_ => Err(TpmError::InvalidEnumValue),");
+                TabOut("}");
+                TabOut("}");
+                TabOut("}");
+                
+
                 // Implement TpmEnum trait for the enum
                 TabIn($"impl TpmEnum for {e.Name} {{");
                 TabIn("fn get_value(&self) -> u32 {");
                 Write("*self as u32");
                 TabOut("}");
+                TabIn($"fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {{");
+                Write($"{e.Name}::try_from(value as u{sizeInBits}).map_err(|_| TpmError::InvalidEnumValue)");
+                TabOut("}", false);
                 TabOut("}");
                 Write("");
                 
                 // Add numeric conversions
-                TabIn($"impl From<{e.Name}> for u32 {{");
+                TabIn($"impl From<{e.Name}> for u{sizeInBits} {{");
                 TabIn($"fn from(value: {e.Name}) -> Self {{");
-                Write("value as u32");
+                Write($"value as u{sizeInBits}");
                 TabOut("}");
                 TabOut("}");
                 Write("");
                 
-                TabIn($"impl From<{e.Name}> for i32 {{");
+                TabIn($"impl From<{e.Name}> for i{sizeInBits} {{");
                 TabIn($"fn from(value: {e.Name}) -> Self {{");
-                Write("value as i32");
+                Write($"value as i{sizeInBits}");
                 TabOut("}");
                 TabOut("}");
                 Write("");
@@ -428,14 +451,14 @@ namespace CodeGen
 
             WriteComment("Union selector type");
             TabIn($"impl {u.Name} {{");
-            TabIn($"pub fn GetUnionSelector(&self) -> Option<{unionSelectorType}> {{");
+            TabIn($"pub fn GetUnionSelector(&self) -> {unionSelectorType} {{");
             TabIn("match self {");
             foreach (var m in u.Members)
             {
                 string memberName = ToRustEnumMemberName(m.Name);
                 if (m.Type.IsElementary())
                 {
-                    Write($"Self::{memberName} => None, ");
+                    Write($"Self::{memberName} => {m.SelectorValue.QualifiedName}, ");
                 }
                 else
                 {
@@ -511,6 +534,34 @@ namespace CodeGen
             }
 
             TabOut("}");
+
+            TabIn($"impl TpmMarshaller for {u.Name} {{");
+            var tpmMarshallerFunctions = new (string, string)[] {
+                ("toTpm", "(&self, buffer: &mut TpmBuffer)"),
+                ("initFromTpm", "(&mut self, buffer: &mut TpmBuffer)"),
+            };
+
+            foreach (var functionNameAndParams in tpmMarshallerFunctions)
+            {
+                TabIn("fn " + functionNameAndParams.Item1 + functionNameAndParams.Item2 + " -> Result<(), TpmError> {");
+                TabIn("match self {");
+                foreach (var m in u.Members)
+                {
+                    string memberName = ToRustEnumMemberName(m.Name);
+                    if (m.Type.IsElementary())
+                    {
+                        Write($"Self::{memberName} => Ok(()),");
+                    }
+                    else 
+                    {
+                        Write($"Self::{memberName}(inner) => inner.{functionNameAndParams.Item1}(buffer),");
+                    }
+                }
+                TabOut("}", false);
+                TabOut("}");
+            }
+
+            TabOut("}");
             
             Write("");
         }
@@ -523,8 +574,8 @@ namespace CodeGen
                 return;
             }
 
-            TabIn($"fn GetUnionSelector() -> Option<{selType}> {{");
-            Write($"Some({selVal})");
+            TabIn($"fn GetUnionSelector() -> {selType} {{");
+            Write($"{selVal}");
             TabOut("}", false);
         }
 
@@ -601,32 +652,6 @@ namespace CodeGen
                 TabOut("}", false);
                 Write("");
             }
-            
-            // // Selector methods for unions
-            // foreach (var f in s.Fields.Where(f => f.MarshalType == MarshalType.UnionSelector))
-            // {
-            //     var unionField = f.RelatedUnion;
-            //     var u = (TpmUnion)unionField.Type;
-                
-            //     Write($"/// Get the {f.Name} selector value");
-            //     Write($"pub fn {ToSnakeCase(f.Name)}(&self) -> {f.TypeName} {{");
-            //     TabIn();
-                
-            //     TabIn($"match &self.{ToSnakeCase(unionField.Name)} {{");
-            //     Write($"Some(u) => {f.TypeName}.try_from(u.GetUnionSelector())?,");
-            //     if (u.NullSelector == null)
-            //     {
-            //         Write("None => 0 as _,");
-            //     }
-            //     else
-            //     {
-            //         Write($"None => {u.NullSelector.QualifiedName},");
-            //     }
-                
-            //     TabOut("}", false);
-            //     TabOut("}", false);
-            //     Write("");
-            // }
 
             GenGetUnionSelector(s);
 
@@ -634,6 +659,7 @@ namespace CodeGen
 
             GenTpmStructureImplementation(s);
 
+            GenTpmMarshallerImplementation(s);
 
             Write("");
         }
@@ -643,6 +669,26 @@ namespace CodeGen
             // Marshaling methods
             TabIn($"impl TpmStructure for {s.Name} {{");
 
+            TabIn("fn fromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
+            Write($"buffer.createObj::<{s.Name}>();");
+            Write("Ok(())");
+            TabOut("}");
+
+            TabIn("fn fromBytes(&mut self, buffer: &mut Vec<u8>) -> Result<(), TpmError> {");
+            Write("let mut tpm_buffer = TpmBuffer::from(buffer);");
+            Write($"self.initFromTpm(&mut tpm_buffer)");
+            TabOut("}");
+
+            GenStructMarshalingImpl(s);
+
+            TabOut("}");
+        }
+
+        void GenTpmMarshallerImplementation(TpmStruct s)
+        {
+            // Marshaling methods
+            TabIn($"impl TpmMarshaller for {s.Name} {{");
+
             Write("/// Serialize this structure to a TPM buffer");
             TabIn("fn toTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
             Write("self.serialize(buffer)");
@@ -650,20 +696,9 @@ namespace CodeGen
             Write("");
 
             Write("/// Deserialize this structure from a TPM buffer");
-            TabIn("fn initFromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
+            TabIn("fn initFromTpm(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError> {");
             Write("self.deserialize(buffer)");
             TabOut("}");
-
-            TabIn("fn fromTpm(&self, buffer: &mut Tpmbuffer) -> Result<(), TpmError> {");
-            Write($"buffer.createObj::<{s.Name}>();");
-            Write("Ok(())");
-            TabOut("}");
-
-            TabIn("fn fromBytes(&self, buffer: &mut Vec<u8>) -> Result<(), TpmError> {");
-            Write($"self.initFromTpm(buffer)");
-            TabOut("}");
-
-            GenStructMarshalingImpl(s);
 
             TabOut("}");
         }
@@ -673,7 +708,7 @@ namespace CodeGen
             Write("//! TPM2 command implementations");
             Write("");
             Write("use crate::error::TpmError;");
-            Write("use crate::tpm_buffer::TpmBuffer;");
+            Write("use crate::tpm_buffer::*;");
             Write("use crate::tpm_types::*;");
             Write("");
             
@@ -699,14 +734,14 @@ namespace CodeGen
             Write("/// Main dispatch function for synchronous commands");
             TabIn("fn dispatch<Req: TpmStructure, Resp: TpmStructure>(&mut self, req: Req, resp: &mut Resp) -> Result<(), TpmError> {");
             Write("// Create buffer and marshal request");
-            Write("let mut buffer = TpmBuffer::new();");
+            Write("let mut buffer = TpmBuffer::new(None);");
             Write("req.serialize(&mut buffer)?;");
             Write("");
             Write("// Send command to device");
             Write("let response_data = self.device.send_command(buffer.to_vec())?;");
             Write("");
             Write("// Parse response");
-            Write("let mut resp_buffer = TpmBuffer::from(response_data);");
+            Write("let mut resp_buffer = TpmBuffer::from(&response_data);");
             Write("resp.deserialize(&mut resp_buffer)?;");
             Write("");
             Write("Ok(())");
@@ -716,7 +751,7 @@ namespace CodeGen
             Write("/// Dispatch function for asynchronous command phase");
             Write("fn dispatch_async_command<Req: TpmStructure>(&mut self, req: Req) -> Result<(), TpmError> {");
             TabIn("// Create buffer and marshal request");
-            Write("let mut buffer = TpmBuffer::new();");
+            Write("let mut buffer = TpmBuffer::new(None);");
             Write("req.serialize(&mut buffer)?;");
             Write("");
             Write("// Send command to device");
@@ -732,7 +767,7 @@ namespace CodeGen
             Write("let response_data = self.device.receive_async_response()?;");
             Write("");
             Write("// Parse response");
-            Write("let mut resp_buffer = TpmBuffer::from(response_data);");
+            Write("let mut resp_buffer = TpmBuffer::from(&response_data);");
             Write("resp.deserialize(&mut resp_buffer)?;");
             Write("");
             Write("Ok(())");
