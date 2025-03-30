@@ -3,38 +3,16 @@
     appropriate Rust type implementation file.   
 */
 
->> mod_constants
+>> TPM_HANDLE_fields
 
-/// Represents TPM_RH::NULL reserved handle
-pub const NULL_HANDLE: TpmHandle = TpmHandle { handle: TpmRh::Null as u32, auth_value: Vec::new() };
-
-/// Represents TPM_RH::OWNER reserved handle
-pub const OWNER_HANDLE: TpmHandle = TpmHandle { handle: TpmRh::Owner as u32, auth_value: Vec::new() };
-
-/// Represents TPM_RH::ENDORSEMENT reserved handle
-pub const ENDORSEMENT_HANDLE: TpmHandle = TpmHandle { handle: TpmRh::Endorsement as u32, auth_value: Vec::new() };
-
-/// Represents TPM_RH::PLATFORM reserved handle
-pub const PLATFORM_HANDLE: TpmHandle = TpmHandle { handle: TpmRh::Platform as u32, auth_value: Vec::new() };
-
->> TpmHandle
-
-/// The handle value
-pub handle: u32,
 /// The authorization value associated with this handle
 pub auth_value: Vec<u8>,
 
-/// Creates a new handle with the given value
-pub fn new(handle_value: u32) -> Self {
-    Self {
-        handle: handle_value,
-        auth_value: Vec::new(),
-    }
-}
+>> TPM_HANDLE_impl
 
 /// Creates a handle for a persistent object
 pub fn persistent(handle_offset: u32) -> Self {
-    Self::new(((TpmHt::Persistent as u32) << 24) + handle_offset)
+    Self::new(((TPM_HT::Persistent as u32) << 24) + handle_offset)
 }
 
 /// Creates a handle for a PCR
@@ -44,19 +22,16 @@ pub fn pcr(pcr_index: u32) -> Self {
 
 /// Creates a handle for an NV slot
 pub fn nv(nv_index: u32) -> Self {
-    Self::new(((TpmHt::NvIndex as u32) << 24) + nv_index)
+    Self::new(((TPM_HT::NvIndex as u32) << 24) + nv_index)
 }
 
-/// Creates a password session handle with the associated authorization value
-pub fn pw_session(auth_value: &[u8]) -> Self {
-    Self {
-        handle: TpmRs::Pw as u32,
-        auth_value: auth_value.to_vec(),
-    }
+/// Set the authorization value for this TPM_HANDLE.  The default auth-value is NULL
+pub fn set_auth(&mut self, auth_val: &[u8] ) {
+    self.auth_value = auth_val.to_vec();
 }
 
 /// Returns this handle's type
-pub fn get_type(&self) -> TpmHt {
+pub fn get_type(&self) -> TPM_HT {
     // The handle type is the top byte of the handle value
     unsafe { std::mem::transmute((self.handle >> 24) as u8) }
 }
@@ -66,8 +41,8 @@ pub fn get_name(&self) -> Vec<u8> {
     let handle_type = self.get_type();
     
     // Per spec: handles of these types have their handle value as their name
-    if handle_type == TpmHt::Pcr || handle_type == TpmHt::NvIndex || 
-       handle_type == TpmHt::Permanent || handle_type == TpmHt::Transient {
+    if handle_type == TPM_HT::Pcr || handle_type == TPM_HT::NvIndex || 
+        handle_type == TPM_HT::Permanent || handle_type == TPM_HT::Transient {
         let mut name = Vec::with_capacity(4);
         name.extend_from_slice(&self.handle.to_be_bytes());
         return name;
@@ -111,7 +86,7 @@ pub fn validate_signature(&self, signed_data: &[u8], signature: &TpmuSignature) 
     crate::crypto::verify_signature(self, signed_data, signature)
 }
 
->> TpmtHa
+>> TPMT_PUBLIC
 
 /// The hash algorithm identifier
 pub hash_alg: TpmAlgId,

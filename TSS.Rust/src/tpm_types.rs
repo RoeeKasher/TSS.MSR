@@ -7861,6 +7861,9 @@ impl TpmMarshaller for TPMU_SENSITIVE_COMPOSITE {
 pub struct TPM_HANDLE {
     /// Handle value
     pub handle: u32,
+
+    /// The authorization value associated with this handle
+    pub auth_value: Vec<u8>,
 }
 
 impl TPM_HANDLE {
@@ -7870,9 +7873,57 @@ impl TPM_HANDLE {
         ) -> Self {
         Self {
             handle,
+            ..Default::default()
         }
     }
 
+    /// Creates a handle for a persistent object
+    pub fn persistent(handle_offset: u32) -> Self {
+        Self::new(((TPM_HT::Persistent as u32) << 24) + handle_offset)
+    }
+
+    /// Creates a handle for a PCR
+    pub fn pcr(pcr_index: u32) -> Self {
+        Self::new(pcr_index)
+    }
+
+    /// Creates a handle for an NV slot
+    pub fn nv(nv_index: u32) -> Self {
+        Self::new(((TPM_HT::NvIndex as u32) << 24) + nv_index)
+    }
+
+    /// Set the authorization value for this TPM_HANDLE.  The default auth-value is NULL
+    pub fn set_auth(&mut self, auth_val: &[u8] ) {
+        self.auth_value = auth_val.to_vec();
+    }
+
+    /// Returns this handle's type
+    pub fn get_type(&self) -> TPM_HT {
+        // The handle type is the top byte of the handle value
+        unsafe { std::mem::transmute((self.handle >> 24) as u8) }
+    }
+
+    /// Get the TPM name of this handle
+    pub fn get_name(&self) -> Vec<u8> {
+        let handle_type = self.get_type();
+        
+        // Per spec: handles of these types have their handle value as their name
+        if handle_type == TPM_HT::Pcr || handle_type == TPM_HT::NvIndex || 
+            handle_type == TPM_HT::Permanent || handle_type == TPM_HT::Transient {
+            let mut name = Vec::with_capacity(4);
+            name.extend_from_slice(&self.handle.to_be_bytes());
+            return name;
+        }
+        
+        // Other handle types might need more complex name calculation
+        // This would depend on the implementation details
+        panic!("Name calculation not implemented for this handle type")
+    }
+
+    /// Get a string representation of this handle
+    pub fn to_string(&self) -> String {
+        format!("{}:0x{:x}", self.get_type(), self.handle)
+    }
 }
 
 impl TpmStructure for TPM_HANDLE {
@@ -8034,6 +8085,7 @@ impl TPMS_ALGORITHM_DESCRIPTION {
         Self {
             alg,
             attributes,
+            ..Default::default()
         }
     }
 
@@ -8104,6 +8156,7 @@ impl TPMT_HA {
         Self {
             hashAlg,
             digest,
+            ..Default::default()
         }
     }
 
@@ -8168,6 +8221,7 @@ impl TPM2B_DIGEST {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -8229,6 +8283,7 @@ impl TPM2B_DATA {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -8303,6 +8358,7 @@ impl TPM2B_EVENT {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -8362,6 +8418,7 @@ impl TPM2B_MAX_BUFFER {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -8422,6 +8479,7 @@ impl TPM2B_MAX_NV_BUFFER {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -8481,6 +8539,7 @@ impl TPM2B_TIMEOUT {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -8541,6 +8600,7 @@ impl TPM2B_IV {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -8599,6 +8659,7 @@ impl TPM2B_NAME {
         ) -> Self {
         Self {
             name,
+            ..Default::default()
         }
     }
 
@@ -8657,6 +8718,7 @@ impl TPMS_PCR_SELECT {
         ) -> Self {
         Self {
             pcrSelect,
+            ..Default::default()
         }
     }
 
@@ -8720,6 +8782,7 @@ impl TPMS_PCR_SELECTION {
         Self {
             hash,
             pcrSelect,
+            ..Default::default()
         }
     }
 
@@ -8786,6 +8849,7 @@ impl TPMT_TK_CREATION {
         Self {
             hierarchy,
             digest,
+            ..Default::default()
         }
     }
 
@@ -8855,6 +8919,7 @@ impl TPMT_TK_VERIFIED {
         Self {
             hierarchy,
             digest,
+            ..Default::default()
         }
     }
 
@@ -8929,6 +8994,7 @@ impl TPMT_TK_AUTH {
             tag,
             hierarchy,
             digest,
+            ..Default::default()
         }
     }
 
@@ -8997,6 +9063,7 @@ impl TPMT_TK_HASHCHECK {
         Self {
             hierarchy,
             digest,
+            ..Default::default()
         }
     }
 
@@ -9065,6 +9132,7 @@ impl TPMS_ALG_PROPERTY {
         Self {
             alg,
             algProperties,
+            ..Default::default()
         }
     }
 
@@ -9131,6 +9199,7 @@ impl TPMS_TAGGED_PROPERTY {
         Self {
             property,
             value,
+            ..Default::default()
         }
     }
 
@@ -9196,6 +9265,7 @@ impl TPMS_TAGGED_PCR_SELECT {
         Self {
             tag,
             pcrSelect,
+            ..Default::default()
         }
     }
 
@@ -9262,6 +9332,7 @@ impl TPMS_TAGGED_POLICY {
         Self {
             handle,
             policyHash,
+            ..Default::default()
         }
     }
 
@@ -9332,6 +9403,7 @@ impl TPMS_ACT_DATA {
             handle,
             timeout,
             attributes,
+            ..Default::default()
         }
     }
 
@@ -9397,6 +9469,7 @@ impl TPML_CC {
         ) -> Self {
         Self {
             commandCodes,
+            ..Default::default()
         }
     }
 
@@ -9458,6 +9531,7 @@ impl TPML_CCA {
         ) -> Self {
         Self {
             commandAttributes,
+            ..Default::default()
         }
     }
 
@@ -9521,6 +9595,7 @@ impl TPML_ALG {
         ) -> Self {
         Self {
             algorithms,
+            ..Default::default()
         }
     }
 
@@ -9580,6 +9655,7 @@ impl TPML_HANDLE {
         ) -> Self {
         Self {
             handle,
+            ..Default::default()
         }
     }
 
@@ -9645,6 +9721,7 @@ impl TPML_DIGEST {
         ) -> Self {
         Self {
             digests,
+            ..Default::default()
         }
     }
 
@@ -9704,6 +9781,7 @@ impl TPML_DIGEST_VALUES {
         ) -> Self {
         Self {
             digests,
+            ..Default::default()
         }
     }
 
@@ -9763,6 +9841,7 @@ impl TPML_PCR_SELECTION {
         ) -> Self {
         Self {
             pcrSelections,
+            ..Default::default()
         }
     }
 
@@ -9825,6 +9904,7 @@ impl TPML_ALG_PROPERTY {
         ) -> Self {
         Self {
             algProperties,
+            ..Default::default()
         }
     }
 
@@ -9887,6 +9967,7 @@ impl TPML_TAGGED_TPM_PROPERTY {
         ) -> Self {
         Self {
             tpmProperty,
+            ..Default::default()
         }
     }
 
@@ -9949,6 +10030,7 @@ impl TPML_TAGGED_PCR_PROPERTY {
         ) -> Self {
         Self {
             pcrProperty,
+            ..Default::default()
         }
     }
 
@@ -10011,6 +10093,7 @@ impl TPML_ECC_CURVE {
         ) -> Self {
         Self {
             eccCurves,
+            ..Default::default()
         }
     }
 
@@ -10074,6 +10157,7 @@ impl TPML_TAGGED_POLICY {
         ) -> Self {
         Self {
             policies,
+            ..Default::default()
         }
     }
 
@@ -10136,6 +10220,7 @@ impl TPML_ACT_DATA {
         ) -> Self {
         Self {
             actData,
+            ..Default::default()
         }
     }
 
@@ -10202,6 +10287,7 @@ impl TPMS_CAPABILITY_DATA {
         ) -> Self {
         Self {
             data,
+            ..Default::default()
         }
     }
 
@@ -10286,6 +10372,7 @@ impl TPMS_CLOCK_INFO {
             resetCount,
             restartCount,
             safe,
+            ..Default::default()
         }
     }
 
@@ -10356,6 +10443,7 @@ impl TPMS_TIME_INFO {
         Self {
             time,
             clockInfo,
+            ..Default::default()
         }
     }
 
@@ -10421,6 +10509,7 @@ impl TPMS_TIME_ATTEST_INFO {
         Self {
             time,
             firmwareVersion,
+            ..Default::default()
         }
     }
 
@@ -10489,6 +10578,7 @@ impl TPMS_CERTIFY_INFO {
         Self {
             name,
             qualifiedName,
+            ..Default::default()
         }
     }
 
@@ -10557,6 +10647,7 @@ impl TPMS_QUOTE_INFO {
         Self {
             pcrSelect,
             pcrDigest,
+            ..Default::default()
         }
     }
 
@@ -10635,6 +10726,7 @@ impl TPMS_COMMAND_AUDIT_INFO {
             digestAlg,
             auditDigest,
             commandDigest,
+            ..Default::default()
         }
     }
 
@@ -10709,6 +10801,7 @@ impl TPMS_SESSION_AUDIT_INFO {
         Self {
             exclusiveSession,
             sessionDigest,
+            ..Default::default()
         }
     }
 
@@ -10777,6 +10870,7 @@ impl TPMS_CREATION_INFO {
         Self {
             objectName,
             creationHash,
+            ..Default::default()
         }
     }
 
@@ -10851,6 +10945,7 @@ impl TPMS_NV_CERTIFY_INFO {
             indexName,
             offset,
             nvContents,
+            ..Default::default()
         }
     }
 
@@ -10922,6 +11017,7 @@ impl TPMS_NV_DIGEST_CERTIFY_INFO {
         Self {
             indexName,
             nvDigest,
+            ..Default::default()
         }
     }
 
@@ -11019,6 +11115,7 @@ impl TPMS_ATTEST {
             clockInfo,
             firmwareVersion,
             attested,
+            ..Default::default()
         }
     }
 
@@ -11091,6 +11188,7 @@ impl TPM2B_ATTEST {
         ) -> Self {
         Self {
             attestationData,
+            ..Default::default()
         }
     }
 
@@ -11164,6 +11262,7 @@ impl TPMS_AUTH_COMMAND {
             nonce,
             sessionAttributes,
             hmac,
+            ..Default::default()
         }
     }
 
@@ -11240,6 +11339,7 @@ impl TPMS_AUTH_RESPONSE {
             nonce,
             sessionAttributes,
             hmac,
+            ..Default::default()
         }
     }
 
@@ -11656,6 +11756,7 @@ impl TPMT_SYM_DEF {
             algorithm,
             keyBits,
             mode,
+            ..Default::default()
         }
     }
 
@@ -11735,6 +11836,7 @@ impl TPMT_SYM_DEF_OBJECT {
             algorithm,
             keyBits,
             mode,
+            ..Default::default()
         }
     }
 
@@ -11799,6 +11901,7 @@ impl TPM2B_SYM_KEY {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -11860,6 +11963,7 @@ impl TPMS_SYMCIPHER_PARMS {
         ) -> Self {
         Self {
             sym,
+            ..Default::default()
         }
     }
 
@@ -11923,6 +12027,7 @@ impl TPM2B_LABEL {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -11985,6 +12090,7 @@ impl TPMS_DERIVE {
         Self {
             label,
             context,
+            ..Default::default()
         }
     }
 
@@ -12048,6 +12154,7 @@ impl TPM2B_DERIVE {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -12106,6 +12213,7 @@ impl TPM2B_SENSITIVE_DATA {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -12173,6 +12281,7 @@ impl TPMS_SENSITIVE_CREATE {
         Self {
             userAuth,
             data,
+            ..Default::default()
         }
     }
 
@@ -12235,6 +12344,7 @@ impl TPM2B_SENSITIVE_CREATE {
         ) -> Self {
         Self {
             sensitive,
+            ..Default::default()
         }
     }
 
@@ -12294,6 +12404,7 @@ impl TPMS_SCHEME_HASH {
         ) -> Self {
         Self {
             hashAlg,
+            ..Default::default()
         }
     }
 
@@ -12360,6 +12471,7 @@ impl TPMS_SCHEME_ECDAA {
         Self {
             hashAlg,
             count,
+            ..Default::default()
         }
     }
 
@@ -12476,6 +12588,7 @@ impl TPMS_SCHEME_XOR {
         Self {
             hashAlg,
             kdf,
+            ..Default::default()
         }
     }
 
@@ -12591,6 +12704,7 @@ impl TPMT_KEYEDHASH_SCHEME {
         ) -> Self {
         Self {
             details,
+            ..Default::default()
         }
     }
 
@@ -13003,6 +13117,7 @@ impl TPMT_SIG_SCHEME {
         ) -> Self {
         Self {
             details,
+            ..Default::default()
         }
     }
 
@@ -13510,6 +13625,7 @@ impl TPMT_KDF_SCHEME {
         ) -> Self {
         Self {
             details,
+            ..Default::default()
         }
     }
 
@@ -13629,6 +13745,7 @@ impl TPMT_ASYM_SCHEME {
         ) -> Self {
         Self {
             details,
+            ..Default::default()
         }
     }
 
@@ -13697,6 +13814,7 @@ impl TPMT_RSA_SCHEME {
         ) -> Self {
         Self {
             details,
+            ..Default::default()
         }
     }
 
@@ -13765,6 +13883,7 @@ impl TPMT_RSA_DECRYPT {
         ) -> Self {
         Self {
             details,
+            ..Default::default()
         }
     }
 
@@ -13827,6 +13946,7 @@ impl TPM2B_PUBLIC_KEY_RSA {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -13887,6 +14007,7 @@ impl TPM2B_PRIVATE_KEY_RSA {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -13948,6 +14069,7 @@ impl TPM2B_ECC_PARAMETER {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -14014,6 +14136,7 @@ impl TPMS_ECC_POINT {
         Self {
             x,
             y,
+            ..Default::default()
         }
     }
 
@@ -14078,6 +14201,7 @@ impl TPM2B_ECC_POINT {
         ) -> Self {
         Self {
             point,
+            ..Default::default()
         }
     }
 
@@ -14142,6 +14266,7 @@ impl TPMT_ECC_SCHEME {
         ) -> Self {
         Self {
             details,
+            ..Default::default()
         }
     }
 
@@ -14266,6 +14391,7 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
             gY,
             n,
             h,
+            ..Default::default()
         }
     }
 
@@ -14356,6 +14482,7 @@ impl TPMS_SIGNATURE_RSA {
         Self {
             hash,
             sig,
+            ..Default::default()
         }
     }
 
@@ -14522,6 +14649,7 @@ impl TPMS_SIGNATURE_ECC {
             hash,
             signatureR,
             signatureS,
+            ..Default::default()
         }
     }
 
@@ -14837,6 +14965,7 @@ impl TPMT_SIGNATURE {
         ) -> Self {
         Self {
             signature,
+            ..Default::default()
         }
     }
 
@@ -14899,6 +15028,7 @@ impl TPM2B_ENCRYPTED_SECRET {
         ) -> Self {
         Self {
             secret,
+            ..Default::default()
         }
     }
 
@@ -14963,6 +15093,7 @@ impl TPMS_KEYEDHASH_PARMS {
         ) -> Self {
         Self {
             scheme,
+            ..Default::default()
         }
     }
 
@@ -15046,6 +15177,7 @@ impl TPMS_ASYM_PARMS {
         Self {
             symmetric,
             scheme,
+            ..Default::default()
         }
     }
 
@@ -15147,6 +15279,7 @@ impl TPMS_RSA_PARMS {
             scheme,
             keyBits,
             exponent,
+            ..Default::default()
         }
     }
 
@@ -15253,6 +15386,7 @@ impl TPMS_ECC_PARMS {
             scheme,
             curveID,
             kdf,
+            ..Default::default()
         }
     }
 
@@ -15331,6 +15465,7 @@ impl TPMT_PUBLIC_PARMS {
         ) -> Self {
         Self {
             parameters,
+            ..Default::default()
         }
     }
 
@@ -15425,6 +15560,7 @@ impl TPMT_PUBLIC {
             authPolicy,
             parameters,
             unique,
+            ..Default::default()
         }
     }
 
@@ -15499,6 +15635,7 @@ impl TPM2B_PUBLIC {
         ) -> Self {
         Self {
             publicArea,
+            ..Default::default()
         }
     }
 
@@ -15557,6 +15694,7 @@ impl TPM2B_TEMPLATE {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -15619,6 +15757,7 @@ impl TPM2B_PRIVATE_VENDOR_SPECIFIC {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -15697,6 +15836,7 @@ impl TPMT_SENSITIVE {
             authValue,
             seedValue,
             sensitive,
+            ..Default::default()
         }
     }
 
@@ -15764,6 +15904,7 @@ impl TPM2B_SENSITIVE {
         ) -> Self {
         Self {
             sensitiveArea,
+            ..Default::default()
         }
     }
 
@@ -15832,6 +15973,7 @@ impl _PRIVATE {
             integrityOuter,
             integrityInner,
             sensitive,
+            ..Default::default()
         }
     }
 
@@ -15895,6 +16037,7 @@ impl TPM2B_PRIVATE {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -15962,6 +16105,7 @@ impl TPMS_ID_OBJECT {
         Self {
             integrityHMAC,
             encIdentity,
+            ..Default::default()
         }
     }
 
@@ -16023,6 +16167,7 @@ impl TPM2B_ID_OBJECT {
         ) -> Self {
         Self {
             credential,
+            ..Default::default()
         }
     }
 
@@ -16091,6 +16236,7 @@ impl TPMS_NV_PIN_COUNTER_PARAMETERS {
         Self {
             pinCount,
             pinLimit,
+            ..Default::default()
         }
     }
 
@@ -16175,6 +16321,7 @@ impl TPMS_NV_PUBLIC {
             attributes,
             authPolicy,
             dataSize,
+            ..Default::default()
         }
     }
 
@@ -16241,6 +16388,7 @@ impl TPM2B_NV_PUBLIC {
         ) -> Self {
         Self {
             nvPublic,
+            ..Default::default()
         }
     }
 
@@ -16300,6 +16448,7 @@ impl TPM2B_CONTEXT_SENSITIVE {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -16363,6 +16512,7 @@ impl TPMS_CONTEXT_DATA {
         Self {
             integrity,
             encrypted,
+            ..Default::default()
         }
     }
 
@@ -16422,6 +16572,7 @@ impl TPM2B_CONTEXT_DATA {
         ) -> Self {
         Self {
             buffer,
+            ..Default::default()
         }
     }
 
@@ -16499,6 +16650,7 @@ impl TPMS_CONTEXT {
             savedHandle,
             hierarchy,
             contextBlob,
+            ..Default::default()
         }
     }
 
@@ -16603,6 +16755,7 @@ impl TPMS_CREATION_DATA {
             parentName,
             parentQualifiedName,
             outsideInfo,
+            ..Default::default()
         }
     }
 
@@ -16673,6 +16826,7 @@ impl TPM2B_CREATION_DATA {
         ) -> Self {
         Self {
             creationData,
+            ..Default::default()
         }
     }
 
@@ -16737,6 +16891,7 @@ impl TPMS_AC_OUTPUT {
         Self {
             tag,
             data,
+            ..Default::default()
         }
     }
 
@@ -16797,6 +16952,7 @@ impl TPML_AC_CAPABILITIES {
         ) -> Self {
         Self {
             acCapabilities,
+            ..Default::default()
         }
     }
 
@@ -16860,6 +17016,7 @@ impl TPM2_Startup_REQUEST {
         ) -> Self {
         Self {
             startupType,
+            ..Default::default()
         }
     }
 
@@ -16930,6 +17087,7 @@ impl TPM2_Shutdown_REQUEST {
         ) -> Self {
         Self {
             shutdownType,
+            ..Default::default()
         }
     }
 
@@ -17002,6 +17160,7 @@ impl TPM2_SelfTest_REQUEST {
         ) -> Self {
         Self {
             fullTest,
+            ..Default::default()
         }
     }
 
@@ -17071,6 +17230,7 @@ impl TPM2_IncrementalSelfTest_REQUEST {
         ) -> Self {
         Self {
             toTest,
+            ..Default::default()
         }
     }
 
@@ -17365,6 +17525,7 @@ impl TPM2_StartAuthSession_REQUEST {
             sessionType,
             symmetric,
             authHash,
+            ..Default::default()
         }
     }
 
@@ -17514,6 +17675,7 @@ impl TPM2_PolicyRestart_REQUEST {
         ) -> Self {
         Self {
             sessionHandle,
+            ..Default::default()
         }
     }
 
@@ -17610,6 +17772,7 @@ impl TPM2_Create_REQUEST {
             inPublic,
             outsideInfo,
             creationPCR,
+            ..Default::default()
         }
     }
 
@@ -17787,6 +17950,7 @@ impl TPM2_Load_REQUEST {
             parentHandle,
             inPrivate,
             inPublic,
+            ..Default::default()
         }
     }
 
@@ -17935,6 +18099,7 @@ impl TPM2_LoadExternal_REQUEST {
             inPrivate,
             inPublic,
             hierarchy,
+            ..Default::default()
         }
     }
 
@@ -18075,6 +18240,7 @@ impl TPM2_ReadPublic_REQUEST {
         ) -> Self {
         Self {
             objectHandle,
+            ..Default::default()
         }
     }
 
@@ -18233,6 +18399,7 @@ impl TPM2_ActivateCredential_REQUEST {
             keyHandle,
             credentialBlob,
             secret,
+            ..Default::default()
         }
     }
 
@@ -18381,6 +18548,7 @@ impl TPM2_MakeCredential_REQUEST {
             handle,
             credential,
             objectName,
+            ..Default::default()
         }
     }
 
@@ -18522,6 +18690,7 @@ impl TPM2_Unseal_REQUEST {
         ) -> Self {
         Self {
             itemHandle,
+            ..Default::default()
         }
     }
 
@@ -18664,6 +18833,7 @@ impl TPM2_ObjectChangeAuth_REQUEST {
             objectHandle,
             parentHandle,
             newAuth,
+            ..Default::default()
         }
     }
 
@@ -18811,6 +18981,7 @@ impl TPM2_CreateLoaded_REQUEST {
             parentHandle,
             inSensitive,
             inPublic,
+            ..Default::default()
         }
     }
 
@@ -18983,6 +19154,7 @@ impl TPM2_Duplicate_REQUEST {
             newParentHandle,
             encryptionKeyIn,
             symmetricAlg,
+            ..Default::default()
         }
     }
 
@@ -19159,6 +19331,7 @@ impl TPM2_Rewrap_REQUEST {
             inDuplicate,
             name,
             inSymSeed,
+            ..Default::default()
         }
     }
 
@@ -19340,6 +19513,7 @@ impl TPM2_Import_REQUEST {
             duplicate,
             inSymSeed,
             symmetricAlg,
+            ..Default::default()
         }
     }
 
@@ -19511,6 +19685,7 @@ impl TPM2_RSA_Encrypt_REQUEST {
             message,
             inScheme,
             label,
+            ..Default::default()
         }
     }
 
@@ -19677,6 +19852,7 @@ impl TPM2_RSA_Decrypt_REQUEST {
             cipherText,
             inScheme,
             label,
+            ..Default::default()
         }
     }
 
@@ -19819,6 +19995,7 @@ impl TPM2_ECDH_KeyGen_REQUEST {
         ) -> Self {
         Self {
             keyHandle,
+            ..Default::default()
         }
     }
 
@@ -19964,6 +20141,7 @@ impl TPM2_ECDH_ZGen_REQUEST {
         Self {
             keyHandle,
             inPoint,
+            ..Default::default()
         }
     }
 
@@ -20098,6 +20276,7 @@ impl TPM2_ECC_Parameters_REQUEST {
         ) -> Self {
         Self {
             curveID,
+            ..Default::default()
         }
     }
 
@@ -20253,6 +20432,7 @@ impl TPM2_ZGen_2Phase_REQUEST {
             inQeB,
             inScheme,
             counter,
+            ..Default::default()
         }
     }
 
@@ -20413,6 +20593,7 @@ impl TPM2_ECC_Encrypt_REQUEST {
             keyHandle,
             plainText,
             inScheme,
+            ..Default::default()
         }
     }
 
@@ -20585,6 +20766,7 @@ impl TPM2_ECC_Decrypt_REQUEST {
             C2,
             C3,
             inScheme,
+            ..Default::default()
         }
     }
 
@@ -20749,6 +20931,7 @@ impl TPM2_EncryptDecrypt_REQUEST {
             mode,
             ivIn,
             inData,
+            ..Default::default()
         }
     }
 
@@ -20915,6 +21098,7 @@ impl TPM2_EncryptDecrypt2_REQUEST {
             decrypt,
             mode,
             ivIn,
+            ..Default::default()
         }
     }
 
@@ -21068,6 +21252,7 @@ impl TPM2_Hash_REQUEST {
             data,
             hashAlg,
             hierarchy,
+            ..Default::default()
         }
     }
 
@@ -21222,6 +21407,7 @@ impl TPM2_HMAC_REQUEST {
             handle,
             buffer,
             hashAlg,
+            ..Default::default()
         }
     }
 
@@ -21368,6 +21554,7 @@ impl TPM2_MAC_REQUEST {
             handle,
             buffer,
             inScheme,
+            ..Default::default()
         }
     }
 
@@ -21502,6 +21689,7 @@ impl TPM2_GetRandom_REQUEST {
         ) -> Self {
         Self {
             bytesRequested,
+            ..Default::default()
         }
     }
 
@@ -21632,6 +21820,7 @@ impl TPM2_StirRandom_REQUEST {
         ) -> Self {
         Self {
             inData,
+            ..Default::default()
         }
     }
 
@@ -21716,6 +21905,7 @@ impl TPM2_HMAC_Start_REQUEST {
             handle,
             auth,
             hashAlg,
+            ..Default::default()
         }
     }
 
@@ -21862,6 +22052,7 @@ impl TPM2_MAC_Start_REQUEST {
             handle,
             auth,
             inScheme,
+            ..Default::default()
         }
     }
 
@@ -22003,6 +22194,7 @@ impl TPM2_HashSequenceStart_REQUEST {
         Self {
             auth,
             hashAlg,
+            ..Default::default()
         }
     }
 
@@ -22144,6 +22336,7 @@ impl TPM2_SequenceUpdate_REQUEST {
         Self {
             sequenceHandle,
             buffer,
+            ..Default::default()
         }
     }
 
@@ -22227,6 +22420,7 @@ impl TPM2_SequenceComplete_REQUEST {
             sequenceHandle,
             buffer,
             hierarchy,
+            ..Default::default()
         }
     }
 
@@ -22386,6 +22580,7 @@ impl TPM2_EventSequenceComplete_REQUEST {
             pcrHandle,
             sequenceHandle,
             buffer,
+            ..Default::default()
         }
     }
 
@@ -22549,6 +22744,7 @@ impl TPM2_Certify_REQUEST {
             signHandle,
             qualifyingData,
             inScheme,
+            ..Default::default()
         }
     }
 
@@ -22738,6 +22934,7 @@ impl TPM2_CertifyCreation_REQUEST {
             creationHash,
             inScheme,
             creationTicket,
+            ..Default::default()
         }
     }
 
@@ -22916,6 +23113,7 @@ impl TPM2_Quote_REQUEST {
             qualifyingData,
             inScheme,
             PCRselect,
+            ..Default::default()
         }
     }
 
@@ -23097,6 +23295,7 @@ impl TPM2_GetSessionAuditDigest_REQUEST {
             sessionHandle,
             qualifyingData,
             inScheme,
+            ..Default::default()
         }
     }
 
@@ -23272,6 +23471,7 @@ impl TPM2_GetCommandAuditDigest_REQUEST {
             signHandle,
             qualifyingData,
             inScheme,
+            ..Default::default()
         }
     }
 
@@ -23447,6 +23647,7 @@ impl TPM2_GetTime_REQUEST {
             signHandle,
             qualifyingData,
             inScheme,
+            ..Default::default()
         }
     }
 
@@ -23630,6 +23831,7 @@ impl TPM2_CertifyX509_REQUEST {
             reserved,
             inScheme,
             partialCertificate,
+            ..Default::default()
         }
     }
 
@@ -23812,6 +24014,7 @@ impl TPM2_Commit_REQUEST {
             P1,
             s2,
             y2,
+            ..Default::default()
         }
     }
 
@@ -23965,6 +24168,7 @@ impl TPM2_EC_Ephemeral_REQUEST {
         ) -> Self {
         Self {
             curveID,
+            ..Default::default()
         }
     }
 
@@ -24117,6 +24321,7 @@ impl TPM2_VerifySignature_REQUEST {
             keyHandle,
             digest,
             signature,
+            ..Default::default()
         }
     }
 
@@ -24277,6 +24482,7 @@ impl TPM2_Sign_REQUEST {
             digest,
             inScheme,
             validation,
+            ..Default::default()
         }
     }
 
@@ -24443,6 +24649,7 @@ impl TPM2_SetCommandCodeAuditStatus_REQUEST {
             auditAlg,
             setList,
             clearList,
+            ..Default::default()
         }
     }
 
@@ -24526,6 +24733,7 @@ impl TPM2_PCR_Extend_REQUEST {
         Self {
             pcrHandle,
             digests,
+            ..Default::default()
         }
     }
 
@@ -24603,6 +24811,7 @@ impl TPM2_PCR_Event_REQUEST {
         Self {
             pcrHandle,
             eventData,
+            ..Default::default()
         }
     }
 
@@ -24733,6 +24942,7 @@ impl TPM2_PCR_Read_REQUEST {
         ) -> Self {
         Self {
             pcrSelectionIn,
+            ..Default::default()
         }
     }
 
@@ -24881,6 +25091,7 @@ impl TPM2_PCR_Allocate_REQUEST {
         Self {
             authHandle,
             pcrAllocation,
+            ..Default::default()
         }
     }
 
@@ -25045,6 +25256,7 @@ impl TPM2_PCR_SetAuthPolicy_REQUEST {
             authPolicy,
             hashAlg,
             pcrNum,
+            ..Default::default()
         }
     }
 
@@ -25126,6 +25338,7 @@ impl TPM2_PCR_SetAuthValue_REQUEST {
         Self {
             pcrHandle,
             auth,
+            ..Default::default()
         }
     }
 
@@ -25200,6 +25413,7 @@ impl TPM2_PCR_Reset_REQUEST {
         ) -> Self {
         Self {
             pcrHandle,
+            ..Default::default()
         }
     }
 
@@ -25311,6 +25525,7 @@ impl TPM2_PolicySigned_REQUEST {
             policyRef,
             expiration,
             auth,
+            ..Default::default()
         }
     }
 
@@ -25498,6 +25713,7 @@ impl TPM2_PolicySecret_REQUEST {
             cpHashA,
             policyRef,
             expiration,
+            ..Default::default()
         }
     }
 
@@ -25675,6 +25891,7 @@ impl TPM2_PolicyTicket_REQUEST {
             policyRef,
             authName,
             ticket,
+            ..Default::default()
         }
     }
 
@@ -25762,6 +25979,7 @@ impl TPM2_PolicyOR_REQUEST {
         Self {
             policySession,
             pHashList,
+            ..Default::default()
         }
     }
 
@@ -25847,6 +26065,7 @@ impl TPM2_PolicyPCR_REQUEST {
             policySession,
             pcrDigest,
             pcrs,
+            ..Default::default()
         }
     }
 
@@ -25925,6 +26144,7 @@ impl TPM2_PolicyLocality_REQUEST {
         Self {
             policySession,
             locality,
+            ..Default::default()
         }
     }
 
@@ -26025,6 +26245,7 @@ impl TPM2_PolicyNV_REQUEST {
             operandB,
             offset,
             operation,
+            ..Default::default()
         }
     }
 
@@ -26116,6 +26337,7 @@ impl TPM2_PolicyCounterTimer_REQUEST {
             operandB,
             offset,
             operation,
+            ..Default::default()
         }
     }
 
@@ -26196,6 +26418,7 @@ impl TPM2_PolicyCommandCode_REQUEST {
         Self {
             policySession,
             code,
+            ..Default::default()
         }
     }
 
@@ -26267,6 +26490,7 @@ impl TPM2_PolicyPhysicalPresence_REQUEST {
         ) -> Self {
         Self {
             policySession,
+            ..Default::default()
         }
     }
 
@@ -26340,6 +26564,7 @@ impl TPM2_PolicyCpHash_REQUEST {
         Self {
             policySession,
             cpHashA,
+            ..Default::default()
         }
     }
 
@@ -26418,6 +26643,7 @@ impl TPM2_PolicyNameHash_REQUEST {
         Self {
             policySession,
             nameHash,
+            ..Default::default()
         }
     }
 
@@ -26505,6 +26731,7 @@ impl TPM2_PolicyDuplicationSelect_REQUEST {
             objectName,
             newParentName,
             includeObject,
+            ..Default::default()
         }
     }
 
@@ -26602,6 +26829,7 @@ impl TPM2_PolicyAuthorize_REQUEST {
             policyRef,
             keySign,
             checkTicket,
+            ..Default::default()
         }
     }
 
@@ -26679,6 +26907,7 @@ impl TPM2_PolicyAuthValue_REQUEST {
         ) -> Self {
         Self {
             policySession,
+            ..Default::default()
         }
     }
 
@@ -26747,6 +26976,7 @@ impl TPM2_PolicyPassword_REQUEST {
         ) -> Self {
         Self {
             policySession,
+            ..Default::default()
         }
     }
 
@@ -26816,6 +27046,7 @@ impl TPM2_PolicyGetDigest_REQUEST {
         ) -> Self {
         Self {
             policySession,
+            ..Default::default()
         }
     }
 
@@ -26954,6 +27185,7 @@ impl TPM2_PolicyNvWritten_REQUEST {
         Self {
             policySession,
             writtenSet,
+            ..Default::default()
         }
     }
 
@@ -27031,6 +27263,7 @@ impl TPM2_PolicyTemplate_REQUEST {
         Self {
             policySession,
             templateHash,
+            ..Default::default()
         }
     }
 
@@ -27118,6 +27351,7 @@ impl TPM2_PolicyAuthorizeNV_REQUEST {
             authHandle,
             nvIndex,
             policySession,
+            ..Default::default()
         }
     }
 
@@ -27212,6 +27446,7 @@ impl TPM2_CreatePrimary_REQUEST {
             inPublic,
             outsideInfo,
             creationPCR,
+            ..Default::default()
         }
     }
 
@@ -27392,6 +27627,7 @@ impl TPM2_HierarchyControl_REQUEST {
             authHandle,
             enable,
             state,
+            ..Default::default()
         }
     }
 
@@ -27481,6 +27717,7 @@ impl TPM2_SetPrimaryPolicy_REQUEST {
             authHandle,
             authPolicy,
             hashAlg,
+            ..Default::default()
         }
     }
 
@@ -27556,6 +27793,7 @@ impl TPM2_ChangePPS_REQUEST {
         ) -> Self {
         Self {
             authHandle,
+            ..Default::default()
         }
     }
 
@@ -27630,6 +27868,7 @@ impl TPM2_ChangeEPS_REQUEST {
         ) -> Self {
         Self {
             authHandle,
+            ..Default::default()
         }
     }
 
@@ -27699,6 +27938,7 @@ impl TPM2_Clear_REQUEST {
         ) -> Self {
         Self {
             authHandle,
+            ..Default::default()
         }
     }
 
@@ -27773,6 +28013,7 @@ impl TPM2_ClearControl_REQUEST {
         Self {
             auth,
             disable,
+            ..Default::default()
         }
     }
 
@@ -27850,6 +28091,7 @@ impl TPM2_HierarchyChangeAuth_REQUEST {
         Self {
             authHandle,
             newAuth,
+            ..Default::default()
         }
     }
 
@@ -27924,6 +28166,7 @@ impl TPM2_DictionaryAttackLockReset_REQUEST {
         ) -> Self {
         Self {
             lockHandle,
+            ..Default::default()
         }
     }
 
@@ -28010,6 +28253,7 @@ impl TPM2_DictionaryAttackParameters_REQUEST {
             newMaxTries,
             newRecoveryTime,
             lockoutRecovery,
+            ..Default::default()
         }
     }
 
@@ -28096,6 +28340,7 @@ impl TPM2_PP_Commands_REQUEST {
             auth,
             setList,
             clearList,
+            ..Default::default()
         }
     }
 
@@ -28176,6 +28421,7 @@ impl TPM2_SetAlgorithmSet_REQUEST {
         Self {
             authHandle,
             algorithmSet,
+            ..Default::default()
         }
     }
 
@@ -28270,6 +28516,7 @@ impl TPM2_FieldUpgradeStart_REQUEST {
             keyHandle,
             fuDigest,
             manifestSignature,
+            ..Default::default()
         }
     }
 
@@ -28348,6 +28595,7 @@ impl TPM2_FieldUpgradeData_REQUEST {
         ) -> Self {
         Self {
             fuData,
+            ..Default::default()
         }
     }
 
@@ -28488,6 +28736,7 @@ impl TPM2_FirmwareRead_REQUEST {
         ) -> Self {
         Self {
             sequenceNumber,
+            ..Default::default()
         }
     }
 
@@ -28620,6 +28869,7 @@ impl TPM2_ContextSave_REQUEST {
         ) -> Self {
         Self {
             saveHandle,
+            ..Default::default()
         }
     }
 
@@ -28747,6 +28997,7 @@ impl TPM2_ContextLoad_REQUEST {
         ) -> Self {
         Self {
             context,
+            ..Default::default()
         }
     }
 
@@ -28876,6 +29127,7 @@ impl TPM2_FlushContext_REQUEST {
         ) -> Self {
         Self {
             flushHandle,
+            ..Default::default()
         }
     }
 
@@ -28962,6 +29214,7 @@ impl TPM2_EvictControl_REQUEST {
             auth,
             objectHandle,
             persistentHandle,
+            ..Default::default()
         }
     }
 
@@ -29158,6 +29411,7 @@ impl TPM2_ClockSet_REQUEST {
         Self {
             auth,
             newTime,
+            ..Default::default()
         }
     }
 
@@ -29235,6 +29489,7 @@ impl TPM2_ClockRateAdjust_REQUEST {
         Self {
             auth,
             rateAdjust,
+            ..Default::default()
         }
     }
 
@@ -29314,6 +29569,7 @@ impl TPM2_GetCapability_REQUEST {
             capability,
             property,
             propertyCount,
+            ..Default::default()
         }
     }
 
@@ -29465,6 +29721,7 @@ impl TPM2_TestParms_REQUEST {
         ) -> Self {
         Self {
             parameters,
+            ..Default::default()
         }
     }
 
@@ -29552,6 +29809,7 @@ impl TPM2_NV_DefineSpace_REQUEST {
             authHandle,
             auth,
             publicInfo,
+            ..Default::default()
         }
     }
 
@@ -29632,6 +29890,7 @@ impl TPM2_NV_UndefineSpace_REQUEST {
         Self {
             authHandle,
             nvIndex,
+            ..Default::default()
         }
     }
 
@@ -29709,6 +29968,7 @@ impl TPM2_NV_UndefineSpaceSpecial_REQUEST {
         Self {
             nvIndex,
             platform,
+            ..Default::default()
         }
     }
 
@@ -29778,6 +30038,7 @@ impl TPM2_NV_ReadPublic_REQUEST {
         ) -> Self {
         Self {
             nvIndex,
+            ..Default::default()
         }
     }
 
@@ -29931,6 +30192,7 @@ impl TPM2_NV_Write_REQUEST {
             nvIndex,
             data,
             offset,
+            ..Default::default()
         }
     }
 
@@ -30012,6 +30274,7 @@ impl TPM2_NV_Increment_REQUEST {
         Self {
             authHandle,
             nvIndex,
+            ..Default::default()
         }
     }
 
@@ -30093,6 +30356,7 @@ impl TPM2_NV_Extend_REQUEST {
             authHandle,
             nvIndex,
             data,
+            ..Default::default()
         }
     }
 
@@ -30178,6 +30442,7 @@ impl TPM2_NV_SetBits_REQUEST {
             authHandle,
             nvIndex,
             bits,
+            ..Default::default()
         }
     }
 
@@ -30256,6 +30521,7 @@ impl TPM2_NV_WriteLock_REQUEST {
         Self {
             authHandle,
             nvIndex,
+            ..Default::default()
         }
     }
 
@@ -30326,6 +30592,7 @@ impl TPM2_NV_GlobalWriteLock_REQUEST {
         ) -> Self {
         Self {
             authHandle,
+            ..Default::default()
         }
     }
 
@@ -30412,6 +30679,7 @@ impl TPM2_NV_Read_REQUEST {
             nvIndex,
             size,
             offset,
+            ..Default::default()
         }
     }
 
@@ -30553,6 +30821,7 @@ impl TPM2_NV_ReadLock_REQUEST {
         Self {
             authHandle,
             nvIndex,
+            ..Default::default()
         }
     }
 
@@ -30627,6 +30896,7 @@ impl TPM2_NV_ChangeAuth_REQUEST {
         Self {
             nvIndex,
             newAuth,
+            ..Default::default()
         }
     }
 
@@ -30739,6 +31009,7 @@ impl TPM2_NV_Certify_REQUEST {
             inScheme,
             size,
             offset,
+            ..Default::default()
         }
     }
 
@@ -30905,6 +31176,7 @@ impl TPM2_AC_GetCapability_REQUEST {
             ac,
             capability,
             count,
+            ..Default::default()
         }
     }
 
@@ -31063,6 +31335,7 @@ impl TPM2_AC_Send_REQUEST {
             authHandle,
             ac,
             acDataIn,
+            ..Default::default()
         }
     }
 
@@ -31218,6 +31491,7 @@ impl TPM2_Policy_AC_SendSelect_REQUEST {
             authHandleName,
             acName,
             includeObject,
+            ..Default::default()
         }
     }
 
@@ -31302,6 +31576,7 @@ impl TPM2_ACT_SetTimeout_REQUEST {
         Self {
             actHandle,
             startTimeout,
+            ..Default::default()
         }
     }
 
@@ -31371,6 +31646,7 @@ impl TPM2_Vendor_TCG_Test_REQUEST {
         ) -> Self {
         Self {
             inputData,
+            ..Default::default()
         }
     }
 
@@ -31566,6 +31842,7 @@ impl TssObject {
             Public,
             Sensitive,
             Private,
+            ..Default::default()
         }
     }
 
@@ -31633,6 +31910,7 @@ impl PcrValue {
         Self {
             index,
             value,
+            ..Default::default()
         }
     }
 
@@ -31708,6 +31986,7 @@ impl SessionIn {
             nonceCaller,
             attributes,
             auth,
+            ..Default::default()
         }
     }
 
@@ -31782,6 +32061,7 @@ impl SessionOut {
             nonceTpm,
             attributes,
             auth,
+            ..Default::default()
         }
     }
 
@@ -31854,6 +32134,7 @@ impl CommandHeader {
             Tag,
             CommandSize,
             CommandCode,
+            ..Default::default()
         }
     }
 
@@ -31921,6 +32202,7 @@ impl TSS_KEY {
         Self {
             publicPart,
             privatePart,
+            ..Default::default()
         }
     }
 

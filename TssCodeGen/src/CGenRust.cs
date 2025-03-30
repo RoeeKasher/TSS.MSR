@@ -591,13 +591,14 @@ namespace CodeGen
 
                 Write($"pub {ToSnakeCase(f.Name)}: {TransType(f)},");
             }
+
+            InsertSnip(s.Name + "_fields");
             
             TabOut("}");
             Write("");
             
             // Implement struct methods
-            Write($"impl {structName} {{");
-            TabIn();
+            TabIn($"impl {structName} {{");
             
             // Constructor
             if (!s.Info.IsResponse() && s.NonTagFields.Count() > 0)
@@ -624,6 +625,8 @@ namespace CodeGen
                         
                     Write($"{ToSnakeCase(f.Name)},");
                 }
+
+                Write("..Default::default()");
                 
                 TabOut("}", false);
                 TabOut("}", false);
@@ -631,6 +634,8 @@ namespace CodeGen
             }
 
             GenGetUnionSelector(s);
+
+            InsertSnip(s.Name + "_impl");
 
             TabOut("}");
 
