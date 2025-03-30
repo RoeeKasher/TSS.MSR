@@ -10,17 +10,56 @@
  //! TPM2 command implementations
 
 use crate::error::TpmError;
-use crate::tpm_buffer::*;
+use crate::tpm_buffer::TpmBuffer;
+use crate::tpm_buffer::TpmMarshaller;
+use crate::tpm_structure::*;
 use crate::tpm_types::*;
-
-/// Main TPM2 interface
-#[derive(Debug)]
-pub struct Tpm2 {
-}
+use crate::tpm2_impl::*;
 
 impl Tpm2 {
     pub fn async_methods(&mut self) -> AsyncMethods {
         AsyncMethods { tpm: self }
+    }
+}
+
+#[derive(Debug, Default, Clone)]
+struct EmptyTpmResponse {
+}
+
+impl TpmMarshaller for EmptyTpmResponse {
+    fn toTpm(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        Ok(())
+    }
+
+    /** Populate this object from the TPM representation in the given marshaling buffer */
+    fn initFromTpm(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
+        Ok(())
+    }
+}
+
+impl TpmStructure for EmptyTpmResponse {
+    fn serialize(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        Ok(())
+    }
+
+    fn deserialize(&mut self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        Ok(())
+    }
+
+    fn fromTpm(&self, _buffer: &mut TpmBuffer) -> Result<(), TpmError> {
+        Ok(())
+    }
+
+    fn fromBytes(&mut self, _buffer: &mut Vec<u8>) -> Result<(), TpmError> {
+        Ok(())
+    }
+}
+
+impl CmdStructure for EmptyTpmResponse {}
+
+impl RespStructure for EmptyTpmResponse {
+    fn get_handle(&self) -> TPM_HANDLE {
+        TPM_HANDLE::default()
     }
 }
 
@@ -45,7 +84,7 @@ impl Tpm2 {
             startupType,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::Startup, req, &mut resp)?;
         Ok(())
     }
@@ -61,7 +100,7 @@ impl Tpm2 {
             shutdownType,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::Shutdown, req, &mut resp)?;
         Ok(())
     }
@@ -79,7 +118,7 @@ impl Tpm2 {
             fullTest,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SelfTest, req, &mut resp)?;
         Ok(())
     }
@@ -175,7 +214,7 @@ impl Tpm2 {
             sessionHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyRestart, req, &mut resp)?;
         Ok(())
     }
@@ -936,7 +975,7 @@ impl Tpm2 {
             inData,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::StirRandom, req, &mut resp)?;
         Ok(())
     }
@@ -1032,7 +1071,7 @@ impl Tpm2 {
             buffer,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SequenceUpdate, req, &mut resp)?;
         Ok(())
     }
@@ -1487,7 +1526,7 @@ impl Tpm2 {
             clearList,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SetCommandCodeAuditStatus, req, &mut resp)?;
         Ok(())
     }
@@ -1509,7 +1548,7 @@ impl Tpm2 {
             digests,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PCR_Extend, req, &mut resp)?;
         Ok(())
     }
@@ -1604,7 +1643,7 @@ impl Tpm2 {
             pcrNum,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PCR_SetAuthPolicy, req, &mut resp)?;
         Ok(())
     }
@@ -1624,7 +1663,7 @@ impl Tpm2 {
             auth,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PCR_SetAuthValue, req, &mut resp)?;
         Ok(())
     }
@@ -1643,7 +1682,7 @@ impl Tpm2 {
             pcrHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PCR_Reset, req, &mut resp)?;
         Ok(())
     }
@@ -1779,7 +1818,7 @@ impl Tpm2 {
             ticket,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyTicket, req, &mut resp)?;
         Ok(())
     }
@@ -1801,7 +1840,7 @@ impl Tpm2 {
             pHashList,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyOR, req, &mut resp)?;
         Ok(())
     }
@@ -1826,7 +1865,7 @@ impl Tpm2 {
             pcrs,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyPCR, req, &mut resp)?;
         Ok(())
     }
@@ -1845,7 +1884,7 @@ impl Tpm2 {
             locality,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyLocality, req, &mut resp)?;
         Ok(())
     }
@@ -1881,7 +1920,7 @@ impl Tpm2 {
             operation,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyNV, req, &mut resp)?;
         Ok(())
     }
@@ -1907,7 +1946,7 @@ impl Tpm2 {
             operation,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyCounterTimer, req, &mut resp)?;
         Ok(())
     }
@@ -1926,7 +1965,7 @@ impl Tpm2 {
             code,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyCommandCode, req, &mut resp)?;
         Ok(())
     }
@@ -1943,7 +1982,7 @@ impl Tpm2 {
             policySession,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyPhysicalPresence, req, &mut resp)?;
         Ok(())
     }
@@ -1962,7 +2001,7 @@ impl Tpm2 {
             cpHashA,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyCpHash, req, &mut resp)?;
         Ok(())
     }
@@ -1983,7 +2022,7 @@ impl Tpm2 {
             nameHash,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyNameHash, req, &mut resp)?;
         Ok(())
     }
@@ -2008,7 +2047,7 @@ impl Tpm2 {
             includeObject,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyDuplicationSelect, req, &mut resp)?;
         Ok(())
     }
@@ -2038,7 +2077,7 @@ impl Tpm2 {
             checkTicket,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyAuthorize, req, &mut resp)?;
         Ok(())
     }
@@ -2054,7 +2093,7 @@ impl Tpm2 {
             policySession,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyAuthValue, req, &mut resp)?;
         Ok(())
     }
@@ -2070,7 +2109,7 @@ impl Tpm2 {
             policySession,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyPassword, req, &mut resp)?;
         Ok(())
     }
@@ -2110,7 +2149,7 @@ impl Tpm2 {
             writtenSet,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyNvWritten, req, &mut resp)?;
         Ok(())
     }
@@ -2131,7 +2170,7 @@ impl Tpm2 {
             templateHash,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyTemplate, req, &mut resp)?;
         Ok(())
     }
@@ -2159,7 +2198,7 @@ impl Tpm2 {
             policySession,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyAuthorizeNV, req, &mut resp)?;
         Ok(())
     }
@@ -2226,7 +2265,7 @@ impl Tpm2 {
             state,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::HierarchyControl, req, &mut resp)?;
         Ok(())
     }
@@ -2254,7 +2293,7 @@ impl Tpm2 {
             hashAlg,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SetPrimaryPolicy, req, &mut resp)?;
         Ok(())
     }
@@ -2272,7 +2311,7 @@ impl Tpm2 {
             authHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ChangePPS, req, &mut resp)?;
         Ok(())
     }
@@ -2293,7 +2332,7 @@ impl Tpm2 {
             authHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ChangeEPS, req, &mut resp)?;
         Ok(())
     }
@@ -2310,7 +2349,7 @@ impl Tpm2 {
             authHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::Clear, req, &mut resp)?;
         Ok(())
     }
@@ -2330,7 +2369,7 @@ impl Tpm2 {
             disable,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ClearControl, req, &mut resp)?;
         Ok(())
     }
@@ -2351,7 +2390,7 @@ impl Tpm2 {
             newAuth,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::HierarchyChangeAuth, req, &mut resp)?;
         Ok(())
     }
@@ -2370,7 +2409,7 @@ impl Tpm2 {
             lockHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::DictionaryAttackLockReset, req, &mut resp)?;
         Ok(())
     }
@@ -2398,7 +2437,7 @@ impl Tpm2 {
             lockoutRecovery,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::DictionaryAttackParameters, req, &mut resp)?;
         Ok(())
     }
@@ -2423,7 +2462,7 @@ impl Tpm2 {
             clearList,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PP_Commands, req, &mut resp)?;
         Ok(())
     }
@@ -2444,7 +2483,7 @@ impl Tpm2 {
             algorithmSet,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SetAlgorithmSet, req, &mut resp)?;
         Ok(())
     }
@@ -2476,7 +2515,7 @@ impl Tpm2 {
             manifestSignature,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::FieldUpgradeStart, req, &mut resp)?;
         Ok(())
     }
@@ -2568,7 +2607,7 @@ impl Tpm2 {
             flushHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::FlushContext, req, &mut resp)?;
         Ok(())
     }
@@ -2596,7 +2635,7 @@ impl Tpm2 {
             persistentHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::EvictControl, req, &mut resp)?;
         Ok(())
     }
@@ -2633,7 +2672,7 @@ impl Tpm2 {
             newTime,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ClockSet, req, &mut resp)?;
         Ok(())
     }
@@ -2654,7 +2693,7 @@ impl Tpm2 {
             rateAdjust,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ClockRateAdjust, req, &mut resp)?;
         Ok(())
     }
@@ -2694,7 +2733,7 @@ impl Tpm2 {
             parameters,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::TestParms, req, &mut resp)?;
         Ok(())
     }
@@ -2719,7 +2758,7 @@ impl Tpm2 {
             publicInfo,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_DefineSpace, req, &mut resp)?;
         Ok(())
     }
@@ -2740,7 +2779,7 @@ impl Tpm2 {
             nvIndex,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_UndefineSpace, req, &mut resp)?;
         Ok(())
     }
@@ -2762,7 +2801,7 @@ impl Tpm2 {
             platform,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_UndefineSpaceSpecial, req, &mut resp)?;
         Ok(())
     }
@@ -2809,7 +2848,7 @@ impl Tpm2 {
             offset,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_Write, req, &mut resp)?;
         Ok(())
     }
@@ -2831,7 +2870,7 @@ impl Tpm2 {
             nvIndex,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_Increment, req, &mut resp)?;
         Ok(())
     }
@@ -2856,7 +2895,7 @@ impl Tpm2 {
             data,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_Extend, req, &mut resp)?;
         Ok(())
     }
@@ -2882,7 +2921,7 @@ impl Tpm2 {
             bits,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_SetBits, req, &mut resp)?;
         Ok(())
     }
@@ -2904,7 +2943,7 @@ impl Tpm2 {
             nvIndex,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_WriteLock, req, &mut resp)?;
         Ok(())
     }
@@ -2922,7 +2961,7 @@ impl Tpm2 {
             authHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_GlobalWriteLock, req, &mut resp)?;
         Ok(())
     }
@@ -2973,7 +3012,7 @@ impl Tpm2 {
             nvIndex,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_ReadLock, req, &mut resp)?;
         Ok(())
     }
@@ -2993,7 +3032,7 @@ impl Tpm2 {
             newAuth,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_ChangeAuth, req, &mut resp)?;
         Ok(())
     }
@@ -3122,7 +3161,7 @@ impl Tpm2 {
             includeObject,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::Policy_AC_SendSelect, req, &mut resp)?;
         Ok(())
     }
@@ -3143,7 +3182,7 @@ impl Tpm2 {
             startTimeout,
         };
 
-        let mut resp = TPMS_EMPTY::default();
+        let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ACT_SetTimeout, req, &mut resp)?;
         Ok(())
     }
@@ -3186,8 +3225,8 @@ impl<'a> AsyncMethods<'a> {
             startupType,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::Startup, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::Startup, &req)?;
         Ok(())
     }
 
@@ -3202,8 +3241,8 @@ impl<'a> AsyncMethods<'a> {
             shutdownType,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::Shutdown, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::Shutdown, &req)?;
         Ok(())
     }
 
@@ -3220,8 +3259,8 @@ impl<'a> AsyncMethods<'a> {
             fullTest,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::SelfTest, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::SelfTest, &req)?;
         Ok(())
     }
 
@@ -3237,8 +3276,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = IncrementalSelfTestResponse::default();
-        self.tpm.dispatch_out(TPM_CC::IncrementalSelfTest, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::IncrementalSelfTest, &req)?;
+        Ok(())
     }
 
     /// This command returns manufacturer-specific information regarding the results of a
@@ -3252,8 +3291,8 @@ impl<'a> AsyncMethods<'a> {
         let req = TPM2_GetTestResult_REQUEST::default();
 
         let mut resp = GetTestResultResponse::default();
-        self.tpm.dispatch_out(TPM_CC::GetTestResult, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::GetTestResult, &req)?;
+        Ok(())
     }
 
     /// This command is used to start an authorization session using alternative methods of
@@ -3297,8 +3336,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = StartAuthSessionResponse::default();
-        self.tpm.dispatch_out(TPM_CC::StartAuthSession, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::StartAuthSession, &req)?;
+        Ok(())
     }
 
     /// This command allows a policy authorization session to be returned to its initial state.
@@ -3316,8 +3355,8 @@ impl<'a> AsyncMethods<'a> {
             sessionHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyRestart, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyRestart, &req)?;
         Ok(())
     }
 
@@ -3359,8 +3398,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = CreateResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Create, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Create, &req)?;
+        Ok(())
     }
 
     /// This command is used to load objects into the TPM. This command is used when both a
@@ -3386,8 +3425,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = LoadResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Load, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Load, &req)?;
+        Ok(())
     }
 
     /// This command is used to load an object that is not a Protected Object into the TPM. The
@@ -3410,8 +3449,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = LoadExternalResponse::default();
-        self.tpm.dispatch_out(TPM_CC::LoadExternal, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::LoadExternal, &req)?;
+        Ok(())
     }
 
     /// This command allows access to the public area of a loaded object.
@@ -3429,8 +3468,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ReadPublicResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ReadPublic, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ReadPublic, &req)?;
+        Ok(())
     }
 
     /// This command enables the association of a credential with an object in a way that ensures
@@ -3461,8 +3500,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ActivateCredentialResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ActivateCredential, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ActivateCredential, &req)?;
+        Ok(())
     }
 
     /// This command allows the TPM to perform the actions required of a Certificate Authority
@@ -3486,8 +3525,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = MakeCredentialResponse::default();
-        self.tpm.dispatch_out(TPM_CC::MakeCredential, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::MakeCredential, &req)?;
+        Ok(())
     }
 
     /// This command returns the data in a loaded Sealed Data Object.
@@ -3505,8 +3544,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = UnsealResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Unseal, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Unseal, &req)?;
+        Ok(())
     }
 
     /// This command is used to change the authorization secret for a TPM-resident object.
@@ -3530,8 +3569,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ObjectChangeAuthResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ObjectChangeAuth, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ObjectChangeAuth, &req)?;
+        Ok(())
     }
 
     /// This command creates an object and loads it in the TPM. This command allows creation of
@@ -3562,8 +3601,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = CreateLoadedResponse::default();
-        self.tpm.dispatch_out(TPM_CC::CreateLoaded, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::CreateLoaded, &req)?;
+        Ok(())
     }
 
     /// This command duplicates a loaded object so that it may be used in a different hierarchy.
@@ -3600,8 +3639,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = DuplicateResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Duplicate, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Duplicate, &req)?;
+        Ok(())
     }
 
     /// This command allows the TPM to serve in the role as a Duplication Authority. If proper
@@ -3638,8 +3677,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = RewrapResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Rewrap, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Rewrap, &req)?;
+        Ok(())
     }
 
     /// This command allows an object to be encrypted using the symmetric encryption values of a
@@ -3682,8 +3721,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ImportResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Import, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Import, &req)?;
+        Ok(())
     }
 
     /// This command performs RSA encryption using the indicated padding scheme according to IETF
@@ -3720,8 +3759,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = RSA_EncryptResponse::default();
-        self.tpm.dispatch_out(TPM_CC::RSA_Encrypt, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::RSA_Encrypt, &req)?;
+        Ok(())
     }
 
     /// This command performs RSA decryption using the indicated padding scheme according to IETF
@@ -3753,8 +3792,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = RSA_DecryptResponse::default();
-        self.tpm.dispatch_out(TPM_CC::RSA_Decrypt, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::RSA_Decrypt, &req)?;
+        Ok(())
     }
 
     /// This command uses the TPM to generate an ephemeral key pair (de, Qe where Qe [de]G). It
@@ -3773,8 +3812,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ECDH_KeyGenResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ECDH_KeyGen, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ECDH_KeyGen, &req)?;
+        Ok(())
     }
 
     /// This command uses the TPM to recover the Z value from a public point (QB) and a private
@@ -3797,8 +3836,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ECDH_ZGenResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ECDH_ZGen, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ECDH_ZGen, &req)?;
+        Ok(())
     }
 
     /// This command returns the parameters of an ECC curve identified by its TCG-assigned curveID.
@@ -3813,8 +3852,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ECC_ParametersResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ECC_Parameters, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ECC_Parameters, &req)?;
+        Ok(())
     }
 
     /// This command supports two-phase key exchange protocols. The command is used in combination
@@ -3848,8 +3887,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ZGen_2PhaseResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ZGen_2Phase, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ZGen_2Phase, &req)?;
+        Ok(())
     }
 
     /// This command performs ECC encryption as described in Part 1, Annex D.
@@ -3875,8 +3914,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ECC_EncryptResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ECC_Encrypt, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ECC_Encrypt, &req)?;
+        Ok(())
     }
 
     /// This command performs ECC decryption.
@@ -3907,8 +3946,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ECC_DecryptResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ECC_Decrypt, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ECC_Decrypt, &req)?;
+        Ok(())
     }
 
     /// NOTE 1 This command is deprecated, and TPM2_EncryptDecrypt2() is preferred. This should be
@@ -3940,8 +3979,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = EncryptDecryptResponse::default();
-        self.tpm.dispatch_out(TPM_CC::EncryptDecrypt, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::EncryptDecrypt, &req)?;
+        Ok(())
     }
 
     /// This command is identical to TPM2_EncryptDecrypt(), except that the inData parameter is
@@ -3973,8 +4012,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = EncryptDecrypt2Response::default();
-        self.tpm.dispatch_out(TPM_CC::EncryptDecrypt2, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::EncryptDecrypt2, &req)?;
+        Ok(())
     }
 
     /// This command performs a hash operation on a data buffer and returns the results.
@@ -3998,8 +4037,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = HashResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Hash, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Hash, &req)?;
+        Ok(())
     }
 
     /// This command performs an HMAC on the supplied data using the indicated hash algorithm.
@@ -4022,8 +4061,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = HMACResponse::default();
-        self.tpm.dispatch_out(TPM_CC::HMAC, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::HMAC, &req)?;
+        Ok(())
     }
 
     /// This command performs an HMAC or a block cipher MAC on the supplied data using the
@@ -4047,8 +4086,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = MACResponse::default();
-        self.tpm.dispatch_out(TPM_CC::MAC, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::MAC, &req)?;
+        Ok(())
     }
 
     /// This command returns the next bytesRequested octets from the random number generator (RNG).
@@ -4063,8 +4102,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = GetRandomResponse::default();
-        self.tpm.dispatch_out(TPM_CC::GetRandom, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::GetRandom, &req)?;
+        Ok(())
     }
 
     /// This command is used to add "additional information" to the RNG state.
@@ -4077,8 +4116,8 @@ impl<'a> AsyncMethods<'a> {
             inData,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::StirRandom, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::StirRandom, &req)?;
         Ok(())
     }
 
@@ -4104,8 +4143,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = HMAC_StartResponse::default();
-        self.tpm.dispatch_out(TPM_CC::HMAC_Start, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::HMAC_Start, &req)?;
+        Ok(())
     }
 
     /// This command starts a MAC sequence. The TPM will create and initialize a MAC sequence
@@ -4130,8 +4169,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = MAC_StartResponse::default();
-        self.tpm.dispatch_out(TPM_CC::MAC_Start, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::MAC_Start, &req)?;
+        Ok(())
     }
 
     /// This command starts a hash or an Event Sequence. If hashAlg is an implemented hash, then a
@@ -4153,8 +4192,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = HashSequenceStartResponse::default();
-        self.tpm.dispatch_out(TPM_CC::HashSequenceStart, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::HashSequenceStart, &req)?;
+        Ok(())
     }
 
     /// This command is used to add data to a hash or HMAC sequence. The amount of data in buffer
@@ -4173,8 +4212,8 @@ impl<'a> AsyncMethods<'a> {
             buffer,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::SequenceUpdate, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::SequenceUpdate, &req)?;
         Ok(())
     }
 
@@ -4201,8 +4240,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = SequenceCompleteResponse::default();
-        self.tpm.dispatch_out(TPM_CC::SequenceComplete, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::SequenceComplete, &req)?;
+        Ok(())
     }
 
     /// This command adds the last part of data, if any, to an Event Sequence and returns the
@@ -4231,8 +4270,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = EventSequenceCompleteResponse::default();
-        self.tpm.dispatch_out(TPM_CC::EventSequenceComplete, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::EventSequenceComplete, &req)?;
+        Ok(())
     }
 
     /// The purpose of this command is to prove that an object with a specific Name is loaded in
@@ -4268,8 +4307,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = CertifyResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Certify, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Certify, &req)?;
+        Ok(())
     }
 
     /// This command is used to prove the association between an object and its creation data. The
@@ -4309,8 +4348,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = CertifyCreationResponse::default();
-        self.tpm.dispatch_out(TPM_CC::CertifyCreation, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::CertifyCreation, &req)?;
+        Ok(())
     }
 
     /// This command is used to quote PCR values.
@@ -4340,8 +4379,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = QuoteResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Quote, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Quote, &req)?;
+        Ok(())
     }
 
     /// This command returns a digital signature of the audit session digest.
@@ -4377,8 +4416,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = GetSessionAuditDigestResponse::default();
-        self.tpm.dispatch_out(TPM_CC::GetSessionAuditDigest, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::GetSessionAuditDigest, &req)?;
+        Ok(())
     }
 
     /// This command returns the current value of the command audit digest, a digest of the
@@ -4412,8 +4451,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = GetCommandAuditDigestResponse::default();
-        self.tpm.dispatch_out(TPM_CC::GetCommandAuditDigest, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::GetCommandAuditDigest, &req)?;
+        Ok(())
     }
 
     /// This command returns the current values of Time and Clock.
@@ -4445,8 +4484,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = GetTimeResponse::default();
-        self.tpm.dispatch_out(TPM_CC::GetTime, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::GetTime, &req)?;
+        Ok(())
     }
 
     /// The purpose of this command is to generate an X.509 certificate that proves an object with
@@ -4488,8 +4527,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = CertifyX509Response::default();
-        self.tpm.dispatch_out(TPM_CC::CertifyX509, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::CertifyX509, &req)?;
+        Ok(())
     }
 
     /// TPM2_Commit() performs the first part of an ECC anonymous signing operation. The TPM will
@@ -4521,8 +4560,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = CommitResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Commit, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Commit, &req)?;
+        Ok(())
     }
 
     /// TPM2_EC_Ephemeral() creates an ephemeral key for use in a two-phase key exchange protocol.
@@ -4538,8 +4577,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = EC_EphemeralResponse::default();
-        self.tpm.dispatch_out(TPM_CC::EC_Ephemeral, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::EC_Ephemeral, &req)?;
+        Ok(())
     }
 
     /// This command uses loaded keys to validate a signature on a message with the message digest
@@ -4568,8 +4607,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = VerifySignatureResponse::default();
-        self.tpm.dispatch_out(TPM_CC::VerifySignature, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::VerifySignature, &req)?;
+        Ok(())
     }
 
     /// This command causes the TPM to sign an externally provided hash with the specified
@@ -4601,8 +4640,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = SignResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Sign, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Sign, &req)?;
+        Ok(())
     }
 
     /// This command may be used by the Privacy Administrator or platform to change the audit
@@ -4628,8 +4667,8 @@ impl<'a> AsyncMethods<'a> {
             clearList,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::SetCommandCodeAuditStatus, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::SetCommandCodeAuditStatus, &req)?;
         Ok(())
     }
 
@@ -4650,8 +4689,8 @@ impl<'a> AsyncMethods<'a> {
             digests,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PCR_Extend, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PCR_Extend, &req)?;
         Ok(())
     }
 
@@ -4675,8 +4714,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = PCR_EventResponse::default();
-        self.tpm.dispatch_out(TPM_CC::PCR_Event, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::PCR_Event, &req)?;
+        Ok(())
     }
 
     /// This command returns the values of all PCR specified in pcrSelectionIn.
@@ -4694,8 +4733,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = PCR_ReadResponse::default();
-        self.tpm.dispatch_out(TPM_CC::PCR_Read, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::PCR_Read, &req)?;
+        Ok(())
     }
 
     /// This command is used to set the desired PCR allocation of PCR and algorithms. This command
@@ -4719,8 +4758,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = PCR_AllocateResponse::default();
-        self.tpm.dispatch_out(TPM_CC::PCR_Allocate, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::PCR_Allocate, &req)?;
+        Ok(())
     }
 
     /// This command is used to associate a policy with a PCR or group of PCR. The policy
@@ -4745,8 +4784,8 @@ impl<'a> AsyncMethods<'a> {
             pcrNum,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PCR_SetAuthPolicy, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PCR_SetAuthPolicy, &req)?;
         Ok(())
     }
 
@@ -4765,8 +4804,8 @@ impl<'a> AsyncMethods<'a> {
             auth,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PCR_SetAuthValue, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PCR_SetAuthValue, &req)?;
         Ok(())
     }
 
@@ -4784,8 +4823,8 @@ impl<'a> AsyncMethods<'a> {
             pcrHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PCR_Reset, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PCR_Reset, &req)?;
         Ok(())
     }
 
@@ -4837,8 +4876,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = PolicySignedResponse::default();
-        self.tpm.dispatch_out(TPM_CC::PolicySigned, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::PolicySigned, &req)?;
+        Ok(())
     }
 
     /// This command includes a secret-based authorization to a policy. The caller proves
@@ -4885,8 +4924,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = PolicySecretResponse::default();
-        self.tpm.dispatch_out(TPM_CC::PolicySecret, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::PolicySecret, &req)?;
+        Ok(())
     }
 
     /// This command is similar to TPM2_PolicySigned() except that it takes a ticket instead of a
@@ -4920,8 +4959,8 @@ impl<'a> AsyncMethods<'a> {
             ticket,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyTicket, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyTicket, &req)?;
         Ok(())
     }
 
@@ -4942,8 +4981,8 @@ impl<'a> AsyncMethods<'a> {
             pHashList,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyOR, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyOR, &req)?;
         Ok(())
     }
 
@@ -4967,8 +5006,8 @@ impl<'a> AsyncMethods<'a> {
             pcrs,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyPCR, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyPCR, &req)?;
         Ok(())
     }
 
@@ -4986,8 +5025,8 @@ impl<'a> AsyncMethods<'a> {
             locality,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyLocality, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyLocality, &req)?;
         Ok(())
     }
 
@@ -5022,8 +5061,8 @@ impl<'a> AsyncMethods<'a> {
             operation,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyNV, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyNV, &req)?;
         Ok(())
     }
 
@@ -5048,8 +5087,8 @@ impl<'a> AsyncMethods<'a> {
             operation,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyCounterTimer, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyCounterTimer, &req)?;
         Ok(())
     }
 
@@ -5067,8 +5106,8 @@ impl<'a> AsyncMethods<'a> {
             code,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyCommandCode, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyCommandCode, &req)?;
         Ok(())
     }
 
@@ -5084,8 +5123,8 @@ impl<'a> AsyncMethods<'a> {
             policySession,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyPhysicalPresence, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyPhysicalPresence, &req)?;
         Ok(())
     }
 
@@ -5103,8 +5142,8 @@ impl<'a> AsyncMethods<'a> {
             cpHashA,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyCpHash, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyCpHash, &req)?;
         Ok(())
     }
 
@@ -5124,8 +5163,8 @@ impl<'a> AsyncMethods<'a> {
             nameHash,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyNameHash, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyNameHash, &req)?;
         Ok(())
     }
 
@@ -5149,8 +5188,8 @@ impl<'a> AsyncMethods<'a> {
             includeObject,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyDuplicationSelect, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyDuplicationSelect, &req)?;
         Ok(())
     }
 
@@ -5179,8 +5218,8 @@ impl<'a> AsyncMethods<'a> {
             checkTicket,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyAuthorize, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyAuthorize, &req)?;
         Ok(())
     }
 
@@ -5195,8 +5234,8 @@ impl<'a> AsyncMethods<'a> {
             policySession,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyAuthValue, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyAuthValue, &req)?;
         Ok(())
     }
 
@@ -5211,8 +5250,8 @@ impl<'a> AsyncMethods<'a> {
             policySession,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyPassword, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyPassword, &req)?;
         Ok(())
     }
 
@@ -5230,8 +5269,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = PolicyGetDigestResponse::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyGetDigest, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::PolicyGetDigest, &req)?;
+        Ok(())
     }
 
     /// This command allows a policy to be bound to the TPMA_NV_WRITTEN attributes. This is a
@@ -5251,8 +5290,8 @@ impl<'a> AsyncMethods<'a> {
             writtenSet,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyNvWritten, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyNvWritten, &req)?;
         Ok(())
     }
 
@@ -5272,8 +5311,8 @@ impl<'a> AsyncMethods<'a> {
             templateHash,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyTemplate, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyTemplate, &req)?;
         Ok(())
     }
 
@@ -5300,8 +5339,8 @@ impl<'a> AsyncMethods<'a> {
             policySession,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PolicyAuthorizeNV, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PolicyAuthorizeNV, &req)?;
         Ok(())
     }
 
@@ -5342,8 +5381,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = CreatePrimaryResponse::default();
-        self.tpm.dispatch_out(TPM_CC::CreatePrimary, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::CreatePrimary, &req)?;
+        Ok(())
     }
 
     /// This command enables and disables use of a hierarchy and its associated NV storage. The
@@ -5367,8 +5406,8 @@ impl<'a> AsyncMethods<'a> {
             state,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::HierarchyControl, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::HierarchyControl, &req)?;
         Ok(())
     }
 
@@ -5395,8 +5434,8 @@ impl<'a> AsyncMethods<'a> {
             hashAlg,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::SetPrimaryPolicy, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::SetPrimaryPolicy, &req)?;
         Ok(())
     }
 
@@ -5413,8 +5452,8 @@ impl<'a> AsyncMethods<'a> {
             authHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::ChangePPS, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::ChangePPS, &req)?;
         Ok(())
     }
 
@@ -5434,8 +5473,8 @@ impl<'a> AsyncMethods<'a> {
             authHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::ChangeEPS, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::ChangeEPS, &req)?;
         Ok(())
     }
 
@@ -5451,8 +5490,8 @@ impl<'a> AsyncMethods<'a> {
             authHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::Clear, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::Clear, &req)?;
         Ok(())
     }
 
@@ -5471,8 +5510,8 @@ impl<'a> AsyncMethods<'a> {
             disable,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::ClearControl, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::ClearControl, &req)?;
         Ok(())
     }
 
@@ -5492,8 +5531,8 @@ impl<'a> AsyncMethods<'a> {
             newAuth,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::HierarchyChangeAuth, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::HierarchyChangeAuth, &req)?;
         Ok(())
     }
 
@@ -5511,8 +5550,8 @@ impl<'a> AsyncMethods<'a> {
             lockHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::DictionaryAttackLockReset, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::DictionaryAttackLockReset, &req)?;
         Ok(())
     }
 
@@ -5539,8 +5578,8 @@ impl<'a> AsyncMethods<'a> {
             lockoutRecovery,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::DictionaryAttackParameters, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::DictionaryAttackParameters, &req)?;
         Ok(())
     }
 
@@ -5564,8 +5603,8 @@ impl<'a> AsyncMethods<'a> {
             clearList,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::PP_Commands, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::PP_Commands, &req)?;
         Ok(())
     }
 
@@ -5585,8 +5624,8 @@ impl<'a> AsyncMethods<'a> {
             algorithmSet,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::SetAlgorithmSet, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::SetAlgorithmSet, &req)?;
         Ok(())
     }
 
@@ -5617,8 +5656,8 @@ impl<'a> AsyncMethods<'a> {
             manifestSignature,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::FieldUpgradeStart, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::FieldUpgradeStart, &req)?;
         Ok(())
     }
 
@@ -5639,8 +5678,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = FieldUpgradeDataResponse::default();
-        self.tpm.dispatch_out(TPM_CC::FieldUpgradeData, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::FieldUpgradeData, &req)?;
+        Ok(())
     }
 
     /// This command is used to read a copy of the current firmware installed in the TPM.
@@ -5656,8 +5695,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = FirmwareReadResponse::default();
-        self.tpm.dispatch_out(TPM_CC::FirmwareRead, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::FirmwareRead, &req)?;
+        Ok(())
     }
 
     /// This command saves a session context, object context, or sequence object context outside
@@ -5677,8 +5716,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ContextSaveResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ContextSave, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ContextSave, &req)?;
+        Ok(())
     }
 
     /// This command is used to reload a context that has been saved by TPM2_ContextSave().
@@ -5693,8 +5732,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = ContextLoadResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ContextLoad, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ContextLoad, &req)?;
+        Ok(())
     }
 
     /// This command causes all context associated with a loaded object, sequence object, or
@@ -5709,8 +5748,8 @@ impl<'a> AsyncMethods<'a> {
             flushHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::FlushContext, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::FlushContext, &req)?;
         Ok(())
     }
 
@@ -5737,8 +5776,8 @@ impl<'a> AsyncMethods<'a> {
             persistentHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::EvictControl, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::EvictControl, &req)?;
         Ok(())
     }
 
@@ -5752,8 +5791,8 @@ impl<'a> AsyncMethods<'a> {
         let req = TPM2_ReadClock_REQUEST::default();
 
         let mut resp = ReadClockResponse::default();
-        self.tpm.dispatch_out(TPM_CC::ReadClock, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::ReadClock, &req)?;
+        Ok(())
     }
 
     /// This command is used to advance the value of the TPMs Clock. The command will fail if
@@ -5774,8 +5813,8 @@ impl<'a> AsyncMethods<'a> {
             newTime,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::ClockSet, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::ClockSet, &req)?;
         Ok(())
     }
 
@@ -5795,8 +5834,8 @@ impl<'a> AsyncMethods<'a> {
             rateAdjust,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::ClockRateAdjust, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::ClockRateAdjust, &req)?;
         Ok(())
     }
 
@@ -5819,8 +5858,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = GetCapabilityResponse::default();
-        self.tpm.dispatch_out(TPM_CC::GetCapability, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::GetCapability, &req)?;
+        Ok(())
     }
 
     /// This command is used to check to see if specific combinations of algorithm parameters are supported.
@@ -5835,8 +5874,8 @@ impl<'a> AsyncMethods<'a> {
             parameters,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::TestParms, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::TestParms, &req)?;
         Ok(())
     }
 
@@ -5860,8 +5899,8 @@ impl<'a> AsyncMethods<'a> {
             publicInfo,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_DefineSpace, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_DefineSpace, &req)?;
         Ok(())
     }
 
@@ -5881,8 +5920,8 @@ impl<'a> AsyncMethods<'a> {
             nvIndex,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_UndefineSpace, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_UndefineSpace, &req)?;
         Ok(())
     }
 
@@ -5903,8 +5942,8 @@ impl<'a> AsyncMethods<'a> {
             platform,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_UndefineSpaceSpecial, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_UndefineSpaceSpecial, &req)?;
         Ok(())
     }
 
@@ -5923,8 +5962,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = NV_ReadPublicResponse::default();
-        self.tpm.dispatch_out(TPM_CC::NV_ReadPublic, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::NV_ReadPublic, &req)?;
+        Ok(())
     }
 
     /// This command writes a value to an area in NV memory that was previously defined by
@@ -5950,8 +5989,8 @@ impl<'a> AsyncMethods<'a> {
             offset,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_Write, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_Write, &req)?;
         Ok(())
     }
 
@@ -5972,8 +6011,8 @@ impl<'a> AsyncMethods<'a> {
             nvIndex,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_Increment, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_Increment, &req)?;
         Ok(())
     }
 
@@ -5997,8 +6036,8 @@ impl<'a> AsyncMethods<'a> {
             data,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_Extend, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_Extend, &req)?;
         Ok(())
     }
 
@@ -6023,8 +6062,8 @@ impl<'a> AsyncMethods<'a> {
             bits,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_SetBits, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_SetBits, &req)?;
         Ok(())
     }
 
@@ -6045,8 +6084,8 @@ impl<'a> AsyncMethods<'a> {
             nvIndex,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_WriteLock, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_WriteLock, &req)?;
         Ok(())
     }
 
@@ -6063,8 +6102,8 @@ impl<'a> AsyncMethods<'a> {
             authHandle,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_GlobalWriteLock, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_GlobalWriteLock, &req)?;
         Ok(())
     }
 
@@ -6093,8 +6132,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = NV_ReadResponse::default();
-        self.tpm.dispatch_out(TPM_CC::NV_Read, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::NV_Read, &req)?;
+        Ok(())
     }
 
     /// If TPMA_NV_READ_STCLEAR is SET in an Index, then this command may be used to prevent
@@ -6114,8 +6153,8 @@ impl<'a> AsyncMethods<'a> {
             nvIndex,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_ReadLock, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_ReadLock, &req)?;
         Ok(())
     }
 
@@ -6134,8 +6173,8 @@ impl<'a> AsyncMethods<'a> {
             newAuth,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::NV_ChangeAuth, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::NV_ChangeAuth, &req)?;
         Ok(())
     }
 
@@ -6179,8 +6218,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = NV_CertifyResponse::default();
-        self.tpm.dispatch_out(TPM_CC::NV_Certify, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::NV_Certify, &req)?;
+        Ok(())
     }
 
     /// The purpose of this command is to obtain information about an Attached Component
@@ -6204,8 +6243,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = AC_GetCapabilityResponse::default();
-        self.tpm.dispatch_out(TPM_CC::AC_GetCapability, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::AC_GetCapability, &req)?;
+        Ok(())
     }
 
     /// The purpose of this command is to send (copy) a loaded object from the TPM to an Attached Component.
@@ -6234,8 +6273,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = AC_SendResponse::default();
-        self.tpm.dispatch_out(TPM_CC::AC_Send, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::AC_Send, &req)?;
+        Ok(())
     }
 
     /// This command allows qualification of the sending (copying) of an Object to an Attached
@@ -6263,8 +6302,8 @@ impl<'a> AsyncMethods<'a> {
             includeObject,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::Policy_AC_SendSelect, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::Policy_AC_SendSelect, &req)?;
         Ok(())
     }
 
@@ -6284,8 +6323,8 @@ impl<'a> AsyncMethods<'a> {
             startTimeout,
         };
 
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_out(TPM_CC::ACT_SetTimeout, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.dispatch_command(TPM_CC::ACT_SetTimeout, &req)?;
         Ok(())
     }
 
@@ -6301,8 +6340,8 @@ impl<'a> AsyncMethods<'a> {
         };
 
         let mut resp = Vendor_TCG_TestResponse::default();
-        self.tpm.dispatch_out(TPM_CC::Vendor_TCG_Test, req, &mut resp)?;
-        Ok(resp)
+        self.tpm.dispatch_command(TPM_CC::Vendor_TCG_Test, &req)?;
+        Ok(())
     }
 
     /// TPM2_Startup() is always preceded by _TPM_Init, which is the physical indication that TPM
@@ -6313,10 +6352,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Startup_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Startup_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::Startup, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::Startup, &mut resp)?;
         Ok(())
     }
 
@@ -6325,10 +6362,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Shutdown_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Shutdown_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::Shutdown, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::Shutdown, &mut resp)?;
         Ok(())
     }
 
@@ -6338,10 +6373,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn SelfTest_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SelfTest_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::SelfTest, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::SelfTest, &mut resp)?;
         Ok(())
     }
 
@@ -6350,10 +6383,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn IncrementalSelfTest_complete(
         &mut self,
     ) -> Result<Vec<TPM_ALG_ID>, TpmError> {
-        let req = TPM2_IncrementalSelfTest_REQUEST::default();
-
         let mut resp = IncrementalSelfTestResponse::default();
-        self.tpm.dispatch_in(TPM_CC::IncrementalSelfTest, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::IncrementalSelfTest, &mut resp)?;
         Ok(resp.toDoList)
     }
 
@@ -6365,10 +6396,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn GetTestResult_complete(
         &mut self,
     ) -> Result<GetTestResultResponse, TpmError> {
-        let req = TPM2_GetTestResult_REQUEST::default();
-
         let mut resp = GetTestResultResponse::default();
-        self.tpm.dispatch_in(TPM_CC::GetTestResult, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::GetTestResult, &mut resp)?;
         Ok(resp)
     }
 
@@ -6380,10 +6409,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn StartAuthSession_complete(
         &mut self,
     ) -> Result<StartAuthSessionResponse, TpmError> {
-        let req = TPM2_StartAuthSession_REQUEST::default();
-
         let mut resp = StartAuthSessionResponse::default();
-        self.tpm.dispatch_in(TPM_CC::StartAuthSession, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::StartAuthSession, &mut resp)?;
         Ok(resp)
     }
 
@@ -6396,10 +6423,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyRestart_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyRestart_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyRestart, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyRestart, &mut resp)?;
         Ok(())
     }
 
@@ -6419,10 +6444,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Create_complete(
         &mut self,
     ) -> Result<CreateResponse, TpmError> {
-        let req = TPM2_Create_REQUEST::default();
-
         let mut resp = CreateResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Create, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Create, &mut resp)?;
         Ok(resp)
     }
 
@@ -6434,10 +6457,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Load_complete(
         &mut self,
     ) -> Result<LoadResponse, TpmError> {
-        let req = TPM2_Load_REQUEST::default();
-
         let mut resp = LoadResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Load, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Load, &mut resp)?;
         Ok(resp)
     }
 
@@ -6448,10 +6469,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn LoadExternal_complete(
         &mut self,
     ) -> Result<LoadExternalResponse, TpmError> {
-        let req = TPM2_LoadExternal_REQUEST::default();
-
         let mut resp = LoadExternalResponse::default();
-        self.tpm.dispatch_in(TPM_CC::LoadExternal, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::LoadExternal, &mut resp)?;
         Ok(resp)
     }
 
@@ -6462,10 +6481,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ReadPublic_complete(
         &mut self,
     ) -> Result<ReadPublicResponse, TpmError> {
-        let req = TPM2_ReadPublic_REQUEST::default();
-
         let mut resp = ReadPublicResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ReadPublic, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ReadPublic, &mut resp)?;
         Ok(resp)
     }
 
@@ -6477,10 +6494,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ActivateCredential_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_ActivateCredential_REQUEST::default();
-
         let mut resp = ActivateCredentialResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ActivateCredential, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ActivateCredential, &mut resp)?;
         Ok(resp.certInfo)
     }
 
@@ -6491,10 +6506,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn MakeCredential_complete(
         &mut self,
     ) -> Result<MakeCredentialResponse, TpmError> {
-        let req = TPM2_MakeCredential_REQUEST::default();
-
         let mut resp = MakeCredentialResponse::default();
-        self.tpm.dispatch_in(TPM_CC::MakeCredential, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::MakeCredential, &mut resp)?;
         Ok(resp)
     }
 
@@ -6504,10 +6517,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Unseal_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_Unseal_REQUEST::default();
-
         let mut resp = UnsealResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Unseal, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Unseal, &mut resp)?;
         Ok(resp.outData)
     }
 
@@ -6516,10 +6527,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ObjectChangeAuth_complete(
         &mut self,
     ) -> Result<TPM2B_PRIVATE, TpmError> {
-        let req = TPM2_ObjectChangeAuth_REQUEST::default();
-
         let mut resp = ObjectChangeAuthResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ObjectChangeAuth, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ObjectChangeAuth, &mut resp)?;
         Ok(resp.outPrivate)
     }
 
@@ -6535,10 +6544,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn CreateLoaded_complete(
         &mut self,
     ) -> Result<CreateLoadedResponse, TpmError> {
-        let req = TPM2_CreateLoaded_REQUEST::default();
-
         let mut resp = CreateLoadedResponse::default();
-        self.tpm.dispatch_in(TPM_CC::CreateLoaded, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::CreateLoaded, &mut resp)?;
         Ok(resp)
     }
 
@@ -6554,10 +6561,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Duplicate_complete(
         &mut self,
     ) -> Result<DuplicateResponse, TpmError> {
-        let req = TPM2_Duplicate_REQUEST::default();
-
         let mut resp = DuplicateResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Duplicate, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Duplicate, &mut resp)?;
         Ok(resp)
     }
 
@@ -6572,10 +6577,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Rewrap_complete(
         &mut self,
     ) -> Result<RewrapResponse, TpmError> {
-        let req = TPM2_Rewrap_REQUEST::default();
-
         let mut resp = RewrapResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Rewrap, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Rewrap, &mut resp)?;
         Ok(resp)
     }
 
@@ -6586,10 +6589,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Import_complete(
         &mut self,
     ) -> Result<TPM2B_PRIVATE, TpmError> {
-        let req = TPM2_Import_REQUEST::default();
-
         let mut resp = ImportResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Import, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Import, &mut resp)?;
         Ok(resp.outPrivate)
     }
 
@@ -6601,10 +6602,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn RSA_Encrypt_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_RSA_Encrypt_REQUEST::default();
-
         let mut resp = RSA_EncryptResponse::default();
-        self.tpm.dispatch_in(TPM_CC::RSA_Encrypt, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::RSA_Encrypt, &mut resp)?;
         Ok(resp.outData)
     }
 
@@ -6614,10 +6613,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn RSA_Decrypt_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_RSA_Decrypt_REQUEST::default();
-
         let mut resp = RSA_DecryptResponse::default();
-        self.tpm.dispatch_in(TPM_CC::RSA_Decrypt, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::RSA_Decrypt, &mut resp)?;
         Ok(resp.message)
     }
 
@@ -6629,10 +6626,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ECDH_KeyGen_complete(
         &mut self,
     ) -> Result<ECDH_KeyGenResponse, TpmError> {
-        let req = TPM2_ECDH_KeyGen_REQUEST::default();
-
         let mut resp = ECDH_KeyGenResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ECDH_KeyGen, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ECDH_KeyGen, &mut resp)?;
         Ok(resp)
     }
 
@@ -6644,10 +6639,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ECDH_ZGen_complete(
         &mut self,
     ) -> Result<TPMS_ECC_POINT, TpmError> {
-        let req = TPM2_ECDH_ZGen_REQUEST::default();
-
         let mut resp = ECDH_ZGenResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ECDH_ZGen, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ECDH_ZGen, &mut resp)?;
         Ok(resp.outPoint)
     }
 
@@ -6656,10 +6649,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ECC_Parameters_complete(
         &mut self,
     ) -> Result<TPMS_ALGORITHM_DETAIL_ECC, TpmError> {
-        let req = TPM2_ECC_Parameters_REQUEST::default();
-
         let mut resp = ECC_ParametersResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ECC_Parameters, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ECC_Parameters, &mut resp)?;
         Ok(resp.parameters)
     }
 
@@ -6672,10 +6663,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ZGen_2Phase_complete(
         &mut self,
     ) -> Result<ZGen_2PhaseResponse, TpmError> {
-        let req = TPM2_ZGen_2Phase_REQUEST::default();
-
         let mut resp = ZGen_2PhaseResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ZGen_2Phase, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ZGen_2Phase, &mut resp)?;
         Ok(resp)
     }
 
@@ -6686,10 +6675,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ECC_Encrypt_complete(
         &mut self,
     ) -> Result<ECC_EncryptResponse, TpmError> {
-        let req = TPM2_ECC_Encrypt_REQUEST::default();
-
         let mut resp = ECC_EncryptResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ECC_Encrypt, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ECC_Encrypt, &mut resp)?;
         Ok(resp)
     }
 
@@ -6698,10 +6685,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ECC_Decrypt_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_ECC_Decrypt_REQUEST::default();
-
         let mut resp = ECC_DecryptResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ECC_Decrypt, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ECC_Decrypt, &mut resp)?;
         Ok(resp.plainText)
     }
 
@@ -6712,10 +6697,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn EncryptDecrypt_complete(
         &mut self,
     ) -> Result<EncryptDecryptResponse, TpmError> {
-        let req = TPM2_EncryptDecrypt_REQUEST::default();
-
         let mut resp = EncryptDecryptResponse::default();
-        self.tpm.dispatch_in(TPM_CC::EncryptDecrypt, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::EncryptDecrypt, &mut resp)?;
         Ok(resp)
     }
 
@@ -6726,10 +6709,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn EncryptDecrypt2_complete(
         &mut self,
     ) -> Result<EncryptDecrypt2Response, TpmError> {
-        let req = TPM2_EncryptDecrypt2_REQUEST::default();
-
         let mut resp = EncryptDecrypt2Response::default();
-        self.tpm.dispatch_in(TPM_CC::EncryptDecrypt2, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::EncryptDecrypt2, &mut resp)?;
         Ok(resp)
     }
 
@@ -6741,10 +6722,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Hash_complete(
         &mut self,
     ) -> Result<HashResponse, TpmError> {
-        let req = TPM2_Hash_REQUEST::default();
-
         let mut resp = HashResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Hash, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Hash, &mut resp)?;
         Ok(resp)
     }
 
@@ -6753,10 +6732,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn HMAC_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_HMAC_REQUEST::default();
-
         let mut resp = HMACResponse::default();
-        self.tpm.dispatch_in(TPM_CC::HMAC, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::HMAC, &mut resp)?;
         Ok(resp.outHMAC)
     }
 
@@ -6766,10 +6743,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn MAC_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_MAC_REQUEST::default();
-
         let mut resp = MACResponse::default();
-        self.tpm.dispatch_in(TPM_CC::MAC, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::MAC, &mut resp)?;
         Ok(resp.outMAC)
     }
 
@@ -6778,10 +6753,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn GetRandom_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_GetRandom_REQUEST::default();
-
         let mut resp = GetRandomResponse::default();
-        self.tpm.dispatch_in(TPM_CC::GetRandom, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::GetRandom, &mut resp)?;
         Ok(resp.randomBytes)
     }
 
@@ -6789,10 +6762,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn StirRandom_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_StirRandom_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::StirRandom, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::StirRandom, &mut resp)?;
         Ok(())
     }
 
@@ -6803,10 +6774,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn HMAC_Start_complete(
         &mut self,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_HMAC_Start_REQUEST::default();
-
         let mut resp = HMAC_StartResponse::default();
-        self.tpm.dispatch_in(TPM_CC::HMAC_Start, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::HMAC_Start, &mut resp)?;
         Ok(resp.handle)
     }
 
@@ -6817,10 +6786,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn MAC_Start_complete(
         &mut self,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_MAC_Start_REQUEST::default();
-
         let mut resp = MAC_StartResponse::default();
-        self.tpm.dispatch_in(TPM_CC::MAC_Start, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::MAC_Start, &mut resp)?;
         Ok(resp.handle)
     }
 
@@ -6832,10 +6799,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn HashSequenceStart_complete(
         &mut self,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_HashSequenceStart_REQUEST::default();
-
         let mut resp = HashSequenceStartResponse::default();
-        self.tpm.dispatch_in(TPM_CC::HashSequenceStart, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::HashSequenceStart, &mut resp)?;
         Ok(resp.handle)
     }
 
@@ -6844,10 +6809,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn SequenceUpdate_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SequenceUpdate_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::SequenceUpdate, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::SequenceUpdate, &mut resp)?;
         Ok(())
     }
 
@@ -6859,10 +6822,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn SequenceComplete_complete(
         &mut self,
     ) -> Result<SequenceCompleteResponse, TpmError> {
-        let req = TPM2_SequenceComplete_REQUEST::default();
-
         let mut resp = SequenceCompleteResponse::default();
-        self.tpm.dispatch_in(TPM_CC::SequenceComplete, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::SequenceComplete, &mut resp)?;
         Ok(resp)
     }
 
@@ -6875,10 +6836,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn EventSequenceComplete_complete(
         &mut self,
     ) -> Result<Vec<TPMT_HA>, TpmError> {
-        let req = TPM2_EventSequenceComplete_REQUEST::default();
-
         let mut resp = EventSequenceCompleteResponse::default();
-        self.tpm.dispatch_in(TPM_CC::EventSequenceComplete, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::EventSequenceComplete, &mut resp)?;
         Ok(resp.results)
     }
 
@@ -6892,10 +6851,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Certify_complete(
         &mut self,
     ) -> Result<CertifyResponse, TpmError> {
-        let req = TPM2_Certify_REQUEST::default();
-
         let mut resp = CertifyResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Certify, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Certify, &mut resp)?;
         Ok(resp)
     }
 
@@ -6908,10 +6865,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn CertifyCreation_complete(
         &mut self,
     ) -> Result<CertifyCreationResponse, TpmError> {
-        let req = TPM2_CertifyCreation_REQUEST::default();
-
         let mut resp = CertifyCreationResponse::default();
-        self.tpm.dispatch_in(TPM_CC::CertifyCreation, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::CertifyCreation, &mut resp)?;
         Ok(resp)
     }
 
@@ -6921,10 +6876,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Quote_complete(
         &mut self,
     ) -> Result<QuoteResponse, TpmError> {
-        let req = TPM2_Quote_REQUEST::default();
-
         let mut resp = QuoteResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Quote, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Quote, &mut resp)?;
         Ok(resp)
     }
 
@@ -6934,10 +6887,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn GetSessionAuditDigest_complete(
         &mut self,
     ) -> Result<GetSessionAuditDigestResponse, TpmError> {
-        let req = TPM2_GetSessionAuditDigest_REQUEST::default();
-
         let mut resp = GetSessionAuditDigestResponse::default();
-        self.tpm.dispatch_in(TPM_CC::GetSessionAuditDigest, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::GetSessionAuditDigest, &mut resp)?;
         Ok(resp)
     }
 
@@ -6949,10 +6900,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn GetCommandAuditDigest_complete(
         &mut self,
     ) -> Result<GetCommandAuditDigestResponse, TpmError> {
-        let req = TPM2_GetCommandAuditDigest_REQUEST::default();
-
         let mut resp = GetCommandAuditDigestResponse::default();
-        self.tpm.dispatch_in(TPM_CC::GetCommandAuditDigest, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::GetCommandAuditDigest, &mut resp)?;
         Ok(resp)
     }
 
@@ -6962,10 +6911,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn GetTime_complete(
         &mut self,
     ) -> Result<GetTimeResponse, TpmError> {
-        let req = TPM2_GetTime_REQUEST::default();
-
         let mut resp = GetTimeResponse::default();
-        self.tpm.dispatch_in(TPM_CC::GetTime, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::GetTime, &mut resp)?;
         Ok(resp)
     }
 
@@ -6982,10 +6929,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn CertifyX509_complete(
         &mut self,
     ) -> Result<CertifyX509Response, TpmError> {
-        let req = TPM2_CertifyX509_REQUEST::default();
-
         let mut resp = CertifyX509Response::default();
-        self.tpm.dispatch_in(TPM_CC::CertifyX509, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::CertifyX509, &mut resp)?;
         Ok(resp)
     }
 
@@ -7000,10 +6945,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Commit_complete(
         &mut self,
     ) -> Result<CommitResponse, TpmError> {
-        let req = TPM2_Commit_REQUEST::default();
-
         let mut resp = CommitResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Commit, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Commit, &mut resp)?;
         Ok(resp)
     }
 
@@ -7013,10 +6956,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn EC_Ephemeral_complete(
         &mut self,
     ) -> Result<EC_EphemeralResponse, TpmError> {
-        let req = TPM2_EC_Ephemeral_REQUEST::default();
-
         let mut resp = EC_EphemeralResponse::default();
-        self.tpm.dispatch_in(TPM_CC::EC_Ephemeral, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::EC_Ephemeral, &mut resp)?;
         Ok(resp)
     }
 
@@ -7029,10 +6970,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn VerifySignature_complete(
         &mut self,
     ) -> Result<TPMT_TK_VERIFIED, TpmError> {
-        let req = TPM2_VerifySignature_REQUEST::default();
-
         let mut resp = VerifySignatureResponse::default();
-        self.tpm.dispatch_in(TPM_CC::VerifySignature, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::VerifySignature, &mut resp)?;
         Ok(resp.validation)
     }
 
@@ -7042,10 +6981,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Sign_complete(
         &mut self,
     ) -> Result<Option<TPMU_SIGNATURE>, TpmError> {
-        let req = TPM2_Sign_REQUEST::default();
-
         let mut resp = SignResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Sign, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Sign, &mut resp)?;
         Ok(resp.signature)
     }
 
@@ -7055,10 +6992,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn SetCommandCodeAuditStatus_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SetCommandCodeAuditStatus_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::SetCommandCodeAuditStatus, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::SetCommandCodeAuditStatus, &mut resp)?;
         Ok(())
     }
 
@@ -7068,10 +7003,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PCR_Extend_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_Extend_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PCR_Extend, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PCR_Extend, &mut resp)?;
         Ok(())
     }
 
@@ -7083,10 +7016,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PCR_Event_complete(
         &mut self,
     ) -> Result<Vec<TPMT_HA>, TpmError> {
-        let req = TPM2_PCR_Event_REQUEST::default();
-
         let mut resp = PCR_EventResponse::default();
-        self.tpm.dispatch_in(TPM_CC::PCR_Event, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::PCR_Event, &mut resp)?;
         Ok(resp.digests)
     }
 
@@ -7098,10 +7029,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PCR_Read_complete(
         &mut self,
     ) -> Result<PCR_ReadResponse, TpmError> {
-        let req = TPM2_PCR_Read_REQUEST::default();
-
         let mut resp = PCR_ReadResponse::default();
-        self.tpm.dispatch_in(TPM_CC::PCR_Read, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::PCR_Read, &mut resp)?;
         Ok(resp)
     }
 
@@ -7114,10 +7043,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PCR_Allocate_complete(
         &mut self,
     ) -> Result<PCR_AllocateResponse, TpmError> {
-        let req = TPM2_PCR_Allocate_REQUEST::default();
-
         let mut resp = PCR_AllocateResponse::default();
-        self.tpm.dispatch_in(TPM_CC::PCR_Allocate, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::PCR_Allocate, &mut resp)?;
         Ok(resp)
     }
 
@@ -7126,10 +7053,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PCR_SetAuthPolicy_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_SetAuthPolicy_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PCR_SetAuthPolicy, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PCR_SetAuthPolicy, &mut resp)?;
         Ok(())
     }
 
@@ -7137,10 +7062,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PCR_SetAuthValue_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_SetAuthValue_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PCR_SetAuthValue, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PCR_SetAuthValue, &mut resp)?;
         Ok(())
     }
 
@@ -7150,10 +7073,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PCR_Reset_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_Reset_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PCR_Reset, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PCR_Reset, &mut resp)?;
         Ok(())
     }
 
@@ -7168,10 +7089,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicySigned_complete(
         &mut self,
     ) -> Result<PolicySignedResponse, TpmError> {
-        let req = TPM2_PolicySigned_REQUEST::default();
-
         let mut resp = PolicySignedResponse::default();
-        self.tpm.dispatch_in(TPM_CC::PolicySigned, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::PolicySigned, &mut resp)?;
         Ok(resp)
     }
 
@@ -7187,10 +7106,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicySecret_complete(
         &mut self,
     ) -> Result<PolicySecretResponse, TpmError> {
-        let req = TPM2_PolicySecret_REQUEST::default();
-
         let mut resp = PolicySecretResponse::default();
-        self.tpm.dispatch_in(TPM_CC::PolicySecret, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::PolicySecret, &mut resp)?;
         Ok(resp)
     }
 
@@ -7200,10 +7117,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyTicket_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyTicket_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyTicket, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyTicket, &mut resp)?;
         Ok(())
     }
 
@@ -7214,10 +7129,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyOR_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyOR_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyOR, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyOR, &mut resp)?;
         Ok(())
     }
 
@@ -7227,10 +7140,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyPCR_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyPCR_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyPCR, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyPCR, &mut resp)?;
         Ok(())
     }
 
@@ -7238,10 +7149,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyLocality_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyLocality_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyLocality, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyLocality, &mut resp)?;
         Ok(())
     }
 
@@ -7251,10 +7160,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyNV_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyNV_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyNV, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyNV, &mut resp)?;
         Ok(())
     }
 
@@ -7263,10 +7170,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyCounterTimer_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyCounterTimer_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyCounterTimer, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyCounterTimer, &mut resp)?;
         Ok(())
     }
 
@@ -7274,10 +7179,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyCommandCode_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyCommandCode_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyCommandCode, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyCommandCode, &mut resp)?;
         Ok(())
     }
 
@@ -7286,10 +7189,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyPhysicalPresence_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyPhysicalPresence_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyPhysicalPresence, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyPhysicalPresence, &mut resp)?;
         Ok(())
     }
 
@@ -7297,10 +7198,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyCpHash_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyCpHash_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyCpHash, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyCpHash, &mut resp)?;
         Ok(())
     }
 
@@ -7310,10 +7209,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyNameHash_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyNameHash_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyNameHash, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyNameHash, &mut resp)?;
         Ok(())
     }
 
@@ -7321,10 +7218,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyDuplicationSelect_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyDuplicationSelect_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyDuplicationSelect, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyDuplicationSelect, &mut resp)?;
         Ok(())
     }
 
@@ -7334,10 +7229,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyAuthorize_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyAuthorize_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyAuthorize, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyAuthorize, &mut resp)?;
         Ok(())
     }
 
@@ -7345,10 +7238,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyAuthValue_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyAuthValue_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyAuthValue, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyAuthValue, &mut resp)?;
         Ok(())
     }
 
@@ -7356,10 +7247,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyPassword_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyPassword_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyPassword, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyPassword, &mut resp)?;
         Ok(())
     }
 
@@ -7369,10 +7258,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyGetDigest_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_PolicyGetDigest_REQUEST::default();
-
         let mut resp = PolicyGetDigestResponse::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyGetDigest, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::PolicyGetDigest, &mut resp)?;
         Ok(resp.policyDigest)
     }
 
@@ -7382,10 +7269,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyNvWritten_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyNvWritten_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyNvWritten, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyNvWritten, &mut resp)?;
         Ok(())
     }
 
@@ -7395,10 +7280,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyTemplate_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyTemplate_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyTemplate, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyTemplate, &mut resp)?;
         Ok(())
     }
 
@@ -7409,10 +7292,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PolicyAuthorizeNV_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyAuthorizeNV_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PolicyAuthorizeNV, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PolicyAuthorizeNV, &mut resp)?;
         Ok(())
     }
 
@@ -7431,10 +7312,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn CreatePrimary_complete(
         &mut self,
     ) -> Result<CreatePrimaryResponse, TpmError> {
-        let req = TPM2_CreatePrimary_REQUEST::default();
-
         let mut resp = CreatePrimaryResponse::default();
-        self.tpm.dispatch_in(TPM_CC::CreatePrimary, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::CreatePrimary, &mut resp)?;
         Ok(resp)
     }
 
@@ -7444,10 +7323,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn HierarchyControl_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_HierarchyControl_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::HierarchyControl, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::HierarchyControl, &mut resp)?;
         Ok(())
     }
 
@@ -7458,10 +7335,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn SetPrimaryPolicy_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SetPrimaryPolicy_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::SetPrimaryPolicy, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::SetPrimaryPolicy, &mut resp)?;
         Ok(())
     }
 
@@ -7470,10 +7345,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ChangePPS_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ChangePPS_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::ChangePPS, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::ChangePPS, &mut resp)?;
         Ok(())
     }
 
@@ -7485,10 +7358,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ChangeEPS_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ChangeEPS_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::ChangeEPS, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::ChangeEPS, &mut resp)?;
         Ok(())
     }
 
@@ -7496,10 +7367,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Clear_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Clear_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::Clear, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::Clear, &mut resp)?;
         Ok(())
     }
 
@@ -7507,10 +7376,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ClearControl_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ClearControl_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::ClearControl, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::ClearControl, &mut resp)?;
         Ok(())
     }
 
@@ -7519,10 +7386,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn HierarchyChangeAuth_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_HierarchyChangeAuth_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::HierarchyChangeAuth, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::HierarchyChangeAuth, &mut resp)?;
         Ok(())
     }
 
@@ -7532,10 +7397,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn DictionaryAttackLockReset_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_DictionaryAttackLockReset_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::DictionaryAttackLockReset, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::DictionaryAttackLockReset, &mut resp)?;
         Ok(())
     }
 
@@ -7543,10 +7406,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn DictionaryAttackParameters_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_DictionaryAttackParameters_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::DictionaryAttackParameters, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::DictionaryAttackParameters, &mut resp)?;
         Ok(())
     }
 
@@ -7555,10 +7416,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn PP_Commands_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PP_Commands_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::PP_Commands, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::PP_Commands, &mut resp)?;
         Ok(())
     }
 
@@ -7567,10 +7426,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn SetAlgorithmSet_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SetAlgorithmSet_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::SetAlgorithmSet, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::SetAlgorithmSet, &mut resp)?;
         Ok(())
     }
 
@@ -7579,10 +7436,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn FieldUpgradeStart_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_FieldUpgradeStart_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::FieldUpgradeStart, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::FieldUpgradeStart, &mut resp)?;
         Ok(())
     }
 
@@ -7596,10 +7451,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn FieldUpgradeData_complete(
         &mut self,
     ) -> Result<FieldUpgradeDataResponse, TpmError> {
-        let req = TPM2_FieldUpgradeData_REQUEST::default();
-
         let mut resp = FieldUpgradeDataResponse::default();
-        self.tpm.dispatch_in(TPM_CC::FieldUpgradeData, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::FieldUpgradeData, &mut resp)?;
         Ok(resp)
     }
 
@@ -7608,10 +7461,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn FirmwareRead_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_FirmwareRead_REQUEST::default();
-
         let mut resp = FirmwareReadResponse::default();
-        self.tpm.dispatch_in(TPM_CC::FirmwareRead, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::FirmwareRead, &mut resp)?;
         Ok(resp.fuData)
     }
 
@@ -7624,10 +7475,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ContextSave_complete(
         &mut self,
     ) -> Result<TPMS_CONTEXT, TpmError> {
-        let req = TPM2_ContextSave_REQUEST::default();
-
         let mut resp = ContextSaveResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ContextSave, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ContextSave, &mut resp)?;
         Ok(resp.context)
     }
 
@@ -7636,10 +7485,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ContextLoad_complete(
         &mut self,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_ContextLoad_REQUEST::default();
-
         let mut resp = ContextLoadResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ContextLoad, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ContextLoad, &mut resp)?;
         Ok(resp.handle)
     }
 
@@ -7648,10 +7495,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn FlushContext_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_FlushContext_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::FlushContext, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::FlushContext, &mut resp)?;
         Ok(())
     }
 
@@ -7660,10 +7505,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn EvictControl_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_EvictControl_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::EvictControl, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::EvictControl, &mut resp)?;
         Ok(())
     }
 
@@ -7674,10 +7517,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ReadClock_complete(
         &mut self,
     ) -> Result<TPMS_TIME_INFO, TpmError> {
-        let req = TPM2_ReadClock_REQUEST::default();
-
         let mut resp = ReadClockResponse::default();
-        self.tpm.dispatch_in(TPM_CC::ReadClock, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::ReadClock, &mut resp)?;
         Ok(resp.currentTime)
     }
 
@@ -7688,10 +7529,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ClockSet_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ClockSet_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::ClockSet, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::ClockSet, &mut resp)?;
         Ok(())
     }
 
@@ -7700,10 +7539,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ClockRateAdjust_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ClockRateAdjust_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::ClockRateAdjust, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::ClockRateAdjust, &mut resp)?;
         Ok(())
     }
 
@@ -7713,10 +7550,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn GetCapability_complete(
         &mut self,
     ) -> Result<GetCapabilityResponse, TpmError> {
-        let req = TPM2_GetCapability_REQUEST::default();
-
         let mut resp = GetCapabilityResponse::default();
-        self.tpm.dispatch_in(TPM_CC::GetCapability, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::GetCapability, &mut resp)?;
         Ok(resp)
     }
 
@@ -7724,10 +7559,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn TestParms_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_TestParms_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::TestParms, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::TestParms, &mut resp)?;
         Ok(())
     }
 
@@ -7737,10 +7570,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_DefineSpace_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_DefineSpace_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_DefineSpace, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_DefineSpace, &mut resp)?;
         Ok(())
     }
 
@@ -7748,10 +7579,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_UndefineSpace_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_UndefineSpace_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_UndefineSpace, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_UndefineSpace, &mut resp)?;
         Ok(())
     }
 
@@ -7759,10 +7588,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_UndefineSpaceSpecial_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_UndefineSpaceSpecial_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_UndefineSpaceSpecial, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_UndefineSpaceSpecial, &mut resp)?;
         Ok(())
     }
 
@@ -7773,10 +7600,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_ReadPublic_complete(
         &mut self,
     ) -> Result<NV_ReadPublicResponse, TpmError> {
-        let req = TPM2_NV_ReadPublic_REQUEST::default();
-
         let mut resp = NV_ReadPublicResponse::default();
-        self.tpm.dispatch_in(TPM_CC::NV_ReadPublic, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::NV_ReadPublic, &mut resp)?;
         Ok(resp)
     }
 
@@ -7785,10 +7610,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_Write_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Write_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_Write, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_Write, &mut resp)?;
         Ok(())
     }
 
@@ -7797,10 +7620,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_Increment_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Increment_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_Increment, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_Increment, &mut resp)?;
         Ok(())
     }
 
@@ -7809,10 +7630,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_Extend_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Extend_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_Extend, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_Extend, &mut resp)?;
         Ok(())
     }
 
@@ -7822,10 +7641,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_SetBits_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_SetBits_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_SetBits, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_SetBits, &mut resp)?;
         Ok(())
     }
 
@@ -7834,10 +7651,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_WriteLock_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_WriteLock_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_WriteLock, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_WriteLock, &mut resp)?;
         Ok(())
     }
 
@@ -7846,10 +7661,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_GlobalWriteLock_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_GlobalWriteLock_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_GlobalWriteLock, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_GlobalWriteLock, &mut resp)?;
         Ok(())
     }
 
@@ -7858,10 +7671,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_Read_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_NV_Read_REQUEST::default();
-
         let mut resp = NV_ReadResponse::default();
-        self.tpm.dispatch_in(TPM_CC::NV_Read, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::NV_Read, &mut resp)?;
         Ok(resp.data)
     }
 
@@ -7870,10 +7681,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_ReadLock_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_ReadLock_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_ReadLock, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_ReadLock, &mut resp)?;
         Ok(())
     }
 
@@ -7881,10 +7690,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_ChangeAuth_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_ChangeAuth_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::NV_ChangeAuth, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::NV_ChangeAuth, &mut resp)?;
         Ok(())
     }
 
@@ -7894,10 +7701,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn NV_Certify_complete(
         &mut self,
     ) -> Result<NV_CertifyResponse, TpmError> {
-        let req = TPM2_NV_Certify_REQUEST::default();
-
         let mut resp = NV_CertifyResponse::default();
-        self.tpm.dispatch_in(TPM_CC::NV_Certify, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::NV_Certify, &mut resp)?;
         Ok(resp)
     }
 
@@ -7908,10 +7713,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn AC_GetCapability_complete(
         &mut self,
     ) -> Result<AC_GetCapabilityResponse, TpmError> {
-        let req = TPM2_AC_GetCapability_REQUEST::default();
-
         let mut resp = AC_GetCapabilityResponse::default();
-        self.tpm.dispatch_in(TPM_CC::AC_GetCapability, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::AC_GetCapability, &mut resp)?;
         Ok(resp)
     }
 
@@ -7920,10 +7723,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn AC_Send_complete(
         &mut self,
     ) -> Result<TPMS_AC_OUTPUT, TpmError> {
-        let req = TPM2_AC_Send_REQUEST::default();
-
         let mut resp = AC_SendResponse::default();
-        self.tpm.dispatch_in(TPM_CC::AC_Send, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::AC_Send, &mut resp)?;
         Ok(resp.acDataOut)
     }
 
@@ -7933,10 +7734,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Policy_AC_SendSelect_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Policy_AC_SendSelect_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::Policy_AC_SendSelect, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::Policy_AC_SendSelect, &mut resp)?;
         Ok(())
     }
 
@@ -7945,10 +7744,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn ACT_SetTimeout_complete(
         &mut self,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ACT_SetTimeout_REQUEST::default();
-
-        let mut resp = TPMS_EMPTY::default();
-        self.tpm.dispatch_in(TPM_CC::ACT_SetTimeout, req, &mut resp)?;
+        let mut resp = EmptyTpmResponse::default();
+        self.tpm.process_response(TPM_CC::ACT_SetTimeout, &mut resp)?;
         Ok(())
     }
 
@@ -7957,10 +7754,8 @@ impl<'a> AsyncMethods<'a> {
     pub fn Vendor_TCG_Test_complete(
         &mut self,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_Vendor_TCG_Test_REQUEST::default();
-
         let mut resp = Vendor_TCG_TestResponse::default();
-        self.tpm.dispatch_in(TPM_CC::Vendor_TCG_Test, req, &mut resp)?;
+        self.tpm.process_response(TPM_CC::Vendor_TCG_Test, &mut resp)?;
         Ok(resp.outputData)
     }
 

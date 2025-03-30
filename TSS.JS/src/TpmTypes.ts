@@ -330,7 +330,7 @@ export enum TPM_CC // UINT32
     /** Compile variable. May decrease based on implementation. */
     FIRST = 0x0000011F,
 
-    NV_UndefineSpaceSpecial =   0x0000011F,
+    NV_UndefineSpaceSpecial = 0x0000011F,
 
     EvictControl = 0x00000120,
 
@@ -2678,7 +2678,7 @@ export enum TPMA_STARTUP_CLEAR // UINT32
      *  by a TPM2_Startup() of any type. However, the TPM will return an error if
      *  TPM2_Startup(TPM_SU_STATE) was not preceded by TPM2_Shutdown(TPM_SU_STATE).
      */
-    orderly = 0x80000000
+    orderly = 0xFFFFFFFF80000000
 }; // bitfield TPMA_STARTUP_CLEAR
 
 /** This structure of this attribute is used to report the memory management method used
@@ -2755,7 +2755,7 @@ export enum TPMA_CC // TPM_CC
     V = 0x20000000,
 
     /** Allocated for software; shall be zero */
-    Res_BIT_MASK = 0xC0000000,
+    Res_BIT_MASK = 0xFFFFFFFFC0000000,
 
     Res_BIT_OFFSET = 30,
 
@@ -2810,7 +2810,7 @@ export enum TPMA_X509_KEY_USAGE // UINT32
     contentCommitment = 0x40000000,
 
     /** Sign SET in Subject Key (objectHandle) */
-    digitalSignature = 0x80000000
+    digitalSignature = 0xFFFFFFFF80000000
 }; // bitfield TPMA_X509_KEY_USAGE
 
 /** This attribute is used to report the ACT state. This attribute may be read using
@@ -2844,7 +2844,7 @@ export enum TPM_NV_INDEX // UINT32
     index_BIT_LENGTH = 24,
 
     /** Constant value of TPM_HT_NV_INDEX indicating the NV Index range */
-    RhNv_BIT_MASK = 0xFF000000,
+    RhNv_BIT_MASK = 0xFFFFFFFFFF000000,
 
     RhNv_BIT_OFFSET = 24,
 
@@ -3017,7 +3017,7 @@ export enum TPMA_NV // UINT32
     /** SET (1): TPM2_NV_ReadLock() may be used to SET TPMA_NV_READLOCKED for this Index.
      *  CLEAR (0): TPM2_NV_ReadLock() has no effect on this Index.
      */
-    READ_STCLEAR = 0x80000000
+    READ_STCLEAR = 0xFFFFFFFF80000000
 }; // bitfield TPMA_NV
 
 /** Base class for TPM union interfaces */
@@ -3410,7 +3410,7 @@ export class TPMS_NULL_UNION extends TpmStructure implements TPMU_SYM_DETAILS, T
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.NULL; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.NULL; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_NULL_UNION
@@ -3435,7 +3435,7 @@ export class TPMS_EMPTY extends TpmStructure implements TPMU_ASYM_SCHEME
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSAES; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSAES; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_EMPTY
@@ -3509,7 +3509,7 @@ export class TPMT_HA extends TpmStructure implements TPMU_SIGNATURE
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.HMAC; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.HMAC; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -3550,7 +3550,7 @@ export class TPM2B_DIGEST extends TpmStructure implements TPMU_PUBLIC_ID
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.KEYEDHASH; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.KEYEDHASH; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeSizedByteBuf(this.buffer); }
@@ -4324,7 +4324,7 @@ export class TPML_CC extends TpmStructure implements TPMU_CAPABILITIES
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.PP_COMMANDS; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.PP_COMMANDS; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeValArr(this.commandCodes, 4); }
@@ -4355,7 +4355,7 @@ export class TPML_CCA extends TpmStructure implements TPMU_CAPABILITIES
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.COMMANDS; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.COMMANDS; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeValArr(this.commandAttributes, 4); }
@@ -4419,7 +4419,7 @@ export class TPML_HANDLE extends TpmStructure implements TPMU_CAPABILITIES
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.HANDLES; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.HANDLES; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeObjArr(this.handle); }
@@ -4516,7 +4516,7 @@ export class TPML_PCR_SELECTION extends TpmStructure implements TPMU_CAPABILITIE
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.PCRS; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.PCRS; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeObjArr(this.pcrSelections); }
@@ -4549,7 +4549,7 @@ export class TPML_ALG_PROPERTY extends TpmStructure implements TPMU_CAPABILITIES
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.ALGS; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.ALGS; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeObjArr(this.algProperties); }
@@ -4582,7 +4582,7 @@ export class TPML_TAGGED_TPM_PROPERTY extends TpmStructure implements TPMU_CAPAB
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.TPM_PROPERTIES; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.TPM_PROPERTIES; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeObjArr(this.tpmProperty); }
@@ -4615,7 +4615,7 @@ export class TPML_TAGGED_PCR_PROPERTY extends TpmStructure implements TPMU_CAPAB
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.PCR_PROPERTIES; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.PCR_PROPERTIES; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeObjArr(this.pcrProperty); }
@@ -4648,7 +4648,7 @@ export class TPML_ECC_CURVE extends TpmStructure implements TPMU_CAPABILITIES
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.ECC_CURVES; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.ECC_CURVES; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeValArr(this.eccCurves, 2); }
@@ -4682,7 +4682,7 @@ export class TPML_TAGGED_POLICY extends TpmStructure implements TPMU_CAPABILITIE
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.AUTH_POLICIES; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.AUTH_POLICIES; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeObjArr(this.policies); }
@@ -4715,7 +4715,7 @@ export class TPML_ACT_DATA extends TpmStructure implements TPMU_CAPABILITIES
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_CAP { return TPM_CAP.ACT; }
+    GetUnionSelector(): Option<TPM_CAP> { return TPM_CAP.ACT; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeObjArr(this.actData); }
@@ -4755,7 +4755,7 @@ export class TPMS_CAPABILITY_DATA extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.data == null) return;
+        if (this.data == null) { return  };
         buf.writeInt(this.data.GetUnionSelector());
         this.data.toTpm(buf);
     }
@@ -4894,7 +4894,7 @@ export class TPMS_TIME_ATTEST_INFO extends TpmStructure implements TPMU_ATTEST
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ST { return TPM_ST.ATTEST_TIME; }
+    GetUnionSelector(): Option<TPM_ST> { return TPM_ST.ATTEST_TIME; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -4936,7 +4936,7 @@ export class TPMS_CERTIFY_INFO extends TpmStructure implements TPMU_ATTEST
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ST { return TPM_ST.ATTEST_CERTIFY; }
+    GetUnionSelector(): Option<TPM_ST> { return TPM_ST.ATTEST_CERTIFY; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -4978,7 +4978,7 @@ export class TPMS_QUOTE_INFO extends TpmStructure implements TPMU_ATTEST
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ST { return TPM_ST.ATTEST_QUOTE; }
+    GetUnionSelector(): Option<TPM_ST> { return TPM_ST.ATTEST_QUOTE; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -5026,7 +5026,7 @@ export class TPMS_COMMAND_AUDIT_INFO extends TpmStructure implements TPMU_ATTEST
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ST { return TPM_ST.ATTEST_COMMAND_AUDIT; }
+    GetUnionSelector(): Option<TPM_ST> { return TPM_ST.ATTEST_COMMAND_AUDIT; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -5075,7 +5075,7 @@ export class TPMS_SESSION_AUDIT_INFO extends TpmStructure implements TPMU_ATTEST
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ST { return TPM_ST.ATTEST_SESSION_AUDIT; }
+    GetUnionSelector(): Option<TPM_ST> { return TPM_ST.ATTEST_SESSION_AUDIT; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -5117,7 +5117,7 @@ export class TPMS_CREATION_INFO extends TpmStructure implements TPMU_ATTEST
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ST { return TPM_ST.ATTEST_CREATION; }
+    GetUnionSelector(): Option<TPM_ST> { return TPM_ST.ATTEST_CREATION; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -5164,7 +5164,7 @@ export class TPMS_NV_CERTIFY_INFO extends TpmStructure implements TPMU_ATTEST
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ST { return TPM_ST.ATTEST_NV; }
+    GetUnionSelector(): Option<TPM_ST> { return TPM_ST.ATTEST_NV; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -5210,7 +5210,7 @@ export class TPMS_NV_DIGEST_CERTIFY_INFO extends TpmStructure implements TPMU_AT
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ST { return TPM_ST.ATTEST_NV_DIGEST; }
+    GetUnionSelector(): Option<TPM_ST> { return TPM_ST.ATTEST_NV_DIGEST; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -5449,7 +5449,7 @@ export class TPMS_TDES_SYM_DETAILS extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.TDES; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.TDES; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_TDES_SYM_DETAILS
@@ -5473,7 +5473,7 @@ export class TPMS_AES_SYM_DETAILS extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.AES; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.AES; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_AES_SYM_DETAILS
@@ -5497,7 +5497,7 @@ export class TPMS_SM4_SYM_DETAILS extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.SM4; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.SM4; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SM4_SYM_DETAILS
@@ -5521,7 +5521,7 @@ export class TPMS_CAMELLIA_SYM_DETAILS extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.CAMELLIA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.CAMELLIA; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_CAMELLIA_SYM_DETAILS
@@ -5545,7 +5545,7 @@ export class TPMS_ANY_SYM_DETAILS extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ANY; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ANY; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_ANY_SYM_DETAILS
@@ -5569,7 +5569,7 @@ export class TPMS_XOR_SYM_DETAILS extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.XOR; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.XOR; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_XOR_SYM_DETAILS
@@ -5593,7 +5593,7 @@ export class TPMS_NULL_SYM_DETAILS extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.NULL; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.NULL; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_NULL_SYM_DETAILS
@@ -5629,7 +5629,7 @@ export class TPMT_SYM_DEF extends TpmStructure
     toTpm(buf: TpmBuffer): void
     {
         buf.writeShort(this.algorithm);
-        if (this.algorithm == TPM_ALG_ID.NULL) return;
+        if (this.algorithm == TPM_ALG_ID.NULL) { return  };
         buf.writeShort(this.keyBits);
         buf.writeShort(this.mode);
     }
@@ -5638,7 +5638,7 @@ export class TPMT_SYM_DEF extends TpmStructure
     initFromTpm(buf: TpmBuffer): void
     {
         this.algorithm = buf.readShort();
-        if (this.algorithm == TPM_ALG_ID.NULL) return;
+        if (this.algorithm == TPM_ALG_ID.NULL) { return  };
         this.keyBits = buf.readShort();
         this.mode = buf.readShort();
     }
@@ -5688,7 +5688,7 @@ export class TPMT_SYM_DEF_OBJECT extends TpmStructure
     toTpm(buf: TpmBuffer): void
     {
         buf.writeShort(this.algorithm);
-        if (this.algorithm == TPM_ALG_ID.NULL) return;
+        if (this.algorithm == TPM_ALG_ID.NULL) { return  };
         buf.writeShort(this.keyBits);
         buf.writeShort(this.mode);
     }
@@ -5697,7 +5697,7 @@ export class TPMT_SYM_DEF_OBJECT extends TpmStructure
     initFromTpm(buf: TpmBuffer): void
     {
         this.algorithm = buf.readShort();
-        if (this.algorithm == TPM_ALG_ID.NULL) return;
+        if (this.algorithm == TPM_ALG_ID.NULL) { return  };
         this.keyBits = buf.readShort();
         this.mode = buf.readShort();
     }
@@ -5730,7 +5730,7 @@ export class TPM2B_SYM_KEY extends TpmStructure implements TPMU_SENSITIVE_COMPOS
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.SYMCIPHER; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.SYMCIPHER; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeSizedByteBuf(this.buffer); }
@@ -5761,7 +5761,7 @@ export class TPMS_SYMCIPHER_PARMS extends TpmStructure implements TPMU_PUBLIC_PA
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.SYMCIPHER; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.SYMCIPHER; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { this.sym.toTpm(buf); }
@@ -5826,7 +5826,7 @@ export class TPMS_DERIVE extends TpmStructure implements TPMU_SENSITIVE_CREATE, 
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ANY2; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ANY2; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -5893,7 +5893,7 @@ export class TPM2B_SENSITIVE_DATA extends TpmStructure implements TPMU_SENSITIVE
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.KEYEDHASH; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.KEYEDHASH; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeSizedByteBuf(this.buffer); }
@@ -5998,7 +5998,7 @@ export class TPMS_SCHEME_HASH extends TpmStructure implements TPMU_SCHEME_KEYEDH
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.HMAC; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.HMAC; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeShort(this.hashAlg); }
@@ -6032,7 +6032,7 @@ export class TPMS_SCHEME_ECDAA extends TpmStructure implements TPMU_SIG_SCHEME, 
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECDAA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECDAA; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -6071,7 +6071,7 @@ export class TPMS_SCHEME_HMAC extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.HMAC; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.HMAC; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SCHEME_HMAC
@@ -6099,7 +6099,7 @@ export class TPMS_SCHEME_XOR extends TpmStructure implements TPMU_SCHEME_KEYEDHA
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.XOR; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.XOR; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -6137,7 +6137,7 @@ export class TPMS_NULL_SCHEME_KEYEDHASH extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.NULL; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.NULL; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_NULL_SCHEME_KEYEDHASH
@@ -6169,7 +6169,7 @@ export class TPMT_KEYEDHASH_SCHEME extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.details == null) return;
+        if (this.details == null) { return  };
         buf.writeShort(this.details.GetUnionSelector());
         this.details.toTpm(buf);
     }
@@ -6205,7 +6205,7 @@ export class TPMS_SIG_SCHEME_RSASSA extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSASSA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSASSA; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIG_SCHEME_RSASSA
@@ -6230,7 +6230,7 @@ export class TPMS_SIG_SCHEME_RSAPSS extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSAPSS; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSAPSS; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIG_SCHEME_RSAPSS
@@ -6258,7 +6258,7 @@ export class TPMS_SIG_SCHEME_ECDSA extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECDSA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECDSA; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIG_SCHEME_ECDSA
@@ -6286,7 +6286,7 @@ export class TPMS_SIG_SCHEME_SM2 extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.SM2; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.SM2; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIG_SCHEME_SM2
@@ -6314,7 +6314,7 @@ export class TPMS_SIG_SCHEME_ECSCHNORR extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECSCHNORR; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECSCHNORR; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIG_SCHEME_ECSCHNORR
@@ -6345,7 +6345,7 @@ export class TPMS_SIG_SCHEME_ECDAA extends TPMS_SCHEME_ECDAA
     ) { super(hashAlg, count); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECDAA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECDAA; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIG_SCHEME_ECDAA
@@ -6369,7 +6369,7 @@ export class TPMS_NULL_SIG_SCHEME extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.NULL; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.NULL; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_NULL_SIG_SCHEME
@@ -6403,7 +6403,7 @@ export class TPMT_SIG_SCHEME extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.details == null) return;
+        if (this.details == null) { return  };
         buf.writeShort(this.details.GetUnionSelector());
         this.details.toTpm(buf);
     }
@@ -6439,7 +6439,7 @@ export class TPMS_ENC_SCHEME_OAEP extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.OAEP; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.OAEP; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_ENC_SCHEME_OAEP
@@ -6461,7 +6461,7 @@ export class TPMS_ENC_SCHEME_RSAES extends TPMS_EMPTY
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSAES; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSAES; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_ENC_SCHEME_RSAES
@@ -6486,7 +6486,7 @@ export class TPMS_KEY_SCHEME_ECDH extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECDH; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECDH; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_KEY_SCHEME_ECDH
@@ -6511,7 +6511,7 @@ export class TPMS_KEY_SCHEME_ECMQV extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECMQV; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECMQV; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_KEY_SCHEME_ECMQV
@@ -6539,7 +6539,7 @@ export class TPMS_KDF_SCHEME_MGF1 extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.MGF1; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.MGF1; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_KDF_SCHEME_MGF1
@@ -6567,7 +6567,7 @@ export class TPMS_KDF_SCHEME_KDF1_SP800_56A extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.KDF1_SP800_56A; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.KDF1_SP800_56A; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_KDF_SCHEME_KDF1_SP800_56A
@@ -6595,7 +6595,7 @@ export class TPMS_KDF_SCHEME_KDF2 extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.KDF2; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.KDF2; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_KDF_SCHEME_KDF2
@@ -6623,7 +6623,7 @@ export class TPMS_KDF_SCHEME_KDF1_SP800_108 extends TPMS_SCHEME_HASH
     ) { super(hashAlg); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.KDF1_SP800_108; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.KDF1_SP800_108; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_KDF_SCHEME_KDF1_SP800_108
@@ -6647,7 +6647,7 @@ export class TPMS_NULL_KDF_SCHEME extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.NULL; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.NULL; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_NULL_KDF_SCHEME
@@ -6680,7 +6680,7 @@ export class TPMT_KDF_SCHEME extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.details == null) return;
+        if (this.details == null) { return  };
         buf.writeShort(this.details.GetUnionSelector());
         this.details.toTpm(buf);
     }
@@ -6715,7 +6715,7 @@ export class TPMS_NULL_ASYM_SCHEME extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.NULL; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.NULL; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_NULL_ASYM_SCHEME
@@ -6753,7 +6753,7 @@ export class TPMT_ASYM_SCHEME extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.details == null) return;
+        if (this.details == null) { return  };
         buf.writeShort(this.details.GetUnionSelector());
         this.details.toTpm(buf);
     }
@@ -6799,7 +6799,7 @@ export class TPMT_RSA_SCHEME extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.details == null) return;
+        if (this.details == null) { return  };
         buf.writeShort(this.details.GetUnionSelector());
         this.details.toTpm(buf);
     }
@@ -6845,7 +6845,7 @@ export class TPMT_RSA_DECRYPT extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.details == null) return;
+        if (this.details == null) { return  };
         buf.writeShort(this.details.GetUnionSelector());
         this.details.toTpm(buf);
     }
@@ -6881,7 +6881,7 @@ export class TPM2B_PUBLIC_KEY_RSA extends TpmStructure implements TPMU_PUBLIC_ID
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSA; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeSizedByteBuf(this.buffer); }
@@ -6911,7 +6911,7 @@ export class TPM2B_PRIVATE_KEY_RSA extends TpmStructure implements TPMU_SENSITIV
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSA; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeSizedByteBuf(this.buffer); }
@@ -6942,7 +6942,7 @@ export class TPM2B_ECC_PARAMETER extends TpmStructure implements TPMU_SENSITIVE_
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECC; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECC; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeSizedByteBuf(this.buffer); }
@@ -6976,7 +6976,7 @@ export class TPMS_ECC_POINT extends TpmStructure implements TPMU_PUBLIC_ID
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECC; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECC; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -7055,7 +7055,7 @@ export class TPMT_ECC_SCHEME extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.details == null) return;
+        if (this.details == null) { return  };
         buf.writeShort(this.details.GetUnionSelector());
         this.details.toTpm(buf);
     }
@@ -7203,7 +7203,7 @@ export class TPMS_SIGNATURE_RSA extends TpmStructure implements TPMU_SIGNATURE
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSASSA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSASSA; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -7247,7 +7247,7 @@ export class TPMS_SIGNATURE_RSASSA extends TPMS_SIGNATURE_RSA
     ) { super(hash, sig); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSASSA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSASSA; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIGNATURE_RSASSA
@@ -7277,7 +7277,7 @@ export class TPMS_SIGNATURE_RSAPSS extends TPMS_SIGNATURE_RSA
     ) { super(hash, sig); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSAPSS; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSAPSS; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIGNATURE_RSAPSS
@@ -7306,7 +7306,7 @@ export class TPMS_SIGNATURE_ECC extends TpmStructure implements TPMU_SIGNATURE
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECDSA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECDSA; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -7351,7 +7351,7 @@ export class TPMS_SIGNATURE_ECDSA extends TPMS_SIGNATURE_ECC
     ) { super(hash, signatureR, signatureS); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECDSA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECDSA; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIGNATURE_ECDSA
@@ -7380,7 +7380,7 @@ export class TPMS_SIGNATURE_ECDAA extends TPMS_SIGNATURE_ECC
     ) { super(hash, signatureR, signatureS); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECDAA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECDAA; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIGNATURE_ECDAA
@@ -7409,7 +7409,7 @@ export class TPMS_SIGNATURE_SM2 extends TPMS_SIGNATURE_ECC
     ) { super(hash, signatureR, signatureS); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.SM2; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.SM2; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIGNATURE_SM2
@@ -7438,7 +7438,7 @@ export class TPMS_SIGNATURE_ECSCHNORR extends TPMS_SIGNATURE_ECC
     ) { super(hash, signatureR, signatureS); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECSCHNORR; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECSCHNORR; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_SIGNATURE_ECSCHNORR
@@ -7462,7 +7462,7 @@ export class TPMS_NULL_SIGNATURE extends TPMS_NULL_UNION
     constructor() { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.NULL; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.NULL; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPMS_NULL_SIGNATURE
@@ -7501,7 +7501,7 @@ export class TPMT_SIGNATURE extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.signature == null) return;
+        if (this.signature == null) { return  };
         buf.writeShort(this.signature.GetUnionSelector());
         this.signature.toTpm(buf);
     }
@@ -7574,12 +7574,12 @@ export class TPMS_KEYEDHASH_PARMS extends TpmStructure implements TPMU_PUBLIC_PA
     get schemeScheme(): TPM_ALG_ID { return this.scheme ? this.scheme.GetUnionSelector() : TPM_ALG_ID.NULL; }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.KEYEDHASH; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.KEYEDHASH; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.scheme == null) return;
+        if (this.scheme == null) { return  };
         buf.writeShort(this.scheme.GetUnionSelector());
         this.scheme.toTpm(buf);
     }
@@ -7635,7 +7635,7 @@ export class TPMS_ASYM_PARMS extends TpmStructure implements TPMU_PUBLIC_PARMS
     get schemeScheme(): TPM_ALG_ID { return this.scheme ? this.scheme.GetUnionSelector() : TPM_ALG_ID.NULL; }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ANY; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ANY; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -7711,7 +7711,7 @@ export class TPMS_RSA_PARMS extends TpmStructure implements TPMU_PUBLIC_PARMS
     get schemeScheme(): TPM_ALG_ID { return this.scheme ? this.scheme.GetUnionSelector() : TPM_ALG_ID.NULL; }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.RSA; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.RSA; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -7792,7 +7792,7 @@ export class TPMS_ECC_PARMS extends TpmStructure implements TPMU_PUBLIC_PARMS
     get kdfScheme(): TPM_ALG_ID { return this.kdf ? this.kdf.GetUnionSelector() : TPM_ALG_ID.NULL; }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ECC; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ECC; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
@@ -7851,7 +7851,7 @@ export class TPMT_PUBLIC_PARMS extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.parameters == null) return;
+        if (this.parameters == null) { return  };
         buf.writeShort(this.parameters.GetUnionSelector());
         this.parameters.toTpm(buf);
     }
@@ -7919,7 +7919,7 @@ export class TPMT_PUBLIC extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.parameters == null) return;
+        if (this.parameters == null) { return  };
         buf.writeShort(this.parameters.GetUnionSelector());
         buf.writeShort(this.nameAlg);
         buf.writeInt(this.objectAttributes);
@@ -8039,7 +8039,7 @@ export class TPM2B_PRIVATE_VENDOR_SPECIFIC extends TpmStructure implements TPMU_
     ) { super(); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.ANY; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.ANY; }
 
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void { buf.writeSizedByteBuf(this.buffer); }
@@ -8090,7 +8090,7 @@ export class TPMT_SENSITIVE extends TpmStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.sensitive == null) return;
+        if (this.sensitive == null) { return  };
         buf.writeShort(this.sensitive.GetUnionSelector());
         buf.writeSizedByteBuf(this.authValue);
         buf.writeSizedByteBuf(this.seedValue);
@@ -13243,7 +13243,7 @@ export class SignResponse extends RespStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.signature == null) return;
+        if (this.signature == null) { return  };
         buf.writeShort(this.signature.GetUnionSelector());
         this.signature.toTpm(buf);
     }
@@ -16055,7 +16055,7 @@ export class TPM2_TestParms_REQUEST extends ReqStructure
     /** TpmMarshaller method */
     toTpm(buf: TpmBuffer): void
     {
-        if (this.parameters == null) return;
+        if (this.parameters == null) { return  };
         buf.writeShort(this.parameters.GetUnionSelector());
         this.parameters.toTpm(buf);
     }
@@ -17724,7 +17724,7 @@ export class TPM2B_DIGEST_SYMCIPHER extends TPM2B_DIGEST
     ) { super(buffer); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.SYMCIPHER; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.SYMCIPHER; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPM2B_DIGEST_SYMCIPHER
@@ -17749,7 +17749,7 @@ export class TPM2B_DIGEST_KEYEDHASH extends TPM2B_DIGEST
     ) { super(buffer); }
 
     /** TpmUnion method */
-    GetUnionSelector(): TPM_ALG_ID { return TPM_ALG_ID.KEYEDHASH; }
+    GetUnionSelector(): Option<TPM_ALG_ID> { return TPM_ALG_ID.KEYEDHASH; }
 
     /** Static marshaling helper */
     public static fromTpm(buf: TpmBuffer) : TPM2B_DIGEST_KEYEDHASH

@@ -1,5 +1,5 @@
 use crate::error::TpmError;
-use crate::tpm_types::TpmEnum;
+use crate::tpm_structure::TpmEnum;
 
 pub struct SizedStructInfo {
     pub start_pos: usize,
@@ -60,12 +60,12 @@ impl TpmBuffer {
     }
 
     /** @return Current read/write position in the backing byte buffer. */
-    pub fn curPos(&self) -> usize {
+    pub fn current_pos(&self) -> usize {
         self.pos
     }
 
     /** Sets the current read/write position in the backing byte buffer. */
-    pub fn set_curPos(&mut self, new_pos: usize) {
+    pub fn set_current_pos(&mut self, new_pos: usize) {
         self.pos = new_pos;
         self.out_of_bounds = self.size() < new_pos;
     }
@@ -156,7 +156,7 @@ impl TpmBuffer {
         res
     }
 
-    pub fn writeNumAtPos(&mut self, val: u64, pos: usize, len: usize) {
+    pub fn write_num_at_pos(&mut self, val: u64, pos: usize, len: usize) {
         let cur_pos = self.pos;
         self.pos = pos;
         self.write_num(val, len);
@@ -315,7 +315,11 @@ impl TpmBuffer {
         });
     }
 
-    pub fn writeValArr<T: TpmEnum + Default>(&mut self, arr: &[T], val_size: usize) {
+    pub fn writeValArr<T, U>(&mut self, arr: &[T], val_size: usize)
+    where       
+        T: TpmEnum<U> + Default,
+        U: Into<u64>
+    {
         // Length of the array size is always 4 bytes
         self.writeInt(arr.len() as u32);
         for val in arr {
@@ -326,11 +330,15 @@ impl TpmBuffer {
         }
     }
 
-    pub fn readValArr<T: TpmEnum + Default>(
+    pub fn readValArr<T, U>(
         &mut self,
         arr: &mut Vec<T>,
         val_size: usize,
-    ) -> Result<(), TpmError> {
+    ) -> Result<(), TpmError> 
+    where       
+        T: TpmEnum<U> + Default,
+        U: Into<u64>
+    {
         // Length of the array size is always 4 bytes
         let len = self.readInt();
         if len == 0 {
@@ -344,7 +352,7 @@ impl TpmBuffer {
                 break;
             }
 
-            *elt = T::try_from_trait(self.read_num(val_size) as u32)?;
+            *elt = T::try_from_trait(self.read_num(val_size))?;
         }
 
         Ok(())

@@ -76,7 +76,7 @@ public final class TPMA_STARTUP_CLEAR extends TpmAttribute<TPMA_STARTUP_CLEAR>
         shEnable = new TPMA_STARTUP_CLEAR(0x2, _N.shEnable),
         ehEnable = new TPMA_STARTUP_CLEAR(0x4, _N.ehEnable),
         phEnableNV = new TPMA_STARTUP_CLEAR(0x8, _N.phEnableNV),
-        orderly = new TPMA_STARTUP_CLEAR(0x80000000, _N.orderly);
+        orderly = new TPMA_STARTUP_CLEAR(0xFFFFFFFF80000000, _N.orderly);
 
     public TPMA_STARTUP_CLEAR () { super(0, _ValueMap); }
     public TPMA_STARTUP_CLEAR (int value) { super(value, _ValueMap); }

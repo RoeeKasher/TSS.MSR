@@ -38,7 +38,7 @@ public final class TPM_NV_INDEX extends TpmAttribute<TPM_NV_INDEX>
         index_BIT_MASK = new TPM_NV_INDEX(0xFFFFFF, _N.index_BIT_MASK),
         index_BIT_OFFSET = new TPM_NV_INDEX(0, _N.index_BIT_OFFSET),
         index_BIT_LENGTH = new TPM_NV_INDEX(24, _N.index_BIT_LENGTH),
-        RhNv_BIT_MASK = new TPM_NV_INDEX(0xFF000000, _N.RhNv_BIT_MASK),
+        RhNv_BIT_MASK = new TPM_NV_INDEX(0xFFFFFFFFFF000000, _N.RhNv_BIT_MASK),
         RhNv_BIT_OFFSET = new TPM_NV_INDEX(24, _N.RhNv_BIT_OFFSET),
         RhNv_BIT_LENGTH = new TPM_NV_INDEX(8, _N.RhNv_BIT_LENGTH);
 

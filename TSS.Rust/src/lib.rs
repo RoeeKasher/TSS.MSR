@@ -5,3 +5,5 @@ pub mod tpm_buffer;
 pub mod device;
 pub mod crypto;
 pub mod tpm_structure;
+pub mod tpm2_impl;
+pub mod auth_session;

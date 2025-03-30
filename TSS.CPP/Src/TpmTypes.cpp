@@ -1218,7 +1218,7 @@ void TPML_ACT_DATA::Deserialize(Serializer& buf) { buf.with("actData", "TPMS_ACT
 
 void TPMS_CAPABILITY_DATA::toTpm(TpmBuffer& buf) const
 {
-    if (data == nullptr == nullptr) return ;
+    if (data == nullptr) { return  };
     buf.writeInt(data->GetUnionSelector());
     data->toTpm(buf);
 }
@@ -1624,7 +1624,7 @@ void TPMS_AUTH_RESPONSE::Deserialize(Serializer& buf)
 void TPMT_SYM_DEF::toTpm(TpmBuffer& buf) const
 {
     buf.writeShort(algorithm);
-    if (algorithm == TPM_ALG_ID::_NULL) return;
+    if (algorithm == TPM_ALG_ID::_NULL) { return  };
     buf.writeShort(keyBits);
     buf.writeShort(mode);
 }
@@ -1632,7 +1632,7 @@ void TPMT_SYM_DEF::toTpm(TpmBuffer& buf) const
 void TPMT_SYM_DEF::initFromTpm(TpmBuffer& buf)
 {
     algorithm = buf.readShort();
-    if (algorithm == TPM_ALG_ID::_NULL) return;
+    if (algorithm == TPM_ALG_ID::_NULL) { return  };
     keyBits = buf.readShort();
     mode = buf.readShort();
 }
@@ -1654,7 +1654,7 @@ void TPMT_SYM_DEF::Deserialize(Serializer& buf)
 void TPMT_SYM_DEF_OBJECT::toTpm(TpmBuffer& buf) const
 {
     buf.writeShort(algorithm);
-    if (algorithm == TPM_ALG_ID::_NULL) return;
+    if (algorithm == TPM_ALG_ID::_NULL) { return  };
     buf.writeShort(keyBits);
     buf.writeShort(mode);
 }
@@ -1662,7 +1662,7 @@ void TPMT_SYM_DEF_OBJECT::toTpm(TpmBuffer& buf) const
 void TPMT_SYM_DEF_OBJECT::initFromTpm(TpmBuffer& buf)
 {
     algorithm = buf.readShort();
-    if (algorithm == TPM_ALG_ID::_NULL) return;
+    if (algorithm == TPM_ALG_ID::_NULL) { return  };
     keyBits = buf.readShort();
     mode = buf.readShort();
 }
@@ -1835,7 +1835,7 @@ void TPMS_SCHEME_XOR::Deserialize(Serializer& buf)
 
 void TPMT_KEYEDHASH_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr == nullptr) return ;
+    if (details == nullptr) { return  };
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1864,7 +1864,7 @@ void TPMT_KEYEDHASH_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_SIG_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr == nullptr) return ;
+    if (details == nullptr) { return  };
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1893,7 +1893,7 @@ void TPMT_SIG_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_KDF_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr == nullptr) return ;
+    if (details == nullptr) { return  };
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1922,7 +1922,7 @@ void TPMT_KDF_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_ASYM_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr == nullptr) return ;
+    if (details == nullptr) { return  };
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1951,7 +1951,7 @@ void TPMT_ASYM_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_RSA_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr == nullptr) return ;
+    if (details == nullptr) { return  };
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -1980,7 +1980,7 @@ void TPMT_RSA_SCHEME::Deserialize(Serializer& buf)
 
 void TPMT_RSA_DECRYPT::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr == nullptr) return ;
+    if (details == nullptr) { return  };
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -2065,7 +2065,7 @@ void TPM2B_ECC_POINT::Deserialize(Serializer& buf) { buf.with("point", "TPMS_ECC
 
 void TPMT_ECC_SCHEME::toTpm(TpmBuffer& buf) const
 {
-    if (details == nullptr == nullptr) return ;
+    if (details == nullptr) { return  };
     buf.writeShort(details->GetUnionSelector());
     details->toTpm(buf);
 }
@@ -2222,7 +2222,7 @@ void TPMS_SIGNATURE_ECC::Deserialize(Serializer& buf)
 
 void TPMT_SIGNATURE::toTpm(TpmBuffer& buf) const
 {
-    if (signature == nullptr == nullptr) return ;
+    if (signature == nullptr) { return  };
     buf.writeShort(signature->GetUnionSelector());
     signature->toTpm(buf);
 }
@@ -2259,7 +2259,7 @@ void TPM2B_ENCRYPTED_SECRET::Deserialize(Serializer& buf) { secret = buf.with("s
 
 void TPMS_KEYEDHASH_PARMS::toTpm(TpmBuffer& buf) const
 {
-    if (scheme == nullptr == nullptr) return ;
+    if (scheme == nullptr) { return  };
     buf.writeShort(scheme->GetUnionSelector());
     scheme->toTpm(buf);
 }
@@ -2408,7 +2408,7 @@ void TPMS_ECC_PARMS::Deserialize(Serializer& buf)
 
 void TPMT_PUBLIC_PARMS::toTpm(TpmBuffer& buf) const
 {
-    if (parameters == nullptr == nullptr) return ;
+    if (parameters == nullptr) { return  };
     buf.writeShort(parameters->GetUnionSelector());
     parameters->toTpm(buf);
 }
@@ -2437,7 +2437,7 @@ void TPMT_PUBLIC_PARMS::Deserialize(Serializer& buf)
 
 void TPMT_PUBLIC::toTpm(TpmBuffer& buf) const
 {
-    if (parameters == nullptr == nullptr) return ;
+    if (parameters == nullptr) { return  };
     buf.writeShort(parameters->GetUnionSelector());
     buf.writeShort(nameAlg);
     buf.writeInt(objectAttributes);
@@ -2509,7 +2509,7 @@ void TPM2B_PRIVATE_VENDOR_SPECIFIC::Deserialize(Serializer& buf) { buffer = buf.
 
 void TPMT_SENSITIVE::toTpm(TpmBuffer& buf) const
 {
-    if (sensitive == nullptr == nullptr) return ;
+    if (sensitive == nullptr) { return  };
     buf.writeShort(sensitive->GetUnionSelector());
     buf.writeSizedByteBuf(authValue);
     buf.writeSizedByteBuf(seedValue);
@@ -4936,7 +4936,7 @@ void TPM2_Sign_REQUEST::Deserialize(Serializer& buf)
 
 void SignResponse::toTpm(TpmBuffer& buf) const
 {
-    if (signature == nullptr == nullptr) return ;
+    if (signature == nullptr) { return  };
     buf.writeShort(signature->GetUnionSelector());
     signature->toTpm(buf);
 }
@@ -6121,7 +6121,7 @@ void GetCapabilityResponse::Deserialize(Serializer& buf)
 
 void TPM2_TestParms_REQUEST::toTpm(TpmBuffer& buf) const
 {
-    if (parameters == nullptr == nullptr) return ;
+    if (parameters == nullptr) { return  };
     buf.writeShort(parameters->GetUnionSelector());
     parameters->toTpm(buf);
 }

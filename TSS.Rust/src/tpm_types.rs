@@ -230,12 +230,12 @@ impl TPM_ALG_ID {
     }
 }
 
-impl TpmEnum for TPM_ALG_ID {
-    fn get_value(&self) -> u32 {
+impl TpmEnum<u16> for TPM_ALG_ID {
+    fn get_value(&self) -> u16 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_ALG_ID::try_from(value as u16)
     }
 }
@@ -346,12 +346,12 @@ impl TPM_ECC_CURVE {
 
 }
 
-impl TpmEnum for TPM_ECC_CURVE {
-    fn get_value(&self) -> u32 {
-        *self as u32
+impl TpmEnum<u16> for TPM_ECC_CURVE {
+    fn get_value(&self) -> u16 {
+        *self as u16
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_ECC_CURVE::try_from(value as u16).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -412,12 +412,12 @@ impl SHA1 {
 
 }
 
-impl TpmEnum for SHA1 {
+impl TpmEnum<u32> for SHA1 {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         SHA1::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -470,12 +470,12 @@ impl SHA256 {
 
 }
 
-impl TpmEnum for SHA256 {
+impl TpmEnum<u32> for SHA256 {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         SHA256::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -528,12 +528,12 @@ impl SHA384 {
 
 }
 
-impl TpmEnum for SHA384 {
+impl TpmEnum<u32> for SHA384 {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         SHA384::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -586,12 +586,12 @@ impl SHA512 {
 
 }
 
-impl TpmEnum for SHA512 {
+impl TpmEnum<u32> for SHA512 {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         SHA512::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -644,12 +644,12 @@ impl SM3_256 {
 
 }
 
-impl TpmEnum for SM3_256 {
+impl TpmEnum<u32> for SM3_256 {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         SM3_256::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -702,12 +702,12 @@ impl SHA3_256 {
 
 }
 
-impl TpmEnum for SHA3_256 {
+impl TpmEnum<u32> for SHA3_256 {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         SHA3_256::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -760,12 +760,12 @@ impl SHA3_384 {
 
 }
 
-impl TpmEnum for SHA3_384 {
+impl TpmEnum<u32> for SHA3_384 {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         SHA3_384::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -818,12 +818,12 @@ impl SHA3_512 {
 
 }
 
-impl TpmEnum for SHA3_512 {
+impl TpmEnum<u32> for SHA3_512 {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         SHA3_512::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -874,12 +874,12 @@ impl Logic {
     }
 }
 
-impl TpmEnum for Logic {
-    fn get_value(&self) -> u32 {
+impl TpmEnum<u8> for Logic {
+    fn get_value(&self) -> u8 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         Logic::try_from(value as u8)
     }
 }
@@ -945,12 +945,12 @@ impl TPM_SPEC {
 
 }
 
-impl TpmEnum for TPM_SPEC {
+impl TpmEnum<u32> for TPM_SPEC {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_SPEC::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -1002,12 +1002,12 @@ impl TPM_GENERATED {
 
 }
 
-impl TpmEnum for TPM_GENERATED {
+impl TpmEnum<u32> for TPM_GENERATED {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_GENERATED::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -1361,12 +1361,12 @@ impl TPM_CC {
     }
 }
 
-impl TpmEnum for TPM_CC {
+impl TpmEnum<u32> for TPM_CC {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_CC::try_from(value as u32)
     }
 }
@@ -1568,12 +1568,12 @@ impl ImplementationConstants {
     }
 }
 
-impl TpmEnum for ImplementationConstants {
+impl TpmEnum<u32> for ImplementationConstants {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         ImplementationConstants::try_from(value as u32)
     }
 }
@@ -2290,12 +2290,12 @@ impl TPM_RC {
     }
 }
 
-impl TpmEnum for TPM_RC {
+impl TpmEnum<u32> for TPM_RC {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_RC::try_from(value as u32)
     }
 }
@@ -2478,38 +2478,38 @@ impl fmt::Display for TPM_RC {
 /// oscillator is divided. A change to the divider will change the rate at which Clock and
 /// Time change.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u8)]
+#[repr(i8)]
 pub enum TPM_CLOCK_ADJUST {
     #[default]
 
     /// Slow the Clock update rate by one coarse adjustment step.
-    COARSE_SLOWER = 0xFFFFFFFFFFFFFFFD, // Original value: -3
+    COARSE_SLOWER = -3,
 
     /// Slow the Clock update rate by one medium adjustment step.
-    MEDIUM_SLOWER = 0xFFFFFFFFFFFFFFFE, // Original value: -2
+    MEDIUM_SLOWER = -2,
 
     /// Slow the Clock update rate by one fine adjustment step.
-    FINE_SLOWER = 0xFFFFFFFFFFFFFFFF, // Original value: -1
+    FINE_SLOWER = -1,
 
     /// No change to the Clock update rate.
-    NO_CHANGE = 0x0, // Original value: 0
+    NO_CHANGE = 0,
 
     /// Speed the Clock update rate by one fine adjustment step.
-    FINE_FASTER = 0x1, // Original value: 1
+    FINE_FASTER = 1,
 
     /// Speed the Clock update rate by one medium adjustment step.
-    MEDIUM_FASTER = 0x2, // Original value: 2
+    MEDIUM_FASTER = 2,
 
     /// Speed the Clock update rate by one coarse adjustment step.
-    COARSE_FASTER = 0x3 // Original value: 3
+    COARSE_FASTER = 3
 }
 
 impl TPM_CLOCK_ADJUST {
-    pub fn try_from(value: u8) -> Result<Self, TpmError> {
+    pub fn try_from(value: i8) -> Result<Self, TpmError> {
         match value {
-            18446744073709551613 => Ok(Self::COARSE_SLOWER), // Original value: -3
-            18446744073709551614 => Ok(Self::MEDIUM_SLOWER), // Original value: -2
-            18446744073709551615 => Ok(Self::FINE_SLOWER), // Original value: -1
+            -3 => Ok(Self::COARSE_SLOWER), // Original value: -3
+            -2 => Ok(Self::MEDIUM_SLOWER), // Original value: -2
+            -1 => Ok(Self::FINE_SLOWER), // Original value: -1
             0 => Ok(Self::NO_CHANGE), // Original value: 0
             1 => Ok(Self::FINE_FASTER), // Original value: 1
             2 => Ok(Self::MEDIUM_FASTER), // Original value: 2
@@ -2521,13 +2521,13 @@ impl TPM_CLOCK_ADJUST {
 
 }
 
-impl TpmEnum for TPM_CLOCK_ADJUST {
-    fn get_value(&self) -> u32 {
-        *self as u32
+impl TpmEnum<i8> for TPM_CLOCK_ADJUST {
+    fn get_value(&self) -> i8 {
+        *self as i8
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
-        TPM_CLOCK_ADJUST::try_from(value as u8).map_err(|_| TpmError::InvalidEnumValue)
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        TPM_CLOCK_ADJUST::try_from(value as i8).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
 
@@ -2624,12 +2624,12 @@ impl TPM_EO {
 
 }
 
-impl TpmEnum for TPM_EO {
-    fn get_value(&self) -> u32 {
-        *self as u32
+impl TpmEnum<u16> for TPM_EO {
+    fn get_value(&self) -> u16 {
+        *self as u16
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_EO::try_from(value as u16).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -2776,12 +2776,12 @@ impl TPM_ST {
 
 }
 
-impl TpmEnum for TPM_ST {
-    fn get_value(&self) -> u32 {
-        *self as u32
+impl TpmEnum<u16> for TPM_ST {
+    fn get_value(&self) -> u16 {
+        *self as u16
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_ST::try_from(value as u16).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -2856,12 +2856,12 @@ impl TPM_SU {
 
 }
 
-impl TpmEnum for TPM_SU {
-    fn get_value(&self) -> u32 {
-        *self as u32
+impl TpmEnum<u16> for TPM_SU {
+    fn get_value(&self) -> u16 {
+        *self as u16
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_SU::try_from(value as u16).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -2917,12 +2917,12 @@ impl TPM_SE {
 
 }
 
-impl TpmEnum for TPM_SE {
-    fn get_value(&self) -> u32 {
-        *self as u32
+impl TpmEnum<u8> for TPM_SE {
+    fn get_value(&self) -> u8 {
+        *self as u8
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_SE::try_from(value as u8).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -3017,12 +3017,12 @@ impl TPM_CAP {
     }
 }
 
-impl TpmEnum for TPM_CAP {
+impl TpmEnum<u32> for TPM_CAP {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_CAP::try_from(value as u32)
     }
 }
@@ -3437,12 +3437,12 @@ impl TPM_PT {
     }
 }
 
-impl TpmEnum for TPM_PT {
+impl TpmEnum<u32> for TPM_PT {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_PT::try_from(value as u32)
     }
 }
@@ -3644,12 +3644,12 @@ impl TPM_PT_PCR {
     }
 }
 
-impl TpmEnum for TPM_PT_PCR {
+impl TpmEnum<u32> for TPM_PT_PCR {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_PT_PCR::try_from(value as u32)
     }
 }
@@ -3772,12 +3772,12 @@ impl TPM_PS {
 
 }
 
-impl TpmEnum for TPM_PS {
+impl TpmEnum<u32> for TPM_PS {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_PS::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -3878,12 +3878,12 @@ impl TPM_HT {
     }
 }
 
-impl TpmEnum for TPM_HT {
-    fn get_value(&self) -> u32 {
+impl TpmEnum<u8> for TPM_HT {
+    fn get_value(&self) -> u8 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_HT::try_from(value as u8)
     }
 }
@@ -4017,12 +4017,12 @@ impl TPM_RH {
     }
 }
 
-impl TpmEnum for TPM_RH {
+impl TpmEnum<u32> for TPM_RH {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_RH::try_from(value as u32)
     }
 }
@@ -4111,12 +4111,12 @@ impl TPM_NT {
 
 }
 
-impl TpmEnum for TPM_NT {
+impl TpmEnum<u32> for TPM_NT {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_NT::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -4183,12 +4183,12 @@ impl TPM_AT {
 
 }
 
-impl TpmEnum for TPM_AT {
+impl TpmEnum<u32> for TPM_AT {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_AT::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -4240,12 +4240,12 @@ impl TPM_AE {
 
 }
 
-impl TpmEnum for TPM_AE {
+impl TpmEnum<u32> for TPM_AE {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_AE::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -4299,12 +4299,12 @@ impl PLATFORM {
 
 }
 
-impl TpmEnum for PLATFORM {
+impl TpmEnum<u32> for PLATFORM {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         PLATFORM::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -4509,12 +4509,12 @@ impl Implementation {
     }
 }
 
-impl TpmEnum for Implementation {
+impl TpmEnum<u32> for Implementation {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         Implementation::try_from(value as u32)
     }
 }
@@ -4686,12 +4686,12 @@ impl TPM_HC {
     }
 }
 
-impl TpmEnum for TPM_HC {
+impl TpmEnum<u32> for TPM_HC {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_HC::try_from(value as u32)
     }
 }
@@ -4794,12 +4794,12 @@ impl TPMA_ALGORITHM {
 
 }
 
-impl TpmEnum for TPMA_ALGORITHM {
+impl TpmEnum<u32> for TPMA_ALGORITHM {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_ALGORITHM::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -4941,12 +4941,12 @@ impl TPMA_OBJECT {
     }
 }
 
-impl TpmEnum for TPMA_OBJECT {
+impl TpmEnum<u32> for TPMA_OBJECT {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_OBJECT::try_from(value as u32)
     }
 }
@@ -5085,12 +5085,12 @@ impl TPMA_SESSION {
 
 }
 
-impl TpmEnum for TPMA_SESSION {
-    fn get_value(&self) -> u32 {
-        *self as u32
+impl TpmEnum<u8> for TPMA_SESSION {
+    fn get_value(&self) -> u8 {
+        *self as u8
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_SESSION::try_from(value as u8).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -5174,12 +5174,12 @@ impl TPMA_LOCALITY {
 
 }
 
-impl TpmEnum for TPMA_LOCALITY {
-    fn get_value(&self) -> u32 {
-        *self as u32
+impl TpmEnum<u8> for TPMA_LOCALITY {
+    fn get_value(&self) -> u8 {
+        *self as u8
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_LOCALITY::try_from(value as u8).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -5280,12 +5280,12 @@ impl TPMA_PERMANENT {
 
 }
 
-impl TpmEnum for TPMA_PERMANENT {
+impl TpmEnum<u32> for TPMA_PERMANENT {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_PERMANENT::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -5381,7 +5381,7 @@ pub enum TPMA_STARTUP_CLEAR {
     /// NOTE A shutdown is orderly if the TPM receives a TPM2_Shutdown() of any type followed
     /// by a TPM2_Startup() of any type. However, the TPM will return an error if
     /// TPM2_Startup(TPM_SU_STATE) was not preceded by TPM2_Shutdown(TPM_SU_STATE).
-    orderly = 0xFFFFFFFF80000000
+    orderly = 0x80000000 // Original value: 0xFFFFFFFF80000000
 }
 
 impl TPMA_STARTUP_CLEAR {
@@ -5391,7 +5391,7 @@ impl TPMA_STARTUP_CLEAR {
             2 => Ok(Self::shEnable), // Original value: 0x2
             4 => Ok(Self::ehEnable), // Original value: 0x4
             8 => Ok(Self::phEnableNV), // Original value: 0x8
-            18446744071562067968 => Ok(Self::orderly), // Original value: 0xFFFFFFFF80000000
+            2147483648 => Ok(Self::orderly), // Original value: 0xFFFFFFFF80000000
             _ => Err(TpmError::InvalidEnumValue),
         }
 
@@ -5399,12 +5399,12 @@ impl TPMA_STARTUP_CLEAR {
 
 }
 
-impl TpmEnum for TPMA_STARTUP_CLEAR {
+impl TpmEnum<u32> for TPMA_STARTUP_CLEAR {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_STARTUP_CLEAR::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -5491,12 +5491,12 @@ impl TPMA_MEMORY {
 
 }
 
-impl TpmEnum for TPMA_MEMORY {
+impl TpmEnum<u32> for TPMA_MEMORY {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_MEMORY::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -5579,7 +5579,7 @@ pub enum TPMA_CC {
     V = 0x20000000,
 
     /// Allocated for software; shall be zero
-    Res_BIT_MASK = 0xFFFFFFFFC0000000,
+    Res_BIT_MASK = 0xC0000000, // Original value: 0xFFFFFFFFC0000000
     Res_BIT_OFFSET = 0x1E, // Original value: 30
     Res_BIT_LENGTH = 0x2 // Original value: 2
 }
@@ -5598,7 +5598,7 @@ impl TPMA_CC {
             3 => Ok(Self::cHandles_BIT_LENGTH), // Original value: 3
             268435456 => Ok(Self::rHandle), // Original value: 0x10000000
             536870912 => Ok(Self::V), // Original value: 0x20000000
-            18446744072635809792 => Ok(Self::Res_BIT_MASK), // Original value: 0xFFFFFFFFC0000000
+            3221225472 => Ok(Self::Res_BIT_MASK), // Original value: 0xFFFFFFFFC0000000
             30 => Ok(Self::Res_BIT_OFFSET), // Original value: 30
             2 => Ok(Self::Res_BIT_LENGTH), // Original value: 2
             _ => Err(TpmError::InvalidEnumValue),
@@ -5608,12 +5608,12 @@ impl TPMA_CC {
 
 }
 
-impl TpmEnum for TPMA_CC {
+impl TpmEnum<u32> for TPMA_CC {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_CC::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -5692,12 +5692,12 @@ impl TPMA_MODES {
 
 }
 
-impl TpmEnum for TPMA_MODES {
+impl TpmEnum<u32> for TPMA_MODES {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_MODES::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -5778,7 +5778,7 @@ impl TPMA_X509_KEY_USAGE {
     pub const contentCommitment: Self = Self(0x40000000);
 
     /// Sign SET in Subject Key (objectHandle)
-    pub const digitalSignature: Self = Self(0xFFFFFFFF80000000);
+    pub const digitalSignature: Self = Self(0x80000000); // Original value: 0xFFFFFFFF80000000
 
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
@@ -5790,18 +5790,18 @@ impl TPMA_X509_KEY_USAGE {
             268435456 => Ok(Self::dataEncipherment), // Original value: 0x10000000
             536870912 => Ok(Self::keyEncipherment), // Original value: 0x20000000
             1073741824 => Ok(Self::nonrepudiation), // Original value: 0x40000000
-            18446744071562067968 => Ok(Self::digitalSignature), // Original value: 0xFFFFFFFF80000000
+            2147483648 => Ok(Self::digitalSignature), // Original value: 0xFFFFFFFF80000000
             _ => Err(TpmError::InvalidEnumValue),
         }
     }
 }
 
-impl TpmEnum for TPMA_X509_KEY_USAGE {
+impl TpmEnum<u32> for TPMA_X509_KEY_USAGE {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_X509_KEY_USAGE::try_from(value as u32)
     }
 }
@@ -5829,7 +5829,7 @@ impl fmt::Display for TPMA_X509_KEY_USAGE {
             268435456 => write!(f, "dataEncipherment"),
             536870912 => write!(f, "keyEncipherment"),
             1073741824 => write!(f, "One of <nonrepudiation, contentCommitment>"),
-            18446744071562067968 => write!(f, "digitalSignature"),
+            2147483648 => write!(f, "digitalSignature"),
             _ => write!(f, "Unknown({:?})", self.0),
         }
 
@@ -5881,12 +5881,12 @@ impl TPMA_ACT {
 
 }
 
-impl TpmEnum for TPMA_ACT {
+impl TpmEnum<u32> for TPMA_ACT {
     fn get_value(&self) -> u32 {
         *self as u32
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_ACT::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
     }
 }
@@ -5945,7 +5945,7 @@ impl TPM_NV_INDEX {
     pub const index_BIT_LENGTH: Self = Self(0x18); // Original value: 24
 
     /// Constant value of TPM_HT_NV_INDEX indicating the NV Index range
-    pub const RhNv_BIT_MASK: Self = Self(0xFFFFFFFFFF000000);
+    pub const RhNv_BIT_MASK: Self = Self(0xFF000000); // Original value: 0xFFFFFFFFFF000000
     pub const RhNv_BIT_OFFSET: Self = Self(0x18); // Original value: 24
     pub const RhNv_BIT_LENGTH: Self = Self(0x8); // Original value: 8
 
@@ -5954,19 +5954,19 @@ impl TPM_NV_INDEX {
             16777215 => Ok(Self::index_BIT_MASK), // Original value: 0xFFFFFF
             0 => Ok(Self::index_BIT_OFFSET), // Original value: 0
             24 => Ok(Self::index_BIT_LENGTH), // Original value: 24
-            18446744073692774400 => Ok(Self::RhNv_BIT_MASK), // Original value: 0xFFFFFFFFFF000000
+            4278190080 => Ok(Self::RhNv_BIT_MASK), // Original value: 0xFFFFFFFFFF000000
             8 => Ok(Self::RhNv_BIT_LENGTH), // Original value: 8
             _ => Err(TpmError::InvalidEnumValue),
         }
     }
 }
 
-impl TpmEnum for TPM_NV_INDEX {
+impl TpmEnum<u32> for TPM_NV_INDEX {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_NV_INDEX::try_from(value as u32)
     }
 }
@@ -5989,7 +5989,7 @@ impl fmt::Display for TPM_NV_INDEX {
             16777215 => write!(f, "index_BIT_MASK"),
             0 => write!(f, "index_BIT_OFFSET"),
             24 => write!(f, "One of <index_BIT_LENGTH, RhNv_BIT_OFFSET>"),
-            18446744073692774400 => write!(f, "RhNv_BIT_MASK"),
+            4278190080 => write!(f, "RhNv_BIT_MASK"),
             8 => write!(f, "RhNv_BIT_LENGTH"),
             _ => write!(f, "Unknown({:?})", self.0),
         }
@@ -6155,7 +6155,7 @@ impl TPMA_NV {
 
     /// SET (1): TPM2_NV_ReadLock() may be used to SET TPMA_NV_READLOCKED for this Index.
     /// CLEAR (0): TPM2_NV_ReadLock() has no effect on this Index.
-    pub const READ_STCLEAR: Self = Self(0xFFFFFFFF80000000);
+    pub const READ_STCLEAR: Self = Self(0x80000000); // Original value: 0xFFFFFFFF80000000
 
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
@@ -6186,18 +6186,18 @@ impl TPMA_NV {
             268435456 => Ok(Self::READLOCKED), // Original value: 0x10000000
             536870912 => Ok(Self::WRITTEN), // Original value: 0x20000000
             1073741824 => Ok(Self::PLATFORMCREATE), // Original value: 0x40000000
-            18446744071562067968 => Ok(Self::READ_STCLEAR), // Original value: 0xFFFFFFFF80000000
+            2147483648 => Ok(Self::READ_STCLEAR), // Original value: 0xFFFFFFFF80000000
             _ => Err(TpmError::InvalidEnumValue),
         }
     }
 }
 
-impl TpmEnum for TPMA_NV {
+impl TpmEnum<u32> for TPMA_NV {
     fn get_value(&self) -> u32 {
         self.0.into()
     }
 
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_NV::try_from(value as u32)
     }
 }
@@ -6244,7 +6244,7 @@ impl fmt::Display for TPMA_NV {
             268435456 => write!(f, "READLOCKED"),
             536870912 => write!(f, "WRITTEN"),
             1073741824 => write!(f, "PLATFORMCREATE"),
-            18446744071562067968 => write!(f, "READ_STCLEAR"),
+            2147483648 => write!(f, "READ_STCLEAR"),
             _ => write!(f, "Unknown({:?})", self.0),
         }
 
@@ -6271,6 +6271,7 @@ impl From<u32> for TPMA_NV {
 /// One of: TPML_ALG_PROPERTY, TPML_HANDLE, TPML_CCA, TPML_CC, TPML_PCR_SELECTION,
 /// TPML_TAGGED_TPM_PROPERTY, TPML_TAGGED_PCR_PROPERTY, TPML_ECC_CURVE,
 /// TPML_TAGGED_POLICY, TPML_ACT_DATA.
+#[derive(Clone)]
 pub enum TPMU_CAPABILITIES {
     algorithms(TPML_ALG_PROPERTY),
     handles(TPML_HANDLE),
@@ -6444,6 +6445,7 @@ impl TpmMarshaller for TPMU_CAPABILITIES {
 /// One of: TPMS_CERTIFY_INFO, TPMS_CREATION_INFO, TPMS_QUOTE_INFO,
 /// TPMS_COMMAND_AUDIT_INFO, TPMS_SESSION_AUDIT_INFO, TPMS_TIME_ATTEST_INFO,
 /// TPMS_NV_CERTIFY_INFO, TPMS_NV_DIGEST_CERTIFY_INFO.
+#[derive(Clone)]
 pub enum TPMU_ATTEST {
     certify(TPMS_CERTIFY_INFO),
     creation(TPMS_CREATION_INFO),
@@ -6587,6 +6589,7 @@ impl TpmMarshaller for TPMU_ATTEST {
 /// no additional parameters are required for any of the symmetric algorithms.
 /// One of: TPMS_TDES_SYM_DETAILS, TPMS_AES_SYM_DETAILS, TPMS_SM4_SYM_DETAILS,
 /// TPMS_CAMELLIA_SYM_DETAILS, TPMS_ANY_SYM_DETAILS, TPMS_XOR_SYM_DETAILS, TPMS_NULL_SYM_DETAILS.
+#[derive(Clone)]
 pub enum TPMU_SYM_DETAILS {
     tdes(TPMS_TDES_SYM_DETAILS),
     aes(TPMS_AES_SYM_DETAILS),
@@ -6720,6 +6723,7 @@ impl TpmMarshaller for TPMU_SYM_DETAILS {
 /// TPM2B_SENSITVE_DATA or a TPM2B_DERIVE structure. The contents of the union are
 /// determined by context. When an object is being derived, the derivation values are present.
 /// One of: u8, TPMS_DERIVE.
+#[derive(Clone)]
 pub enum TPMU_SENSITIVE_CREATE {
     create,
     derive(TPMS_DERIVE),
@@ -6801,6 +6805,7 @@ impl TpmMarshaller for TPMU_SENSITIVE_CREATE {
 
 /// Table 157 Definition of TPMU_SCHEME_KEYEDHASH Union [IN/OUT]
 /// One of: TPMS_SCHEME_HMAC, TPMS_SCHEME_XOR, TPMS_NULL_SCHEME_KEYEDHASH.
+#[derive(Clone)]
 pub enum TPMU_SCHEME_KEYEDHASH {
     hmac(TPMS_SCHEME_HMAC),
     xor(TPMS_SCHEME_XOR),
@@ -6894,6 +6899,7 @@ impl TpmMarshaller for TPMU_SCHEME_KEYEDHASH {
 /// One of: TPMS_SIG_SCHEME_RSASSA, TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA,
 /// TPMS_SIG_SCHEME_ECDAA, TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR,
 /// TPMS_SCHEME_HMAC, TPMS_SCHEME_HASH, TPMS_NULL_SIG_SCHEME.
+#[derive(Clone)]
 pub enum TPMU_SIG_SCHEME {
     rsassa(TPMS_SIG_SCHEME_RSASSA),
     rsapss(TPMS_SIG_SCHEME_RSAPSS),
@@ -7046,6 +7052,7 @@ impl TpmMarshaller for TPMU_SIG_SCHEME {
 /// Table 166 Definition of TPMU_KDF_SCHEME Union [IN/OUT]
 /// One of: TPMS_KDF_SCHEME_MGF1, TPMS_KDF_SCHEME_KDF1_SP800_56A, TPMS_KDF_SCHEME_KDF2,
 /// TPMS_KDF_SCHEME_KDF1_SP800_108, TPMS_SCHEME_HASH, TPMS_NULL_KDF_SCHEME.
+#[derive(Clone)]
 pub enum TPMU_KDF_SCHEME {
     mgf1(TPMS_KDF_SCHEME_MGF1),
     kdf1_sp800_56a(TPMS_KDF_SCHEME_KDF1_SP800_56A),
@@ -7172,6 +7179,7 @@ impl TpmMarshaller for TPMU_KDF_SCHEME {
 /// TPMS_SIG_SCHEME_RSAPSS, TPMS_SIG_SCHEME_ECDSA, TPMS_SIG_SCHEME_ECDAA,
 /// TPMS_SIG_SCHEME_SM2, TPMS_SIG_SCHEME_ECSCHNORR, TPMS_ENC_SCHEME_RSAES,
 /// TPMS_ENC_SCHEME_OAEP, TPMS_SCHEME_HASH, TPMS_NULL_ASYM_SCHEME.
+#[derive(Clone)]
 pub enum TPMU_ASYM_SCHEME {
     ecdh(TPMS_KEY_SCHEME_ECDH),
     ecmqv(TPMS_KEY_SCHEME_ECMQV),
@@ -7357,6 +7365,7 @@ impl TpmMarshaller for TPMU_ASYM_SCHEME {
 /// One of: TPMS_SIGNATURE_RSASSA, TPMS_SIGNATURE_RSAPSS, TPMS_SIGNATURE_ECDSA,
 /// TPMS_SIGNATURE_ECDAA, TPMS_SIGNATURE_SM2, TPMS_SIGNATURE_ECSCHNORR, TPMT_HA,
 /// TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
+#[derive(Clone)]
 pub enum TPMU_SIGNATURE {
     rsassa(TPMS_SIGNATURE_RSASSA),
     rsapss(TPMS_SIGNATURE_RSAPSS),
@@ -7509,6 +7518,7 @@ impl TpmMarshaller for TPMU_SIGNATURE {
 /// This is the union of all values allowed in in the unique field of a TPMT_PUBLIC.
 /// One of: TPM2B_DIGEST_KEYEDHASH, TPM2B_DIGEST_SYMCIPHER, TPM2B_PUBLIC_KEY_RSA,
 /// TPMS_ECC_POINT, TPMS_DERIVE.
+#[derive(Clone)]
 pub enum TPMU_PUBLIC_ID {
     keyedHash(TPM2B_DIGEST_KEYEDHASH),
     sym(TPM2B_DIGEST_SYMCIPHER),
@@ -7623,6 +7633,7 @@ impl TpmMarshaller for TPMU_PUBLIC_ID {
 /// a TPMT_SYM_DEF_OBJECT. See 11.1.7.
 /// One of: TPMS_KEYEDHASH_PARMS, TPMS_SYMCIPHER_PARMS, TPMS_RSA_PARMS, TPMS_ECC_PARMS,
 /// TPMS_ASYM_PARMS.
+#[derive(Clone)]
 pub enum TPMU_PUBLIC_PARMS {
     keyedHashDetail(TPMS_KEYEDHASH_PARMS),
     symDetail(TPMS_SYMCIPHER_PARMS),
@@ -7735,6 +7746,7 @@ impl TpmMarshaller for TPMU_PUBLIC_PARMS {
 /// Table 205 Definition of TPMU_SENSITIVE_COMPOSITE Union [IN/OUT]
 /// One of: TPM2B_PRIVATE_KEY_RSA, TPM2B_ECC_PARAMETER, TPM2B_SENSITIVE_DATA,
 /// TPM2B_SYM_KEY, TPM2B_PRIVATE_VENDOR_SPECIFIC.
+#[derive(Clone)]
 pub enum TPMU_SENSITIVE_COMPOSITE {
     rsa(TPM2B_PRIVATE_KEY_RSA),
     ecc(TPM2B_ECC_PARAMETER),
@@ -7845,7 +7857,7 @@ impl TpmMarshaller for TPMU_SENSITIVE_COMPOSITE {
 }
 
 /// Handle of a loaded TPM key or other object [TSS]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM_HANDLE {
     /// Handle value
     pub handle: u32,
@@ -7883,7 +7895,7 @@ impl TpmStructure for TPM_HANDLE {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.handle = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.handle = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -7906,7 +7918,7 @@ impl TpmMarshaller for TPM_HANDLE {
 /// An empty union element does not contain any data to marshal.
 /// This data structure can be used in place of any other union
 /// initialized with its own empty element.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NULL_UNION {
 }
 
@@ -7956,7 +7968,7 @@ impl TpmMarshaller for TPMS_NULL_UNION {
 /// This structure is used as a placeholder. In some cases, a union will have a selector
 /// value with no data to unmarshal when that type is selected. Rather than leave the
 /// entry empty, TPMS_EMPTY may be selected.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_EMPTY {
 }
 
@@ -8004,7 +8016,7 @@ impl TpmMarshaller for TPMS_EMPTY {
 }
 
 /// This structure is a return value for a TPM2_GetCapability() that reads the installed algorithms.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ALGORITHM_DESCRIPTION {
     /// An algorithm
     pub alg: TPM_ALG_ID,
@@ -8048,8 +8060,8 @@ impl TpmStructure for TPMS_ALGORITHM_DESCRIPTION {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.alg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.attributes = TPMA_ALGORITHM::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.alg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.attributes = TPMA_ALGORITHM::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -8071,7 +8083,7 @@ impl TpmMarshaller for TPMS_ALGORITHM_DESCRIPTION {
 /// Table 80 shows the basic hash-agile structure used in this specification. To handle
 /// hash agility, this structure uses the hashAlg parameter to indicate the algorithm used
 /// to compute the digest and, by implication, the size of the digest.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_HA {
     /// Selector of the hash contained in the digest that implies the size of the digest
     /// NOTE The leading + on the type indicates that this structure should pass an indication
@@ -8121,7 +8133,7 @@ impl TpmStructure for TPMT_HA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.digest = buf.readByteBuf(Crypto::digestSize(self.hashAlg));
         Ok(())
     }
@@ -8143,7 +8155,7 @@ impl TpmMarshaller for TPMT_HA {
 
 /// This structure is used for a sized buffer that cannot be larger than the largest
 /// digest produced by any hash algorithm implemented on the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_DIGEST {
     /// The buffer area that can be no larger than a digest
     pub buffer: Vec<u8>,
@@ -8205,7 +8217,7 @@ impl TpmMarshaller for TPM2B_DIGEST {
 
 /// This structure is used for a data buffer that is required to be no larger than the
 /// size of the Name of an object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_DATA {
     pub buffer: Vec<u8>,
 }
@@ -8278,7 +8290,7 @@ pub type TPM2B_AUTH = TPM2B_DIGEST;
 pub type TPM2B_OPERAND = TPM2B_DIGEST;
 
 /// This type is a sized buffer that can hold event data.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_EVENT {
     /// The operand
     pub buffer: Vec<u8>,
@@ -8337,7 +8349,7 @@ impl TpmMarshaller for TPM2B_EVENT {
 
 /// This type is a sized buffer that can hold a maximally sized buffer for commands that
 /// use a large data buffer such as TPM2_Hash(), TPM2_SequenceUpdate(), or TPM2_FieldUpgradeData().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_MAX_BUFFER {
     /// The operand
     pub buffer: Vec<u8>,
@@ -8396,7 +8408,7 @@ impl TpmMarshaller for TPM2B_MAX_BUFFER {
 
 /// This type is a sized buffer that can hold a maximally sized buffer for NV data
 /// commands such as TPM2_NV_Read(), TPM2_NV_Write(), and TPM2_NV_Certify().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_MAX_NV_BUFFER {
     /// The operand
     /// NOTE MAX_NV_BUFFER_SIZE is TPM-dependent
@@ -8456,7 +8468,7 @@ impl TpmMarshaller for TPM2B_MAX_NV_BUFFER {
 
 /// This TPM-dependent structure is used to provide the timeout value for an
 /// authorization. The size shall be 8 or less.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_TIMEOUT {
     /// The timeout value
     pub buffer: Vec<u8>,
@@ -8516,7 +8528,7 @@ impl TpmMarshaller for TPM2B_TIMEOUT {
 /// This structure is used for passing an initial value for a symmetric block cipher to or
 /// from the TPM. The size is set to be the largest block size of any implemented
 /// symmetric cipher implemented on the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_IV {
     /// The IV value
     pub buffer: Vec<u8>,
@@ -8574,7 +8586,7 @@ impl TpmMarshaller for TPM2B_IV {
 }
 
 /// This buffer holds a Name for any entity type.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_NAME {
     /// The Name structure
     pub name: Vec<u8>,
@@ -8632,7 +8644,7 @@ impl TpmMarshaller for TPM2B_NAME {
 }
 
 /// This structure provides a standard method of specifying a list of PCR.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_PCR_SELECT {
     /// The bit map of selected PCR
     pub pcrSelect: Vec<u8>,
@@ -8690,7 +8702,7 @@ impl TpmMarshaller for TPMS_PCR_SELECT {
 }
 
 /// Table 94 Definition of TPMS_PCR_SELECTION Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_PCR_SELECTION {
     /// The hash algorithm associated with the selection
     pub hash: TPM_ALG_ID,
@@ -8734,7 +8746,7 @@ impl TpmStructure for TPMS_PCR_SELECTION {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hash = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.pcrSelect = buf.readSizedByteBuf(1);
         Ok(())
     }
@@ -8756,7 +8768,7 @@ impl TpmMarshaller for TPMS_PCR_SELECTION {
 
 /// This ticket is produced by TPM2_Create() or TPM2_CreatePrimary(). It is used to bind
 /// the creation data to the object to which it applies. The ticket is computed by
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_TK_CREATION {
     /// The hierarchy containing name
     pub hierarchy: TPM_HANDLE,
@@ -8825,7 +8837,7 @@ impl TpmMarshaller for TPMT_TK_CREATION {
 /// This ticket is produced by TPM2_VerifySignature(). This formulation is used for
 /// multiple ticket uses. The ticket provides evidence that the TPM has validated that a
 /// digest was signed by a key with the Name of keyName. The ticket is computed by
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_TK_VERIFIED {
     /// The hierarchy containing keyName
     pub hierarchy: TPM_HANDLE,
@@ -8894,7 +8906,7 @@ impl TpmMarshaller for TPMT_TK_VERIFIED {
 /// This ticket is produced by TPM2_PolicySigned() and TPM2_PolicySecret() when the
 /// authorization has an expiration time. If nonceTPM was provided in the policy command,
 /// the ticket is computed by
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_TK_AUTH {
     /// Ticket structure tag
     pub tag: TPM_ST,
@@ -8944,7 +8956,7 @@ impl TpmStructure for TPMT_TK_AUTH {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tag = TPM_ST::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.tag = TPM_ST::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.hierarchy.initFromTpm(buf);
         self.digest = buf.readSizedByteBuf(2);
         Ok(())
@@ -8967,7 +8979,7 @@ impl TpmMarshaller for TPMT_TK_AUTH {
 
 /// This ticket is produced by TPM2_SequenceComplete() or TPM2_Hash() when the message
 /// that was digested did not start with TPM_GENERATED_VALUE. The ticket is computed by
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_TK_HASHCHECK {
     /// The hierarchy
     pub hierarchy: TPM_HANDLE,
@@ -9035,7 +9047,7 @@ impl TpmMarshaller for TPMT_TK_HASHCHECK {
 
 /// This structure is used to report the properties of an algorithm identifier. It is
 /// returned in response to a TPM2_GetCapability() with capability = TPM_CAP_ALG.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ALG_PROPERTY {
     /// An algorithm identifier
     pub alg: TPM_ALG_ID,
@@ -9079,8 +9091,8 @@ impl TpmStructure for TPMS_ALG_PROPERTY {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.alg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.algProperties = TPMA_ALGORITHM::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.alg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.algProperties = TPMA_ALGORITHM::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -9101,7 +9113,7 @@ impl TpmMarshaller for TPMS_ALG_PROPERTY {
 
 /// This structure is used to report the properties that are UINT32 values. It is returned
 /// in response to a TPM2_GetCapability().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_TAGGED_PROPERTY {
     /// A property identifier
     pub property: TPM_PT,
@@ -9145,8 +9157,8 @@ impl TpmStructure for TPMS_TAGGED_PROPERTY {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.property = TPM_PT::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.value = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.property = TPM_PT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.value = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -9166,7 +9178,7 @@ impl TpmMarshaller for TPMS_TAGGED_PROPERTY {
 }
 
 /// This structure is used in TPM2_GetCapability() to return the attributes of the PCR.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_TAGGED_PCR_SELECT {
     /// The property identifier
     pub tag: TPM_PT_PCR,
@@ -9210,7 +9222,7 @@ impl TpmStructure for TPMS_TAGGED_PCR_SELECT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tag = TPM_PT_PCR::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.tag = TPM_PT_PCR::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         self.pcrSelect = buf.readSizedByteBuf(1);
         Ok(())
     }
@@ -9232,7 +9244,7 @@ impl TpmMarshaller for TPMS_TAGGED_PCR_SELECT {
 
 /// This structure is used in TPM2_GetCapability() to return the policy associated with a
 /// permanent handle.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_TAGGED_POLICY {
     /// A permanent handle
     pub handle: TPM_HANDLE,
@@ -9297,7 +9309,7 @@ impl TpmMarshaller for TPMS_TAGGED_POLICY {
 }
 
 /// This structure is used in TPM2_GetCapability() to return the ACT data.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ACT_DATA {
     /// A permanent handle
     pub handle: TPM_HANDLE,
@@ -9348,8 +9360,8 @@ impl TpmStructure for TPMS_ACT_DATA {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.handle.initFromTpm(buf);
-        self.timeout = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.attributes = TPMA_ACT::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.timeout = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.attributes = TPMA_ACT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -9370,7 +9382,7 @@ impl TpmMarshaller for TPMS_ACT_DATA {
 
 /// A list of command codes may be input to the TPM or returned by the TPM depending on
 /// the command.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_CC {
     /// A list of command codes
     /// The maximum only applies to a command code list in a command. The response size is
@@ -9433,7 +9445,7 @@ impl TpmMarshaller for TPML_CC {
 }
 
 /// This list is only used in TPM2_GetCapability(capability = TPM_CAP_COMMANDS).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_CCA {
     /// A list of command codes attributes
     pub commandAttributes: Vec<TPMA_CC>,
@@ -9494,7 +9506,7 @@ impl TpmMarshaller for TPML_CCA {
 }
 
 /// This list is returned by TPM2_IncrementalSelfTest().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_ALG {
     /// A list of algorithm IDs
     /// The maximum only applies to an algorithm list in a command. The response size is
@@ -9555,7 +9567,7 @@ impl TpmMarshaller for TPML_ALG {
 
 /// This structure is used when the TPM returns a list of loaded handles when the
 /// capability in TPM2_GetCapability() is TPM_CAP_HANDLE.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_HANDLE {
     /// An array of handles
     pub handle: Vec<TPM_HANDLE>,
@@ -9617,7 +9629,7 @@ impl TpmMarshaller for TPML_HANDLE {
 
 /// This list is used to convey a list of digest values. This type is used in
 /// TPM2_PolicyOR() and in TPM2_PCR_Read().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_DIGEST {
     /// A list of digests
     /// For TPM2_PolicyOR(), all digests will have been computed using the digest of the
@@ -9679,7 +9691,7 @@ impl TpmMarshaller for TPML_DIGEST {
 
 /// This list is used to convey a list of digest values. This type is returned by
 /// TPM2_PCR_Event() and TPM2_EventSequenceComplete() and is an input for TPM2_PCR_Extend().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_DIGEST_VALUES {
     /// A list of tagged digests
     pub digests: Vec<TPMT_HA>,
@@ -9738,7 +9750,7 @@ impl TpmMarshaller for TPML_DIGEST_VALUES {
 
 /// This list is used to indicate the PCR that are included in a selection when more than
 /// one PCR value may be selected.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_PCR_SELECTION {
     /// List of selections
     pub pcrSelections: Vec<TPMS_PCR_SELECTION>,
@@ -9800,7 +9812,7 @@ impl TpmMarshaller for TPML_PCR_SELECTION {
 
 /// This list is used to report on a list of algorithm attributes. It is returned in a
 /// TPM2_GetCapability().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_ALG_PROPERTY {
     /// List of properties
     pub algProperties: Vec<TPMS_ALG_PROPERTY>,
@@ -9862,7 +9874,7 @@ impl TpmMarshaller for TPML_ALG_PROPERTY {
 
 /// This list is used to report on a list of properties that are TPMS_TAGGED_PROPERTY
 /// values. It is returned by a TPM2_GetCapability().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_TAGGED_TPM_PROPERTY {
     /// An array of tagged properties
     pub tpmProperty: Vec<TPMS_TAGGED_PROPERTY>,
@@ -9924,7 +9936,7 @@ impl TpmMarshaller for TPML_TAGGED_TPM_PROPERTY {
 
 /// This list is used to report on a list of properties that are TPMS_PCR_SELECT values.
 /// It is returned by a TPM2_GetCapability().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_TAGGED_PCR_PROPERTY {
     /// A tagged PCR selection
     pub pcrProperty: Vec<TPMS_TAGGED_PCR_SELECT>,
@@ -9986,7 +9998,7 @@ impl TpmMarshaller for TPML_TAGGED_PCR_PROPERTY {
 
 /// This list is used to report the ECC curve ID values supported by the TPM. It is
 /// returned by a TPM2_GetCapability().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_ECC_CURVE {
     /// Array of ECC curve identifiers
     pub eccCurves: Vec<TPM_ECC_CURVE>,
@@ -10049,7 +10061,7 @@ impl TpmMarshaller for TPML_ECC_CURVE {
 /// This list is used to report the authorization policy values for permanent handles.
 /// This is list may be generated by TPM2_GetCapabiltiy(). A permanent handle that cannot
 /// have a policy is not included in the list.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_TAGGED_POLICY {
     /// Array of tagged policies
     pub policies: Vec<TPMS_TAGGED_POLICY>,
@@ -10111,7 +10123,7 @@ impl TpmMarshaller for TPML_TAGGED_POLICY {
 
 /// This list is used to report the timeout and state for the ACT. This list may be
 /// generated by TPM2_GetCapabilty(). Only implemented ACT are present in the list
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_ACT_DATA {
     /// Array of ACT data
     pub actData: Vec<TPMS_ACT_DATA>,
@@ -10172,7 +10184,7 @@ impl TpmMarshaller for TPML_ACT_DATA {
 }
 
 /// This data area is returned in response to a TPM2_GetCapability().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_CAPABILITY_DATA {
     /// The capability
 
@@ -10217,7 +10229,7 @@ impl TpmStructure for TPMS_CAPABILITY_DATA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#capability: TPM_CAP = TPM_CAP::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#capability: TPM_CAP = TPM_CAP::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         self.data = TPMU_CAPABILITIES::create(r#capability)?;
         self.data.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -10239,7 +10251,7 @@ impl TpmMarshaller for TPMS_CAPABILITY_DATA {
 }
 
 /// This structure is used in each of the attestation commands.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_CLOCK_INFO {
     /// Time value in milliseconds that advances while the TPM is powered
     /// NOTE The interpretation of the time-origin (clock=0) is out of the scope of this
@@ -10302,10 +10314,10 @@ impl TpmStructure for TPMS_CLOCK_INFO {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.clock = u64::try_from(buf.readInt64()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.resetCount = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.restartCount = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.safe = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.clock = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.resetCount = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.restartCount = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.safe = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -10325,7 +10337,7 @@ impl TpmMarshaller for TPMS_CLOCK_INFO {
 }
 
 /// This structure is used in, e.g., the TPM2_GetTime() attestation and TPM2_ReadClock().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_TIME_INFO {
     /// Time in milliseconds since the TIme circuit was last reset
     /// This structure element is used to report on the TPM's Time value.
@@ -10370,7 +10382,7 @@ impl TpmStructure for TPMS_TIME_INFO {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.time = u64::try_from(buf.readInt64()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.time = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
         self.clockInfo.initFromTpm(buf);
         Ok(())
     }
@@ -10391,7 +10403,7 @@ impl TpmMarshaller for TPMS_TIME_INFO {
 }
 
 /// This structure is used when the TPM performs TPM2_GetTime.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_TIME_ATTEST_INFO {
     /// The Time, Clock, resetCount, restartCount, and Safe indicator
     pub time: TPMS_TIME_INFO,
@@ -10439,7 +10451,7 @@ impl TpmStructure for TPMS_TIME_ATTEST_INFO {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.time.initFromTpm(buf);
-        self.firmwareVersion = u64::try_from(buf.readInt64()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.firmwareVersion = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -10459,7 +10471,7 @@ impl TpmMarshaller for TPMS_TIME_ATTEST_INFO {
 }
 
 /// This is the attested data for TPM2_Certify().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_CERTIFY_INFO {
     /// Name of the certified object
     pub name: Vec<u8>,
@@ -10527,7 +10539,7 @@ impl TpmMarshaller for TPMS_CERTIFY_INFO {
 }
 
 /// This is the attested data for TPM2_Quote().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_QUOTE_INFO {
     /// Information on algID, PCR selected and digest
     pub pcrSelect: Vec<TPMS_PCR_SELECTION>,
@@ -10595,7 +10607,7 @@ impl TpmMarshaller for TPMS_QUOTE_INFO {
 }
 
 /// This is the attested data for TPM2_GetCommandAuditDigest().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_COMMAND_AUDIT_INFO {
     /// The monotonic audit counter
     pub auditCounter: u64,
@@ -10654,8 +10666,8 @@ impl TpmStructure for TPMS_COMMAND_AUDIT_INFO {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.auditCounter = u64::try_from(buf.readInt64()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.digestAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.auditCounter = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.digestAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.auditDigest = buf.readSizedByteBuf(2);
         self.commandDigest = buf.readSizedByteBuf(2);
         Ok(())
@@ -10677,7 +10689,7 @@ impl TpmMarshaller for TPMS_COMMAND_AUDIT_INFO {
 }
 
 /// This is the attested data for TPM2_GetSessionAuditDigest().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SESSION_AUDIT_INFO {
     /// Current exclusive status of the session
     /// TRUE if all of the commands recorded in the sessionDigest were executed without any
@@ -10726,7 +10738,7 @@ impl TpmStructure for TPMS_SESSION_AUDIT_INFO {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.exclusiveSession = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.exclusiveSession = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         self.sessionDigest = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -10747,7 +10759,7 @@ impl TpmMarshaller for TPMS_SESSION_AUDIT_INFO {
 }
 
 /// This is the attested data for TPM2_CertifyCreation().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_CREATION_INFO {
     /// Name of the object
     pub objectName: Vec<u8>,
@@ -10816,7 +10828,7 @@ impl TpmMarshaller for TPMS_CREATION_INFO {
 
 /// This structure contains the Name and contents of the selected NV Index that is
 /// certified by TPM2_NV_Certify().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NV_CERTIFY_INFO {
     /// Name of the NV Index
     pub indexName: Vec<u8>,
@@ -10870,7 +10882,7 @@ impl TpmStructure for TPMS_NV_CERTIFY_INFO {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.indexName = buf.readSizedByteBuf(2);
-        self.offset = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.nvContents = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -10892,7 +10904,7 @@ impl TpmMarshaller for TPMS_NV_CERTIFY_INFO {
 
 /// This structure contains the Name and hash of the contents of the selected NV Index
 /// that is certified by TPM2_NV_Certify(). The data is hashed using hash of the signing scheme.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NV_DIGEST_CERTIFY_INFO {
     /// Name of the NV Index
     pub indexName: Vec<u8>,
@@ -10961,7 +10973,7 @@ impl TpmMarshaller for TPMS_NV_DIGEST_CERTIFY_INFO {
 
 /// This structure is used on each TPM-generated signed structure. The signature is over
 /// this structure.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ATTEST {
     /// The indication that this structure was created by a TPM (always TPM_GENERATED_VALUE)
     pub magic: TPM_GENERATED,
@@ -11038,12 +11050,12 @@ impl TpmStructure for TPMS_ATTEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.magic = TPM_GENERATED::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#type: TPM_ST = TPM_ST::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.magic = TPM_GENERATED::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#type: TPM_ST = TPM_ST::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.qualifiedSigner = buf.readSizedByteBuf(2);
         self.extraData = buf.readSizedByteBuf(2);
         self.clockInfo.initFromTpm(buf);
-        self.firmwareVersion = u64::try_from(buf.readInt64()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.firmwareVersion = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
         self.attested = TPMU_ATTEST::create(r#type)?;
         self.attested.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -11066,7 +11078,7 @@ impl TpmMarshaller for TPMS_ATTEST {
 
 /// This sized buffer to contain the signed structure. The attestationData is the signed
 /// portion of the structure. The size parameter is not signed.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_ATTEST {
     /// The signed structure
     pub attestationData: TPMS_ATTEST,
@@ -11124,7 +11136,7 @@ impl TpmMarshaller for TPM2B_ATTEST {
 }
 
 /// This is the format used for each of the authorizations in the session area of a command.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_AUTH_COMMAND {
     /// The session handle
     pub sessionHandle: TPM_HANDLE,
@@ -11182,7 +11194,7 @@ impl TpmStructure for TPMS_AUTH_COMMAND {
         // Deserialize fields
         self.sessionHandle.initFromTpm(buf);
         self.nonce = buf.readSizedByteBuf(2);
-        self.sessionAttributes = TPMA_SESSION::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sessionAttributes = TPMA_SESSION::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         self.hmac = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -11205,7 +11217,7 @@ impl TpmMarshaller for TPMS_AUTH_COMMAND {
 /// This is the format for each of the authorizations in the session area of the response.
 /// If the TPM returns TPM_RC_SUCCESS, then the session area of the response contains the
 /// same number of authorizations as the command and the authorizations are in the same order.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_AUTH_RESPONSE {
     /// The session nonce, may be the Empty Buffer
     pub nonce: Vec<u8>,
@@ -11256,7 +11268,7 @@ impl TpmStructure for TPMS_AUTH_RESPONSE {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.nonce = buf.readSizedByteBuf(2);
-        self.sessionAttributes = TPMA_SESSION::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sessionAttributes = TPMA_SESSION::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         self.hmac = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -11278,7 +11290,7 @@ impl TpmMarshaller for TPMS_AUTH_RESPONSE {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_TDES for the union TPMU_SYM_DETAILS
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_TDES_SYM_DETAILS {
 }
 
@@ -11327,7 +11339,7 @@ impl TpmMarshaller for TPMS_TDES_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_AES for the union TPMU_SYM_DETAILS
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_AES_SYM_DETAILS {
 }
 
@@ -11376,7 +11388,7 @@ impl TpmMarshaller for TPMS_AES_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_SM4 for the union TPMU_SYM_DETAILS
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SM4_SYM_DETAILS {
 }
 
@@ -11425,7 +11437,7 @@ impl TpmMarshaller for TPMS_SM4_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_CAMELLIA for the union TPMU_SYM_DETAILS
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_CAMELLIA_SYM_DETAILS {
 }
 
@@ -11474,7 +11486,7 @@ impl TpmMarshaller for TPMS_CAMELLIA_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_ANY for the union TPMU_SYM_DETAILS
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ANY_SYM_DETAILS {
 }
 
@@ -11523,7 +11535,7 @@ impl TpmMarshaller for TPMS_ANY_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_XOR for the union TPMU_SYM_DETAILS
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_XOR_SYM_DETAILS {
 }
 
@@ -11572,7 +11584,7 @@ impl TpmMarshaller for TPMS_XOR_SYM_DETAILS {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SYM_DETAILS
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NULL_SYM_DETAILS {
 }
 
@@ -11621,7 +11633,7 @@ impl TpmMarshaller for TPMS_NULL_SYM_DETAILS {
 
 /// The TPMT_SYM_DEF structure is used to select an algorithm to be used for parameter
 /// encryption in those cases when different symmetric algorithms may be selected.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_SYM_DEF {
     /// Indicates a symmetric algorithm
     pub algorithm: TPM_ALG_ID,
@@ -11672,10 +11684,10 @@ impl TpmStructure for TPMT_SYM_DEF {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.algorithm = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.algorithm = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         if (self.algorithm == TPM_ALG_ID::NULL) { return Ok(()) };
-        self.keyBits = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.mode = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.keyBits = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.mode = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -11697,7 +11709,7 @@ impl TpmMarshaller for TPMT_SYM_DEF {
 /// This structure is used when different symmetric block cipher (not XOR) algorithms may
 /// be selected. If the Object can be an ordinary parent (not a derivation parent), this
 /// must be the first field in the Object's parameter (see 12.2.3.7) field.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_SYM_DEF_OBJECT {
     /// Selects a symmetric block cipher
     /// When used in the parameter area of a parent object, this shall be a supported block
@@ -11751,10 +11763,10 @@ impl TpmStructure for TPMT_SYM_DEF_OBJECT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.algorithm = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.algorithm = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         if (self.algorithm == TPM_ALG_ID::NULL) { return Ok(()) };
-        self.keyBits = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.mode = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.keyBits = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.mode = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -11774,7 +11786,7 @@ impl TpmMarshaller for TPMT_SYM_DEF_OBJECT {
 }
 
 /// This structure is used to hold a symmetric key in the sensitive area of an asymmetric object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_SYM_KEY {
     /// The key
     pub buffer: Vec<u8>,
@@ -11835,7 +11847,7 @@ impl TpmMarshaller for TPM2B_SYM_KEY {
 }
 
 /// This structure contains the parameters for a symmetric block cipher object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SYMCIPHER_PARMS {
     /// A symmetric block cipher
     pub sym: TPMT_SYM_DEF_OBJECT,
@@ -11898,7 +11910,7 @@ impl TpmMarshaller for TPMS_SYMCIPHER_PARMS {
 /// This buffer holds a label or context value. For interoperability and backwards
 /// compatibility, LABEL_MAX_BUFFER is the minimum of the largest digest on the device and
 /// the largest ECC parameter (MAX_ECC_KEY_BYTES) but no more than 32 bytes.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_LABEL {
     /// Symmetric data for a created object or the label and context for a derived object
     pub buffer: Vec<u8>,
@@ -11958,7 +11970,7 @@ impl TpmMarshaller for TPM2B_LABEL {
 /// This structure contains the label and context fields for a derived object. These
 /// values are used in the derivation KDF. The values in the unique field of inPublic area
 /// template take precedence over the values in the inSensitive parameter.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_DERIVE {
     pub label: Vec<u8>,
     pub context: Vec<u8>,
@@ -12023,7 +12035,7 @@ impl TpmMarshaller for TPMS_DERIVE {
 }
 
 /// Table 147 Definition of TPM2B_DERIVE Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_DERIVE {
     /// Symmetric data for a created object or the label and context for a derived object
     pub buffer: TPMS_DERIVE,
@@ -12081,7 +12093,7 @@ impl TpmMarshaller for TPM2B_DERIVE {
 }
 
 /// This buffer wraps the TPMU_SENSITIVE_CREATE structure.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_SENSITIVE_DATA {
     /// Symmetric data for a created object or the label and context for a derived object
     pub buffer: Vec<u8>,
@@ -12143,7 +12155,7 @@ impl TpmMarshaller for TPM2B_SENSITIVE_DATA {
 
 /// This structure defines the values to be placed in the sensitive area of a created
 /// object. This structure is only used within a TPM2B_SENSITIVE_CREATE structure.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SENSITIVE_CREATE {
     /// The USER auth secret value
     pub userAuth: Vec<u8>,
@@ -12210,7 +12222,7 @@ impl TpmMarshaller for TPMS_SENSITIVE_CREATE {
 /// This structure contains the sensitive creation data in a sized buffer. This structure
 /// is defined so that both the userAuth and data values of the TPMS_SENSITIVE_CREATE may
 /// be passed as a single parameter for parameter encryption purposes.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_SENSITIVE_CREATE {
     /// Data to be sealed or a symmetric key value.
     pub sensitive: TPMS_SENSITIVE_CREATE,
@@ -12269,7 +12281,7 @@ impl TpmMarshaller for TPM2B_SENSITIVE_CREATE {
 
 /// This structure is the scheme data for schemes that only require a hash to complete
 /// their definition.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SCHEME_HASH {
     /// The hash algorithm used to digest the message
     pub hashAlg: TPM_ALG_ID,
@@ -12310,7 +12322,7 @@ impl TpmStructure for TPMS_SCHEME_HASH {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -12330,7 +12342,7 @@ impl TpmMarshaller for TPMS_SCHEME_HASH {
 }
 
 /// This definition is for split signing schemes that require a commit count.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SCHEME_ECDAA {
     /// The hash algorithm used to digest the message
     pub hashAlg: TPM_ALG_ID,
@@ -12377,8 +12389,8 @@ impl TpmStructure for TPMS_SCHEME_ECDAA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.count = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.count = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -12398,7 +12410,7 @@ impl TpmMarshaller for TPMS_SCHEME_ECDAA {
 }
 
 /// Table 155 Definition of Types for HMAC_SIG_SCHEME
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SCHEME_HMAC {
 }
 
@@ -12446,7 +12458,7 @@ impl TpmMarshaller for TPMS_SCHEME_HMAC {
 }
 
 /// This structure is for the XOR encryption scheme.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SCHEME_XOR {
     /// The hash algorithm used to digest the message
     pub hashAlg: TPM_ALG_ID,
@@ -12493,8 +12505,8 @@ impl TpmStructure for TPMS_SCHEME_XOR {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.kdf = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.kdf = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -12515,7 +12527,7 @@ impl TpmMarshaller for TPMS_SCHEME_XOR {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SCHEME_KEYEDHASH
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NULL_SCHEME_KEYEDHASH {
 }
 
@@ -12563,7 +12575,7 @@ impl TpmMarshaller for TPMS_NULL_SCHEME_KEYEDHASH {
 }
 
 /// This structure is used for a hash signing object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_KEYEDHASH_SCHEME {
     /// Selects the scheme
 
@@ -12606,7 +12618,7 @@ impl TpmStructure for TPMT_KEYEDHASH_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.details = TPMU_SCHEME_KEYEDHASH::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -12628,7 +12640,7 @@ impl TpmMarshaller for TPMT_KEYEDHASH_SCHEME {
 }
 
 /// These are the RSA schemes that only need a hash algorithm as a scheme parameter.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIG_SCHEME_RSASSA {
 }
 
@@ -12676,7 +12688,7 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_RSASSA {
 }
 
 /// These are the RSA schemes that only need a hash algorithm as a scheme parameter.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIG_SCHEME_RSAPSS {
 }
 
@@ -12726,7 +12738,7 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_RSAPSS {
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
 /// definition and can be typed as TPMS_SCHEME_HASH. Anonymous algorithms also require a
 /// count value so they are typed to be TPMS_SCHEME_ECDAA.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIG_SCHEME_ECDSA {
 }
 
@@ -12776,7 +12788,7 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_ECDSA {
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
 /// definition and can be typed as TPMS_SCHEME_HASH. Anonymous algorithms also require a
 /// count value so they are typed to be TPMS_SCHEME_ECDAA.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIG_SCHEME_SM2 {
 }
 
@@ -12826,7 +12838,7 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_SM2 {
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
 /// definition and can be typed as TPMS_SCHEME_HASH. Anonymous algorithms also require a
 /// count value so they are typed to be TPMS_SCHEME_ECDAA.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIG_SCHEME_ECSCHNORR {
 }
 
@@ -12876,7 +12888,7 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_ECSCHNORR {
 /// Most of the ECC signature schemes only require a hash algorithm to complete the
 /// definition and can be typed as TPMS_SCHEME_HASH. Anonymous algorithms also require a
 /// count value so they are typed to be TPMS_SCHEME_ECDAA.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIG_SCHEME_ECDAA {
 }
 
@@ -12925,7 +12937,7 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_ECDAA {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SIG_SCHEME
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NULL_SIG_SCHEME {
 }
 
@@ -12973,7 +12985,7 @@ impl TpmMarshaller for TPMS_NULL_SIG_SCHEME {
 }
 
 /// Table 162 Definition of TPMT_SIG_SCHEME Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_SIG_SCHEME {
     /// Scheme selector
 
@@ -13018,7 +13030,7 @@ impl TpmStructure for TPMT_SIG_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.details = TPMU_SIG_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13040,7 +13052,7 @@ impl TpmMarshaller for TPMT_SIG_SCHEME {
 }
 
 /// These are the RSA encryption schemes that only need a hash algorithm as a controlling parameter.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ENC_SCHEME_OAEP {
 }
 
@@ -13088,7 +13100,7 @@ impl TpmMarshaller for TPMS_ENC_SCHEME_OAEP {
 }
 
 /// These are the RSA encryption schemes that only need a hash algorithm as a controlling parameter.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ENC_SCHEME_RSAES {
 }
 
@@ -13136,7 +13148,7 @@ impl TpmMarshaller for TPMS_ENC_SCHEME_RSAES {
 }
 
 /// These are the ECC schemes that only need a hash algorithm as a controlling parameter.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_KEY_SCHEME_ECDH {
 }
 
@@ -13184,7 +13196,7 @@ impl TpmMarshaller for TPMS_KEY_SCHEME_ECDH {
 }
 
 /// These are the ECC schemes that only need a hash algorithm as a controlling parameter.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_KEY_SCHEME_ECMQV {
 }
 
@@ -13234,7 +13246,7 @@ impl TpmMarshaller for TPMS_KEY_SCHEME_ECMQV {
 /// These structures are used to define the key derivation for symmetric secret sharing
 /// using asymmetric methods. A secret sharing scheme is required in any asymmetric key
 /// with the decrypt attribute SET.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_KDF_SCHEME_MGF1 {
 }
 
@@ -13284,7 +13296,7 @@ impl TpmMarshaller for TPMS_KDF_SCHEME_MGF1 {
 /// These structures are used to define the key derivation for symmetric secret sharing
 /// using asymmetric methods. A secret sharing scheme is required in any asymmetric key
 /// with the decrypt attribute SET.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_KDF_SCHEME_KDF1_SP800_56A {
 }
 
@@ -13334,7 +13346,7 @@ impl TpmMarshaller for TPMS_KDF_SCHEME_KDF1_SP800_56A {
 /// These structures are used to define the key derivation for symmetric secret sharing
 /// using asymmetric methods. A secret sharing scheme is required in any asymmetric key
 /// with the decrypt attribute SET.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_KDF_SCHEME_KDF2 {
 }
 
@@ -13384,7 +13396,7 @@ impl TpmMarshaller for TPMS_KDF_SCHEME_KDF2 {
 /// These structures are used to define the key derivation for symmetric secret sharing
 /// using asymmetric methods. A secret sharing scheme is required in any asymmetric key
 /// with the decrypt attribute SET.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_KDF_SCHEME_KDF1_SP800_108 {
 }
 
@@ -13433,7 +13445,7 @@ impl TpmMarshaller for TPMS_KDF_SCHEME_KDF1_SP800_108 {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_KDF_SCHEME
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NULL_KDF_SCHEME {
 }
 
@@ -13481,7 +13493,7 @@ impl TpmMarshaller for TPMS_NULL_KDF_SCHEME {
 }
 
 /// Table 167 Definition of TPMT_KDF_SCHEME Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_KDF_SCHEME {
     /// Scheme selector
 
@@ -13525,7 +13537,7 @@ impl TpmStructure for TPMT_KDF_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.details = TPMU_KDF_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13548,7 +13560,7 @@ impl TpmMarshaller for TPMT_KDF_SCHEME {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_ASYM_SCHEME
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NULL_ASYM_SCHEME {
 }
 
@@ -13598,7 +13610,7 @@ impl TpmMarshaller for TPMS_NULL_ASYM_SCHEME {
 /// This structure is defined to allow overlay of all of the schemes for any asymmetric
 /// object. This structure is not sent on the interface. It is defined so that common
 /// functions may operate on any similar scheme structure.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_ASYM_SCHEME {
     /// Scheme selector
 
@@ -13644,7 +13656,7 @@ impl TpmStructure for TPMT_ASYM_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.details = TPMU_ASYM_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13666,7 +13678,7 @@ impl TpmMarshaller for TPMT_ASYM_SCHEME {
 }
 
 /// Table 172 Definition of {RSA} TPMT_RSA_SCHEME Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_RSA_SCHEME {
     /// Scheme selector
 
@@ -13712,7 +13724,7 @@ impl TpmStructure for TPMT_RSA_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.details = TPMU_ASYM_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13734,7 +13746,7 @@ impl TpmMarshaller for TPMT_RSA_SCHEME {
 }
 
 /// Table 174 Definition of {RSA} TPMT_RSA_DECRYPT Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_RSA_DECRYPT {
     /// Scheme selector
 
@@ -13780,7 +13792,7 @@ impl TpmStructure for TPMT_RSA_DECRYPT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.details = TPMU_ASYM_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13802,7 +13814,7 @@ impl TpmMarshaller for TPMT_RSA_DECRYPT {
 }
 
 /// This sized buffer holds the largest RSA public key supported by the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_PUBLIC_KEY_RSA {
     /// Value
     pub buffer: Vec<u8>,
@@ -13863,7 +13875,7 @@ impl TpmMarshaller for TPM2B_PUBLIC_KEY_RSA {
 }
 
 /// This sized buffer holds the largest RSA prime number supported by the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_PRIVATE_KEY_RSA {
     pub buffer: Vec<u8>,
 }
@@ -13923,7 +13935,7 @@ impl TpmMarshaller for TPM2B_PRIVATE_KEY_RSA {
 }
 
 /// This sized buffer holds the largest ECC parameter (coordinate) supported by the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_ECC_PARAMETER {
     /// The parameter data
     pub buffer: Vec<u8>,
@@ -13984,7 +13996,7 @@ impl TpmMarshaller for TPM2B_ECC_PARAMETER {
 }
 
 /// This structure holds two ECC coordinates that, together, make up an ECC point.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ECC_POINT {
     /// X coordinate
     pub x: Vec<u8>,
@@ -14053,7 +14065,7 @@ impl TpmMarshaller for TPMS_ECC_POINT {
 
 /// This structure is defined to allow a point to be a single sized parameter so that it
 /// may be encrypted.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_ECC_POINT {
     /// Coordinates
     pub point: TPMS_ECC_POINT,
@@ -14111,7 +14123,7 @@ impl TpmMarshaller for TPM2B_ECC_POINT {
 }
 
 /// Table 183 Definition of (TPMT_SIG_SCHEME) {ECC} TPMT_ECC_SCHEME Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_ECC_SCHEME {
     /// Scheme selector
 
@@ -14157,7 +14169,7 @@ impl TpmStructure for TPMT_ECC_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.details = TPMU_ASYM_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -14180,7 +14192,7 @@ impl TpmMarshaller for TPMT_ECC_SCHEME {
 
 /// This structure is used to report on the curve parameters of an ECC curve. It is
 /// returned by TPM2_ECC_Parameters().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ALGORITHM_DETAIL_ECC {
     /// Identifier for the curve
     pub curveID: TPM_ECC_CURVE,
@@ -14291,12 +14303,12 @@ impl TpmStructure for TPMS_ALGORITHM_DETAIL_ECC {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.keySize = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#kdfScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.keySize = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#kdfScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.kdf = TPMU_KDF_SCHEME::create(r#kdfScheme)?;
         self.kdf.as_mut().unwrap().initFromTpm(buf);
-        let r#signScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.sign = TPMU_ASYM_SCHEME::create(r#signScheme)?;
         self.sign.as_mut().unwrap().initFromTpm(buf);
         self.p = buf.readSizedByteBuf(2);
@@ -14325,7 +14337,7 @@ impl TpmMarshaller for TPMS_ALGORITHM_DETAIL_ECC {
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIGNATURE_RSA {
     /// The hash algorithm used to digest the message
     /// TPM_ALG_NULL is not allowed.
@@ -14373,7 +14385,7 @@ impl TpmStructure for TPMS_SIGNATURE_RSA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hash = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.sig = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -14394,7 +14406,7 @@ impl TpmMarshaller for TPMS_SIGNATURE_RSA {
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIGNATURE_RSASSA {
 }
 
@@ -14442,7 +14454,7 @@ impl TpmMarshaller for TPMS_SIGNATURE_RSASSA {
 }
 
 /// Table 185 Definition of {RSA} TPMS_SIGNATURE_RSA Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIGNATURE_RSAPSS {
 }
 
@@ -14490,7 +14502,7 @@ impl TpmMarshaller for TPMS_SIGNATURE_RSAPSS {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIGNATURE_ECC {
     /// The hash algorithm used in the signature process
     /// TPM_ALG_NULL is not allowed.
@@ -14540,7 +14552,7 @@ impl TpmStructure for TPMS_SIGNATURE_ECC {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hash = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signatureR = buf.readSizedByteBuf(2);
         self.signatureS = buf.readSizedByteBuf(2);
         Ok(())
@@ -14562,7 +14574,7 @@ impl TpmMarshaller for TPMS_SIGNATURE_ECC {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIGNATURE_ECDSA {
 }
 
@@ -14610,7 +14622,7 @@ impl TpmMarshaller for TPMS_SIGNATURE_ECDSA {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIGNATURE_ECDAA {
 }
 
@@ -14658,7 +14670,7 @@ impl TpmMarshaller for TPMS_SIGNATURE_ECDAA {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIGNATURE_SM2 {
 }
 
@@ -14706,7 +14718,7 @@ impl TpmMarshaller for TPMS_SIGNATURE_SM2 {
 }
 
 /// Table 187 Definition of {ECC} TPMS_SIGNATURE_ECC Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_SIGNATURE_ECSCHNORR {
 }
 
@@ -14755,7 +14767,7 @@ impl TpmMarshaller for TPMS_SIGNATURE_ECSCHNORR {
 
 /// Custom data structure representing an empty element (i.e. the one with 
 /// no data to marshal) for selector algorithm TPM_ALG_NULL for the union TPMU_SIGNATURE
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NULL_SIGNATURE {
 }
 
@@ -14807,7 +14819,7 @@ impl TpmMarshaller for TPMS_NULL_SIGNATURE {
 /// signature. This structure is output from commands such as the attestation commands and
 /// TPM2_Sign, and is an input to commands such as TPM2_VerifySignature(),
 /// TPM2_PolicySigned(), and TPM2_FieldUpgradeStart().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_SIGNATURE {
     /// Selector of the algorithm used to construct the signature
 
@@ -14852,7 +14864,7 @@ impl TpmStructure for TPMT_SIGNATURE {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#sigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#sigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#sigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -14874,7 +14886,7 @@ impl TpmMarshaller for TPMT_SIGNATURE {
 }
 
 /// Table 192 Definition of TPM2B_ENCRYPTED_SECRET Structure
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_ENCRYPTED_SECRET {
     /// Secret
     pub secret: Vec<u8>,
@@ -14933,7 +14945,7 @@ impl TpmMarshaller for TPM2B_ENCRYPTED_SECRET {
 
 /// This structure describes the parameters that would appear in the public area of a
 /// KEYEDHASH object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_KEYEDHASH_PARMS {
     /// Selects the scheme
 
@@ -14981,7 +14993,7 @@ impl TpmStructure for TPMS_KEYEDHASH_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.scheme = TPMU_SCHEME_KEYEDHASH::create(r#schemeScheme)?;
         self.scheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -15005,7 +15017,7 @@ impl TpmMarshaller for TPMS_KEYEDHASH_PARMS {
 /// This structure contains the common public area parameters for an asymmetric key. The
 /// first two parameters of the parameter definition structures of an asymmetric key shall
 /// have the same two first components.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ASYM_PARMS {
     /// The companion symmetric algorithm for a restricted decryption key and shall be set to
     /// a supported symmetric algorithm
@@ -15065,7 +15077,7 @@ impl TpmStructure for TPMS_ASYM_PARMS {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.symmetric.initFromTpm(buf);
-        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.scheme = TPMU_ASYM_SCHEME::create(r#schemeScheme)?;
         self.scheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -15091,7 +15103,7 @@ impl TpmMarshaller for TPMS_ASYM_PARMS {
 /// default of 216 + 1. Support for other values is optional. Use of other exponents in
 /// duplicated keys is not recommended because the resulting keys would not be
 /// interoperable with other TPMs.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_RSA_PARMS {
     /// For a restricted decryption key, shall be set to a supported symmetric algorithm, key
     /// size, and mode.
@@ -15168,11 +15180,11 @@ impl TpmStructure for TPMS_RSA_PARMS {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.symmetric.initFromTpm(buf);
-        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.scheme = TPMU_ASYM_SCHEME::create(r#schemeScheme)?;
         self.scheme.as_mut().unwrap().initFromTpm(buf);
-        self.keyBits = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.exponent = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.keyBits = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.exponent = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -15192,7 +15204,7 @@ impl TpmMarshaller for TPMS_RSA_PARMS {
 }
 
 /// This structure contains the parameters for prime modulus ECC.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ECC_PARMS {
     /// For a restricted decryption key, shall be set to a supported symmetric algorithm, key
     /// size. and mode.
@@ -15275,11 +15287,11 @@ impl TpmStructure for TPMS_ECC_PARMS {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.symmetric.initFromTpm(buf);
-        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.scheme = TPMU_ASYM_SCHEME::create(r#schemeScheme)?;
         self.scheme.as_mut().unwrap().initFromTpm(buf);
-        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#kdfScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#kdfScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.kdf = TPMU_KDF_SCHEME::create(r#kdfScheme)?;
         self.kdf.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -15302,7 +15314,7 @@ impl TpmMarshaller for TPMS_ECC_PARMS {
 
 /// This structure is used in TPM2_TestParms() to validate that a set of algorithm
 /// parameters is supported by the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_PUBLIC_PARMS {
     /// The algorithm to be tested
 
@@ -15346,7 +15358,7 @@ impl TpmStructure for TPMT_PUBLIC_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#type: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#type: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.parameters = TPMU_PUBLIC_PARMS::create(r#type)?;
         self.parameters.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -15369,7 +15381,7 @@ impl TpmMarshaller for TPMT_PUBLIC_PARMS {
 
 /// Table 201 defines the public area structure. The Name of the object is nameAlg
 /// concatenated with the digest of this structure using nameAlg.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_PUBLIC {
     /// Algorithm associated with this object
 
@@ -15444,9 +15456,9 @@ impl TpmStructure for TPMT_PUBLIC {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#type: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.nameAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.objectAttributes = TPMA_OBJECT::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#type: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.nameAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.objectAttributes = TPMA_OBJECT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         self.authPolicy = buf.readSizedByteBuf(2);
         self.parameters = TPMU_PUBLIC_PARMS::create(r#type)?;
         self.parameters.as_mut().unwrap().initFromTpm(buf);
@@ -15472,7 +15484,7 @@ impl TpmMarshaller for TPMT_PUBLIC {
 
 /// This sized buffer is used to embed a TPMT_PUBLIC in a load command and in any response
 /// that returns a public area.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_PUBLIC {
     /// The public area
     /// NOTE The + indicates that the caller may specify that use of TPM_ALG_NULL is allowed
@@ -15532,7 +15544,7 @@ impl TpmMarshaller for TPM2B_PUBLIC {
 }
 
 /// This sized buffer is used to embed a TPMT_TEMPLATE for TPM2_CreateLoaded().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_TEMPLATE {
     /// The public area
     pub buffer: Vec<u8>,
@@ -15595,7 +15607,7 @@ impl TpmMarshaller for TPM2B_TEMPLATE {
 /// values will be computed so that computations using the private key will not need to
 /// start with just one prime factor. This structure can be used to store the results of
 /// such vendor-specific calculations.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_PRIVATE_VENDOR_SPECIFIC {
     pub buffer: Vec<u8>,
 }
@@ -15656,7 +15668,7 @@ impl TpmMarshaller for TPM2B_PRIVATE_VENDOR_SPECIFIC {
 
 /// AuthValue shall not be larger than the size of the digest produced by the nameAlg of
 /// the object. seedValue shall be the size of the digest produced by the nameAlg of the object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMT_SENSITIVE {
     /// Identifier for the sensitive area
     /// This shall be the same as the type parameter of the associated public area.
@@ -15714,7 +15726,7 @@ impl TpmStructure for TPMT_SENSITIVE {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#sensitiveType: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#sensitiveType: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.authValue = buf.readSizedByteBuf(2);
         self.seedValue = buf.readSizedByteBuf(2);
         self.sensitive = TPMU_SENSITIVE_COMPOSITE::create(r#sensitiveType)?;
@@ -15739,7 +15751,7 @@ impl TpmMarshaller for TPMT_SENSITIVE {
 
 /// The TPM2B_SENSITIVE structure is used as a parameter in TPM2_LoadExternal(). It is an
 /// unencrypted sensitive area but it may be encrypted using parameter encryption.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_SENSITIVE {
     /// An unencrypted sensitive area
     pub sensitiveArea: TPMT_SENSITIVE,
@@ -15798,7 +15810,7 @@ impl TpmMarshaller for TPM2B_SENSITIVE {
 
 /// This structure is defined to size the contents of a TPM2B_PRIVATE. This structure is
 /// not directly marshaled or unmarshaled.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct _PRIVATE {
     pub integrityOuter: Vec<u8>,
 
@@ -15870,7 +15882,7 @@ impl TpmMarshaller for _PRIVATE {
 
 /// The TPM2B_PRIVATE structure is used as a parameter in multiple commands that create,
 /// load, and modify the sensitive area of an object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_PRIVATE {
     /// An encrypted private area
     pub buffer: Vec<u8>,
@@ -15928,7 +15940,7 @@ impl TpmMarshaller for TPM2B_PRIVATE {
 }
 
 /// This structure is used for sizing the TPM2B_ID_OBJECT.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_ID_OBJECT {
     /// HMAC using the nameAlg of the storage key on the target TPM
     pub integrityHMAC: Vec<u8>,
@@ -15998,7 +16010,7 @@ impl TpmMarshaller for TPMS_ID_OBJECT {
 
 /// This structure is an output from TPM2_MakeCredential() and is an input to
 /// TPM2_ActivateCredential().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_ID_OBJECT {
     /// An encrypted credential area
     pub credential: TPMS_ID_OBJECT,
@@ -16058,7 +16070,7 @@ impl TpmMarshaller for TPM2B_ID_OBJECT {
 /// This is the data that can be written to and read from a TPM_NT_PIN_PASS or
 /// TPM_NT_PIN_FAIL non-volatile index. pinCount is the most significant octets. pinLimit
 /// is the least significant octets.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NV_PIN_COUNTER_PARAMETERS {
     /// This counter shows the current number of successful authValue authorization attempts
     /// to access a TPM_NT_PIN_PASS index or the current number of unsuccessful authValue
@@ -16105,8 +16117,8 @@ impl TpmStructure for TPMS_NV_PIN_COUNTER_PARAMETERS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pinCount = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.pinLimit = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.pinCount = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.pinLimit = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -16126,7 +16138,7 @@ impl TpmMarshaller for TPMS_NV_PIN_COUNTER_PARAMETERS {
 }
 
 /// This structure describes an NV Index.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_NV_PUBLIC {
     /// The handle of the data area
     pub nvIndex: TPM_HANDLE,
@@ -16193,10 +16205,10 @@ impl TpmStructure for TPMS_NV_PUBLIC {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.nvIndex.initFromTpm(buf);
-        self.nameAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.attributes = TPMA_NV::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.nameAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.attributes = TPMA_NV::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         self.authPolicy = buf.readSizedByteBuf(2);
-        self.dataSize = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.dataSize = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -16216,7 +16228,7 @@ impl TpmMarshaller for TPMS_NV_PUBLIC {
 }
 
 /// This structure is used when a TPMS_NV_PUBLIC is sent on the TPM interface.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_NV_PUBLIC {
     /// The public area
     pub nvPublic: TPMS_NV_PUBLIC,
@@ -16275,7 +16287,7 @@ impl TpmMarshaller for TPM2B_NV_PUBLIC {
 
 /// This structure holds the object or session context data. When saved, the full
 /// structure is encrypted.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_CONTEXT_SENSITIVE {
     /// The sensitive data
     pub buffer: Vec<u8>,
@@ -16333,7 +16345,7 @@ impl TpmMarshaller for TPM2B_CONTEXT_SENSITIVE {
 }
 
 /// This structure holds the integrity value and the encrypted data for a context.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_CONTEXT_DATA {
     /// The integrity value
     pub integrity: Vec<u8>,
@@ -16398,7 +16410,7 @@ impl TpmMarshaller for TPMS_CONTEXT_DATA {
 }
 
 /// This structure is used in a TPMS_CONTEXT.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_CONTEXT_DATA {
     pub buffer: TPMS_CONTEXT_DATA,
 }
@@ -16457,7 +16469,7 @@ impl TpmMarshaller for TPM2B_CONTEXT_DATA {
 /// This structure is used in TPM2_ContextLoad() and TPM2_ContextSave(). If the values of
 /// the TPMS_CONTEXT structure in TPM2_ContextLoad() are not the same as the values when
 /// the context was saved (TPM2_ContextSave()), then the TPM shall not load the context.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_CONTEXT {
     /// The sequence number of the context
     /// NOTE Transient object contexts and session contexts used different counters.
@@ -16515,7 +16527,7 @@ impl TpmStructure for TPMS_CONTEXT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.sequence = u64::try_from(buf.readInt64()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sequence = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
         self.savedHandle.initFromTpm(buf);
         self.hierarchy.initFromTpm(buf);
         buf.readSizedObj(&mut self.contextBlob);
@@ -16542,7 +16554,7 @@ impl TpmMarshaller for TPMS_CONTEXT {
 /// digest of selected PCR. These values represent the environment in which the object was
 /// created. Creation data allows a relying party to determine if an object was created
 /// when some appropriate protections were present.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_CREATION_DATA {
     /// List indicating the PCR included in pcrDigest
     pub pcrSelect: Vec<TPMS_PCR_SELECTION>,
@@ -16624,8 +16636,8 @@ impl TpmStructure for TPMS_CREATION_DATA {
         // Deserialize fields
         buf.readObjArr(self.pcrSelect.as_mut());
         self.pcrDigest = buf.readSizedByteBuf(2);
-        self.locality = TPMA_LOCALITY::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.parentNameAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.locality = TPMA_LOCALITY::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.parentNameAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.parentName = buf.readSizedByteBuf(2);
         self.parentQualifiedName = buf.readSizedByteBuf(2);
         self.outsideInfo = buf.readSizedByteBuf(2);
@@ -16649,7 +16661,7 @@ impl TpmMarshaller for TPMS_CREATION_DATA {
 
 /// This structure is created by TPM2_Create() and TPM2_CreatePrimary(). It is never
 /// entered into the TPM and never has a size of zero.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_CREATION_DATA {
     pub creationData: TPMS_CREATION_DATA,
 }
@@ -16707,7 +16719,7 @@ impl TpmMarshaller for TPM2B_CREATION_DATA {
 
 /// TPMS_AC_OUTPUT is used to return information about an AC. The tag structure parameter
 /// indicates the type of the data value.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPMS_AC_OUTPUT {
     /// Tag indicating the contents of data
     pub tag: TPM_AT,
@@ -16751,8 +16763,8 @@ impl TpmStructure for TPMS_AC_OUTPUT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tag = TPM_AT::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.data = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.tag = TPM_AT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.data = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -16772,7 +16784,7 @@ impl TpmMarshaller for TPMS_AC_OUTPUT {
 }
 
 /// This list is only used in TPM2_AC_GetCapability().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPML_AC_CAPABILITIES {
     /// A list of AC values
     pub acCapabilities: Vec<TPMS_AC_OUTPUT>,
@@ -16835,7 +16847,7 @@ impl TpmMarshaller for TPML_AC_CAPABILITIES {
 /// completed successfully. If a TPM requires TPM2_Startup() and another command is
 /// received, or if the TPM receives TPM2_Startup() when it is not required, the TPM shall
 /// return TPM_RC_INITIALIZE.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Startup_REQUEST {
     /// TPM_SU_CLEAR or TPM_SU_STATE
     pub startupType: TPM_SU,
@@ -16873,7 +16885,7 @@ impl TpmStructure for TPM2_Startup_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.startupType = TPM_SU::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.startupType = TPM_SU::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -16892,9 +16904,20 @@ impl TpmMarshaller for TPM2_Startup_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_Startup_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_Startup_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command is used to prepare the TPM for a power cycle. The shutdownType parameter
 /// indicates how the subsequent TPM2_Startup() will be processed.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Shutdown_REQUEST {
     /// TPM_SU_CLEAR or TPM_SU_STATE
     pub shutdownType: TPM_SU,
@@ -16932,7 +16955,7 @@ impl TpmStructure for TPM2_Shutdown_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.shutdownType = TPM_SU::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.shutdownType = TPM_SU::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -16951,10 +16974,21 @@ impl TpmMarshaller for TPM2_Shutdown_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_Shutdown_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_Shutdown_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command causes the TPM to perform a test of its capabilities. If the fullTest is
 /// YES, the TPM will test all functions. If fullTest = NO, the TPM will only test those
 /// functions that have not previously been tested.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_SelfTest_REQUEST {
     /// YES if full test to be performed
     /// NO if only test of untested functions required
@@ -16993,7 +17027,7 @@ impl TpmStructure for TPM2_SelfTest_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.fullTest = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.fullTest = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -17012,8 +17046,19 @@ impl TpmMarshaller for TPM2_SelfTest_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_SelfTest_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_SelfTest_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command causes the TPM to perform a test of the selected algorithms.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_IncrementalSelfTest_REQUEST {
     /// List of algorithms that should be tested
     pub toTest: Vec<TPM_ALG_ID>,
@@ -17071,13 +17116,19 @@ impl TpmMarshaller for TPM2_IncrementalSelfTest_REQUEST {
 }
 
 impl CmdStructure for TPM2_IncrementalSelfTest_REQUEST {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 2 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 2 } }
+}
+
+impl ReqStructure for TPM2_IncrementalSelfTest_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
 }
 
 /// This command causes the TPM to perform a test of the selected algorithms.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct IncrementalSelfTestResponse {
     /// List of algorithms that need testing
     pub toDoList: Vec<TPM_ALG_ID>,
@@ -17126,14 +17177,20 @@ impl TpmMarshaller for IncrementalSelfTestResponse {
 }
 
 impl CmdStructure for IncrementalSelfTestResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 2 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 2 } }
+}
+
+impl RespStructure for IncrementalSelfTestResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command returns manufacturer-specific information regarding the results of a
 /// self-test and an indication of the test status.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_GetTestResult_REQUEST {
 }
 
@@ -17177,9 +17234,20 @@ impl TpmMarshaller for TPM2_GetTestResult_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_GetTestResult_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_GetTestResult_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command returns manufacturer-specific information regarding the results of a
 /// self-test and an indication of the test status.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GetTestResultResponse {
     /// Test result data
     /// contains manufacturer-specific information
@@ -17212,7 +17280,7 @@ impl TpmStructure for GetTestResultResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.outData = buf.readSizedByteBuf(2);
-        self.testResult = TPM_RC::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.testResult = TPM_RC::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -17232,15 +17300,21 @@ impl TpmMarshaller for GetTestResultResponse {
 }
 
 impl CmdStructure for GetTestResultResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for GetTestResultResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command is used to start an authorization session using alternative methods of
 /// establishing the session key (sessionKey). The session key is then used to derive
 /// values used for authorization and for encrypting parameters.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_StartAuthSession_REQUEST {
     /// Handle of a loaded decrypt key used to encrypt salt
     /// may be TPM_RH_NULL
@@ -17322,9 +17396,9 @@ impl TpmStructure for TPM2_StartAuthSession_REQUEST {
         // Deserialize fields
         self.nonceCaller = buf.readSizedByteBuf(2);
         self.encryptedSalt = buf.readSizedByteBuf(2);
-        self.sessionType = TPM_SE::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sessionType = TPM_SE::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         self.symmetric.initFromTpm(buf);
-        self.authHash = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.authHash = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -17344,21 +17418,21 @@ impl TpmMarshaller for TPM2_StartAuthSession_REQUEST {
 }
 
 impl CmdStructure for TPM2_StartAuthSession_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_StartAuthSession_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[tpmKey, bind] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.tpmKey.clone(), self.bind.clone()] }
 }
 
 /// This command is used to start an authorization session using alternative methods of
 /// establishing the session key (sessionKey). The session key is then used to derive
 /// values used for authorization and for encrypting parameters.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct StartAuthSessionResponse {
     /// Handle for the newly created session
     pub handle: TPM_HANDLE,
@@ -17410,15 +17484,15 @@ impl TpmMarshaller for StartAuthSessionResponse {
 }
 
 impl CmdStructure for StartAuthSessionResponse {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl RespStructure for StartAuthSessionResponse {
-    fn get_handle() -> u16 { handle }
+    fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
-    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle; }
+    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
 }
 
 /// This command allows a policy authorization session to be returned to its initial
@@ -17427,7 +17501,7 @@ impl RespStructure for StartAuthSessionResponse {
 /// TPM2_PolicyPCR() was executed. Restarting the session allows the authorizations to be
 /// replayed because the session restarts with the same nonceTPM. If the PCR are valid for
 /// the policy, the policy may then succeed.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyRestart_REQUEST {
     /// The handle for the policy session
     pub sessionHandle: TPM_HANDLE,
@@ -17483,14 +17557,14 @@ impl TpmMarshaller for TPM2_PolicyRestart_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyRestart_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_PolicyRestart_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[sessionHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.sessionHandle.clone()] }
 }
 
 /// This command is used to create an object that can be loaded into a TPM using
@@ -17500,7 +17574,7 @@ impl ReqStructure for TPM2_PolicyRestart_REQUEST {
 /// responsibility of the caller. The object will need to be loaded (TPM2_Load()) before
 /// it may be used. The only difference between the inPublic TPMT_PUBLIC template and the
 /// outPublic TPMT_PUBLIC object is in the unique field.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Create_REQUEST {
     /// Handle of parent for new object
     /// Auth Index: 1
@@ -17587,15 +17661,15 @@ impl TpmMarshaller for TPM2_Create_REQUEST {
 }
 
 impl CmdStructure for TPM2_Create_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_Create_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[parentHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.parentHandle.clone()] }
 }
 
 /// This command is used to create an object that can be loaded into a TPM using
@@ -17605,7 +17679,7 @@ impl ReqStructure for TPM2_Create_REQUEST {
 /// responsibility of the caller. The object will need to be loaded (TPM2_Load()) before
 /// it may be used. The only difference between the inPublic TPMT_PUBLIC template and the
 /// outPublic TPMT_PUBLIC object is in the unique field.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CreateResponse {
     /// The private portion of the object
     pub outPrivate: TPM2B_PRIVATE,
@@ -17674,10 +17748,21 @@ impl TpmMarshaller for CreateResponse {
 
 }
 
+impl CmdStructure for CreateResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for CreateResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command is used to load objects into the TPM. This command is used when both a
 /// TPM2B_PUBLIC and TPM2B_PRIVATE are to be loaded. If only a TPM2B_PUBLIC is to be
 /// loaded, the TPM2_LoadExternal command is used.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Load_REQUEST {
     /// TPM handle of parent key; shall not be a reserved handle
     /// Auth Index: 1
@@ -17749,20 +17834,20 @@ impl TpmMarshaller for TPM2_Load_REQUEST {
 }
 
 impl CmdStructure for TPM2_Load_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_Load_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[parentHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.parentHandle.clone()] }
 }
 
 /// This command is used to load objects into the TPM. This command is used when both a
 /// TPM2B_PUBLIC and TPM2B_PRIVATE are to be loaded. If only a TPM2B_PUBLIC is to be
 /// loaded, the TPM2_LoadExternal command is used.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct LoadResponse {
     /// Handle of type TPM_HT_TRANSIENT for the loaded object
     pub handle: TPM_HANDLE,
@@ -17814,20 +17899,20 @@ impl TpmMarshaller for LoadResponse {
 }
 
 impl CmdStructure for LoadResponse {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl RespStructure for LoadResponse {
-    fn get_handle() -> u16 { handle }
+    fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
-    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle; }
+    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
 }
 
 /// This command is used to load an object that is not a Protected Object into the TPM.
 /// The command allows loading of a public area or both a public and sensitive area.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_LoadExternal_REQUEST {
     /// The sensitive portion of the object (optional)
     pub inPrivate: TPMT_SENSITIVE,
@@ -17899,14 +17984,20 @@ impl TpmMarshaller for TPM2_LoadExternal_REQUEST {
 }
 
 impl CmdStructure for TPM2_LoadExternal_REQUEST {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl ReqStructure for TPM2_LoadExternal_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
 }
 
 /// This command is used to load an object that is not a Protected Object into the TPM.
 /// The command allows loading of a public area or both a public and sensitive area.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct LoadExternalResponse {
     /// Handle of type TPM_HT_TRANSIENT for the loaded object
     pub handle: TPM_HANDLE,
@@ -17958,19 +18049,19 @@ impl TpmMarshaller for LoadExternalResponse {
 }
 
 impl CmdStructure for LoadExternalResponse {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl RespStructure for LoadExternalResponse {
-    fn get_handle() -> u16 { handle }
+    fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
-    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle; }
+    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
 }
 
 /// This command allows access to the public area of a loaded object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ReadPublic_REQUEST {
     /// TPM handle of an object
     /// Auth Index: None
@@ -18027,18 +18118,18 @@ impl TpmMarshaller for TPM2_ReadPublic_REQUEST {
 }
 
 impl CmdStructure for TPM2_ReadPublic_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_ReadPublic_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[objectHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.objectHandle.clone()] }
 }
 
 /// This command allows access to the public area of a loaded object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ReadPublicResponse {
     /// Structure containing the public area of an object
     pub outPublic: TPMT_PUBLIC,
@@ -18097,14 +18188,20 @@ impl TpmMarshaller for ReadPublicResponse {
 }
 
 impl CmdStructure for ReadPublicResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for ReadPublicResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command enables the association of a credential with an object in a way that
 /// ensures that the TPM has validated the parameters of the credentialed object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ActivateCredential_REQUEST {
     /// Handle of the object associated with certificate in credentialBlob
     /// Auth Index: 1
@@ -18183,20 +18280,20 @@ impl TpmMarshaller for TPM2_ActivateCredential_REQUEST {
 }
 
 impl CmdStructure for TPM2_ActivateCredential_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_ActivateCredential_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[activateHandle, keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.activateHandle.clone(), self.keyHandle.clone()] }
 }
 
 /// This command enables the association of a credential with an object in a way that
 /// ensures that the TPM has validated the parameters of the credentialed object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ActivateCredentialResponse {
     /// The decrypted certificate information
     /// the data should be no larger than the size of the digest of the nameAlg associated
@@ -18247,14 +18344,20 @@ impl TpmMarshaller for ActivateCredentialResponse {
 }
 
 impl CmdStructure for ActivateCredentialResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for ActivateCredentialResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command allows the TPM to perform the actions required of a Certificate Authority
 /// (CA) in creating a TPM2B_ID_OBJECT containing an activation credential.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_MakeCredential_REQUEST {
     /// Loaded public area, used to encrypt the sensitive area containing the credential key
     /// Auth Index: None
@@ -18325,20 +18428,20 @@ impl TpmMarshaller for TPM2_MakeCredential_REQUEST {
 }
 
 impl CmdStructure for TPM2_MakeCredential_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_MakeCredential_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[handle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.handle.clone()] }
 }
 
 /// This command allows the TPM to perform the actions required of a Certificate Authority
 /// (CA) in creating a TPM2B_ID_OBJECT containing an activation credential.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct MakeCredentialResponse {
     /// The credential
     pub credentialBlob: TPMS_ID_OBJECT,
@@ -18392,13 +18495,19 @@ impl TpmMarshaller for MakeCredentialResponse {
 }
 
 impl CmdStructure for MakeCredentialResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for MakeCredentialResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command returns the data in a loaded Sealed Data Object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Unseal_REQUEST {
     /// Handle of a loaded data object
     /// Auth Index: 1
@@ -18456,18 +18565,18 @@ impl TpmMarshaller for TPM2_Unseal_REQUEST {
 }
 
 impl CmdStructure for TPM2_Unseal_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_Unseal_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[itemHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.itemHandle.clone()] }
 }
 
 /// This command returns the data in a loaded Sealed Data Object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct UnsealResponse {
     /// Unsealed data
     /// Size of outData is limited to be no more than 128 octets.
@@ -18517,13 +18626,19 @@ impl TpmMarshaller for UnsealResponse {
 }
 
 impl CmdStructure for UnsealResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for UnsealResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command is used to change the authorization secret for a TPM-resident object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ObjectChangeAuth_REQUEST {
     /// Handle of the object
     /// Auth Index: 1
@@ -18594,19 +18709,19 @@ impl TpmMarshaller for TPM2_ObjectChangeAuth_REQUEST {
 }
 
 impl CmdStructure for TPM2_ObjectChangeAuth_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_ObjectChangeAuth_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[objectHandle, parentHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.objectHandle.clone(), self.parentHandle.clone()] }
 }
 
 /// This command is used to change the authorization secret for a TPM-resident object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ObjectChangeAuthResponse {
     /// Private area containing the new authorization value
     pub outPrivate: TPM2B_PRIVATE,
@@ -18654,12 +18769,23 @@ impl TpmMarshaller for ObjectChangeAuthResponse {
 
 }
 
+impl CmdStructure for ObjectChangeAuthResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for ObjectChangeAuthResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command creates an object and loads it in the TPM. This command allows creation
 /// of any type of object (Primary, Ordinary, or Derived) depending on the type of
 /// parentHandle. If parentHandle references a Primary Seed, then a Primary Object is
 /// created; if parentHandle references a Storage Parent, then an Ordinary Object is
 /// created; and if parentHandle references a Derivation Parent, then a Derived Object is generated.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_CreateLoaded_REQUEST {
     /// Handle of a transient storage key, a persistent storage key, TPM_RH_ENDORSEMENT,
     /// TPM_RH_OWNER, TPM_RH_PLATFORM+{PP}, or TPM_RH_NULL
@@ -18732,15 +18858,15 @@ impl TpmMarshaller for TPM2_CreateLoaded_REQUEST {
 }
 
 impl CmdStructure for TPM2_CreateLoaded_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_CreateLoaded_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[parentHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.parentHandle.clone()] }
 }
 
 /// This command creates an object and loads it in the TPM. This command allows creation
@@ -18748,7 +18874,7 @@ impl ReqStructure for TPM2_CreateLoaded_REQUEST {
 /// parentHandle. If parentHandle references a Primary Seed, then a Primary Object is
 /// created; if parentHandle references a Storage Parent, then an Ordinary Object is
 /// created; and if parentHandle references a Derivation Parent, then a Derived Object is generated.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CreateLoadedResponse {
     /// Handle of type TPM_HT_TRANSIENT for created object
     pub handle: TPM_HANDLE,
@@ -18810,20 +18936,20 @@ impl TpmMarshaller for CreateLoadedResponse {
 }
 
 impl CmdStructure for CreateLoadedResponse {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl RespStructure for CreateLoadedResponse {
-    fn get_handle() -> u16 { handle }
+    fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
-    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle; }
+    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
 }
 
 /// This command duplicates a loaded object so that it may be used in a different
 /// hierarchy. The new parent key for the duplicate may be on the same or different TPM or
 /// TPM_RH_NULL. Only the public area of newParentHandle is required to be loaded.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Duplicate_REQUEST {
     /// Loaded object to duplicate
     /// Auth Index: 1
@@ -18904,21 +19030,21 @@ impl TpmMarshaller for TPM2_Duplicate_REQUEST {
 }
 
 impl CmdStructure for TPM2_Duplicate_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_Duplicate_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[objectHandle, newParentHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.objectHandle.clone(), self.newParentHandle.clone()] }
 }
 
 /// This command duplicates a loaded object so that it may be used in a different
 /// hierarchy. The new parent key for the duplicate may be on the same or different TPM or
 /// TPM_RH_NULL. Only the public area of newParentHandle is required to be loaded.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct DuplicateResponse {
     /// If the caller provided an encryption key or if symmetricAlg was TPM_ALG_NULL, then
     /// this will be the Empty Buffer; otherwise, it shall contain the TPM-generated,
@@ -18979,9 +19105,15 @@ impl TpmMarshaller for DuplicateResponse {
 }
 
 impl CmdStructure for DuplicateResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for DuplicateResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command allows the TPM to serve in the role as a Duplication Authority. If proper
@@ -18990,7 +19122,7 @@ impl CmdStructure for DuplicateResponse {
 /// A new protection seed value is generated according to the methods appropriate for
 /// newParent and the blob is re-encrypted and a new integrity value is computed. The
 /// re-encrypted blob is returned in outDuplicate and the symmetric key returned in outSymKey.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Rewrap_REQUEST {
     /// Parent of object
     /// Auth Index: 1
@@ -19076,14 +19208,14 @@ impl TpmMarshaller for TPM2_Rewrap_REQUEST {
 }
 
 impl CmdStructure for TPM2_Rewrap_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
 }
 
 impl ReqStructure for TPM2_Rewrap_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[oldParent, newParent] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.oldParent.clone(), self.newParent.clone()] }
 }
 
 /// This command allows the TPM to serve in the role as a Duplication Authority. If proper
@@ -19092,7 +19224,7 @@ impl ReqStructure for TPM2_Rewrap_REQUEST {
 /// A new protection seed value is generated according to the methods appropriate for
 /// newParent and the blob is re-encrypted and a new integrity value is computed. The
 /// re-encrypted blob is returned in outDuplicate and the symmetric key returned in outSymKey.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct RewrapResponse {
     /// An object encrypted using symmetric key derived from outSymSeed
     pub outDuplicate: TPM2B_PRIVATE,
@@ -19145,11 +19277,22 @@ impl TpmMarshaller for RewrapResponse {
 
 }
 
+impl CmdStructure for RewrapResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for RewrapResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command allows an object to be encrypted using the symmetric encryption values of
 /// a Storage Key. After encryption, the object may be loaded and used in the new
 /// hierarchy. The imported object (duplicate) may be singly encrypted, multiply
 /// encrypted, or unencrypted.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Import_REQUEST {
     /// The handle of the new parent for the object
     /// Auth Index: 1
@@ -19250,22 +19393,22 @@ impl TpmMarshaller for TPM2_Import_REQUEST {
 }
 
 impl CmdStructure for TPM2_Import_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_Import_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[parentHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.parentHandle.clone()] }
 }
 
 /// This command allows an object to be encrypted using the symmetric encryption values of
 /// a Storage Key. After encryption, the object may be loaded and used in the new
 /// hierarchy. The imported object (duplicate) may be singly encrypted, multiply
 /// encrypted, or unencrypted.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ImportResponse {
     /// The sensitive area encrypted with the symmetric key of parentHandle
     pub outPrivate: TPM2B_PRIVATE,
@@ -19313,11 +19456,22 @@ impl TpmMarshaller for ImportResponse {
 
 }
 
+impl CmdStructure for ImportResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for ImportResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command performs RSA encryption using the indicated padding scheme according to
 /// IETF RFC 8017. If the scheme of keyHandle is TPM_ALG_NULL, then the caller may use
 /// inScheme to specify the padding scheme. If scheme of keyHandle is not TPM_ALG_NULL,
 /// then inScheme shall either be TPM_ALG_NULL or be the same as scheme (TPM_RC_SCHEME).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_RSA_Encrypt_REQUEST {
     /// Reference to public portion of RSA key to use for encryption
     /// Auth Index: None
@@ -19386,7 +19540,7 @@ impl TpmStructure for TPM2_RSA_Encrypt_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.message = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_ASYM_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.label = buf.readSizedByteBuf(2);
@@ -19409,22 +19563,22 @@ impl TpmMarshaller for TPM2_RSA_Encrypt_REQUEST {
 }
 
 impl CmdStructure for TPM2_RSA_Encrypt_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_RSA_Encrypt_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// This command performs RSA encryption using the indicated padding scheme according to
 /// IETF RFC 8017. If the scheme of keyHandle is TPM_ALG_NULL, then the caller may use
 /// inScheme to specify the padding scheme. If scheme of keyHandle is not TPM_ALG_NULL,
 /// then inScheme shall either be TPM_ALG_NULL or be the same as scheme (TPM_RC_SCHEME).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct RSA_EncryptResponse {
     /// Encrypted output
     pub outData: Vec<u8>,
@@ -19473,14 +19627,20 @@ impl TpmMarshaller for RSA_EncryptResponse {
 }
 
 impl CmdStructure for RSA_EncryptResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for RSA_EncryptResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command performs RSA decryption using the indicated padding scheme according to
 /// IETF RFC 8017 ((PKCS#1).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_RSA_Decrypt_REQUEST {
     /// RSA key to use for decryption
     /// Auth Index: 1
@@ -19546,7 +19706,7 @@ impl TpmStructure for TPM2_RSA_Decrypt_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.cipherText = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_ASYM_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.label = buf.readSizedByteBuf(2);
@@ -19569,20 +19729,20 @@ impl TpmMarshaller for TPM2_RSA_Decrypt_REQUEST {
 }
 
 impl CmdStructure for TPM2_RSA_Decrypt_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_RSA_Decrypt_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// This command performs RSA decryption using the indicated padding scheme according to
 /// IETF RFC 8017 ((PKCS#1).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct RSA_DecryptResponse {
     /// Decrypted output
     pub message: Vec<u8>,
@@ -19631,15 +19791,21 @@ impl TpmMarshaller for RSA_DecryptResponse {
 }
 
 impl CmdStructure for RSA_DecryptResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for RSA_DecryptResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command uses the TPM to generate an ephemeral key pair (de, Qe where Qe [de]G).
 /// It uses the private ephemeral key and a loaded public key (QS) to compute the shared
 /// secret value (P [hde]QS).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ECDH_KeyGen_REQUEST {
     /// Handle of a loaded ECC key public area.
     /// Auth Index: None
@@ -19696,20 +19862,20 @@ impl TpmMarshaller for TPM2_ECDH_KeyGen_REQUEST {
 }
 
 impl CmdStructure for TPM2_ECDH_KeyGen_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_ECDH_KeyGen_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// This command uses the TPM to generate an ephemeral key pair (de, Qe where Qe [de]G).
 /// It uses the private ephemeral key and a loaded public key (QS) to compute the shared
 /// secret value (P [hde]QS).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ECDH_KeyGenResponse {
     /// Results of P h[de]Qs
     pub zPoint: TPMS_ECC_POINT,
@@ -19763,16 +19929,22 @@ impl TpmMarshaller for ECDH_KeyGenResponse {
 }
 
 impl CmdStructure for ECDH_KeyGenResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for ECDH_KeyGenResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command uses the TPM to recover the Z value from a public point (QB) and a
 /// private key (ds). It will perform the multiplication of the provided inPoint (QB) with
 /// the private key (ds) and return the coordinates of the resultant point (Z = (xZ , yZ)
 /// [hds]QB; where h is the cofactor of the curve).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ECDH_ZGen_REQUEST {
     /// Handle of a loaded ECC key
     /// Auth Index: 1
@@ -19837,22 +20009,22 @@ impl TpmMarshaller for TPM2_ECDH_ZGen_REQUEST {
 }
 
 impl CmdStructure for TPM2_ECDH_ZGen_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_ECDH_ZGen_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// This command uses the TPM to recover the Z value from a public point (QB) and a
 /// private key (ds). It will perform the multiplication of the provided inPoint (QB) with
 /// the private key (ds) and return the coordinates of the resultant point (Z = (xZ , yZ)
 /// [hds]QB; where h is the cofactor of the curve).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ECDH_ZGenResponse {
     /// X and Y coordinates of the product of the multiplication Z = (xZ , yZ) [hdS]QB
     pub outPoint: TPMS_ECC_POINT,
@@ -19901,13 +20073,19 @@ impl TpmMarshaller for ECDH_ZGenResponse {
 }
 
 impl CmdStructure for ECDH_ZGenResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for ECDH_ZGenResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command returns the parameters of an ECC curve identified by its TCG-assigned curveID.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ECC_Parameters_REQUEST {
     /// Parameter set selector
     pub curveID: TPM_ECC_CURVE,
@@ -19945,7 +20123,7 @@ impl TpmStructure for TPM2_ECC_Parameters_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -19964,8 +20142,19 @@ impl TpmMarshaller for TPM2_ECC_Parameters_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_ECC_Parameters_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_ECC_Parameters_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command returns the parameters of an ECC curve identified by its TCG-assigned curveID.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ECC_ParametersResponse {
     /// ECC parameters for the selected curve
     pub parameters: TPMS_ALGORITHM_DETAIL_ECC,
@@ -20013,11 +20202,22 @@ impl TpmMarshaller for ECC_ParametersResponse {
 
 }
 
+impl CmdStructure for ECC_ParametersResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for ECC_ParametersResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command supports two-phase key exchange protocols. The command is used in
 /// combination with TPM2_EC_Ephemeral(). TPM2_EC_Ephemeral() generates an ephemeral key
 /// and returns the public point of that ephemeral key along with a numeric value that
 /// allows the TPM to regenerate the associated private key.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ZGen_2Phase_REQUEST {
     /// Handle of an unrestricted decryption key ECC
     /// The private key referenced by this handle is used as dS,A
@@ -20083,8 +20283,8 @@ impl TpmStructure for TPM2_ZGen_2Phase_REQUEST {
         // Deserialize fields
         buf.readSizedObj(&mut self.inQsB);
         buf.readSizedObj(&mut self.inQeB);
-        self.inScheme = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.counter = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.inScheme = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.counter = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -20104,22 +20304,22 @@ impl TpmMarshaller for TPM2_ZGen_2Phase_REQUEST {
 }
 
 impl CmdStructure for TPM2_ZGen_2Phase_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_ZGen_2Phase_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyA] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyA.clone()] }
 }
 
 /// This command supports two-phase key exchange protocols. The command is used in
 /// combination with TPM2_EC_Ephemeral(). TPM2_EC_Ephemeral() generates an ephemeral key
 /// and returns the public point of that ephemeral key along with a numeric value that
 /// allows the TPM to regenerate the associated private key.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ZGen_2PhaseResponse {
     /// X and Y coordinates of the computed value (scheme dependent)
     pub outZ1: TPMS_ECC_POINT,
@@ -20173,13 +20373,19 @@ impl TpmMarshaller for ZGen_2PhaseResponse {
 }
 
 impl CmdStructure for ZGen_2PhaseResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for ZGen_2PhaseResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command performs ECC encryption as described in Part 1, Annex D.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ECC_Encrypt_REQUEST {
     /// Reference to public portion of ECC key to use for encryption
     /// Auth Index: None
@@ -20235,7 +20441,7 @@ impl TpmStructure for TPM2_ECC_Encrypt_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.plainText = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_KDF_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -20257,19 +20463,19 @@ impl TpmMarshaller for TPM2_ECC_Encrypt_REQUEST {
 }
 
 impl CmdStructure for TPM2_ECC_Encrypt_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_ECC_Encrypt_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// This command performs ECC encryption as described in Part 1, Annex D.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ECC_EncryptResponse {
     /// The public ephemeral key used for ECDH
     pub C1: TPMS_ECC_POINT,
@@ -20328,13 +20534,19 @@ impl TpmMarshaller for ECC_EncryptResponse {
 }
 
 impl CmdStructure for ECC_EncryptResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for ECC_EncryptResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command performs ECC decryption.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ECC_Decrypt_REQUEST {
     /// ECC key to use for decryption
     /// Auth Index: 1
@@ -20405,7 +20617,7 @@ impl TpmStructure for TPM2_ECC_Decrypt_REQUEST {
         buf.readSizedObj(&mut self.C1);
         self.C2 = buf.readSizedByteBuf(2);
         self.C3 = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_KDF_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -20427,19 +20639,19 @@ impl TpmMarshaller for TPM2_ECC_Decrypt_REQUEST {
 }
 
 impl CmdStructure for TPM2_ECC_Decrypt_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_ECC_Decrypt_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// This command performs ECC decryption.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ECC_DecryptResponse {
     /// Decrypted output
     pub plainText: Vec<u8>,
@@ -20488,14 +20700,20 @@ impl TpmMarshaller for ECC_DecryptResponse {
 }
 
 impl CmdStructure for ECC_DecryptResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for ECC_DecryptResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// NOTE 1 This command is deprecated, and TPM2_EncryptDecrypt2() is preferred. This
 /// should be reflected in platform-specific specifications.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_EncryptDecrypt_REQUEST {
     /// The symmetric key used for the operation
     /// Auth Index: 1
@@ -20559,8 +20777,8 @@ impl TpmStructure for TPM2_EncryptDecrypt_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.decrypt = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.mode = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.decrypt = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.mode = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.ivIn = buf.readSizedByteBuf(2);
         self.inData = buf.readSizedByteBuf(2);
         Ok(())
@@ -20582,19 +20800,19 @@ impl TpmMarshaller for TPM2_EncryptDecrypt_REQUEST {
 }
 
 impl CmdStructure for TPM2_EncryptDecrypt_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_EncryptDecrypt_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// NOTE 1 This command is deprecated, and TPM2_EncryptDecrypt2() is preferred. This
 /// should be reflected in platform-specific specifications.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct EncryptDecryptResponse {
     /// Encrypted or decrypted output
     pub outData: Vec<u8>,
@@ -20648,14 +20866,20 @@ impl TpmMarshaller for EncryptDecryptResponse {
 }
 
 impl CmdStructure for EncryptDecryptResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for EncryptDecryptResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command is identical to TPM2_EncryptDecrypt(), except that the inData parameter
 /// is the first parameter. This permits inData to be parameter encrypted.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_EncryptDecrypt2_REQUEST {
     /// The symmetric key used for the operation
     /// Auth Index: 1
@@ -20720,8 +20944,8 @@ impl TpmStructure for TPM2_EncryptDecrypt2_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.inData = buf.readSizedByteBuf(2);
-        self.decrypt = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.mode = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.decrypt = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.mode = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.ivIn = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -20742,20 +20966,20 @@ impl TpmMarshaller for TPM2_EncryptDecrypt2_REQUEST {
 }
 
 impl CmdStructure for TPM2_EncryptDecrypt2_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_EncryptDecrypt2_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// This command is identical to TPM2_EncryptDecrypt(), except that the inData parameter
 /// is the first parameter. This permits inData to be parameter encrypted.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct EncryptDecrypt2Response {
     /// Encrypted or decrypted output
     pub outData: Vec<u8>,
@@ -20809,13 +21033,19 @@ impl TpmMarshaller for EncryptDecrypt2Response {
 }
 
 impl CmdStructure for EncryptDecrypt2Response {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for EncryptDecrypt2Response {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command performs a hash operation on a data buffer and returns the results.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Hash_REQUEST {
     /// Data to be hashed
     pub data: Vec<u8>,
@@ -20866,7 +21096,7 @@ impl TpmStructure for TPM2_Hash_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.data = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.hierarchy.initFromTpm(buf);
         Ok(())
     }
@@ -20887,13 +21117,19 @@ impl TpmMarshaller for TPM2_Hash_REQUEST {
 }
 
 impl CmdStructure for TPM2_Hash_REQUEST {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl ReqStructure for TPM2_Hash_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
 }
 
 /// This command performs a hash operation on a data buffer and returns the results.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct HashResponse {
     /// Results
     pub outHash: Vec<u8>,
@@ -20949,13 +21185,19 @@ impl TpmMarshaller for HashResponse {
 }
 
 impl CmdStructure for HashResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for HashResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command performs an HMAC on the supplied data using the indicated hash algorithm.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_HMAC_REQUEST {
     /// Handle for the symmetric signing key providing the HMAC key
     /// Auth Index: 1
@@ -21007,7 +21249,7 @@ impl TpmStructure for TPM2_HMAC_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.buffer = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -21027,19 +21269,19 @@ impl TpmMarshaller for TPM2_HMAC_REQUEST {
 }
 
 impl CmdStructure for TPM2_HMAC_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_HMAC_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[handle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.handle.clone()] }
 }
 
 /// This command performs an HMAC on the supplied data using the indicated hash algorithm.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct HMACResponse {
     /// The returned HMAC in a sized buffer
     pub outHMAC: Vec<u8>,
@@ -21088,14 +21330,20 @@ impl TpmMarshaller for HMACResponse {
 }
 
 impl CmdStructure for HMACResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for HMACResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command performs an HMAC or a block cipher MAC on the supplied data using the
 /// indicated algorithm.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_MAC_REQUEST {
     /// Handle for the symmetric signing key providing the MAC key
     /// Auth Index: 1
@@ -21147,7 +21395,7 @@ impl TpmStructure for TPM2_MAC_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.buffer = buf.readSizedByteBuf(2);
-        self.inScheme = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.inScheme = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -21167,20 +21415,20 @@ impl TpmMarshaller for TPM2_MAC_REQUEST {
 }
 
 impl CmdStructure for TPM2_MAC_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_MAC_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[handle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.handle.clone()] }
 }
 
 /// This command performs an HMAC or a block cipher MAC on the supplied data using the
 /// indicated algorithm.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct MACResponse {
     /// The returned MAC in a sized buffer
     pub outMAC: Vec<u8>,
@@ -21229,13 +21477,19 @@ impl TpmMarshaller for MACResponse {
 }
 
 impl CmdStructure for MACResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for MACResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command returns the next bytesRequested octets from the random number generator (RNG).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_GetRandom_REQUEST {
     /// Number of octets to return
     pub bytesRequested: u16,
@@ -21273,7 +21527,7 @@ impl TpmStructure for TPM2_GetRandom_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.bytesRequested = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.bytesRequested = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -21292,8 +21546,19 @@ impl TpmMarshaller for TPM2_GetRandom_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_GetRandom_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_GetRandom_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command returns the next bytesRequested octets from the random number generator (RNG).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GetRandomResponse {
     /// The random octets
     pub randomBytes: Vec<u8>,
@@ -21342,13 +21607,19 @@ impl TpmMarshaller for GetRandomResponse {
 }
 
 impl CmdStructure for GetRandomResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for GetRandomResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command is used to add "additional information" to the RNG state.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_StirRandom_REQUEST {
     /// Additional information
     pub inData: Vec<u8>,
@@ -21406,15 +21677,21 @@ impl TpmMarshaller for TPM2_StirRandom_REQUEST {
 }
 
 impl CmdStructure for TPM2_StirRandom_REQUEST {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl ReqStructure for TPM2_StirRandom_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
 }
 
 /// This command starts an HMAC sequence. The TPM will create and initialize an HMAC
 /// sequence structure, assign a handle to the sequence, and set the authValue of the
 /// sequence object to the value in auth.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_HMAC_Start_REQUEST {
     /// Handle of an HMAC key
     /// Auth Index: 1
@@ -21466,7 +21743,7 @@ impl TpmStructure for TPM2_HMAC_Start_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.auth = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -21486,21 +21763,21 @@ impl TpmMarshaller for TPM2_HMAC_Start_REQUEST {
 }
 
 impl CmdStructure for TPM2_HMAC_Start_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_HMAC_Start_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[handle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.handle.clone()] }
 }
 
 /// This command starts an HMAC sequence. The TPM will create and initialize an HMAC
 /// sequence structure, assign a handle to the sequence, and set the authValue of the
 /// sequence object to the value in auth.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct HMAC_StartResponse {
     /// A handle to reference the sequence
     pub handle: TPM_HANDLE,
@@ -21547,20 +21824,20 @@ impl TpmMarshaller for HMAC_StartResponse {
 }
 
 impl CmdStructure for HMAC_StartResponse {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl RespStructure for HMAC_StartResponse {
-    fn get_handle() -> u16 { handle }
+    fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
-    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle; }
+    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
 }
 
 /// This command starts a MAC sequence. The TPM will create and initialize a MAC sequence
 /// structure, assign a handle to the sequence, and set the authValue of the sequence
 /// object to the value in auth.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_MAC_Start_REQUEST {
     /// Handle of a MAC key
     /// Auth Index: 1
@@ -21612,7 +21889,7 @@ impl TpmStructure for TPM2_MAC_Start_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.auth = buf.readSizedByteBuf(2);
-        self.inScheme = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.inScheme = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -21632,21 +21909,21 @@ impl TpmMarshaller for TPM2_MAC_Start_REQUEST {
 }
 
 impl CmdStructure for TPM2_MAC_Start_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_MAC_Start_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[handle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.handle.clone()] }
 }
 
 /// This command starts a MAC sequence. The TPM will create and initialize a MAC sequence
 /// structure, assign a handle to the sequence, and set the authValue of the sequence
 /// object to the value in auth.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct MAC_StartResponse {
     /// A handle to reference the sequence
     pub handle: TPM_HANDLE,
@@ -21693,21 +21970,21 @@ impl TpmMarshaller for MAC_StartResponse {
 }
 
 impl CmdStructure for MAC_StartResponse {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl RespStructure for MAC_StartResponse {
-    fn get_handle() -> u16 { handle }
+    fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
-    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle; }
+    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
 }
 
 /// This command starts a hash or an Event Sequence. If hashAlg is an implemented hash,
 /// then a hash sequence is started. If hashAlg is TPM_ALG_NULL, then an Event Sequence is
 /// started. If hashAlg is neither an implemented algorithm nor TPM_ALG_NULL, then the TPM
 /// shall return TPM_RC_HASH.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_HashSequenceStart_REQUEST {
     /// Authorization value for subsequent use of the sequence
     pub auth: Vec<u8>,
@@ -21753,7 +22030,7 @@ impl TpmStructure for TPM2_HashSequenceStart_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.auth = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -21773,16 +22050,22 @@ impl TpmMarshaller for TPM2_HashSequenceStart_REQUEST {
 }
 
 impl CmdStructure for TPM2_HashSequenceStart_REQUEST {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl ReqStructure for TPM2_HashSequenceStart_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
 }
 
 /// This command starts a hash or an Event Sequence. If hashAlg is an implemented hash,
 /// then a hash sequence is started. If hashAlg is TPM_ALG_NULL, then an Event Sequence is
 /// started. If hashAlg is neither an implemented algorithm nor TPM_ALG_NULL, then the TPM
 /// shall return TPM_RC_HASH.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct HashSequenceStartResponse {
     /// A handle to reference the sequence
     pub handle: TPM_HANDLE,
@@ -21829,19 +22112,19 @@ impl TpmMarshaller for HashSequenceStartResponse {
 }
 
 impl CmdStructure for HashSequenceStartResponse {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl RespStructure for HashSequenceStartResponse {
-    fn get_handle() -> u16 { handle }
+    fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
-    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle; }
+    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
 }
 
 /// This command is used to add data to a hash or HMAC sequence. The amount of data in
 /// buffer may be any size up to the limits of the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_SequenceUpdate_REQUEST {
     /// Handle for the sequence object
     /// Auth Index: 1
@@ -21906,20 +22189,20 @@ impl TpmMarshaller for TPM2_SequenceUpdate_REQUEST {
 }
 
 impl CmdStructure for TPM2_SequenceUpdate_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_SequenceUpdate_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[sequenceHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.sequenceHandle.clone()] }
 }
 
 /// This command adds the last part of data, if any, to a hash/HMAC sequence and returns
 /// the result.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_SequenceComplete_REQUEST {
     /// Authorization for the sequence
     /// Auth Index: 1
@@ -21991,20 +22274,20 @@ impl TpmMarshaller for TPM2_SequenceComplete_REQUEST {
 }
 
 impl CmdStructure for TPM2_SequenceComplete_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_SequenceComplete_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[sequenceHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.sequenceHandle.clone()] }
 }
 
 /// This command adds the last part of data, if any, to a hash/HMAC sequence and returns
 /// the result.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct SequenceCompleteResponse {
     /// The returned HMAC or digest in a sized buffer
     pub result: Vec<u8>,
@@ -22060,9 +22343,15 @@ impl TpmMarshaller for SequenceCompleteResponse {
 }
 
 impl CmdStructure for SequenceCompleteResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for SequenceCompleteResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command adds the last part of data, if any, to an Event Sequence and returns the
@@ -22070,7 +22359,7 @@ impl CmdStructure for SequenceCompleteResponse {
 /// returned digest list is processed in the same manner as the digest list input
 /// parameter to TPM2_PCR_Extend(). That is, if a bank contains a PCR associated with
 /// pcrHandle, it is extended with the associated digest value from the list.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_EventSequenceComplete_REQUEST {
     /// PCR to be extended with the Event data
     /// Auth Index: 1
@@ -22142,15 +22431,15 @@ impl TpmMarshaller for TPM2_EventSequenceComplete_REQUEST {
 }
 
 impl CmdStructure for TPM2_EventSequenceComplete_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_EventSequenceComplete_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[pcrHandle, sequenceHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.pcrHandle.clone(), self.sequenceHandle.clone()] }
 }
 
 /// This command adds the last part of data, if any, to an Event Sequence and returns the
@@ -22158,7 +22447,7 @@ impl ReqStructure for TPM2_EventSequenceComplete_REQUEST {
 /// returned digest list is processed in the same manner as the digest list input
 /// parameter to TPM2_PCR_Extend(). That is, if a bank contains a PCR associated with
 /// pcrHandle, it is extended with the associated digest value from the list.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct EventSequenceCompleteResponse {
     /// List of digests computed for the PCR
     pub results: Vec<TPMT_HA>,
@@ -22207,9 +22496,15 @@ impl TpmMarshaller for EventSequenceCompleteResponse {
 }
 
 impl CmdStructure for EventSequenceCompleteResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 66 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 66 } }
+}
+
+impl RespStructure for EventSequenceCompleteResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// The purpose of this command is to prove that an object with a specific Name is loaded
@@ -22217,7 +22512,7 @@ impl CmdStructure for EventSequenceCompleteResponse {
 /// area with a given Name is self-consistent and associated with a valid sensitive area.
 /// If a relying party has a public area that has the same Name as a Name certified with
 /// this command, then the values in that public area are correct.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Certify_REQUEST {
     /// Handle of the object to be certified
     /// Auth Index: 1
@@ -22282,7 +22577,7 @@ impl TpmStructure for TPM2_Certify_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -22304,15 +22599,15 @@ impl TpmMarshaller for TPM2_Certify_REQUEST {
 }
 
 impl CmdStructure for TPM2_Certify_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_Certify_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[objectHandle, signHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.objectHandle.clone(), self.signHandle.clone()] }
 }
 
 /// The purpose of this command is to prove that an object with a specific Name is loaded
@@ -22320,7 +22615,7 @@ impl ReqStructure for TPM2_Certify_REQUEST {
 /// area with a given Name is self-consistent and associated with a valid sensitive area.
 /// If a relying party has a public area that has the same Name as a Name certified with
 /// this command, then the values in that public area are correct.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CertifyResponse {
     /// The structure that was signed
     pub certifyInfo: TPMS_ATTEST,
@@ -22360,7 +22655,7 @@ impl TpmStructure for CertifyResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.certifyInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -22382,16 +22677,22 @@ impl TpmMarshaller for CertifyResponse {
 }
 
 impl CmdStructure for CertifyResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for CertifyResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command is used to prove the association between an object and its creation data.
 /// The TPM will validate that the ticket was produced by the TPM and that the ticket
 /// validates the association between a loaded public area and the provided hash of the
 /// creation data (creationHash).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_CertifyCreation_REQUEST {
     /// Handle of the key that will sign the attestation block
     /// Auth Index: 1
@@ -22468,7 +22769,7 @@ impl TpmStructure for TPM2_CertifyCreation_REQUEST {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
         self.creationHash = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.creationTicket.initFromTpm(buf);
@@ -22491,22 +22792,22 @@ impl TpmMarshaller for TPM2_CertifyCreation_REQUEST {
 }
 
 impl CmdStructure for TPM2_CertifyCreation_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_CertifyCreation_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[signHandle, objectHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.signHandle.clone(), self.objectHandle.clone()] }
 }
 
 /// This command is used to prove the association between an object and its creation data.
 /// The TPM will validate that the ticket was produced by the TPM and that the ticket
 /// validates the association between a loaded public area and the provided hash of the
 /// creation data (creationHash).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CertifyCreationResponse {
     /// The structure that was signed
     pub certifyInfo: TPMS_ATTEST,
@@ -22546,7 +22847,7 @@ impl TpmStructure for CertifyCreationResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.certifyInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -22568,13 +22869,19 @@ impl TpmMarshaller for CertifyCreationResponse {
 }
 
 impl CmdStructure for CertifyCreationResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for CertifyCreationResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command is used to quote PCR values.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Quote_REQUEST {
     /// Handle of key that will perform signature
     /// Auth Index: 1
@@ -22638,7 +22945,7 @@ impl TpmStructure for TPM2_Quote_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         buf.readObjArr(self.PCRselect.as_mut());
@@ -22661,19 +22968,19 @@ impl TpmMarshaller for TPM2_Quote_REQUEST {
 }
 
 impl CmdStructure for TPM2_Quote_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_Quote_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[signHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.signHandle.clone()] }
 }
 
 /// This command is used to quote PCR values.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct QuoteResponse {
     /// The quoted information
     pub quoted: TPMS_ATTEST,
@@ -22713,7 +23020,7 @@ impl TpmStructure for QuoteResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.quoted);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -22735,13 +23042,19 @@ impl TpmMarshaller for QuoteResponse {
 }
 
 impl CmdStructure for QuoteResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for QuoteResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command returns a digital signature of the audit session digest.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_GetSessionAuditDigest_REQUEST {
     /// Handle of the privacy administrator (TPM_RH_ENDORSEMENT)
     /// Auth Index: 1
@@ -22812,7 +23125,7 @@ impl TpmStructure for TPM2_GetSessionAuditDigest_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -22834,19 +23147,19 @@ impl TpmMarshaller for TPM2_GetSessionAuditDigest_REQUEST {
 }
 
 impl CmdStructure for TPM2_GetSessionAuditDigest_REQUEST {
-    fn num_handles() -> u16 { 3 }
+    fn num_handles(&self) -> u16 { 3 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_GetSessionAuditDigest_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[privacyAdminHandle, signHandle, sessionHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.privacyAdminHandle.clone(), self.signHandle.clone(), self.sessionHandle.clone()] }
 }
 
 /// This command returns a digital signature of the audit session digest.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GetSessionAuditDigestResponse {
     /// The audit information that was signed
     pub auditInfo: TPMS_ATTEST,
@@ -22886,7 +23199,7 @@ impl TpmStructure for GetSessionAuditDigestResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.auditInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -22908,15 +23221,21 @@ impl TpmMarshaller for GetSessionAuditDigestResponse {
 }
 
 impl CmdStructure for GetSessionAuditDigestResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for GetSessionAuditDigestResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command returns the current value of the command audit digest, a digest of the
 /// commands being audited, and the audit hash algorithm. These values are placed in an
 /// attestation structure and signed with the key referenced by signHandle.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_GetCommandAuditDigest_REQUEST {
     /// Handle of the privacy administrator (TPM_RH_ENDORSEMENT)
     /// Auth Index: 1
@@ -22981,7 +23300,7 @@ impl TpmStructure for TPM2_GetCommandAuditDigest_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23003,21 +23322,21 @@ impl TpmMarshaller for TPM2_GetCommandAuditDigest_REQUEST {
 }
 
 impl CmdStructure for TPM2_GetCommandAuditDigest_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_GetCommandAuditDigest_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[privacyHandle, signHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.privacyHandle.clone(), self.signHandle.clone()] }
 }
 
 /// This command returns the current value of the command audit digest, a digest of the
 /// commands being audited, and the audit hash algorithm. These values are placed in an
 /// attestation structure and signed with the key referenced by signHandle.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GetCommandAuditDigestResponse {
     /// The auditInfo that was signed
     pub auditInfo: TPMS_ATTEST,
@@ -23057,7 +23376,7 @@ impl TpmStructure for GetCommandAuditDigestResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.auditInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23079,13 +23398,19 @@ impl TpmMarshaller for GetCommandAuditDigestResponse {
 }
 
 impl CmdStructure for GetCommandAuditDigestResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for GetCommandAuditDigestResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command returns the current values of Time and Clock.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_GetTime_REQUEST {
     /// Handle of the privacy administrator (TPM_RH_ENDORSEMENT)
     /// Auth Index: 1
@@ -23150,7 +23475,7 @@ impl TpmStructure for TPM2_GetTime_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23172,19 +23497,19 @@ impl TpmMarshaller for TPM2_GetTime_REQUEST {
 }
 
 impl CmdStructure for TPM2_GetTime_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_GetTime_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[privacyAdminHandle, signHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.privacyAdminHandle.clone(), self.signHandle.clone()] }
 }
 
 /// This command returns the current values of Time and Clock.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GetTimeResponse {
     /// Standard TPM-generated attestation block
     pub timeInfo: TPMS_ATTEST,
@@ -23224,7 +23549,7 @@ impl TpmStructure for GetTimeResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.timeInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23246,9 +23571,15 @@ impl TpmMarshaller for GetTimeResponse {
 }
 
 impl CmdStructure for GetTimeResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for GetTimeResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// The purpose of this command is to generate an X.509 certificate that proves an object
@@ -23257,7 +23588,7 @@ impl CmdStructure for GetTimeResponse {
 /// information, TPM2_CertifyX509 encodes the attestation information in a DER-encoded
 /// X.509 certificate that is compliant with RFC5280 Internet X.509 Public Key
 /// Infrastructure Certificate and Certificate Revocation List (CRL) Profile.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_CertifyX509_REQUEST {
     /// Handle of the object to be certified
     /// Auth Index: 1
@@ -23328,7 +23659,7 @@ impl TpmStructure for TPM2_CertifyX509_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.reserved = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.partialCertificate = buf.readSizedByteBuf(2);
@@ -23351,15 +23682,15 @@ impl TpmMarshaller for TPM2_CertifyX509_REQUEST {
 }
 
 impl CmdStructure for TPM2_CertifyX509_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_CertifyX509_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[objectHandle, signHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.objectHandle.clone(), self.signHandle.clone()] }
 }
 
 /// The purpose of this command is to generate an X.509 certificate that proves an object
@@ -23368,7 +23699,7 @@ impl ReqStructure for TPM2_CertifyX509_REQUEST {
 /// information, TPM2_CertifyX509 encodes the attestation information in a DER-encoded
 /// X.509 certificate that is compliant with RFC5280 Internet X.509 Public Key
 /// Infrastructure Certificate and Certificate Revocation List (CRL) Profile.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CertifyX509Response {
     /// A DER encoded SEQUENCE containing the DER encoded fields added to partialCertificate
     /// to make it a complete RFC5280 TBSCertificate.
@@ -23414,7 +23745,7 @@ impl TpmStructure for CertifyX509Response {
         // Deserialize fields
         self.addedToCertificate = buf.readSizedByteBuf(2);
         self.tbsDigest = buf.readSizedByteBuf(2);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23436,16 +23767,22 @@ impl TpmMarshaller for CertifyX509Response {
 }
 
 impl CmdStructure for CertifyX509Response {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for CertifyX509Response {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// TPM2_Commit() performs the first part of an ECC anonymous signing operation. The TPM
 /// will perform the point multiplications on the provided points and return intermediate
 /// signing values. The signHandle parameter shall refer to an ECC key and the signing
 /// scheme must be anonymous (TPM_RC_SCHEME).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Commit_REQUEST {
     /// Handle of the key that will be used in the signing operation
     /// Auth Index: 1
@@ -23524,22 +23861,22 @@ impl TpmMarshaller for TPM2_Commit_REQUEST {
 }
 
 impl CmdStructure for TPM2_Commit_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_Commit_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[signHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.signHandle.clone()] }
 }
 
 /// TPM2_Commit() performs the first part of an ECC anonymous signing operation. The TPM
 /// will perform the point multiplications on the provided points and return intermediate
 /// signing values. The signHandle parameter shall refer to an ECC key and the signing
 /// scheme must be anonymous (TPM_RC_SCHEME).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CommitResponse {
     /// ECC point K [ds](x2, y2)
     pub K: TPMS_ECC_POINT,
@@ -23583,7 +23920,7 @@ impl TpmStructure for CommitResponse {
         buf.readSizedObj(&mut self.K);
         buf.readSizedObj(&mut self.L);
         buf.readSizedObj(&mut self.E);
-        self.counter = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.counter = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -23603,13 +23940,19 @@ impl TpmMarshaller for CommitResponse {
 }
 
 impl CmdStructure for CommitResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for CommitResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// TPM2_EC_Ephemeral() creates an ephemeral key for use in a two-phase key exchange protocol.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_EC_Ephemeral_REQUEST {
     /// The curve for the computed ephemeral point
     pub curveID: TPM_ECC_CURVE,
@@ -23647,7 +23990,7 @@ impl TpmStructure for TPM2_EC_Ephemeral_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -23666,8 +24009,19 @@ impl TpmMarshaller for TPM2_EC_Ephemeral_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_EC_Ephemeral_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_EC_Ephemeral_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// TPM2_EC_Ephemeral() creates an ephemeral key for use in a two-phase key exchange protocol.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct EC_EphemeralResponse {
     /// Ephemeral public key Q [r]G
     pub Q: TPMS_ECC_POINT,
@@ -23701,7 +24055,7 @@ impl TpmStructure for EC_EphemeralResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.Q);
-        self.counter = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.counter = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -23721,14 +24075,20 @@ impl TpmMarshaller for EC_EphemeralResponse {
 }
 
 impl CmdStructure for EC_EphemeralResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for EC_EphemeralResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command uses loaded keys to validate a signature on a message with the message
 /// digest passed to the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_VerifySignature_REQUEST {
     /// Handle of public key that will be used in the validation
     /// Auth Index: None
@@ -23785,7 +24145,7 @@ impl TpmStructure for TPM2_VerifySignature_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.digest = buf.readSizedByteBuf(2);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23807,20 +24167,20 @@ impl TpmMarshaller for TPM2_VerifySignature_REQUEST {
 }
 
 impl CmdStructure for TPM2_VerifySignature_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_VerifySignature_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// This command uses loaded keys to validate a signature on a message with the message
 /// digest passed to the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct VerifySignatureResponse {
     pub validation: TPMT_TK_VERIFIED,
 }
@@ -23867,9 +24227,20 @@ impl TpmMarshaller for VerifySignatureResponse {
 
 }
 
+impl CmdStructure for VerifySignatureResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for VerifySignatureResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command causes the TPM to sign an externally provided hash with the specified
 /// symmetric or asymmetric signing key.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Sign_REQUEST {
     /// Handle of key that will perform signing
     /// Auth Index: 1
@@ -23935,7 +24306,7 @@ impl TpmStructure for TPM2_Sign_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.digest = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.validation.initFromTpm(buf);
@@ -23958,20 +24329,20 @@ impl TpmMarshaller for TPM2_Sign_REQUEST {
 }
 
 impl CmdStructure for TPM2_Sign_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_Sign_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.keyHandle.clone()] }
 }
 
 /// This command causes the TPM to sign an externally provided hash with the specified
 /// symmetric or asymmetric signing key.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct SignResponse {
     /// Selector of the algorithm used to construct the signature
 
@@ -24007,7 +24378,7 @@ impl TpmStructure for SignResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -24028,10 +24399,21 @@ impl TpmMarshaller for SignResponse {
 
 }
 
+impl CmdStructure for SignResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for SignResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command may be used by the Privacy Administrator or platform to change the audit
 /// status of a command or to set the hash algorithm used for the audit digest, but not
 /// both at the same time.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_SetCommandCodeAuditStatus_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -24088,7 +24470,7 @@ impl TpmStructure for TPM2_SetCommandCodeAuditStatus_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.auditAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.auditAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         buf.readValArr(self.setList.as_mut(), 4)?;
         buf.readValArr(self.clearList.as_mut(), 4)?;
         Ok(())
@@ -24110,21 +24492,21 @@ impl TpmMarshaller for TPM2_SetCommandCodeAuditStatus_REQUEST {
 }
 
 impl CmdStructure for TPM2_SetCommandCodeAuditStatus_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_SetCommandCodeAuditStatus_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[auth] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.auth.clone()] }
 }
 
 /// This command is used to cause an update to the indicated PCR. The digests parameter
 /// contains one or more tagged digest values identified by an algorithm ID. For each
 /// digest, the PCR associated with pcrHandle is Extended into the bank identified by the
 /// tag (hashAlg).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PCR_Extend_REQUEST {
     /// Handle of the PCR
     /// Auth Handle: 1
@@ -24189,19 +24571,19 @@ impl TpmMarshaller for TPM2_PCR_Extend_REQUEST {
 }
 
 impl CmdStructure for TPM2_PCR_Extend_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 66 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 66 } }
 }
 
 impl ReqStructure for TPM2_PCR_Extend_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[pcrHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.pcrHandle.clone()] }
 }
 
 /// This command is used to cause an update to the indicated PCR.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PCR_Event_REQUEST {
     /// Handle of the PCR
     /// Auth Handle: 1
@@ -24266,19 +24648,19 @@ impl TpmMarshaller for TPM2_PCR_Event_REQUEST {
 }
 
 impl CmdStructure for TPM2_PCR_Event_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PCR_Event_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[pcrHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.pcrHandle.clone()] }
 }
 
 /// This command is used to cause an update to the indicated PCR.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PCR_EventResponse {
     pub digests: Vec<TPMT_HA>,
 }
@@ -24326,13 +24708,19 @@ impl TpmMarshaller for PCR_EventResponse {
 }
 
 impl CmdStructure for PCR_EventResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 66 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 66 } }
+}
+
+impl RespStructure for PCR_EventResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command returns the values of all PCR specified in pcrSelectionIn.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PCR_Read_REQUEST {
     /// The selection of PCR to read
     pub pcrSelectionIn: Vec<TPMS_PCR_SELECTION>,
@@ -24390,13 +24778,19 @@ impl TpmMarshaller for TPM2_PCR_Read_REQUEST {
 }
 
 impl CmdStructure for TPM2_PCR_Read_REQUEST {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 3 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 3 } }
+}
+
+impl ReqStructure for TPM2_PCR_Read_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
 }
 
 /// This command returns the values of all PCR specified in pcrSelectionIn.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PCR_ReadResponse {
     /// The current value of the PCR update counter
     pub pcrUpdateCounter: u32,
@@ -24433,7 +24827,7 @@ impl TpmStructure for PCR_ReadResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pcrUpdateCounter = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.pcrUpdateCounter = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         buf.readObjArr(self.pcrSelectionOut.as_mut());
         buf.readObjArr(self.pcrValues.as_mut());
         Ok(())
@@ -24454,9 +24848,20 @@ impl TpmMarshaller for PCR_ReadResponse {
 
 }
 
+impl CmdStructure for PCR_ReadResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for PCR_ReadResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command is used to set the desired PCR allocation of PCR and algorithms. This
 /// command requires Platform Authorization.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PCR_Allocate_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -24521,20 +24926,20 @@ impl TpmMarshaller for TPM2_PCR_Allocate_REQUEST {
 }
 
 impl CmdStructure for TPM2_PCR_Allocate_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 3 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 3 } }
 }
 
 impl ReqStructure for TPM2_PCR_Allocate_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This command is used to set the desired PCR allocation of PCR and algorithms. This
 /// command requires Platform Authorization.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PCR_AllocateResponse {
     /// YES if the allocation succeeded
     pub allocationSuccess: u8,
@@ -24575,10 +24980,10 @@ impl TpmStructure for PCR_AllocateResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.allocationSuccess = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.maxPCR = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.sizeNeeded = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.sizeAvailable = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.allocationSuccess = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.maxPCR = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sizeNeeded = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sizeAvailable = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -24597,9 +25002,20 @@ impl TpmMarshaller for PCR_AllocateResponse {
 
 }
 
+impl CmdStructure for PCR_AllocateResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for PCR_AllocateResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command is used to associate a policy with a PCR or group of PCR. The policy
 /// determines the conditions under which a PCR may be extended or reset.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PCR_SetAuthPolicy_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -24657,7 +25073,7 @@ impl TpmStructure for TPM2_PCR_SetAuthPolicy_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.authPolicy = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.pcrNum.initFromTpm(buf);
         Ok(())
     }
@@ -24678,19 +25094,19 @@ impl TpmMarshaller for TPM2_PCR_SetAuthPolicy_REQUEST {
 }
 
 impl CmdStructure for TPM2_PCR_SetAuthPolicy_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PCR_SetAuthPolicy_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This command changes the authValue of a PCR or group of PCR.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PCR_SetAuthValue_REQUEST {
     /// Handle for a PCR that may have an authorization value set
     /// Auth Index: 1
@@ -24755,21 +25171,21 @@ impl TpmMarshaller for TPM2_PCR_SetAuthValue_REQUEST {
 }
 
 impl CmdStructure for TPM2_PCR_SetAuthValue_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PCR_SetAuthValue_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[pcrHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.pcrHandle.clone()] }
 }
 
 /// If the attribute of a PCR allows the PCR to be reset and proper authorization is
 /// provided, then this command may be used to set the PCR in all banks to zero. The
 /// attributes of the PCR may restrict the locality that can perform the reset operation.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PCR_Reset_REQUEST {
     /// The PCR to reset
     /// Auth Index: 1
@@ -24827,19 +25243,19 @@ impl TpmMarshaller for TPM2_PCR_Reset_REQUEST {
 }
 
 impl CmdStructure for TPM2_PCR_Reset_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_PCR_Reset_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[pcrHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.pcrHandle.clone()] }
 }
 
 /// This command includes a signed authorization in a policy. The command ties the policy
 /// to a signing key by including the Name of the signing key in the policyDigest
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicySigned_REQUEST {
     /// Handle for a key that will validate the signature
     /// Auth Index: None
@@ -24928,8 +25344,8 @@ impl TpmStructure for TPM2_PolicySigned_REQUEST {
         self.nonceTPM = buf.readSizedByteBuf(2);
         self.cpHashA = buf.readSizedByteBuf(2);
         self.policyRef = buf.readSizedByteBuf(2);
-        self.expiration = i32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#authSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.expiration = i32::try_from(buf.readInt() as i32).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#authSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.auth = TPMU_SIGNATURE::create(r#authSigAlg)?;
         self.auth.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -24951,20 +25367,20 @@ impl TpmMarshaller for TPM2_PolicySigned_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicySigned_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicySigned_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authObject, policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authObject.clone(), self.policySession.clone()] }
 }
 
 /// This command includes a signed authorization in a policy. The command ties the policy
 /// to a signing key by including the Name of the signing key in the policyDigest
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PolicySignedResponse {
     /// Implementation-specific time value, used to indicate to the TPM when the ticket expires
     /// NOTE If policyTicket is a NULL Ticket, then this shall be the Empty Buffer.
@@ -25020,16 +25436,22 @@ impl TpmMarshaller for PolicySignedResponse {
 }
 
 impl CmdStructure for PolicySignedResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for PolicySignedResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command includes a secret-based authorization to a policy. The caller proves
 /// knowledge of the secret value using an authorization session using the authValue
 /// associated with authHandle. A password session, an HMAC session, or a policy session
 /// containing TPM2_PolicyAuthValue() or TPM2_PolicyPassword() will satisfy this requirement.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicySecret_REQUEST {
     /// Handle for an entity providing the authorization
     /// Auth Index: 1
@@ -25107,7 +25529,7 @@ impl TpmStructure for TPM2_PolicySecret_REQUEST {
         self.nonceTPM = buf.readSizedByteBuf(2);
         self.cpHashA = buf.readSizedByteBuf(2);
         self.policyRef = buf.readSizedByteBuf(2);
-        self.expiration = i32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.expiration = i32::try_from(buf.readInt() as i32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -25127,22 +25549,22 @@ impl TpmMarshaller for TPM2_PolicySecret_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicySecret_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicySecret_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.policySession.clone()] }
 }
 
 /// This command includes a secret-based authorization to a policy. The caller proves
 /// knowledge of the secret value using an authorization session using the authValue
 /// associated with authHandle. A password session, an HMAC session, or a policy session
 /// containing TPM2_PolicyAuthValue() or TPM2_PolicyPassword() will satisfy this requirement.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PolicySecretResponse {
     /// Implementation-specific time value used to indicate to the TPM when the ticket expires
     pub timeout: Vec<u8>,
@@ -25197,15 +25619,21 @@ impl TpmMarshaller for PolicySecretResponse {
 }
 
 impl CmdStructure for PolicySecretResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for PolicySecretResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command is similar to TPM2_PolicySigned() except that it takes a ticket instead
 /// of a signed authorization. The ticket represents a validated authorization that had an
 /// expiration time associated with it.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyTicket_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -25300,22 +25728,22 @@ impl TpmMarshaller for TPM2_PolicyTicket_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyTicket_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicyTicket_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command allows options in authorizations without requiring that the TPM evaluate
 /// all of the options. If a policy may be satisfied by different sets of conditions, the
 /// TPM need only evaluate one set that satisfies the policy. This command will indicate
 /// that one of the required sets of conditions has been satisfied.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyOR_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -25379,22 +25807,22 @@ impl TpmMarshaller for TPM2_PolicyOR_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyOR_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 2 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 2 } }
 }
 
 impl ReqStructure for TPM2_PolicyOR_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command is used to cause conditional gating of a policy based on PCR. This
 /// command together with TPM2_PolicyOR() allows one group of authorizations to occur when
 /// PCR are in one state and a different set of authorizations when the PCR are in a
 /// different state.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyPCR_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -25466,19 +25894,19 @@ impl TpmMarshaller for TPM2_PolicyPCR_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyPCR_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicyPCR_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command indicates that the authorization will be limited to a specific locality.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyLocality_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -25522,7 +25950,7 @@ impl TpmStructure for TPM2_PolicyLocality_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.locality = TPMA_LOCALITY::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.locality = TPMA_LOCALITY::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -25542,20 +25970,20 @@ impl TpmMarshaller for TPM2_PolicyLocality_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyLocality_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_PolicyLocality_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command is used to cause conditional gating of a policy based on the contents of
 /// an NV Index. It is an immediate assertion. The NV index is validated during the
 /// TPM2_PolicyNV() command, not when the session is used for authorization.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyNV_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -25625,8 +26053,8 @@ impl TpmStructure for TPM2_PolicyNV_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.operandB = buf.readSizedByteBuf(2);
-        self.offset = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.operation = TPM_EO::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.operation = TPM_EO::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -25646,20 +26074,20 @@ impl TpmMarshaller for TPM2_PolicyNV_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyNV_REQUEST {
-    fn num_handles() -> u16 { 3 }
+    fn num_handles(&self) -> u16 { 3 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicyNV_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex, policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone(), self.policySession.clone()] }
 }
 
 /// This command is used to cause conditional gating of a policy based on the contents of
 /// the TPMS_TIME_INFO structure.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyCounterTimer_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -25716,8 +26144,8 @@ impl TpmStructure for TPM2_PolicyCounterTimer_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.operandB = buf.readSizedByteBuf(2);
-        self.offset = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.operation = TPM_EO::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.operation = TPM_EO::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -25737,19 +26165,19 @@ impl TpmMarshaller for TPM2_PolicyCounterTimer_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyCounterTimer_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicyCounterTimer_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command indicates that the authorization will be limited to a specific command code.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyCommandCode_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -25793,7 +26221,7 @@ impl TpmStructure for TPM2_PolicyCommandCode_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.code = TPM_CC::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.code = TPM_CC::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -25813,19 +26241,19 @@ impl TpmMarshaller for TPM2_PolicyCommandCode_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyCommandCode_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_PolicyCommandCode_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command indicates that physical presence will need to be asserted at the time the
 /// authorization is performed.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyPhysicalPresence_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -25882,18 +26310,18 @@ impl TpmMarshaller for TPM2_PolicyPhysicalPresence_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyPhysicalPresence_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_PolicyPhysicalPresence_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command is used to allow a policy to be bound to a specific command and command parameters.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyCpHash_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -25957,21 +26385,21 @@ impl TpmMarshaller for TPM2_PolicyCpHash_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyCpHash_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicyCpHash_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command allows a policy to be bound to a specific set of TPM entities without
 /// being bound to the parameters of the command. This is most useful for commands such as
 /// TPM2_Duplicate() and for TPM2_PCR_Event() when the referenced PCR requires a policy.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyNameHash_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -26035,20 +26463,20 @@ impl TpmMarshaller for TPM2_PolicyNameHash_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyNameHash_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicyNameHash_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command allows qualification of duplication to allow duplication to a selected
 /// new parent.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyDuplicationSelect_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -26106,7 +26534,7 @@ impl TpmStructure for TPM2_PolicyDuplicationSelect_REQUEST {
         // Deserialize fields
         self.objectName = buf.readSizedByteBuf(2);
         self.newParentName = buf.readSizedByteBuf(2);
-        self.includeObject = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.includeObject = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -26126,21 +26554,21 @@ impl TpmMarshaller for TPM2_PolicyDuplicationSelect_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyDuplicationSelect_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicyDuplicationSelect_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command allows policies to change. If a policy were static, then it would be
 /// difficult to add users to a policy. This command lets a policy authority sign a new
 /// policy so that it may be used in an existing policy.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyAuthorize_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -26225,19 +26653,19 @@ impl TpmMarshaller for TPM2_PolicyAuthorize_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyAuthorize_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicyAuthorize_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command allows a policy to be bound to the authorization value of the authorized entity.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyAuthValue_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -26294,18 +26722,18 @@ impl TpmMarshaller for TPM2_PolicyAuthValue_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyAuthValue_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_PolicyAuthValue_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command allows a policy to be bound to the authorization value of the authorized object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyPassword_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -26362,19 +26790,19 @@ impl TpmMarshaller for TPM2_PolicyPassword_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyPassword_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_PolicyPassword_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command returns the current policyDigest of the session. This command allows the
 /// TPM to be used to perform the actions required to pre-compute the authPolicy for an object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyGetDigest_REQUEST {
     /// Handle for the policy session
     /// Auth Index: None
@@ -26431,19 +26859,19 @@ impl TpmMarshaller for TPM2_PolicyGetDigest_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyGetDigest_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_PolicyGetDigest_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command returns the current policyDigest of the session. This command allows the
 /// TPM to be used to perform the actions required to pre-compute the authPolicy for an object.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PolicyGetDigestResponse {
     /// The current value of the policySessionpolicyDigest
     pub policyDigest: Vec<u8>,
@@ -26492,15 +26920,21 @@ impl TpmMarshaller for PolicyGetDigestResponse {
 }
 
 impl CmdStructure for PolicyGetDigestResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for PolicyGetDigestResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command allows a policy to be bound to the TPMA_NV_WRITTEN attributes. This is a
 /// deferred assertion. Values are stored in the policy session context and checked when
 /// the policy is used for authorization.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyNvWritten_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -26545,7 +26979,7 @@ impl TpmStructure for TPM2_PolicyNvWritten_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.writtenSet = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.writtenSet = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -26565,20 +26999,20 @@ impl TpmMarshaller for TPM2_PolicyNvWritten_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyNvWritten_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_PolicyNvWritten_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command allows a policy to be bound to a specific creation template. This is most
 /// useful for an object creation command such as TPM2_Create(), TPM2_CreatePrimary(), or
 /// TPM2_CreateLoaded().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyTemplate_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -26642,22 +27076,22 @@ impl TpmMarshaller for TPM2_PolicyTemplate_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyTemplate_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_PolicyTemplate_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command provides a capability that is the equivalent of a revocable policy. With
 /// TPM2_PolicyAuthorize(), the authorization ticket never expires, so the authorization
 /// may not be withdrawn. With this command, the approved policy is kept in an NV Index
 /// location so that the policy may be changed as needed to render the old policy unusable.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PolicyAuthorizeNV_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -26727,14 +27161,14 @@ impl TpmMarshaller for TPM2_PolicyAuthorizeNV_REQUEST {
 }
 
 impl CmdStructure for TPM2_PolicyAuthorizeNV_REQUEST {
-    fn num_handles() -> u16 { 3 }
+    fn num_handles(&self) -> u16 { 3 }
 
 }
 
 impl ReqStructure for TPM2_PolicyAuthorizeNV_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex, policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone(), self.policySession.clone()] }
 }
 
 /// This command is used to create a Primary Object under one of the Primary Seeds or a
@@ -26742,7 +27176,7 @@ impl ReqStructure for TPM2_PolicyAuthorizeNV_REQUEST {
 /// the object to be created. The size of the unique field shall not be checked for
 /// consistency with the other object parameters. The command will create and load a
 /// Primary Object. The sensitive area is not returned.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_CreatePrimary_REQUEST {
     /// TPM_RH_ENDORSEMENT, TPM_RH_OWNER, TPM_RH_PLATFORM+{PP}, or TPM_RH_NULL
     /// Auth Index: 1
@@ -26829,15 +27263,15 @@ impl TpmMarshaller for TPM2_CreatePrimary_REQUEST {
 }
 
 impl CmdStructure for TPM2_CreatePrimary_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_CreatePrimary_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[primaryHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.primaryHandle.clone()] }
 }
 
 /// This command is used to create a Primary Object under one of the Primary Seeds or a
@@ -26845,7 +27279,7 @@ impl ReqStructure for TPM2_CreatePrimary_REQUEST {
 /// the object to be created. The size of the unique field shall not be checked for
 /// consistency with the other object parameters. The command will create and load a
 /// Primary Object. The sensitive area is not returned.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CreatePrimaryResponse {
     /// Handle of type TPM_HT_TRANSIENT for created Primary Object
     pub handle: TPM_HANDLE,
@@ -26918,21 +27352,21 @@ impl TpmMarshaller for CreatePrimaryResponse {
 }
 
 impl CmdStructure for CreatePrimaryResponse {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl RespStructure for CreatePrimaryResponse {
-    fn get_handle() -> u16 { handle }
+    fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
-    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle; }
+    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
 }
 
 /// This command enables and disables use of a hierarchy and its associated NV storage.
 /// The command allows phEnable, phEnableNV, shEnable, and ehEnable to be changed when the
 /// proper authorization is provided.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_HierarchyControl_REQUEST {
     /// TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -26985,7 +27419,7 @@ impl TpmStructure for TPM2_HierarchyControl_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.enable.initFromTpm(buf);
-        self.state = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.state = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -27005,14 +27439,14 @@ impl TpmMarshaller for TPM2_HierarchyControl_REQUEST {
 }
 
 impl CmdStructure for TPM2_HierarchyControl_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_HierarchyControl_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This command allows setting of the authorization policy for the lockout
@@ -27020,7 +27454,7 @@ impl ReqStructure for TPM2_HierarchyControl_REQUEST {
 /// (ownerPolicy), and the endorsement hierarchy (endorsementPolicy). On TPMs implementing
 /// Authenticated Countdown Timers (ACT), this command may also be used to set the
 /// authorization policy for an ACT.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_SetPrimaryPolicy_REQUEST {
     /// TPM_RH_LOCKOUT, TPM_RH_ENDORSEMENT, TPM_RH_OWNER, TPMI_RH_ACT or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -27074,7 +27508,7 @@ impl TpmStructure for TPM2_SetPrimaryPolicy_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.authPolicy = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -27094,20 +27528,20 @@ impl TpmMarshaller for TPM2_SetPrimaryPolicy_REQUEST {
 }
 
 impl CmdStructure for TPM2_SetPrimaryPolicy_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_SetPrimaryPolicy_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This replaces the current platform primary seed (PPS) with a value from the RNG and
 /// sets platformPolicy to the default initialization value (the Empty Buffer).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ChangePPS_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -27165,14 +27599,14 @@ impl TpmMarshaller for TPM2_ChangePPS_REQUEST {
 }
 
 impl CmdStructure for TPM2_ChangePPS_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_ChangePPS_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This replaces the current endorsement primary seed (EPS) with a value from the RNG and
@@ -27181,7 +27615,7 @@ impl ReqStructure for TPM2_ChangePPS_REQUEST {
 /// Buffer. It will flush any resident objects (transient or persistent) in the
 /// Endorsement hierarchy and not allow objects in the hierarchy associated with the
 /// previous EPS to be loaded.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ChangeEPS_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -27239,18 +27673,18 @@ impl TpmMarshaller for TPM2_ChangeEPS_REQUEST {
 }
 
 impl CmdStructure for TPM2_ChangeEPS_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_ChangeEPS_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This command removes all TPM context associated with a specific Owner.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Clear_REQUEST {
     /// TPM_RH_LOCKOUT or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -27308,18 +27742,18 @@ impl TpmMarshaller for TPM2_Clear_REQUEST {
 }
 
 impl CmdStructure for TPM2_Clear_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_Clear_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// TPM2_ClearControl() disables and enables the execution of TPM2_Clear().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ClearControl_REQUEST {
     /// TPM_RH_LOCKOUT or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -27364,7 +27798,7 @@ impl TpmStructure for TPM2_ClearControl_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.disable = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.disable = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -27384,19 +27818,19 @@ impl TpmMarshaller for TPM2_ClearControl_REQUEST {
 }
 
 impl CmdStructure for TPM2_ClearControl_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_ClearControl_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[auth] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.auth.clone()] }
 }
 
 /// This command allows the authorization secret for a hierarchy or lockout to be changed
 /// using the current authorization value as the command authorization.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_HierarchyChangeAuth_REQUEST {
     /// TPM_RH_LOCKOUT, TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -27461,21 +27895,21 @@ impl TpmMarshaller for TPM2_HierarchyChangeAuth_REQUEST {
 }
 
 impl CmdStructure for TPM2_HierarchyChangeAuth_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_HierarchyChangeAuth_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This command cancels the effect of a TPM lockout due to a number of successive
 /// authorization failures. If this command is properly authorized, the lockout counter is
 /// set to zero.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_DictionaryAttackLockReset_REQUEST {
     /// TPM_RH_LOCKOUT
     /// Auth Index: 1
@@ -27533,18 +27967,18 @@ impl TpmMarshaller for TPM2_DictionaryAttackLockReset_REQUEST {
 }
 
 impl CmdStructure for TPM2_DictionaryAttackLockReset_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_DictionaryAttackLockReset_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[lockHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.lockHandle.clone()] }
 }
 
 /// This command changes the lockout parameters.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_DictionaryAttackParameters_REQUEST {
     /// TPM_RH_LOCKOUT
     /// Auth Index: 1
@@ -27603,9 +28037,9 @@ impl TpmStructure for TPM2_DictionaryAttackParameters_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.newMaxTries = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.newRecoveryTime = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.lockoutRecovery = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.newMaxTries = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.newRecoveryTime = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.lockoutRecovery = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -27625,19 +28059,19 @@ impl TpmMarshaller for TPM2_DictionaryAttackParameters_REQUEST {
 }
 
 impl CmdStructure for TPM2_DictionaryAttackParameters_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_DictionaryAttackParameters_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[lockHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.lockHandle.clone()] }
 }
 
 /// This command is used to determine which commands require assertion of Physical
 /// Presence (PP) in addition to platformAuth/platformPolicy.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_PP_Commands_REQUEST {
     /// TPM_RH_PLATFORM+PP
     /// Auth Index: 1
@@ -27709,20 +28143,20 @@ impl TpmMarshaller for TPM2_PP_Commands_REQUEST {
 }
 
 impl CmdStructure for TPM2_PP_Commands_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 4 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 4, valLen: 4 } }
 }
 
 impl ReqStructure for TPM2_PP_Commands_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[auth] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.auth.clone()] }
 }
 
 /// This command allows the platform to change the set of algorithms that are used by the
 /// TPM. The algorithmSet setting is a vendor-dependent value.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_SetAlgorithmSet_REQUEST {
     /// TPM_RH_PLATFORM
     /// Auth Index: 1
@@ -27767,7 +28201,7 @@ impl TpmStructure for TPM2_SetAlgorithmSet_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.algorithmSet = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.algorithmSet = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -27787,19 +28221,19 @@ impl TpmMarshaller for TPM2_SetAlgorithmSet_REQUEST {
 }
 
 impl CmdStructure for TPM2_SetAlgorithmSet_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_SetAlgorithmSet_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This command uses platformPolicy and a TPM Vendor Authorization Key to authorize a
 /// Field Upgrade Manifest.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_FieldUpgradeStart_REQUEST {
     /// TPM_RH_PLATFORM+{PP}
     /// Auth Index:1
@@ -27864,7 +28298,7 @@ impl TpmStructure for TPM2_FieldUpgradeStart_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.fuDigest = buf.readSizedByteBuf(2);
-        let r#manifestSignatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#manifestSignatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.manifestSignature = TPMU_SIGNATURE::create(r#manifestSignatureSigAlg)?;
         self.manifestSignature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -27886,22 +28320,22 @@ impl TpmMarshaller for TPM2_FieldUpgradeStart_REQUEST {
 }
 
 impl CmdStructure for TPM2_FieldUpgradeStart_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_FieldUpgradeStart_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authorization, keyHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authorization.clone(), self.keyHandle.clone()] }
 }
 
 /// This command will take the actual field upgrade image to be installed on the TPM. The
 /// exact format of fuData is vendor-specific. This command is only possible following a
 /// successful TPM2_FieldUpgradeStart(). If the TPM has not received a properly authorized
 /// TPM2_FieldUpgradeStart(), then the TPM shall return TPM_RC_FIELDUPGRADE.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_FieldUpgradeData_REQUEST {
     /// Field upgrade image data
     pub fuData: Vec<u8>,
@@ -27959,16 +28393,22 @@ impl TpmMarshaller for TPM2_FieldUpgradeData_REQUEST {
 }
 
 impl CmdStructure for TPM2_FieldUpgradeData_REQUEST {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl ReqStructure for TPM2_FieldUpgradeData_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
 }
 
 /// This command will take the actual field upgrade image to be installed on the TPM. The
 /// exact format of fuData is vendor-specific. This command is only possible following a
 /// successful TPM2_FieldUpgradeStart(). If the TPM has not received a properly authorized
 /// TPM2_FieldUpgradeStart(), then the TPM shall return TPM_RC_FIELDUPGRADE.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct FieldUpgradeDataResponse {
     /// Tagged digest of the next block
     /// TPM_ALG_NULL if field update is complete
@@ -28022,8 +28462,19 @@ impl TpmMarshaller for FieldUpgradeDataResponse {
 
 }
 
+impl CmdStructure for FieldUpgradeDataResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for FieldUpgradeDataResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command is used to read a copy of the current firmware installed in the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_FirmwareRead_REQUEST {
     /// The number of previous calls to this command in this sequence
     /// set to 0 on the first call
@@ -28062,7 +28513,7 @@ impl TpmStructure for TPM2_FirmwareRead_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.sequenceNumber = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sequenceNumber = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -28081,8 +28532,19 @@ impl TpmMarshaller for TPM2_FirmwareRead_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_FirmwareRead_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_FirmwareRead_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command is used to read a copy of the current firmware installed in the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct FirmwareReadResponse {
     /// Field upgrade image data
     pub fuData: Vec<u8>,
@@ -28131,14 +28593,20 @@ impl TpmMarshaller for FirmwareReadResponse {
 }
 
 impl CmdStructure for FirmwareReadResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for FirmwareReadResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command saves a session context, object context, or sequence object context
 /// outside the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ContextSave_REQUEST {
     /// Handle of the resource to save
     /// Auth Index: None
@@ -28195,19 +28663,19 @@ impl TpmMarshaller for TPM2_ContextSave_REQUEST {
 }
 
 impl CmdStructure for TPM2_ContextSave_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_ContextSave_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[saveHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.saveHandle.clone()] }
 }
 
 /// This command saves a session context, object context, or sequence object context
 /// outside the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ContextSaveResponse {
     pub context: TPMS_CONTEXT,
 }
@@ -28254,8 +28722,19 @@ impl TpmMarshaller for ContextSaveResponse {
 
 }
 
+impl CmdStructure for ContextSaveResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for ContextSaveResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command is used to reload a context that has been saved by TPM2_ContextSave().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ContextLoad_REQUEST {
     /// The context blob
     pub context: TPMS_CONTEXT,
@@ -28312,8 +28791,19 @@ impl TpmMarshaller for TPM2_ContextLoad_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_ContextLoad_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_ContextLoad_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command is used to reload a context that has been saved by TPM2_ContextSave().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ContextLoadResponse {
     /// The handle assigned to the resource after it has been successfully loaded
     pub handle: TPM_HANDLE,
@@ -28360,19 +28850,19 @@ impl TpmMarshaller for ContextLoadResponse {
 }
 
 impl CmdStructure for ContextLoadResponse {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl RespStructure for ContextLoadResponse {
-    fn get_handle() -> u16 { handle }
+    fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
-    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle; }
+    fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
 }
 
 /// This command causes all context associated with a loaded object, sequence object, or
 /// session to be removed from TPM memory.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_FlushContext_REQUEST {
     /// The handle of the item to flush
     /// NOTE This is a use of a handle as a parameter.
@@ -28430,9 +28920,20 @@ impl TpmMarshaller for TPM2_FlushContext_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_FlushContext_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_FlushContext_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command allows certain Transient Objects to be made persistent or a persistent
 /// object to be evicted.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_EvictControl_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -28506,19 +29007,19 @@ impl TpmMarshaller for TPM2_EvictControl_REQUEST {
 }
 
 impl CmdStructure for TPM2_EvictControl_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
 }
 
 impl ReqStructure for TPM2_EvictControl_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[auth, objectHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.auth.clone(), self.objectHandle.clone()] }
 }
 
 /// This command reads the current TPMS_TIME_INFO structure that contains the current
 /// setting of Time, Clock, resetCount, and restartCount.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ReadClock_REQUEST {
 }
 
@@ -28562,9 +29063,20 @@ impl TpmMarshaller for TPM2_ReadClock_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_ReadClock_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_ReadClock_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command reads the current TPMS_TIME_INFO structure that contains the current
 /// setting of Time, Clock, resetCount, and restartCount.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct ReadClockResponse {
     pub currentTime: TPMS_TIME_INFO,
 }
@@ -28611,11 +29123,22 @@ impl TpmMarshaller for ReadClockResponse {
 
 }
 
+impl CmdStructure for ReadClockResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for ReadClockResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command is used to advance the value of the TPMs Clock. The command will fail if
 /// newTime is less than the current value of Clock or if the new time is greater than
 /// FFFF00000000000016. If both of these checks succeed, Clock is set to newTime. If
 /// either of these checks fails, the TPM shall return TPM_RC_VALUE and make no change to Clock.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ClockSet_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -28660,7 +29183,7 @@ impl TpmStructure for TPM2_ClockSet_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.newTime = u64::try_from(buf.readInt64()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.newTime = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -28680,19 +29203,19 @@ impl TpmMarshaller for TPM2_ClockSet_REQUEST {
 }
 
 impl CmdStructure for TPM2_ClockSet_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_ClockSet_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[auth] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.auth.clone()] }
 }
 
 /// This command adjusts the rate of advance of Clock and Time to provide a better
 /// approximation to real time.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ClockRateAdjust_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Handle: 1
@@ -28737,7 +29260,7 @@ impl TpmStructure for TPM2_ClockRateAdjust_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.rateAdjust = TPM_CLOCK_ADJUST::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.rateAdjust = TPM_CLOCK_ADJUST::try_from(buf.readByte() as i8).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -28757,18 +29280,18 @@ impl TpmMarshaller for TPM2_ClockRateAdjust_REQUEST {
 }
 
 impl CmdStructure for TPM2_ClockRateAdjust_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_ClockRateAdjust_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[auth] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.auth.clone()] }
 }
 
 /// This command returns various information regarding the TPM and its current state.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_GetCapability_REQUEST {
     /// Group selection; determines the format of the response
     pub capability: TPM_CAP,
@@ -28818,9 +29341,9 @@ impl TpmStructure for TPM2_GetCapability_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.capability = TPM_CAP::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.property = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.propertyCount = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.capability = TPM_CAP::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.property = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.propertyCount = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -28839,8 +29362,19 @@ impl TpmMarshaller for TPM2_GetCapability_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_GetCapability_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_GetCapability_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command returns various information regarding the TPM and its current state.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GetCapabilityResponse {
     /// Flag to indicate if there are more values of this type
     pub moreData: u8,
@@ -28879,8 +29413,8 @@ impl TpmStructure for GetCapabilityResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.moreData = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#capabilityDataCapability: TPM_CAP = TPM_CAP::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.moreData = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#capabilityDataCapability: TPM_CAP = TPM_CAP::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         self.capabilityData = TPMU_CAPABILITIES::create(r#capabilityDataCapability)?;
         self.capabilityData.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -28901,9 +29435,20 @@ impl TpmMarshaller for GetCapabilityResponse {
 
 }
 
+impl CmdStructure for GetCapabilityResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for GetCapabilityResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command is used to check to see if specific combinations of algorithm parameters
 /// are supported.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_TestParms_REQUEST {
     /// The algorithm to be tested
 
@@ -28947,7 +29492,7 @@ impl TpmStructure for TPM2_TestParms_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#parametersType: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#parametersType: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.parameters = TPMU_PUBLIC_PARMS::create(r#parametersType)?;
         self.parameters.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -28968,10 +29513,21 @@ impl TpmMarshaller for TPM2_TestParms_REQUEST {
 
 }
 
+impl CmdStructure for TPM2_TestParms_REQUEST {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl ReqStructure for TPM2_TestParms_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
+}
+
 /// This command defines the attributes of an NV Index and causes the TPM to reserve space
 /// to hold the data associated with the NV Index. If a definition already exists at the
 /// NV Index, the TPM will return TPM_RC_NV_DEFINED.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_DefineSpace_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -29043,19 +29599,19 @@ impl TpmMarshaller for TPM2_NV_DefineSpace_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_DefineSpace_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_NV_DefineSpace_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This command removes an Index from the TPM.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_UndefineSpace_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -29119,19 +29675,19 @@ impl TpmMarshaller for TPM2_NV_UndefineSpace_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_UndefineSpace_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
 }
 
 impl ReqStructure for TPM2_NV_UndefineSpace_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone()] }
 }
 
 /// This command allows removal of a platform-created NV Index that has
 /// TPMA_NV_POLICY_DELETE SET.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_UndefineSpaceSpecial_REQUEST {
     /// Index to be deleted
     /// Auth Index: 1
@@ -29196,19 +29752,19 @@ impl TpmMarshaller for TPM2_NV_UndefineSpaceSpecial_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_UndefineSpaceSpecial_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
 }
 
 impl ReqStructure for TPM2_NV_UndefineSpaceSpecial_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[nvIndex, platform] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.nvIndex.clone(), self.platform.clone()] }
 }
 
 /// This command is used to read the public area and Name of an NV Index. The public area
 /// of an Index is not privacy-sensitive and no authorization is required to read this data.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_ReadPublic_REQUEST {
     /// The NV Index
     /// Auth Index: None
@@ -29265,19 +29821,19 @@ impl TpmMarshaller for TPM2_NV_ReadPublic_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_ReadPublic_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_NV_ReadPublic_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.nvIndex.clone()] }
 }
 
 /// This command is used to read the public area and Name of an NV Index. The public area
 /// of an Index is not privacy-sensitive and no authorization is required to read this data.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct NV_ReadPublicResponse {
     /// The public area of the NV Index
     pub nvPublic: TPMS_NV_PUBLIC,
@@ -29331,14 +29887,20 @@ impl TpmMarshaller for NV_ReadPublicResponse {
 }
 
 impl CmdStructure for NV_ReadPublicResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for NV_ReadPublicResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// This command writes a value to an area in NV memory that was previously defined by
 /// TPM2_NV_DefineSpace().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_Write_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -29396,7 +29958,7 @@ impl TpmStructure for TPM2_NV_Write_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.data = buf.readSizedByteBuf(2);
-        self.offset = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -29416,20 +29978,20 @@ impl TpmMarshaller for TPM2_NV_Write_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_Write_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_NV_Write_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone()] }
 }
 
 /// This command is used to increment the value in an NV Index that has the TPM_NT_COUNTER
 /// attribute. The data value of the NV Index is incremented by one.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_Increment_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -29493,19 +30055,19 @@ impl TpmMarshaller for TPM2_NV_Increment_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_Increment_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
 }
 
 impl ReqStructure for TPM2_NV_Increment_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone()] }
 }
 
 /// This command extends a value to an area in NV memory that was previously defined by
 /// TPM2_NV_DefineSpace.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_Extend_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -29576,21 +30138,21 @@ impl TpmMarshaller for TPM2_NV_Extend_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_Extend_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_NV_Extend_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone()] }
 }
 
 /// This command is used to SET bits in an NV Index that was created as a bit field. Any
 /// number of bits from 0 to 64 may be SET. The contents of bits are ORed with the current
 /// contents of the NV Index.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_SetBits_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -29641,7 +30203,7 @@ impl TpmStructure for TPM2_NV_SetBits_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.bits = u64::try_from(buf.readInt64()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.bits = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -29661,19 +30223,19 @@ impl TpmMarshaller for TPM2_NV_SetBits_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_SetBits_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
 }
 
 impl ReqStructure for TPM2_NV_SetBits_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone()] }
 }
 
 /// If the TPMA_NV_WRITEDEFINE or TPMA_NV_WRITE_STCLEAR attributes of an NV location are
 /// SET, then this command may be used to inhibit further writes of the NV Index.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_WriteLock_REQUEST {
     /// Handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -29737,19 +30299,19 @@ impl TpmMarshaller for TPM2_NV_WriteLock_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_WriteLock_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
 }
 
 impl ReqStructure for TPM2_NV_WriteLock_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone()] }
 }
 
 /// The command will SET TPMA_NV_WRITELOCKED for all indexes that have their
 /// TPMA_NV_GLOBALLOCK attribute SET.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_GlobalWriteLock_REQUEST {
     /// TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
     /// Auth Index: 1
@@ -29807,18 +30369,18 @@ impl TpmMarshaller for TPM2_NV_GlobalWriteLock_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_GlobalWriteLock_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_NV_GlobalWriteLock_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone()] }
 }
 
 /// This command reads a value from an area in NV memory previously defined by TPM2_NV_DefineSpace().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_Read_REQUEST {
     /// The handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -29876,8 +30438,8 @@ impl TpmStructure for TPM2_NV_Read_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.size = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.offset = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.size = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -29897,18 +30459,18 @@ impl TpmMarshaller for TPM2_NV_Read_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_Read_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
 }
 
 impl ReqStructure for TPM2_NV_Read_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone()] }
 }
 
 /// This command reads a value from an area in NV memory previously defined by TPM2_NV_DefineSpace().
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct NV_ReadResponse {
     /// The data read
     pub data: Vec<u8>,
@@ -29957,14 +30519,20 @@ impl TpmMarshaller for NV_ReadResponse {
 }
 
 impl CmdStructure for NV_ReadResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for NV_ReadResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// If TPMA_NV_READ_STCLEAR is SET in an Index, then this command may be used to prevent
 /// further reads of the NV Index until the next TPM2_Startup (TPM_SU_CLEAR).
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_ReadLock_REQUEST {
     /// The handle indicating the source of the authorization value
     /// Auth Index: 1
@@ -30028,18 +30596,18 @@ impl TpmMarshaller for TPM2_NV_ReadLock_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_ReadLock_REQUEST {
-    fn num_handles() -> u16 { 2 }
+    fn num_handles(&self) -> u16 { 2 }
 
 }
 
 impl ReqStructure for TPM2_NV_ReadLock_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[authHandle, nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.authHandle.clone(), self.nvIndex.clone()] }
 }
 
 /// This command allows the authorization secret for an NV Index to be changed.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_ChangeAuth_REQUEST {
     /// Handle of the entity
     /// Auth Index: 1
@@ -30104,20 +30672,20 @@ impl TpmMarshaller for TPM2_NV_ChangeAuth_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_ChangeAuth_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_NV_ChangeAuth_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.nvIndex.clone()] }
 }
 
 /// The purpose of this command is to certify the contents of an NV Index or portion of an
 /// NV Index.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_NV_Certify_REQUEST {
     /// Handle of the key used to sign the attestation structure
     /// Auth Index: 1
@@ -30201,11 +30769,11 @@ impl TpmStructure for TPM2_NV_Certify_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
-        self.size = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.offset = u16::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.size = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -30225,20 +30793,20 @@ impl TpmMarshaller for TPM2_NV_Certify_REQUEST {
 }
 
 impl CmdStructure for TPM2_NV_Certify_REQUEST {
-    fn num_handles() -> u16 { 3 }
+    fn num_handles(&self) -> u16 { 3 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_NV_Certify_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[signHandle, authHandle, nvIndex] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.signHandle.clone(), self.authHandle.clone(), self.nvIndex.clone()] }
 }
 
 /// The purpose of this command is to certify the contents of an NV Index or portion of an
 /// NV Index.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct NV_CertifyResponse {
     /// The structure that was signed
     pub certifyInfo: TPMS_ATTEST,
@@ -30278,7 +30846,7 @@ impl TpmStructure for NV_CertifyResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.certifyInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -30300,14 +30868,20 @@ impl TpmMarshaller for NV_CertifyResponse {
 }
 
 impl CmdStructure for NV_CertifyResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for NV_CertifyResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// The purpose of this command is to obtain information about an Attached Component
 /// referenced by an AC handle.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_AC_GetCapability_REQUEST {
     /// Handle indicating the Attached Component
     /// Auth Index: None
@@ -30357,8 +30931,8 @@ impl TpmStructure for TPM2_AC_GetCapability_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.capability = TPM_AT::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.count = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.capability = TPM_AT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.count = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -30378,19 +30952,19 @@ impl TpmMarshaller for TPM2_AC_GetCapability_REQUEST {
 }
 
 impl CmdStructure for TPM2_AC_GetCapability_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_AC_GetCapability_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[ac] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.ac.clone()] }
 }
 
 /// The purpose of this command is to obtain information about an Attached Component
 /// referenced by an AC handle.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct AC_GetCapabilityResponse {
     /// Flag to indicate whether there are more values
     pub moreData: u8,
@@ -30423,7 +30997,7 @@ impl TpmStructure for AC_GetCapabilityResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.moreData = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.moreData = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         buf.readObjArr(self.capabilitiesData.as_mut());
         Ok(())
     }
@@ -30443,9 +31017,20 @@ impl TpmMarshaller for AC_GetCapabilityResponse {
 
 }
 
+impl CmdStructure for AC_GetCapabilityResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for AC_GetCapabilityResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// The purpose of this command is to send (copy) a loaded object from the TPM to an
 /// Attached Component.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_AC_Send_REQUEST {
     /// Handle of the object being sent to ac
     /// Auth Index: 1
@@ -30523,20 +31108,20 @@ impl TpmMarshaller for TPM2_AC_Send_REQUEST {
 }
 
 impl CmdStructure for TPM2_AC_Send_REQUEST {
-    fn num_handles() -> u16 { 3 }
+    fn num_handles(&self) -> u16 { 3 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_AC_Send_REQUEST {
-    fn num_auth_handles() -> u16 { 2 }
+    fn num_auth_handles(&self) -> u16 { 2 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[sendObject, authHandle, ac] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.sendObject.clone(), self.authHandle.clone(), self.ac.clone()] }
 }
 
 /// The purpose of this command is to send (copy) a loaded object from the TPM to an
 /// Attached Component.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct AC_SendResponse {
     /// May include AC specific data or information about an error.
     pub acDataOut: TPMS_AC_OUTPUT,
@@ -30584,11 +31169,22 @@ impl TpmMarshaller for AC_SendResponse {
 
 }
 
+impl CmdStructure for AC_SendResponse {
+    fn num_handles(&self) -> u16 { 0 }
+
+}
+
+impl RespStructure for AC_SendResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+}
+
 /// This command allows qualification of the sending (copying) of an Object to an Attached
 /// Component (AC). Qualification includes selection of the receiving AC and the method of
 /// authentication for the AC, and, in certain circumstances, the Object to be sent may be
 /// specified.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Policy_AC_SendSelect_REQUEST {
     /// Handle for the policy session being extended
     /// Auth Index: None
@@ -30653,7 +31249,7 @@ impl TpmStructure for TPM2_Policy_AC_SendSelect_REQUEST {
         self.objectName = buf.readSizedByteBuf(2);
         self.authHandleName = buf.readSizedByteBuf(2);
         self.acName = buf.readSizedByteBuf(2);
-        self.includeObject = u8::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.includeObject = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -30673,20 +31269,20 @@ impl TpmMarshaller for TPM2_Policy_AC_SendSelect_REQUEST {
 }
 
 impl CmdStructure for TPM2_Policy_AC_SendSelect_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
 }
 
 impl ReqStructure for TPM2_Policy_AC_SendSelect_REQUEST {
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[policySession] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.policySession.clone()] }
 }
 
 /// This command is used to set the time remaining before an Authenticated Countdown Timer
 /// (ACT) expires.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_ACT_SetTimeout_REQUEST {
     /// Handle of the selected ACT
     /// Auth Index: 1
@@ -30731,7 +31327,7 @@ impl TpmStructure for TPM2_ACT_SetTimeout_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.startTimeout = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.startTimeout = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -30751,18 +31347,18 @@ impl TpmMarshaller for TPM2_ACT_SetTimeout_REQUEST {
 }
 
 impl CmdStructure for TPM2_ACT_SetTimeout_REQUEST {
-    fn num_handles() -> u16 { 1 }
+    fn num_handles(&self) -> u16 { 1 }
 
 }
 
 impl ReqStructure for TPM2_ACT_SetTimeout_REQUEST {
-    fn num_auth_handles() -> u16 { 1 }
+    fn num_auth_handles(&self) -> u16 { 1 }
 
-    fn get_handles() ->  &'static [TPM_HANDLE] { &[actHandle] }
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![self.actHandle.clone()] }
 }
 
 /// This is a placeholder to allow testing of the dispatch code.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2_Vendor_TCG_Test_REQUEST {
     /// Dummy data
     pub inputData: Vec<u8>,
@@ -30820,13 +31416,19 @@ impl TpmMarshaller for TPM2_Vendor_TCG_Test_REQUEST {
 }
 
 impl CmdStructure for TPM2_Vendor_TCG_Test_REQUEST {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl ReqStructure for TPM2_Vendor_TCG_Test_REQUEST {
+    fn num_auth_handles(&self) -> u16 { 0 }
+
+    fn get_handles(&self) ->  Vec<TPM_HANDLE> { vec![] }
 }
 
 /// This is a placeholder to allow testing of the dispatch code.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Vendor_TCG_TestResponse {
     /// Dummy data
     pub outputData: Vec<u8>,
@@ -30875,9 +31477,15 @@ impl TpmMarshaller for Vendor_TCG_TestResponse {
 }
 
 impl CmdStructure for Vendor_TCG_TestResponse {
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 2, valLen: 1 } }
+}
+
+impl RespStructure for Vendor_TCG_TestResponse {
+    fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
+
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
 }
 
 /// These are the RSA schemes that only need a hash algorithm as a scheme parameter.
@@ -30935,7 +31543,7 @@ pub type TPMS_SCHEME_KDF1_SP800_108 = TPMS_KDF_SCHEME_KDF1_SP800_108;
 
 /// Contains the public and the plaintext-sensitive and/or encrypted private part of a TPM
 /// key (or other object)
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TssObject {
     /// Public part of key
     pub Public: TPMT_PUBLIC,
@@ -31007,7 +31615,7 @@ impl TpmMarshaller for TssObject {
 }
 
 /// Contains a PCR index and associated hash(pcr-value) [TSS]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PcrValue {
     /// PCR Index
     pub index: u32,
@@ -31051,7 +31659,7 @@ impl TpmStructure for PcrValue {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.index = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.index = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         self.value.initFromTpm(buf);
         Ok(())
     }
@@ -31072,7 +31680,7 @@ impl TpmMarshaller for PcrValue {
 }
 
 /// Structure representing a session block in a command buffer [TSS]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct SessionIn {
     /// Session handle
     pub handle: TPM_HANDLE,
@@ -31130,7 +31738,7 @@ impl TpmStructure for SessionIn {
         // Deserialize fields
         self.handle.initFromTpm(buf);
         self.nonceCaller = buf.readSizedByteBuf(2);
-        self.attributes = TPMA_SESSION::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.attributes = TPMA_SESSION::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         self.auth = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -31151,7 +31759,7 @@ impl TpmMarshaller for SessionIn {
 }
 
 /// Structure representing a session block in a response buffer [TSS]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct SessionOut {
     /// TPM nonce
     pub nonceTpm: Vec<u8>,
@@ -31202,7 +31810,7 @@ impl TpmStructure for SessionOut {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.nonceTpm = buf.readSizedByteBuf(2);
-        self.attributes = TPMA_SESSION::try_from(buf.readByte()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.attributes = TPMA_SESSION::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
         self.auth = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -31223,7 +31831,7 @@ impl TpmMarshaller for SessionOut {
 }
 
 /// Command header [TSS]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct CommandHeader {
     /// Command tag (sessions, or no sessions)
     pub Tag: TPM_ST,
@@ -31273,9 +31881,9 @@ impl TpmStructure for CommandHeader {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.Tag = TPM_ST::try_from(buf.readShort()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.CommandSize = u32::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.CommandCode = TPM_CC::try_from(buf.readInt()).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.Tag = TPM_ST::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.CommandSize = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.CommandCode = TPM_CC::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
         Ok(())
     }
 
@@ -31295,7 +31903,7 @@ impl TpmMarshaller for CommandHeader {
 }
 
 /// Contains the public and private part of a TPM key
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TSS_KEY {
     /// Public part of key
     pub publicPart: TPMT_PUBLIC,
@@ -31360,7 +31968,7 @@ impl TpmMarshaller for TSS_KEY {
 }
 
 /// Auto-derived from TPM2B_DIGEST to provide unique GetUnionSelector() implementation
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_DIGEST_SYMCIPHER {
 }
 
@@ -31408,7 +32016,7 @@ impl TpmMarshaller for TPM2B_DIGEST_SYMCIPHER {
 }
 
 /// Auto-derived from TPM2B_DIGEST
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct TPM2B_DIGEST_KEYEDHASH {
 }
 
@@ -31457,12 +32065,12 @@ impl TpmMarshaller for TPM2B_DIGEST_KEYEDHASH {
 
 lazy_static::lazy_static! {
     /// Maps enum type IDs to a map of values to string representations
-    static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u32, &'static str>> = {
+    static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u64, &'static str>> = {
     let mut map = HashMap::new();
-        let  TPM_ALG_ID_map = HashMap::new();
+        let  TPM_ALG_ID_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_ALG_ID>(), TPM_ALG_ID_map);
 
-        let mut TPM_ECC_CURVE_map = HashMap::new();
+        let mut TPM_ECC_CURVE_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_ECC_CURVE_map.insert(0x0, "NONE");
         TPM_ECC_CURVE_map.insert(0x1, "NIST_P192");
         TPM_ECC_CURVE_map.insert(0x2, "NIST_P224");
@@ -31475,50 +32083,50 @@ lazy_static::lazy_static! {
         TPM_ECC_CURVE_map.insert(0x21, "TEST_P192");
         map.insert(std::any::TypeId::of::<TPM_ECC_CURVE>(), TPM_ECC_CURVE_map);
 
-        let mut SHA1_map = HashMap::new();
+        let mut SHA1_map: HashMap<u64, &'static str> = HashMap::new();
         SHA1_map.insert(0x14, "DIGEST_SIZE");
         SHA1_map.insert(0x40, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SHA1>(), SHA1_map);
 
-        let mut SHA256_map = HashMap::new();
+        let mut SHA256_map: HashMap<u64, &'static str> = HashMap::new();
         SHA256_map.insert(0x20, "DIGEST_SIZE");
         SHA256_map.insert(0x40, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SHA256>(), SHA256_map);
 
-        let mut SHA384_map = HashMap::new();
+        let mut SHA384_map: HashMap<u64, &'static str> = HashMap::new();
         SHA384_map.insert(0x30, "DIGEST_SIZE");
         SHA384_map.insert(0x80, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SHA384>(), SHA384_map);
 
-        let mut SHA512_map = HashMap::new();
+        let mut SHA512_map: HashMap<u64, &'static str> = HashMap::new();
         SHA512_map.insert(0x40, "DIGEST_SIZE");
         SHA512_map.insert(0x80, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SHA512>(), SHA512_map);
 
-        let mut SM3_256_map = HashMap::new();
+        let mut SM3_256_map: HashMap<u64, &'static str> = HashMap::new();
         SM3_256_map.insert(0x20, "DIGEST_SIZE");
         SM3_256_map.insert(0x40, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SM3_256>(), SM3_256_map);
 
-        let mut SHA3_256_map = HashMap::new();
+        let mut SHA3_256_map: HashMap<u64, &'static str> = HashMap::new();
         SHA3_256_map.insert(0x20, "DIGEST_SIZE");
         SHA3_256_map.insert(0x88, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SHA3_256>(), SHA3_256_map);
 
-        let mut SHA3_384_map = HashMap::new();
+        let mut SHA3_384_map: HashMap<u64, &'static str> = HashMap::new();
         SHA3_384_map.insert(0x30, "DIGEST_SIZE");
         SHA3_384_map.insert(0x68, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SHA3_384>(), SHA3_384_map);
 
-        let mut SHA3_512_map = HashMap::new();
+        let mut SHA3_512_map: HashMap<u64, &'static str> = HashMap::new();
         SHA3_512_map.insert(0x40, "DIGEST_SIZE");
         SHA3_512_map.insert(0x48, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SHA3_512>(), SHA3_512_map);
 
-        let  Logic_map = HashMap::new();
+        let  Logic_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<Logic>(), Logic_map);
 
-        let mut TPM_SPEC_map = HashMap::new();
+        let mut TPM_SPEC_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_SPEC_map.insert(0x322E3000, "FAMILY");
         TPM_SPEC_map.insert(0x0, "LEVEL");
         TPM_SPEC_map.insert(0xA2, "VERSION");
@@ -31526,20 +32134,20 @@ lazy_static::lazy_static! {
         TPM_SPEC_map.insert(0x168, "DAY_OF_YEAR");
         map.insert(std::any::TypeId::of::<TPM_SPEC>(), TPM_SPEC_map);
 
-        let mut TPM_GENERATED_map = HashMap::new();
+        let mut TPM_GENERATED_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_GENERATED_map.insert(0xFF544347, "VALUE");
         map.insert(std::any::TypeId::of::<TPM_GENERATED>(), TPM_GENERATED_map);
 
-        let  TPM_CC_map = HashMap::new();
+        let  TPM_CC_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_CC>(), TPM_CC_map);
 
-        let  ImplementationConstants_map = HashMap::new();
+        let  ImplementationConstants_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<ImplementationConstants>(), ImplementationConstants_map);
 
-        let  TPM_RC_map = HashMap::new();
+        let  TPM_RC_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_RC>(), TPM_RC_map);
 
-        let mut TPM_CLOCK_ADJUST_map = HashMap::new();
+        let mut TPM_CLOCK_ADJUST_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_CLOCK_ADJUST_map.insert(0xFFFFFFFFFFFFFFFD, "COARSE_SLOWER");
         TPM_CLOCK_ADJUST_map.insert(0xFFFFFFFFFFFFFFFE, "MEDIUM_SLOWER");
         TPM_CLOCK_ADJUST_map.insert(0xFFFFFFFFFFFFFFFF, "FINE_SLOWER");
@@ -31549,7 +32157,7 @@ lazy_static::lazy_static! {
         TPM_CLOCK_ADJUST_map.insert(0x3, "COARSE_FASTER");
         map.insert(std::any::TypeId::of::<TPM_CLOCK_ADJUST>(), TPM_CLOCK_ADJUST_map);
 
-        let mut TPM_EO_map = HashMap::new();
+        let mut TPM_EO_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_EO_map.insert(0x0, "EQ");
         TPM_EO_map.insert(0x1, "NEQ");
         TPM_EO_map.insert(0x2, "SIGNED_GT");
@@ -31564,7 +32172,7 @@ lazy_static::lazy_static! {
         TPM_EO_map.insert(0xB, "BITCLEAR");
         map.insert(std::any::TypeId::of::<TPM_EO>(), TPM_EO_map);
 
-        let mut TPM_ST_map = HashMap::new();
+        let mut TPM_ST_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_ST_map.insert(0xC4, "RSP_COMMAND");
         TPM_ST_map.insert(0x8000, "NULL");
         TPM_ST_map.insert(0x8001, "NO_SESSIONS");
@@ -31585,27 +32193,27 @@ lazy_static::lazy_static! {
         TPM_ST_map.insert(0x8029, "FU_MANIFEST");
         map.insert(std::any::TypeId::of::<TPM_ST>(), TPM_ST_map);
 
-        let mut TPM_SU_map = HashMap::new();
+        let mut TPM_SU_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_SU_map.insert(0x0, "CLEAR");
         TPM_SU_map.insert(0x1, "STATE");
         map.insert(std::any::TypeId::of::<TPM_SU>(), TPM_SU_map);
 
-        let mut TPM_SE_map = HashMap::new();
+        let mut TPM_SE_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_SE_map.insert(0x0, "HMAC");
         TPM_SE_map.insert(0x1, "POLICY");
         TPM_SE_map.insert(0x3, "TRIAL");
         map.insert(std::any::TypeId::of::<TPM_SE>(), TPM_SE_map);
 
-        let  TPM_CAP_map = HashMap::new();
+        let  TPM_CAP_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_CAP>(), TPM_CAP_map);
 
-        let  TPM_PT_map = HashMap::new();
+        let  TPM_PT_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_PT>(), TPM_PT_map);
 
-        let  TPM_PT_PCR_map = HashMap::new();
+        let  TPM_PT_PCR_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_PT_PCR>(), TPM_PT_PCR_map);
 
-        let mut TPM_PS_map = HashMap::new();
+        let mut TPM_PS_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_PS_map.insert(0x0, "MAIN");
         TPM_PS_map.insert(0x1, "PC");
         TPM_PS_map.insert(0x2, "PDA");
@@ -31624,13 +32232,13 @@ lazy_static::lazy_static! {
         TPM_PS_map.insert(0xF, "TC");
         map.insert(std::any::TypeId::of::<TPM_PS>(), TPM_PS_map);
 
-        let  TPM_HT_map = HashMap::new();
+        let  TPM_HT_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_HT>(), TPM_HT_map);
 
-        let  TPM_RH_map = HashMap::new();
+        let  TPM_RH_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_RH>(), TPM_RH_map);
 
-        let mut TPM_NT_map = HashMap::new();
+        let mut TPM_NT_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_NT_map.insert(0x0, "ORDINARY");
         TPM_NT_map.insert(0x1, "COUNTER");
         TPM_NT_map.insert(0x2, "BITS");
@@ -31639,18 +32247,18 @@ lazy_static::lazy_static! {
         TPM_NT_map.insert(0x9, "PIN_PASS");
         map.insert(std::any::TypeId::of::<TPM_NT>(), TPM_NT_map);
 
-        let mut TPM_AT_map = HashMap::new();
+        let mut TPM_AT_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_AT_map.insert(0x0, "ANY");
         TPM_AT_map.insert(0x1, "ERROR");
         TPM_AT_map.insert(0x2, "PV1");
         TPM_AT_map.insert(0x80000000, "VEND");
         map.insert(std::any::TypeId::of::<TPM_AT>(), TPM_AT_map);
 
-        let mut TPM_AE_map = HashMap::new();
+        let mut TPM_AE_map: HashMap<u64, &'static str> = HashMap::new();
         TPM_AE_map.insert(0x0, "NONE");
         map.insert(std::any::TypeId::of::<TPM_AE>(), TPM_AE_map);
 
-        let mut PLATFORM_map = HashMap::new();
+        let mut PLATFORM_map: HashMap<u64, &'static str> = HashMap::new();
         PLATFORM_map.insert(0x322E3000, "FAMILY");
         PLATFORM_map.insert(0x0, "LEVEL");
         PLATFORM_map.insert(0xA2, "VERSION");
@@ -31658,13 +32266,13 @@ lazy_static::lazy_static! {
         PLATFORM_map.insert(0x168, "DAY_OF_YEAR");
         map.insert(std::any::TypeId::of::<PLATFORM>(), PLATFORM_map);
 
-        let  Implementation_map = HashMap::new();
+        let  Implementation_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<Implementation>(), Implementation_map);
 
-        let  TPM_HC_map = HashMap::new();
+        let  TPM_HC_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_HC>(), TPM_HC_map);
 
-        let mut TPMA_ALGORITHM_map = HashMap::new();
+        let mut TPMA_ALGORITHM_map: HashMap<u64, &'static str> = HashMap::new();
         TPMA_ALGORITHM_map.insert(0x1, "asymmetric");
         TPMA_ALGORITHM_map.insert(0x2, "symmetric");
         TPMA_ALGORITHM_map.insert(0x4, "hash");
@@ -31674,10 +32282,10 @@ lazy_static::lazy_static! {
         TPMA_ALGORITHM_map.insert(0x400, "method");
         map.insert(std::any::TypeId::of::<TPMA_ALGORITHM>(), TPMA_ALGORITHM_map);
 
-        let  TPMA_OBJECT_map = HashMap::new();
+        let  TPMA_OBJECT_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_OBJECT>(), TPMA_OBJECT_map);
 
-        let mut TPMA_SESSION_map = HashMap::new();
+        let mut TPMA_SESSION_map: HashMap<u64, &'static str> = HashMap::new();
         TPMA_SESSION_map.insert(0x1, "continueSession");
         TPMA_SESSION_map.insert(0x2, "auditExclusive");
         TPMA_SESSION_map.insert(0x4, "auditReset");
@@ -31686,7 +32294,7 @@ lazy_static::lazy_static! {
         TPMA_SESSION_map.insert(0x80, "audit");
         map.insert(std::any::TypeId::of::<TPMA_SESSION>(), TPMA_SESSION_map);
 
-        let mut TPMA_LOCALITY_map = HashMap::new();
+        let mut TPMA_LOCALITY_map: HashMap<u64, &'static str> = HashMap::new();
         TPMA_LOCALITY_map.insert(0x1, "LOC_ZERO");
         TPMA_LOCALITY_map.insert(0x2, "LOC_ONE");
         TPMA_LOCALITY_map.insert(0x4, "LOC_TWO");
@@ -31694,7 +32302,7 @@ lazy_static::lazy_static! {
         TPMA_LOCALITY_map.insert(0x10, "LOC_FOUR");
         map.insert(std::any::TypeId::of::<TPMA_LOCALITY>(), TPMA_LOCALITY_map);
 
-        let mut TPMA_PERMANENT_map = HashMap::new();
+        let mut TPMA_PERMANENT_map: HashMap<u64, &'static str> = HashMap::new();
         TPMA_PERMANENT_map.insert(0x1, "ownerAuthSet");
         TPMA_PERMANENT_map.insert(0x2, "endorsementAuthSet");
         TPMA_PERMANENT_map.insert(0x4, "lockoutAuthSet");
@@ -31703,7 +32311,7 @@ lazy_static::lazy_static! {
         TPMA_PERMANENT_map.insert(0x400, "tpmGeneratedEPS");
         map.insert(std::any::TypeId::of::<TPMA_PERMANENT>(), TPMA_PERMANENT_map);
 
-        let mut TPMA_STARTUP_CLEAR_map = HashMap::new();
+        let mut TPMA_STARTUP_CLEAR_map: HashMap<u64, &'static str> = HashMap::new();
         TPMA_STARTUP_CLEAR_map.insert(0x1, "phEnable");
         TPMA_STARTUP_CLEAR_map.insert(0x2, "shEnable");
         TPMA_STARTUP_CLEAR_map.insert(0x4, "ehEnable");
@@ -31711,13 +32319,13 @@ lazy_static::lazy_static! {
         TPMA_STARTUP_CLEAR_map.insert(0xFFFFFFFF80000000, "orderly");
         map.insert(std::any::TypeId::of::<TPMA_STARTUP_CLEAR>(), TPMA_STARTUP_CLEAR_map);
 
-        let mut TPMA_MEMORY_map = HashMap::new();
+        let mut TPMA_MEMORY_map: HashMap<u64, &'static str> = HashMap::new();
         TPMA_MEMORY_map.insert(0x1, "sharedRAM");
         TPMA_MEMORY_map.insert(0x2, "sharedNV");
         TPMA_MEMORY_map.insert(0x4, "objectCopiedToRam");
         map.insert(std::any::TypeId::of::<TPMA_MEMORY>(), TPMA_MEMORY_map);
 
-        let mut TPMA_CC_map = HashMap::new();
+        let mut TPMA_CC_map: HashMap<u64, &'static str> = HashMap::new();
         TPMA_CC_map.insert(0x400000, "nv");
         TPMA_CC_map.insert(0x800000, "extensive");
         TPMA_CC_map.insert(0x1000000, "flushed");
@@ -31725,34 +32333,34 @@ lazy_static::lazy_static! {
         TPMA_CC_map.insert(0x20000000, "V");
         map.insert(std::any::TypeId::of::<TPMA_CC>(), TPMA_CC_map);
 
-        let mut TPMA_MODES_map = HashMap::new();
+        let mut TPMA_MODES_map: HashMap<u64, &'static str> = HashMap::new();
         TPMA_MODES_map.insert(0x1, "FIPS_140_2");
         map.insert(std::any::TypeId::of::<TPMA_MODES>(), TPMA_MODES_map);
 
-        let  TPMA_X509_KEY_USAGE_map = HashMap::new();
+        let  TPMA_X509_KEY_USAGE_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_X509_KEY_USAGE>(), TPMA_X509_KEY_USAGE_map);
 
-        let mut TPMA_ACT_map = HashMap::new();
+        let mut TPMA_ACT_map: HashMap<u64, &'static str> = HashMap::new();
         TPMA_ACT_map.insert(0x1, "signaled");
         TPMA_ACT_map.insert(0x2, "preserveSignaled");
         map.insert(std::any::TypeId::of::<TPMA_ACT>(), TPMA_ACT_map);
 
-        let  TPM_NV_INDEX_map = HashMap::new();
+        let  TPM_NV_INDEX_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_NV_INDEX>(), TPM_NV_INDEX_map);
 
-        let  TPMA_NV_map = HashMap::new();
+        let  TPMA_NV_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_NV>(), TPMA_NV_map);
 
         map
     };
 
     /// Maps enum type IDs to a map of string representations to values
-    static ref STR_TO_ENUM_MAP: HashMap<std::any::TypeId, HashMap<&'static str, u32>> = {
+    static ref STR_TO_ENUM_MAP: HashMap<std::any::TypeId, HashMap<&'static str, u64>> = {
     let mut map = HashMap::new();
-        let  TPM_ALG_ID_map = HashMap::new();
+        let  TPM_ALG_ID_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_ALG_ID>(), TPM_ALG_ID_map);
 
-        let mut TPM_ECC_CURVE_map = HashMap::new();
+        let mut TPM_ECC_CURVE_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_ECC_CURVE_map.insert("NONE", 0x0);
         TPM_ECC_CURVE_map.insert("NIST_P192", 0x1);
         TPM_ECC_CURVE_map.insert("NIST_P224", 0x2);
@@ -31765,50 +32373,50 @@ lazy_static::lazy_static! {
         TPM_ECC_CURVE_map.insert("TEST_P192", 0x21);
         map.insert(std::any::TypeId::of::<TPM_ECC_CURVE>(), TPM_ECC_CURVE_map);
 
-        let mut SHA1_map = HashMap::new();
+        let mut SHA1_map: HashMap<&'static str, u64> = HashMap::new();
         SHA1_map.insert("DIGEST_SIZE", 0x14);
         SHA1_map.insert("BLOCK_SIZE", 0x40);
         map.insert(std::any::TypeId::of::<SHA1>(), SHA1_map);
 
-        let mut SHA256_map = HashMap::new();
+        let mut SHA256_map: HashMap<&'static str, u64> = HashMap::new();
         SHA256_map.insert("DIGEST_SIZE", 0x20);
         SHA256_map.insert("BLOCK_SIZE", 0x40);
         map.insert(std::any::TypeId::of::<SHA256>(), SHA256_map);
 
-        let mut SHA384_map = HashMap::new();
+        let mut SHA384_map: HashMap<&'static str, u64> = HashMap::new();
         SHA384_map.insert("DIGEST_SIZE", 0x30);
         SHA384_map.insert("BLOCK_SIZE", 0x80);
         map.insert(std::any::TypeId::of::<SHA384>(), SHA384_map);
 
-        let mut SHA512_map = HashMap::new();
+        let mut SHA512_map: HashMap<&'static str, u64> = HashMap::new();
         SHA512_map.insert("DIGEST_SIZE", 0x40);
         SHA512_map.insert("BLOCK_SIZE", 0x80);
         map.insert(std::any::TypeId::of::<SHA512>(), SHA512_map);
 
-        let mut SM3_256_map = HashMap::new();
+        let mut SM3_256_map: HashMap<&'static str, u64> = HashMap::new();
         SM3_256_map.insert("DIGEST_SIZE", 0x20);
         SM3_256_map.insert("BLOCK_SIZE", 0x40);
         map.insert(std::any::TypeId::of::<SM3_256>(), SM3_256_map);
 
-        let mut SHA3_256_map = HashMap::new();
+        let mut SHA3_256_map: HashMap<&'static str, u64> = HashMap::new();
         SHA3_256_map.insert("DIGEST_SIZE", 0x20);
         SHA3_256_map.insert("BLOCK_SIZE", 0x88);
         map.insert(std::any::TypeId::of::<SHA3_256>(), SHA3_256_map);
 
-        let mut SHA3_384_map = HashMap::new();
+        let mut SHA3_384_map: HashMap<&'static str, u64> = HashMap::new();
         SHA3_384_map.insert("DIGEST_SIZE", 0x30);
         SHA3_384_map.insert("BLOCK_SIZE", 0x68);
         map.insert(std::any::TypeId::of::<SHA3_384>(), SHA3_384_map);
 
-        let mut SHA3_512_map = HashMap::new();
+        let mut SHA3_512_map: HashMap<&'static str, u64> = HashMap::new();
         SHA3_512_map.insert("DIGEST_SIZE", 0x40);
         SHA3_512_map.insert("BLOCK_SIZE", 0x48);
         map.insert(std::any::TypeId::of::<SHA3_512>(), SHA3_512_map);
 
-        let  Logic_map = HashMap::new();
+        let  Logic_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<Logic>(), Logic_map);
 
-        let mut TPM_SPEC_map = HashMap::new();
+        let mut TPM_SPEC_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_SPEC_map.insert("FAMILY", 0x322E3000);
         TPM_SPEC_map.insert("LEVEL", 0x0);
         TPM_SPEC_map.insert("VERSION", 0xA2);
@@ -31816,20 +32424,20 @@ lazy_static::lazy_static! {
         TPM_SPEC_map.insert("DAY_OF_YEAR", 0x168);
         map.insert(std::any::TypeId::of::<TPM_SPEC>(), TPM_SPEC_map);
 
-        let mut TPM_GENERATED_map = HashMap::new();
+        let mut TPM_GENERATED_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_GENERATED_map.insert("VALUE", 0xFF544347);
         map.insert(std::any::TypeId::of::<TPM_GENERATED>(), TPM_GENERATED_map);
 
-        let  TPM_CC_map = HashMap::new();
+        let  TPM_CC_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_CC>(), TPM_CC_map);
 
-        let  ImplementationConstants_map = HashMap::new();
+        let  ImplementationConstants_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<ImplementationConstants>(), ImplementationConstants_map);
 
-        let  TPM_RC_map = HashMap::new();
+        let  TPM_RC_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_RC>(), TPM_RC_map);
 
-        let mut TPM_CLOCK_ADJUST_map = HashMap::new();
+        let mut TPM_CLOCK_ADJUST_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_CLOCK_ADJUST_map.insert("COARSE_SLOWER", 0xFFFFFFFFFFFFFFFD);
         TPM_CLOCK_ADJUST_map.insert("MEDIUM_SLOWER", 0xFFFFFFFFFFFFFFFE);
         TPM_CLOCK_ADJUST_map.insert("FINE_SLOWER", 0xFFFFFFFFFFFFFFFF);
@@ -31839,7 +32447,7 @@ lazy_static::lazy_static! {
         TPM_CLOCK_ADJUST_map.insert("COARSE_FASTER", 0x3);
         map.insert(std::any::TypeId::of::<TPM_CLOCK_ADJUST>(), TPM_CLOCK_ADJUST_map);
 
-        let mut TPM_EO_map = HashMap::new();
+        let mut TPM_EO_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_EO_map.insert("EQ", 0x0);
         TPM_EO_map.insert("NEQ", 0x1);
         TPM_EO_map.insert("SIGNED_GT", 0x2);
@@ -31854,7 +32462,7 @@ lazy_static::lazy_static! {
         TPM_EO_map.insert("BITCLEAR", 0xB);
         map.insert(std::any::TypeId::of::<TPM_EO>(), TPM_EO_map);
 
-        let mut TPM_ST_map = HashMap::new();
+        let mut TPM_ST_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_ST_map.insert("RSP_COMMAND", 0xC4);
         TPM_ST_map.insert("NULL", 0x8000);
         TPM_ST_map.insert("NO_SESSIONS", 0x8001);
@@ -31875,27 +32483,27 @@ lazy_static::lazy_static! {
         TPM_ST_map.insert("FU_MANIFEST", 0x8029);
         map.insert(std::any::TypeId::of::<TPM_ST>(), TPM_ST_map);
 
-        let mut TPM_SU_map = HashMap::new();
+        let mut TPM_SU_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_SU_map.insert("CLEAR", 0x0);
         TPM_SU_map.insert("STATE", 0x1);
         map.insert(std::any::TypeId::of::<TPM_SU>(), TPM_SU_map);
 
-        let mut TPM_SE_map = HashMap::new();
+        let mut TPM_SE_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_SE_map.insert("HMAC", 0x0);
         TPM_SE_map.insert("POLICY", 0x1);
         TPM_SE_map.insert("TRIAL", 0x3);
         map.insert(std::any::TypeId::of::<TPM_SE>(), TPM_SE_map);
 
-        let  TPM_CAP_map = HashMap::new();
+        let  TPM_CAP_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_CAP>(), TPM_CAP_map);
 
-        let  TPM_PT_map = HashMap::new();
+        let  TPM_PT_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_PT>(), TPM_PT_map);
 
-        let  TPM_PT_PCR_map = HashMap::new();
+        let  TPM_PT_PCR_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_PT_PCR>(), TPM_PT_PCR_map);
 
-        let mut TPM_PS_map = HashMap::new();
+        let mut TPM_PS_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_PS_map.insert("MAIN", 0x0);
         TPM_PS_map.insert("PC", 0x1);
         TPM_PS_map.insert("PDA", 0x2);
@@ -31914,13 +32522,13 @@ lazy_static::lazy_static! {
         TPM_PS_map.insert("TC", 0xF);
         map.insert(std::any::TypeId::of::<TPM_PS>(), TPM_PS_map);
 
-        let  TPM_HT_map = HashMap::new();
+        let  TPM_HT_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_HT>(), TPM_HT_map);
 
-        let  TPM_RH_map = HashMap::new();
+        let  TPM_RH_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_RH>(), TPM_RH_map);
 
-        let mut TPM_NT_map = HashMap::new();
+        let mut TPM_NT_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_NT_map.insert("ORDINARY", 0x0);
         TPM_NT_map.insert("COUNTER", 0x1);
         TPM_NT_map.insert("BITS", 0x2);
@@ -31929,18 +32537,18 @@ lazy_static::lazy_static! {
         TPM_NT_map.insert("PIN_PASS", 0x9);
         map.insert(std::any::TypeId::of::<TPM_NT>(), TPM_NT_map);
 
-        let mut TPM_AT_map = HashMap::new();
+        let mut TPM_AT_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_AT_map.insert("ANY", 0x0);
         TPM_AT_map.insert("ERROR", 0x1);
         TPM_AT_map.insert("PV1", 0x2);
         TPM_AT_map.insert("VEND", 0x80000000);
         map.insert(std::any::TypeId::of::<TPM_AT>(), TPM_AT_map);
 
-        let mut TPM_AE_map = HashMap::new();
+        let mut TPM_AE_map: HashMap<&'static str, u64> = HashMap::new();
         TPM_AE_map.insert("NONE", 0x0);
         map.insert(std::any::TypeId::of::<TPM_AE>(), TPM_AE_map);
 
-        let mut PLATFORM_map = HashMap::new();
+        let mut PLATFORM_map: HashMap<&'static str, u64> = HashMap::new();
         PLATFORM_map.insert("FAMILY", 0x322E3000);
         PLATFORM_map.insert("LEVEL", 0x0);
         PLATFORM_map.insert("VERSION", 0xA2);
@@ -31948,13 +32556,13 @@ lazy_static::lazy_static! {
         PLATFORM_map.insert("DAY_OF_YEAR", 0x168);
         map.insert(std::any::TypeId::of::<PLATFORM>(), PLATFORM_map);
 
-        let  Implementation_map = HashMap::new();
+        let  Implementation_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<Implementation>(), Implementation_map);
 
-        let  TPM_HC_map = HashMap::new();
+        let  TPM_HC_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_HC>(), TPM_HC_map);
 
-        let mut TPMA_ALGORITHM_map = HashMap::new();
+        let mut TPMA_ALGORITHM_map: HashMap<&'static str, u64> = HashMap::new();
         TPMA_ALGORITHM_map.insert("asymmetric", 0x1);
         TPMA_ALGORITHM_map.insert("symmetric", 0x2);
         TPMA_ALGORITHM_map.insert("hash", 0x4);
@@ -31964,10 +32572,10 @@ lazy_static::lazy_static! {
         TPMA_ALGORITHM_map.insert("method", 0x400);
         map.insert(std::any::TypeId::of::<TPMA_ALGORITHM>(), TPMA_ALGORITHM_map);
 
-        let  TPMA_OBJECT_map = HashMap::new();
+        let  TPMA_OBJECT_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_OBJECT>(), TPMA_OBJECT_map);
 
-        let mut TPMA_SESSION_map = HashMap::new();
+        let mut TPMA_SESSION_map: HashMap<&'static str, u64> = HashMap::new();
         TPMA_SESSION_map.insert("continueSession", 0x1);
         TPMA_SESSION_map.insert("auditExclusive", 0x2);
         TPMA_SESSION_map.insert("auditReset", 0x4);
@@ -31976,7 +32584,7 @@ lazy_static::lazy_static! {
         TPMA_SESSION_map.insert("audit", 0x80);
         map.insert(std::any::TypeId::of::<TPMA_SESSION>(), TPMA_SESSION_map);
 
-        let mut TPMA_LOCALITY_map = HashMap::new();
+        let mut TPMA_LOCALITY_map: HashMap<&'static str, u64> = HashMap::new();
         TPMA_LOCALITY_map.insert("LOC_ZERO", 0x1);
         TPMA_LOCALITY_map.insert("LOC_ONE", 0x2);
         TPMA_LOCALITY_map.insert("LOC_TWO", 0x4);
@@ -31984,7 +32592,7 @@ lazy_static::lazy_static! {
         TPMA_LOCALITY_map.insert("LOC_FOUR", 0x10);
         map.insert(std::any::TypeId::of::<TPMA_LOCALITY>(), TPMA_LOCALITY_map);
 
-        let mut TPMA_PERMANENT_map = HashMap::new();
+        let mut TPMA_PERMANENT_map: HashMap<&'static str, u64> = HashMap::new();
         TPMA_PERMANENT_map.insert("ownerAuthSet", 0x1);
         TPMA_PERMANENT_map.insert("endorsementAuthSet", 0x2);
         TPMA_PERMANENT_map.insert("lockoutAuthSet", 0x4);
@@ -31993,7 +32601,7 @@ lazy_static::lazy_static! {
         TPMA_PERMANENT_map.insert("tpmGeneratedEPS", 0x400);
         map.insert(std::any::TypeId::of::<TPMA_PERMANENT>(), TPMA_PERMANENT_map);
 
-        let mut TPMA_STARTUP_CLEAR_map = HashMap::new();
+        let mut TPMA_STARTUP_CLEAR_map: HashMap<&'static str, u64> = HashMap::new();
         TPMA_STARTUP_CLEAR_map.insert("phEnable", 0x1);
         TPMA_STARTUP_CLEAR_map.insert("shEnable", 0x2);
         TPMA_STARTUP_CLEAR_map.insert("ehEnable", 0x4);
@@ -32001,13 +32609,13 @@ lazy_static::lazy_static! {
         TPMA_STARTUP_CLEAR_map.insert("orderly", 0xFFFFFFFF80000000);
         map.insert(std::any::TypeId::of::<TPMA_STARTUP_CLEAR>(), TPMA_STARTUP_CLEAR_map);
 
-        let mut TPMA_MEMORY_map = HashMap::new();
+        let mut TPMA_MEMORY_map: HashMap<&'static str, u64> = HashMap::new();
         TPMA_MEMORY_map.insert("sharedRAM", 0x1);
         TPMA_MEMORY_map.insert("sharedNV", 0x2);
         TPMA_MEMORY_map.insert("objectCopiedToRam", 0x4);
         map.insert(std::any::TypeId::of::<TPMA_MEMORY>(), TPMA_MEMORY_map);
 
-        let mut TPMA_CC_map = HashMap::new();
+        let mut TPMA_CC_map: HashMap<&'static str, u64> = HashMap::new();
         TPMA_CC_map.insert("nv", 0x400000);
         TPMA_CC_map.insert("extensive", 0x800000);
         TPMA_CC_map.insert("flushed", 0x1000000);
@@ -32015,22 +32623,22 @@ lazy_static::lazy_static! {
         TPMA_CC_map.insert("V", 0x20000000);
         map.insert(std::any::TypeId::of::<TPMA_CC>(), TPMA_CC_map);
 
-        let mut TPMA_MODES_map = HashMap::new();
+        let mut TPMA_MODES_map: HashMap<&'static str, u64> = HashMap::new();
         TPMA_MODES_map.insert("FIPS_140_2", 0x1);
         map.insert(std::any::TypeId::of::<TPMA_MODES>(), TPMA_MODES_map);
 
-        let  TPMA_X509_KEY_USAGE_map = HashMap::new();
+        let  TPMA_X509_KEY_USAGE_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_X509_KEY_USAGE>(), TPMA_X509_KEY_USAGE_map);
 
-        let mut TPMA_ACT_map = HashMap::new();
+        let mut TPMA_ACT_map: HashMap<&'static str, u64> = HashMap::new();
         TPMA_ACT_map.insert("signaled", 0x1);
         TPMA_ACT_map.insert("preserveSignaled", 0x2);
         map.insert(std::any::TypeId::of::<TPMA_ACT>(), TPMA_ACT_map);
 
-        let  TPM_NV_INDEX_map = HashMap::new();
+        let  TPM_NV_INDEX_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_NV_INDEX>(), TPM_NV_INDEX_map);
 
-        let  TPMA_NV_map = HashMap::new();
+        let  TPMA_NV_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPMA_NV>(), TPMA_NV_map);
 
         map

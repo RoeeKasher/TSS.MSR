@@ -74,7 +74,7 @@ public final class TPMA_CC extends TpmAttribute<TPMA_CC>
         cHandles_BIT_LENGTH = new TPMA_CC(3, _N.cHandles_BIT_LENGTH),
         rHandle = new TPMA_CC(0x10000000, _N.rHandle),
         V = new TPMA_CC(0x20000000, _N.V),
-        Res_BIT_MASK = new TPMA_CC(0xC0000000, _N.Res_BIT_MASK),
+        Res_BIT_MASK = new TPMA_CC(0xFFFFFFFFC0000000, _N.Res_BIT_MASK),
         Res_BIT_OFFSET = new TPMA_CC(30, _N.Res_BIT_OFFSET),
         Res_BIT_LENGTH = new TPMA_CC(2, _N.Res_BIT_LENGTH);
 

@@ -38,7 +38,7 @@ public class TPMS_KEYEDHASH_PARMS extends TpmStructure implements TPMU_PUBLIC_PA
     @Override
     public void toTpm(TpmBuffer buf)
     {
-        if (scheme == null) return;
+        if (scheme == null) { return  };
         buf.writeShort(scheme.GetUnionSelector());
         scheme.toTpm(buf);
     }

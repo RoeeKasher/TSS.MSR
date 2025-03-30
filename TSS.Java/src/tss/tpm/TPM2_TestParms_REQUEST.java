@@ -33,7 +33,7 @@ public class TPM2_TestParms_REQUEST extends ReqStructure
     @Override
     public void toTpm(TpmBuffer buf)
     {
-        if (parameters == null) return;
+        if (parameters == null) { return  };
         buf.writeShort(parameters.GetUnionSelector());
         parameters.toTpm(buf);
     }

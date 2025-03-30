@@ -2824,7 +2824,7 @@ class TPMA_STARTUP_CLEAR(TpmEnum): # UINT32
     existence of an index even when disabled.
     """
 
-    orderly = 0x80000000
+    orderly = 0xFFFFFFFF80000000
     """ SET (1): The TPM received a TPM2_Shutdown() and a matching TPM2_Startup().
     CLEAR (0): TPM2_Startup(TPM_SU_CLEAR) was not preceded by a
     TPM2_Shutdown() of any type.
@@ -2912,7 +2912,7 @@ class TPMA_CC(TpmEnum): # TPM_CC
     specification
     """
 
-    Res_BIT_MASK = 0xC0000000
+    Res_BIT_MASK = 0xFFFFFFFFC0000000
     """ Allocated for software; shall be zero """
 
     Res_BIT_OFFSET = 30
@@ -2970,7 +2970,7 @@ class TPMA_X509_KEY_USAGE(TpmEnum): # UINT32
     contentCommitment = 0x40000000
     """ Alias to the nonrepudiation value. """
 
-    digitalSignature = 0x80000000
+    digitalSignature = 0xFFFFFFFF80000000
     """ Sign SET in Subject Key (objectHandle) """
 # bitfield TPMA_X509_KEY_USAGE
 
@@ -3006,7 +3006,7 @@ class TPM_NV_INDEX(TpmEnum): # UINT32
 
     index_BIT_LENGTH = 24
 
-    RhNv_BIT_MASK = 0xFF000000
+    RhNv_BIT_MASK = 0xFFFFFFFFFF000000
     """ Constant value of TPM_HT_NV_INDEX indicating the NV Index range """
 
     RhNv_BIT_OFFSET = 24
@@ -3200,7 +3200,7 @@ class TPMA_NV(TpmEnum): # UINT32
     attribute is CLEAR when the Index is defined using Owner Authorization.
     """
 
-    READ_STCLEAR = 0x80000000
+    READ_STCLEAR = 0xFFFFFFFF80000000
     """ SET (1): TPM2_NV_ReadLock() may be used to SET TPMA_NV_READLOCKED
     for this Index.
     CLEAR (0): TPM2_NV_ReadLock() has no effect on this Index.
@@ -4941,7 +4941,7 @@ class TPMS_CAPABILITY_DATA (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.data == None: return
+        if self.data == None: { return  }
         buf.writeInt(self.data.GetUnionSelector())
         self.data.toTpm(buf)
 
@@ -5810,14 +5810,14 @@ class TPMT_SYM_DEF (TpmStructure):
     def toTpm(self, buf):
         """ TpmMarshaller method """
         buf.writeShort(self.algorithm)
-        if self.algorithm == TPM_ALG_ID.NULL: return
+        if self.algorithm == TPM_ALG_ID.NULL: { return  }
         buf.writeShort(self.keyBits)
         buf.writeShort(self.mode)
 
     def initFromTpm(self, buf):
         """ TpmMarshaller method """
         self.algorithm = buf.readShort()
-        if self.algorithm == TPM_ALG_ID.NULL: return
+        if self.algorithm == TPM_ALG_ID.NULL: { return  }
         self.keyBits = buf.readShort()
         self.mode = buf.readShort()
 
@@ -5859,14 +5859,14 @@ class TPMT_SYM_DEF_OBJECT (TpmStructure):
     def toTpm(self, buf):
         """ TpmMarshaller method """
         buf.writeShort(self.algorithm)
-        if self.algorithm == TPM_ALG_ID.NULL: return
+        if self.algorithm == TPM_ALG_ID.NULL: { return  }
         buf.writeShort(self.keyBits)
         buf.writeShort(self.mode)
 
     def initFromTpm(self, buf):
         """ TpmMarshaller method """
         self.algorithm = buf.readShort()
-        if self.algorithm == TPM_ALG_ID.NULL: return
+        if self.algorithm == TPM_ALG_ID.NULL: { return  }
         self.keyBits = buf.readShort()
         self.mode = buf.readShort()
 
@@ -6372,7 +6372,7 @@ class TPMT_KEYEDHASH_SCHEME (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.details == None: return
+        if self.details == None: { return  }
         buf.writeShort(self.details.GetUnionSelector())
         self.details.toTpm(buf)
 
@@ -6629,7 +6629,7 @@ class TPMT_SIG_SCHEME (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.details == None: return
+        if self.details == None: { return  }
         buf.writeShort(self.details.GetUnionSelector())
         self.details.toTpm(buf)
 
@@ -6934,7 +6934,7 @@ class TPMT_KDF_SCHEME (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.details == None: return
+        if self.details == None: { return  }
         buf.writeShort(self.details.GetUnionSelector())
         self.details.toTpm(buf)
 
@@ -7012,7 +7012,7 @@ class TPMT_ASYM_SCHEME (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.details == None: return
+        if self.details == None: { return  }
         buf.writeShort(self.details.GetUnionSelector())
         self.details.toTpm(buf)
 
@@ -7059,7 +7059,7 @@ class TPMT_RSA_SCHEME (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.details == None: return
+        if self.details == None: { return  }
         buf.writeShort(self.details.GetUnionSelector())
         self.details.toTpm(buf)
 
@@ -7106,7 +7106,7 @@ class TPMT_RSA_DECRYPT (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.details == None: return
+        if self.details == None: { return  }
         buf.writeShort(self.details.GetUnionSelector())
         self.details.toTpm(buf)
 
@@ -7337,7 +7337,7 @@ class TPMT_ECC_SCHEME (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.details == None: return
+        if self.details == None: { return  }
         buf.writeShort(self.details.GetUnionSelector())
         self.details.toTpm(buf)
 
@@ -7785,7 +7785,7 @@ class TPMT_SIGNATURE (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.signature == None: return
+        if self.signature == None: { return  }
         buf.writeShort(self.signature.GetUnionSelector())
         self.signature.toTpm(buf)
 
@@ -7867,7 +7867,7 @@ class TPMS_KEYEDHASH_PARMS (TpmStructure, TPMU_PUBLIC_PARMS):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.scheme == None: return
+        if self.scheme == None: { return  }
         buf.writeShort(self.scheme.GetUnionSelector())
         self.scheme.toTpm(buf)
 
@@ -8141,7 +8141,7 @@ class TPMT_PUBLIC_PARMS (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.parameters == None: return
+        if self.parameters == None: { return  }
         buf.writeShort(self.parameters.GetUnionSelector())
         self.parameters.toTpm(buf)
 
@@ -8201,7 +8201,7 @@ class TPMT_PUBLIC (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.parameters == None: return
+        if self.parameters == None: { return  }
         buf.writeShort(self.parameters.GetUnionSelector())
         buf.writeShort(self.nameAlg)
         buf.writeInt(self.objectAttributes)
@@ -8379,7 +8379,7 @@ class TPMT_SENSITIVE (TpmStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.sensitive == None: return
+        if self.sensitive == None: { return  }
         buf.writeShort(self.sensitive.GetUnionSelector())
         buf.writeSizedByteBuf(self.authValue)
         buf.writeSizedByteBuf(self.seedValue)
@@ -13609,7 +13609,7 @@ class SignResponse (RespStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.signature == None: return
+        if self.signature == None: { return  }
         buf.writeShort(self.signature.GetUnionSelector())
         self.signature.toTpm(buf)
 
@@ -16532,7 +16532,7 @@ class TPM2_TestParms_REQUEST (ReqStructure):
 
     def toTpm(self, buf):
         """ TpmMarshaller method """
-        if self.parameters == None: return
+        if self.parameters == None: { return  }
         buf.writeShort(self.parameters.GetUnionSelector())
         self.parameters.toTpm(buf)
 

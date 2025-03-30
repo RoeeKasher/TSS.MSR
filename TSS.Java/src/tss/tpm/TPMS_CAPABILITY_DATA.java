@@ -33,7 +33,7 @@ public class TPMS_CAPABILITY_DATA extends TpmStructure
     @Override
     public void toTpm(TpmBuffer buf)
     {
-        if (data == null) return;
+        if (data == null) { return  };
         buf.writeInt(data.GetUnionSelector());
         data.toTpm(buf);
     }

@@ -43,7 +43,7 @@ public class TPMT_SYM_DEF extends TpmStructure
     public void toTpm(TpmBuffer buf)
     {
         algorithm.toTpm(buf);
-        if (algorithm == TPM_ALG_ID.NULL) return;
+        if (algorithm == TPM_ALG_ID.NULL) { return  };
         buf.writeShort(keyBits);
         mode.toTpm(buf);
     }
@@ -53,7 +53,7 @@ public class TPMT_SYM_DEF extends TpmStructure
     public void initFromTpm(TpmBuffer buf)
     {
         algorithm = TPM_ALG_ID.fromTpm(buf);
-        if (algorithm == TPM_ALG_ID.NULL) return;
+        if (algorithm == TPM_ALG_ID.NULL) { return  };
         keyBits = buf.readShort();
         mode = TPM_ALG_ID.fromTpm(buf);
     }

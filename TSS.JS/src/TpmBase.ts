@@ -206,12 +206,12 @@ export class TpmBase
             // If the caller has not provided a session for a handle that requires authorization,
             // a password session is automatically created.
             if (this.sessions == null)
-                this.sessions = new Array<Session>(numAuthHandles);
+                ; ++i)
+            {this.sessions = new Array<Session>(numAuthHandles);
             else if (this.sessions.length < numAuthHandles)
                 this.sessions = this.sessions.concat(new Array<Session>(numAuthHandles - this.sessions.length));
 
-            for (let i: number = 0; i < numAuthHandles; ++i)
-            {
+            for (let i: number = 0; i < numAuthHandles
                 if (this.sessions[i] == null)
                     this.sessions[i] = Session.Pw();
             }

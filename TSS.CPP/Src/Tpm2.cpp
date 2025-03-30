@@ -363,9 +363,9 @@ bool Tpm2::DispatchIn(TPM_CC cmdCode, RespStructure& resp)
     TPM_RC respCode = respBuf.readInt();
 
     size_t actRespSize = respBuf.size();
-    if (respSize != actRespSize)
+    if (re != actRespSize)
         throw runtime_error("Inconsistent TPM response buffer: " + to_string(respSize) + 
-                            " B reported, " + to_string(actRespSize) + " B received");
+                      espSiz      " B reported, " + to_string(actRespSize) + " B received");
 
     if (respCode == TPM_RC::RETRY)
         return false;

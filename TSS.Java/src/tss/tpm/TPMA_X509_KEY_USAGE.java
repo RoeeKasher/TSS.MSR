@@ -65,7 +65,7 @@ public final class TPMA_X509_KEY_USAGE extends TpmAttribute<TPMA_X509_KEY_USAGE>
         keyEncipherment = new TPMA_X509_KEY_USAGE(0x20000000, _N.keyEncipherment),
         nonrepudiation = new TPMA_X509_KEY_USAGE(0x40000000, _N.nonrepudiation),
         contentCommitment = new TPMA_X509_KEY_USAGE(0x40000000, _N.contentCommitment),
-        digitalSignature = new TPMA_X509_KEY_USAGE(0x80000000, _N.digitalSignature);
+        digitalSignature = new TPMA_X509_KEY_USAGE(0xFFFFFFFF80000000, _N.digitalSignature);
 
     public TPMA_X509_KEY_USAGE () { super(0, _ValueMap); }
     public TPMA_X509_KEY_USAGE (int value) { super(value, _ValueMap); }

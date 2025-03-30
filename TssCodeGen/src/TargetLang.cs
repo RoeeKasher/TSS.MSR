@@ -136,8 +136,8 @@ namespace CodeGen
             return $"{enumValue}.into()";
         }
 
-        public static string ParseEnum(string selectorTypeName, string value) => 
-            Rust ? $"{selectorTypeName}::try_from({value}).map_err(|err| TpmError::InvalidEnumValue)?" : $"{value}";
+        public static string ParseEnum(string selectorTypeName, string value, string underlyingType) => 
+            Rust ? $"{selectorTypeName}::try_from({value} as {underlyingType}).map_err(|err| TpmError::InvalidEnumValue)?" : $"{value}";
 
 
         public static int MaxCommentLine => TargetLang.Py ? 72 : 90;

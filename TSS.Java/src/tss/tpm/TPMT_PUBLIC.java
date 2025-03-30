@@ -75,7 +75,7 @@ public class TPMT_PUBLIC extends TpmStructure
     @Override
     public void toTpm(TpmBuffer buf)
     {
-        if (parameters == null) return;
+        if (parameters == null) { return  };
         buf.writeShort(parameters.GetUnionSelector());
         nameAlg.toTpm(buf);
         objectAttributes.toTpm(buf);

@@ -143,14 +143,18 @@ namespace CodeGen
             WriteComment(e);
                
             var enumVals = new Dictionary<string, string>();
-            var sizeInBits = e.GetFinalUnderlyingType().GetSize() * 8;
+            
+            var enumUnderlyingType = e.GetFinalUnderlyingType();
+            var sizeInBits = enumUnderlyingType.GetSize() * 8;
+            var enumUnderlyingTypeName = enumUnderlyingType.Name;
+            var enumUnderlyingTypeSigned = enumUnderlyingTypeName.StartsWith("i") ? true : false;
             
             if (hasDuplicates)
             {
                 // Generate a newtype struct with constants for enums with duplicates
                 WriteComment("Enum with duplicated values - using struct with constants");
                 Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
-                Write($"pub struct {e.Name}(pub u{sizeInBits});");
+                Write($"pub struct {e.Name}(pub {enumUnderlyingTypeName});");
                 Write("");
                 
                 // Generate constants for each enum value
@@ -159,14 +163,15 @@ namespace CodeGen
                 foreach (var elt in elements)
                 {
                     WriteComment(AsSummary(elt.Comment));
-                    var enumValue = ToRustEnumValue(elt);
+                    var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
+                    var enumHexValue = enumUnderlyingTypeSigned ? enumValue.ToString() : ToHex(enumValue);
                     var originalValueComment = "";
-                    if (enumValue != elt.Value)
+                    if (enumHexValue != elt.Value)
                     {
                         originalValueComment = $" // Original value: {elt.Value}";
                     }
                     
-                    Write($"pub const {elt.Name}: Self = Self({enumValue});{originalValueComment}");
+                    Write($"pub const {elt.Name}: Self = Self({enumHexValue});{originalValueComment}");
                     
                     // Do not include artificially added named constants into the name conversion maps
                     if (elt.SpecName != null)
@@ -175,12 +180,14 @@ namespace CodeGen
                 
                 // Add TryFrom implementation for the newtype struct
                 Write("");
-                TabIn($"pub fn try_from(value: u{sizeInBits}) -> Result<Self, TpmError> {{");
+                TabIn($"pub fn try_from(value: {enumUnderlyingTypeName}) -> Result<Self, TpmError> {{");
                 TabIn("match value {");
                 foreach (var elt in elements.GroupBy(x => x.NumericValue).Select(g => g.First()))
                 {
+                    var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
+
                     // Only include first occurrence of each value to avoid duplicate match arms
-                    Write($"{(ulong)elt.NumericValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
+                    Write($"{enumValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
                 }
                 Write("_ => Err(TpmError::InvalidEnumValue),");
                 TabOut("}", false);
@@ -190,12 +197,12 @@ namespace CodeGen
                 Write("");
                 
                 // Implement TpmEnum trait for the struct
-                TabIn($"impl TpmEnum for {e.Name} {{");
-                TabIn("fn get_value(&self) -> u32 {");
+                TabIn($"impl TpmEnum<{enumUnderlyingTypeName}> for {e.Name} {{");
+                TabIn($"fn get_value(&self) -> {enumUnderlyingTypeName} {{");
                 Write("self.0.into()");
                 TabOut("}");
-                TabIn("fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {");
-                Write($"{e.Name}::try_from(value as u{sizeInBits})");
+                TabIn("fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {");
+                Write($"{e.Name}::try_from(value as {enumUnderlyingTypeName})");
                 TabOut("}", false);
                 TabOut("}");
                 Write("");
@@ -221,19 +228,19 @@ namespace CodeGen
                 TabIn("match self.0 {");
                 
                 // Group by value to avoid duplicate match arms
-                var grouped = elements.GroupBy(x => x.NumericValue);
+                var grouped = elements.GroupBy(x => ToRustEnumValue(x, sizeInBits, enumUnderlyingTypeSigned));
                 foreach (var group in grouped)
                 {
                     if (group.Count() == 1)
                     {
                         // Only one variant for this value
-                        Write($"{(ulong)group.Key} => write!(f, \"{group.First().Name}\"),");
+                        Write($"{group.Key} => write!(f, \"{group.First().Name}\"),");
                     }
                     else
                     {
                         // Multiple variants for this value
                         var variants = group.Select(elt => elt.Name);
-                        Write($"{(ulong)group.Key} => write!(f, \"One of <{string.Join(", ", variants)}>\"),");
+                        Write($"{group.Key} => write!(f, \"One of <{string.Join(", ", variants)}>\"),");
                     }
                 }
                 
@@ -246,7 +253,7 @@ namespace CodeGen
             {
                 // Original enum generation for types without duplicates
                 Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
-                Write($"#[repr(u{sizeInBits})]");
+                Write($"#[repr({enumUnderlyingTypeName})]");
                 Write($"pub enum {e.Name} {{");
                 TabIn();
 
@@ -256,14 +263,15 @@ namespace CodeGen
                     WriteComment(AsSummary(elt.Comment));
                     string delimiter = Separator(elt, elements).Replace(",", ",");
 
-                    var enumValue = ToRustEnumValue(elt);
+                    var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
+                    var enumHexValue = enumUnderlyingTypeSigned ? enumValue.ToString() : ToHex(enumValue);
                     var originalValueComment = "";
-                    if (enumValue != elt.Value)
+                    if (enumHexValue != elt.Value)
                     {
                         originalValueComment = $" // Original value: {elt.Value}";
                     }
 
-                    Write($"{ToRustEnumMemberName(elt.Name)} = {enumValue}{delimiter}{originalValueComment}");
+                    Write($"{ToRustEnumMemberName(elt.Name)} = {enumHexValue}{delimiter}{originalValueComment}");
 
                     // Do not include artificially added named constants into the name conversion maps
                     if (elt.SpecName != null)
@@ -273,12 +281,15 @@ namespace CodeGen
                 
                 TabIn($"impl {e.Name} {{");
                 // Add TryFrom implementation for the newtype struct
-                TabIn($"pub fn try_from(value: u{sizeInBits}) -> Result<Self, TpmError> {{");
+                TabIn($"pub fn try_from(value: {enumUnderlyingTypeName}) -> Result<Self, TpmError> {{");
                 TabIn("match value {");
-                foreach (var elt in elements.GroupBy(x => x.NumericValue).Select(g => g.First()))
+
+                foreach (var elt in elements.GroupBy(x => ToRustEnumValue(x, sizeInBits, enumUnderlyingTypeSigned))
+                                            .Select(g => g.First()))
                 {
+                    var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
                     // Only include first occurrence of each value to avoid duplicate match arms
-                    Write($"{(ulong)elt.NumericValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
+                    Write($"{enumValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
                 }
                 Write("_ => Err(TpmError::InvalidEnumValue),");
                 TabOut("}");
@@ -287,12 +298,12 @@ namespace CodeGen
                 
 
                 // Implement TpmEnum trait for the enum
-                TabIn($"impl TpmEnum for {e.Name} {{");
-                TabIn("fn get_value(&self) -> u32 {");
-                Write("*self as u32");
+                TabIn($"impl TpmEnum<{enumUnderlyingTypeName}> for {e.Name} {{");
+                TabIn($"fn get_value(&self) -> {enumUnderlyingTypeName} {{");
+                Write($"*self as {enumUnderlyingTypeName}");
                 TabOut("}");
-                TabIn($"fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized {{");
-                Write($"{e.Name}::try_from(value as u{sizeInBits}).map_err(|_| TpmError::InvalidEnumValue)");
+                TabIn($"fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {{");
+                Write($"{e.Name}::try_from(value as {enumUnderlyingTypeName}).map_err(|_| TpmError::InvalidEnumValue)");
                 TabOut("}", false);
                 TabOut("}");
                 Write("");
@@ -397,6 +408,7 @@ namespace CodeGen
 
             WriteComment(u);
 
+            Write($"#[derive(Clone)]");
             Write($"pub enum {u.Name} {{");
             TabIn();
             
@@ -559,7 +571,7 @@ namespace CodeGen
             }
 
             WriteComment(s);
-            Write($"#[derive(Debug, Default)]");
+            Write($"#[derive(Debug, Default, Clone)]");
             Write($"pub struct {structName} {{");
             TabIn();
 
@@ -674,27 +686,27 @@ namespace CodeGen
         {
             var info = s.IsCmdStruct() ? s.Info as CmdStructInfo : null;
 
-            if (info == null || (info.NumHandles == 0 && info.SessEncSizeLen == 0)) {
+            if (info == null) {
                 return;
             }
 
             TabIn($"impl CmdStructure for {s.Name} {{");
 
-            Write($"fn num_handles() -> u16 {{ {info.NumHandles} }}");
+            Write($"fn num_handles(&self) -> u16 {{ {info.NumHandles} }}");
             Write("");
 
             if (info.SessEncSizeLen != 0)
             {
                 Debug.Assert(info.SessEncValLen != 0);
-                Write($"fn sess_enc_info() -> SessEncInfo {{ SessEncInfo {{ sizeLen: {info.SessEncSizeLen}, valLen: {info.SessEncValLen} }} }}");
+                Write($"fn sess_enc_info(&self) -> SessEncInfo {{ SessEncInfo {{ sizeLen: {info.SessEncSizeLen}, valLen: {info.SessEncValLen} }} }}");
             }
 
             TabOut("}");
 
-            if (info.NumHandles == 0)
-            {
-                return;
-            }
+            // if (info.NumHandles == 0)
+            // {
+            //     return;
+            // }
 
             if (info.IsRequest()) {
                 GenReqStructureImplementation(s, info);
@@ -705,26 +717,31 @@ namespace CodeGen
 
         private void GenRespStructureImplementation(TpmStruct s, CmdStructInfo info)
         {
-            Debug.Assert(info.NumHandles == 1 && info.NumAuthHandles == 0);
-
             TabIn($"impl RespStructure for {s.Name} {{");
 
-            Write($"fn get_handle() -> u16 {{ {s.Fields[0].Name} }}");
-            Write("");
-            Write($"fn set_handle(&mut self, handle: &TPM_HANDLE) {{ self.{s.Fields[0].Name} = handle; }}");
+            if (info.NumHandles == 0)
+            {
+                Write($"fn get_handle(&self) -> TPM_HANDLE {{ TPM_HANDLE::default() }}");
+                Write("");
+                Write($"fn set_handle(&mut self, _handle: &TPM_HANDLE) {{ }}");
+            } else {
+                Write($"fn get_handle(&self) -> TPM_HANDLE {{ self.{s.Fields[0].Name}.clone() }}");
+                Write("");
+                Write($"fn set_handle(&mut self, handle: &TPM_HANDLE) {{ self.{s.Fields[0].Name} = handle.clone(); }}");
+            }
 
             TabOut("}");
         }
 
         private void GenReqStructureImplementation(TpmStruct s, CmdStructInfo info)
         {
-            string handles = string.Join(", ", s.Fields.Take(info.NumHandles).Select(f => f.Name));
+            string handles = string.Join(", ", s.Fields.Take(info.NumHandles).Select(f => "self." + f.Name + ".clone()"));
 
             TabIn($"impl ReqStructure for {s.Name} {{");
 
-            Write($"fn num_auth_handles() -> u16 {{ {info.NumAuthHandles} }}");
+            Write($"fn num_auth_handles(&self) -> u16 {{ {info.NumAuthHandles} }}");
             Write("");
-            Write($"fn get_handles() ->  &'static [TPM_HANDLE] {{ &[{handles}] }}");
+            Write($"fn get_handles(&self) ->  Vec<TPM_HANDLE> {{ vec![{handles}] }}");
 
             TabOut("}");
         }
@@ -828,8 +845,8 @@ namespace CodeGen
                 }
                 TabOut("};");
                 Write("");
-            }
-            else
+            } 
+            else if (gen != CommandFlavor.AsyncResponse)
             {
                 Write($"let req = {req.Name}::default();");
                 Write("");
@@ -843,28 +860,35 @@ namespace CodeGen
             }
             else
             {
-                Write($"let mut resp = TPMS_EMPTY::default();");
+                Write($"let mut resp = EmptyTpmResponse::default();");
             }
 
             // Call dispatch method
             var cmdCode = "TPM_CC::" + ToSnakeCase(GetCommandName(req));
-            string dispatchCall = gen == CommandFlavor.AsyncCommand ? "tpm.dispatch_out"
-                    : gen == CommandFlavor.AsyncResponse ? "tpm.dispatch_in"
-                    : "dispatch";
-            Write($"self.{dispatchCall}({cmdCode}, req, &mut resp)?;");
+            if (gen == CommandFlavor.AsyncCommand)
+            {
+                Write($"self.tpm.dispatch_command({cmdCode}, &req)?;");
+            } else if (gen == CommandFlavor.AsyncResponse) {
+                Write($"self.tpm.process_response({cmdCode}, &mut resp)?;");
+            } else {
+                Write($"self.dispatch({cmdCode}, req, &mut resp)?;");
+            }
 
-            // Process response
-            if (returnFieldName != null)
-            {
-                Write($"Ok(resp.{ToSnakeCase(returnFieldName)})");
-            }
-            else if (respFields.Length > 0)
-            {
-                Write("Ok(resp)");
-            }
-            else
-            {
+            if (gen == CommandFlavor.AsyncCommand) {
                 Write("Ok(())");
+            } else {
+                if (returnFieldName != null)
+                {
+                    Write($"Ok(resp.{ToSnakeCase(returnFieldName)})");
+                }
+                else if (respFields.Length > 0)
+                {
+                    Write("Ok(resp)");
+                }
+                else
+                {
+                    Write("Ok(())");
+                }
             }
         }
 
@@ -872,13 +896,13 @@ namespace CodeGen
         {
             TabIn("lazy_static::lazy_static! {");
             Write("/// Maps enum type IDs to a map of values to string representations");
-            Write("static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u32, &'static str>> = {");
+            Write("static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u64, &'static str>> = {");
             TabIn("let mut map = HashMap::new();");
             
             foreach (var e in EnumMap)
             {
                 var mutable = e.Value.Count > 0 ? "mut" : "";
-                Write($"let {mutable} {ToSnakeCase(e.Key)}_map = HashMap::new();");
+                Write($"let {mutable} {ToSnakeCase(e.Key)}_map: HashMap<u64, &'static str> = HashMap::new();");
                 foreach (var v in e.Value)
                 {
                     Write($"{ToSnakeCase(e.Key)}_map.insert({v.Value}, \"{v.Key}\");");
@@ -892,13 +916,13 @@ namespace CodeGen
             Write("");
             
             Write("/// Maps enum type IDs to a map of string representations to values");
-            Write("static ref STR_TO_ENUM_MAP: HashMap<std::any::TypeId, HashMap<&'static str, u32>> = {");
+            Write("static ref STR_TO_ENUM_MAP: HashMap<std::any::TypeId, HashMap<&'static str, u64>> = {");
             TabIn("let mut map = HashMap::new();");
             
             foreach (var e in EnumMap)
             {
                 var mutable = e.Value.Count > 0 ? "mut" : "";
-                Write($"let {mutable} {ToSnakeCase(e.Key)}_map = HashMap::new();");
+                Write($"let {mutable} {ToSnakeCase(e.Key)}_map: HashMap<&'static str, u64> = HashMap::new();");
                 foreach (var v in e.Value)
                 {
                     Write($"{ToSnakeCase(e.Key)}_map.insert(\"{v.Key}\", {v.Value});");
@@ -970,7 +994,7 @@ namespace CodeGen
         /// are properly formatted according to Rust conventions.
         /// </summary>
         /// <returns>A properly formatted Rust-compatible value string</returns>
-        static string ToRustEnumValue(TpmNamedConstant element)
+        static long ToRustEnumValue(TpmNamedConstant element, int bits, bool signed)
         {
             // If no numeric value was caluclated, return the original value
             // if (element.NumericValue == null)
@@ -978,7 +1002,7 @@ namespace CodeGen
             //     return element.Value;
             // }
 
-            return ToHex(element.NumericValue);
+            return Convert.ToInt64(CastToNumberWithBitsAndSign(element.NumericValue, bits, signed));
         }
 
         static string ToRustEnumMemberName(string name)
@@ -1060,6 +1084,52 @@ namespace CodeGen
             
             // For regular arrays, use the base type
             return f.Type.SpecName;
+        }
+
+        private static object CastToNumberWithBitsAndSign(long number, int bits, bool sign)
+        {
+            if (sign)
+            {
+                // Cast to signed types
+                if (bits == 8)
+                {
+                    return (sbyte)number;  // Cast to signed byte (8 bits)
+                }
+                else if (bits == 16)
+                {
+                    return (short)number;  // Cast to short (16 bits)
+                }
+                else if (bits == 32)
+                {
+                    return (int)number;  // Cast to int (32 bits)
+                }
+                else if (bits == 64)
+                {
+                    return (long)number;  // Cast to long (64 bits)
+                }
+            }
+            else
+            {
+                // Cast to unsigned types
+                if (bits == 8)
+                {
+                    return (byte)number;  // Cast to unsigned byte (8 bits)
+                }
+                else if (bits == 16)
+                {
+                    return (ushort)number;  // Cast to unsigned short (16 bits)
+                }
+                else if (bits == 32)
+                {
+                    return (uint)number;  // Cast to unsigned int (32 bits)
+                }
+                else if (bits == 64)
+                {
+                    return (ulong)number;  // Cast to unsigned long (64 bits)
+                }
+            }
+            
+            throw new ArgumentException("Unsupported bit size or invalid number range");
         }
         
         /// <summary>

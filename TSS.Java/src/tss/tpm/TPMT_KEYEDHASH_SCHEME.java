@@ -29,7 +29,7 @@ public class TPMT_KEYEDHASH_SCHEME extends TpmStructure
     @Override
     public void toTpm(TpmBuffer buf)
     {
-        if (details == null) return;
+        if (details == null) { return  };
         buf.writeShort(details.GetUnionSelector());
         details.toTpm(buf);
     }

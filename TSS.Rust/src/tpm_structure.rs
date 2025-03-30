@@ -20,11 +20,11 @@ pub trait TpmStructure : TpmMarshaller {
 }
  
 /// Common trait for all TPM enumeration types
-pub trait TpmEnum {
+pub trait TpmEnum<T> {
     /// Get the numeric value of the enum
-    fn get_value(&self) -> u32;
+    fn get_value(&self) -> T;
     /// Create enum from a numeric value
-    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized;
+    fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized;
 }
 
 /// Trait for TPM union types
@@ -53,12 +53,12 @@ pub struct SessEncInfo
 pub trait CmdStructure : TpmStructure
 {
     /// <returns> Number of TPM handles contained (as fields) in this data structure </returns>
-    fn num_handles() -> u16 { 0 }
+    fn num_handles(&self) -> u16 { 0 }
 
     /// <returns> Non-zero size info of the encryptable command/response parameter if session
     /// based encryption can be applied to this object (i.e. its first non-handle field is
     /// marshaled in size-prefixed form). Otherwise returns zero initialized struct. </returns>
-    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 0, valLen: 0 } }
+    fn sess_enc_info(&self) -> SessEncInfo { SessEncInfo { sizeLen: 0, valLen: 0 } }
 }
 
 /// <summary> Base class for custom (not TPM 2.0 spec defined) auto-generated data structures
@@ -66,13 +66,13 @@ pub trait CmdStructure : TpmStructure
 pub trait ReqStructure : CmdStructure
 {
     /// <returns> A vector of TPM handles contained in this request data structure </returns>
-    fn get_handles() -> &'static [TPM_HANDLE];
+    fn get_handles(&self) -> Vec<TPM_HANDLE>;
 
     /// <returns> Number of authorization TPM handles contained in this data structure </returns>
-    fn num_auth_handles() -> u16 { 0 }
+    fn num_auth_handles(&self) -> u16 { 0 }
 
     /// <summary> Serializable method </summary>
-    fn type_name() -> String { "ReqStructure".to_string() }
+    fn type_name(&self) -> String { "ReqStructure".to_string() }
 }
 
 /// <summary> Base class for custom (not TPM 2.0 spec defined) auto-generated data structures
@@ -80,11 +80,11 @@ pub trait ReqStructure : CmdStructure
 pub trait RespStructure : CmdStructure
 {
     /// <returns> this structure's handle field value </returns>
-    fn get_handle() -> TPM_HANDLE;
+    fn get_handle(&self) -> TPM_HANDLE;
 
     /// <summary> Sets this structure's handle field (TPM_HANDLE) if it is present </summary>
-    fn set_handle(handle: &TPM_HANDLE) {}
+    fn set_handle(&mut self, _handle: &TPM_HANDLE) {}
 
     /// <summary> Serializable method </summary>
-    fn type_name() -> String { "RespStructure".to_string() }
+    fn type_name(&self) -> String { "RespStructure".to_string() }
 }

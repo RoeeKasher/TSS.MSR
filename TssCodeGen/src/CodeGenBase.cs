@@ -193,7 +193,7 @@ namespace CodeGen
                 {
                     case MarshalType.Normal:
                         if (f.IsValueType())
-                            marshalOps.Add($"{fieldName} = {TargetLang.ParseEnum(f.TypeName, $"buf.read{WireNameForInt(size)}()")}");
+                            marshalOps.Add($"{fieldName} = {TargetLang.ParseEnum(f.TypeName, $"buf.read{WireNameForInt(size)}()", f.Type.GetFinalUnderlyingType().Name)}");
                         else
                             marshalOps.Add(TargetLang.Cpp || TargetLang.Rust ? $"{fieldName}.initFromTpm(buf)"
                                                           : $"{fieldName} = {f.TypeName}.fromTpm(buf)");
@@ -248,7 +248,7 @@ namespace CodeGen
                         var localVar = TargetLang.LocalVar(f.Name, f.TypeName);
                         if (f.IsValueType())
                         {
-                            marshalOps.Add($"{localVar} = {TargetLang.ParseEnum(f.TypeName, $"buf.read{WireNameForInt(size)}()")}");
+                            marshalOps.Add($"{localVar} = {TargetLang.ParseEnum(f.TypeName, $"buf.read{WireNameForInt(size)}()", f.Type.GetFinalUnderlyingType().Name)}");
                         }
                         else
                             marshalOps.Add($"{localVar} = {f.TypeName}.fromTpm(buf)");

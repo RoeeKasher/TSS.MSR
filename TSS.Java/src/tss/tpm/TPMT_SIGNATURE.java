@@ -38,7 +38,7 @@ public class TPMT_SIGNATURE extends TpmStructure
     @Override
     public void toTpm(TpmBuffer buf)
     {
-        if (signature == null) return;
+        if (signature == null) { return  };
         buf.writeShort(signature.GetUnionSelector());
         signature.toTpm(buf);
     }

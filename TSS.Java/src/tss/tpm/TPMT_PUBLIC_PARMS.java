@@ -33,7 +33,7 @@ public class TPMT_PUBLIC_PARMS extends TpmStructure
     @Override
     public void toTpm(TpmBuffer buf)
     {
-        if (parameters == null) return;
+        if (parameters == null) { return  };
         buf.writeShort(parameters.GetUnionSelector());
         parameters.toTpm(buf);
     }
