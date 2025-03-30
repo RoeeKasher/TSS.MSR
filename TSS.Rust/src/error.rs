@@ -25,13 +25,44 @@ pub enum TpmError {
     IncorrectTag(u32, u32), // expected, actual
     
     /// I/O error
-    IoError(std::io::Error),
+    IoError(String),
     
     /// Device communication error
     DeviceError(String),
     
     /// Generic TPM error
     GenericError(String),
+    
+    /// Operation not supported on this device
+    NotSupported,
+    
+    /// TPM device not connected
+    NotConnected,
+    
+    /// Bad end tag received from TPM
+    BadEndTag,
+    
+    /// Command failed
+    CommandFailed,
+    
+    /// Invalid parameter provided
+    InvalidParameter,
+    
+    /// No response available
+    NoResponse,
+    
+    /// Unexpected device state
+    UnexpectedState,
+    
+    /// Incompatible TPM/proxy
+    IncompatibleTpm,
+    
+    /// Invalid TPM device type
+    InvalidTpmType,
+    
+    /// Windows TBS specific error
+    #[cfg(target_os = "windows")]
+    TbsError(String),
 }
 
 impl fmt::Display for TpmError {
@@ -43,9 +74,20 @@ impl fmt::Display for TpmError {
             Self::InvalidEnumValue => write!(f, "Invalid enum value"),
             Self::InvalidUnion => write!(f, "Invalid union type"),
             Self::IncorrectTag(expected, actual) => write!(f, "Incorrect tag: expected 0x{:X}, got 0x{:X}", expected, actual),
-            Self::IoError(err) => write!(f, "I/O error: {}", err),
+            Self::IoError(msg) => write!(f, "I/O error: {}", msg),
             Self::DeviceError(msg) => write!(f, "Device error: {}", msg),
             Self::GenericError(msg) => write!(f, "TPM error: {}", msg),
+            Self::NotSupported => write!(f, "Operation not supported on this device"),
+            Self::NotConnected => write!(f, "TPM device not connected"),
+            Self::BadEndTag => write!(f, "Bad end tag received from TPM"),
+            Self::CommandFailed => write!(f, "TPM command failed"),
+            Self::InvalidParameter => write!(f, "Invalid parameter provided"),
+            Self::NoResponse => write!(f, "No TPM response available"),
+            Self::UnexpectedState => write!(f, "TPM in unexpected state"),
+            Self::IncompatibleTpm => write!(f, "Incompatible TPM/proxy"),
+            Self::InvalidTpmType => write!(f, "Invalid TPM device type"),
+            #[cfg(target_os = "windows")]
+            Self::TbsError(msg) => write!(f, "TBS error: {}", msg),
         }
     }
 }
@@ -54,6 +96,6 @@ impl Error for TpmError {}
 
 impl From<std::io::Error> for TpmError {
     fn from(error: std::io::Error) -> Self {
-        TpmError::IoError(error)
+        TpmError::IoError(error.to_string())
     }
 }

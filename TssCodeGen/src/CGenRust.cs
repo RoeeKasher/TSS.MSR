@@ -103,40 +103,6 @@ namespace CodeGen
 
         void GenerateTpmTypesRs()
         {
-            Write("#![allow(unused_variables)]");
-            Write("");
-            Write("//! TPM type definitions");
-            Write("");
-            Write("use crate::error::*;");
-            Write("use crate::tpm_buffer::*;");
-            Write("use crate::crypto::Crypto;");
-            Write("use std::fmt;");
-            Write("use std::collections::HashMap;");
-            Write("use std::fmt::Debug;");
-            Write("");
-            
-            // Generate traits
-            WriteComment("Common trait for all TPM enumeration types");
-            TabIn("pub trait TpmEnum {");
-            Write("/// Get the numeric value of the enum");
-            Write("fn get_value(&self) -> u32;");
-            Write("/// Create enum from a numeric value");
-            Write("fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized;");
-            TabOut("}");
-            Write("");
-
-            WriteComment("Trait for structures that can be marshaled to/from TPM wire format");
-            TabIn("pub trait TpmStructure : TpmMarshaller {");
-            foreach (var functionNameAndParams in TpmStructureFunctions)
-            {
-                Write("fn " + functionNameAndParams.Item1 + functionNameAndParams.Item2 + " -> Result<(), TpmError>;");
-            }            
-            TabOut("}");
-            
-            WriteComment("Trait for TPM union types");
-            Write("pub trait TpmUnion : TpmStructure { }");
-            Write("");
-
             // Generate the enums, bitfields, unions, and structs
             foreach (var e in TpmTypes.Get<TpmEnum>())
                 GenEnum(e);
@@ -581,7 +547,6 @@ namespace CodeGen
 
         void GenStructDecl(TpmStruct s)
         {
-            bool hasBase = s.DerivedFrom != null; // Has a non-trivial base type?
             string structName = s.Name;
 
             if (IsTypedefStruct(s))
@@ -661,6 +626,8 @@ namespace CodeGen
 
             GenTpmMarshallerImplementation(s);
 
+            GenTpmCmdStructureImplementation(s);
+
             Write("");
         }
 
@@ -703,96 +670,85 @@ namespace CodeGen
             TabOut("}");
         }
 
+        void GenTpmCmdStructureImplementation(TpmStruct s)
+        {
+            var info = s.IsCmdStruct() ? s.Info as CmdStructInfo : null;
+
+            if (info == null || (info.NumHandles == 0 && info.SessEncSizeLen == 0)) {
+                return;
+            }
+
+            TabIn($"impl CmdStructure for {s.Name} {{");
+
+            Write($"fn num_handles() -> u16 {{ {info.NumHandles} }}");
+            Write("");
+
+            if (info.SessEncSizeLen != 0)
+            {
+                Debug.Assert(info.SessEncValLen != 0);
+                Write($"fn sess_enc_info() -> SessEncInfo {{ SessEncInfo {{ sizeLen: {info.SessEncSizeLen}, valLen: {info.SessEncValLen} }} }}");
+            }
+
+            TabOut("}");
+
+            if (info.NumHandles == 0)
+            {
+                return;
+            }
+
+            if (info.IsRequest()) {
+                GenReqStructureImplementation(s, info);
+            } else {
+                GenRespStructureImplementation(s, info);
+            }
+        }
+
+        private void GenRespStructureImplementation(TpmStruct s, CmdStructInfo info)
+        {
+            Debug.Assert(info.NumHandles == 1 && info.NumAuthHandles == 0);
+
+            TabIn($"impl RespStructure for {s.Name} {{");
+
+            Write($"fn get_handle() -> u16 {{ {s.Fields[0].Name} }}");
+            Write("");
+            Write($"fn set_handle(&mut self, handle: &TPM_HANDLE) {{ self.{s.Fields[0].Name} = handle; }}");
+
+            TabOut("}");
+        }
+
+        private void GenReqStructureImplementation(TpmStruct s, CmdStructInfo info)
+        {
+            string handles = string.Join(", ", s.Fields.Take(info.NumHandles).Select(f => f.Name));
+
+            TabIn($"impl ReqStructure for {s.Name} {{");
+
+            Write($"fn num_auth_handles() -> u16 {{ {info.NumAuthHandles} }}");
+            Write("");
+            Write($"fn get_handles() ->  &'static [TPM_HANDLE] {{ &[{handles}] }}");
+
+            TabOut("}");
+        }
+
         void GenerateTpmCommandPrototypes()
         {
-            Write("//! TPM2 command implementations");
-            Write("");
-            Write("use crate::error::TpmError;");
-            Write("use crate::tpm_buffer::*;");
-            Write("use crate::tpm_types::*;");
-            Write("");
-            
             var commands = TpmTypes.Get<TpmStruct>().Where(s => s.Info.IsRequest());
 
-            Write("/// Main TPM2 interface");
-            Write("#[derive(Debug)]");
-            TabIn("pub struct Tpm2 {");
-            Write("// Implementation details");
-            Write("device: crate::device::TpmDevice,");
-            TabOut("}");
-            Write("");
-            
             TabIn("impl Tpm2 {");
-            Write("/// Creates a new TPM2 instance");
-            TabIn("pub fn new() -> Result<Self, TpmError> {");
-            TabIn("Ok(Self {");
-            Write("device: crate::device::TpmDevice::new()?,");
-            TabOut("})");
-            TabOut("}");
-            Write("");
-
-            Write("/// Main dispatch function for synchronous commands");
-            TabIn("fn dispatch<Req: TpmStructure, Resp: TpmStructure>(&mut self, req: Req, resp: &mut Resp) -> Result<(), TpmError> {");
-            Write("// Create buffer and marshal request");
-            Write("let mut buffer = TpmBuffer::new(None);");
-            Write("req.serialize(&mut buffer)?;");
-            Write("");
-            Write("// Send command to device");
-            Write("let response_data = self.device.send_command(buffer.to_vec())?;");
-            Write("");
-            Write("// Parse response");
-            Write("let mut resp_buffer = TpmBuffer::from(&response_data);");
-            Write("resp.deserialize(&mut resp_buffer)?;");
-            Write("");
-            Write("Ok(())");
-            TabOut("}");
-            Write("");
-            
-            Write("/// Dispatch function for asynchronous command phase");
-            Write("fn dispatch_async_command<Req: TpmStructure>(&mut self, req: Req) -> Result<(), TpmError> {");
-            TabIn("// Create buffer and marshal request");
-            Write("let mut buffer = TpmBuffer::new(None);");
-            Write("req.serialize(&mut buffer)?;");
-            Write("");
-            Write("// Send command to device");
-            Write("self.device.send_async_command(buffer.to_vec())?;");
-            Write("");
-            Write("Ok(())");
-            TabOut("}");
-            Write("");
-            
-            Write("/// Dispatch function for asynchronous response phase");
-            Write("fn dispatch_async_response<Resp: TpmStructure>(&mut self, resp: &mut Resp) -> Result<(), TpmError> {");
-            TabIn("// Receive response from device");
-            Write("let response_data = self.device.receive_async_response()?;");
-            Write("");
-            Write("// Parse response");
-            Write("let mut resp_buffer = TpmBuffer::from(&response_data);");
-            Write("resp.deserialize(&mut resp_buffer)?;");
-            Write("");
-            Write("Ok(())");
-            TabOut("}");
-            Write("");
             
             foreach (TpmStruct s in commands)
                 GenCommand(s, CommandFlavor.Synch);
-                
-            Write("/// Get async command methods");
-            Write("pub fn async_methods(&mut self) -> AsyncMethods {");
-            TabIn("AsyncMethods { tpm: self }");
-            TabOut("}");
-                
+
             TabOut("}");
             Write("");
             
             Write("/// Asynchronous TPM2 command methods");
-            Write("pub struct AsyncMethods<'a> {");
-            TabIn("tpm: &'a mut Tpm2,");
+            TabIn("pub struct AsyncMethods<'a> {");
+            Write("tpm: &'a mut Tpm2,");
             TabOut("}");
             Write("");
             
-            Write("impl<'a> AsyncMethods<'a> {");
-            TabIn();
+            TabIn("impl<'a> AsyncMethods<'a> {");
+            Write("");
             
             foreach (TpmStruct s in commands)
                 GenCommand(s, CommandFlavor.AsyncCommand);
@@ -814,6 +770,7 @@ namespace CodeGen
             var respFields = resp.NonTagFields;
 
             string cmdName = ToSnakeCase(GetCommandName(req));
+            string cmdCode = "TPM_CC::" + cmdName;
             
             if (gen == CommandFlavor.AsyncCommand)
                 cmdName += "_async";
@@ -850,107 +807,65 @@ namespace CodeGen
             
             TabOut($") -> {returnType} {{");
             TabIn();
-            if (gen == CommandFlavor.Synch)
-            {
-                Write("// Create request structure");
-                if (reqFields.Length > 0)
-                {
-                    Write($"let req = {req.Name} {{");
-                    TabIn();
-                    foreach (var f in reqFields)
-                    {
-                        if (f.MarshalType == MarshalType.ConstantValue)
-                            continue;
-                            
-                        Write($"{ToSnakeCase(f.Name)},");
-                    }
-                    TabOut("};");
-                    Write("");
-                }
-                else
-                {
-                    Write($"let req = {req.Name}::default();");
-                    Write("");
-                }
-                
-                Write("// Send command and process response");
-
-                if (respFields.Length > 0) {
-                    Write($"let mut resp = {resp.Name}::default();");
-                } else {
-                    Console.WriteLine($"Used TPMS_EMPTY instead of {resp.Name}");
-                    Write($"let mut resp = TPMS_EMPTY::default();");
-                }
-
-                Write("self.dispatch(req, &mut resp)?;");
-                
-                if (returnFieldName != null)
-                {
-                    Write($"Ok(resp.{ToSnakeCase(returnFieldName)})");
-                }
-                else if (respFields.Length > 0)
-                {
-                    Write("Ok(resp)");
-                }
-                else
-                {
-                    Write("Ok(())");
-                }
-            }
-            else if (gen == CommandFlavor.AsyncCommand)
-            {
-                Write("// Create request structure and dispatch async command");
-                if (reqFields.Length > 0)
-                {
-                    Write($"let req = {req.Name} {{");
-                    TabIn();
-                    foreach (var f in reqFields)
-                    {
-                        if (f.MarshalType == MarshalType.ConstantValue)
-                            continue;
-                            
-                        Write($"{ToSnakeCase(f.Name)},");
-                    }
-                    TabOut("};");
-                }
-                else
-                {
-                    Write($"let req = {req.Name}::default();");
-                }
-                Write("self.tpm.dispatch_async_command(req)");
-            }
-            else // AsyncResponse
-            {
-                Write("// Complete async command by receiving and processing response");
-                
-                if (respFields.Length > 0)
-                {
-                    Write($"let mut resp = {resp.Name}::default();");
-                }
-                else
-                {
-                    Console.WriteLine($"Used TPMS_EMPTY instead of {resp.Name}");
-                    Write($"let mut resp = TPMS_EMPTY::default();");
-                }
-
-                Write("self.tpm.dispatch_async_response(&mut resp)?;");
-                
-                if (returnFieldName != null)
-                {
-                    Write($"Ok(resp.{ToSnakeCase(returnFieldName)})");
-                }
-                else if (respFields.Length > 0)
-                {
-                    Write("Ok(resp)");
-                }
-                else
-                {
-                    Write("Ok(())");
-                }
-            }
-            
+            GenCommandImplementation(req, resp, reqFields, returnFieldName, gen);
             TabOut("}");
             Write("");
+        }
+
+        private void GenCommandImplementation(TpmStruct req, TpmStruct resp, StructField[] reqFields, string returnFieldName, CommandFlavor gen)
+        {
+            // Create request structure
+            if (reqFields.Length > 0)
+            {
+                Write($"let req = {req.Name} {{");
+                TabIn();
+                foreach (var f in reqFields)
+                {
+                    if (f.MarshalType == MarshalType.ConstantValue)
+                        continue;
+
+                    Write($"{ToSnakeCase(f.Name)},");
+                }
+                TabOut("};");
+                Write("");
+            }
+            else
+            {
+                Write($"let req = {req.Name}::default();");
+                Write("");
+            }
+
+            var respFields = resp.NonTagFields;
+            // Create response structure (or empty if there is no response)
+            if (respFields.Length > 0)
+            {
+                Write($"let mut resp = {resp.Name}::default();");
+            }
+            else
+            {
+                Write($"let mut resp = TPMS_EMPTY::default();");
+            }
+
+            // Call dispatch method
+            var cmdCode = "TPM_CC::" + ToSnakeCase(GetCommandName(req));
+            string dispatchCall = gen == CommandFlavor.AsyncCommand ? "tpm.dispatch_out"
+                    : gen == CommandFlavor.AsyncResponse ? "tpm.dispatch_in"
+                    : "dispatch";
+            Write($"self.{dispatchCall}({cmdCode}, req, &mut resp)?;");
+
+            // Process response
+            if (returnFieldName != null)
+            {
+                Write($"Ok(resp.{ToSnakeCase(returnFieldName)})");
+            }
+            else if (respFields.Length > 0)
+            {
+                Write("Ok(resp)");
+            }
+            else
+            {
+                Write("Ok(())");
+            }
         }
 
         void GenEnumMap()

@@ -1,0 +1,90 @@
+/*
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See the LICENSE file in the project root for full license information.
+ */
+
+#![allow(unused_variables)]
+
+ //! TPM type definitions
+
+use crate::error::*;
+use crate::tpm_buffer::*;
+use crate::tpm_types::*;
+
+/// Trait for structures that can be marshaled to/from TPM wire format
+pub trait TpmStructure : TpmMarshaller {
+    fn serialize(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;
+    fn deserialize(&mut self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;
+    fn fromTpm(&self, buffer: &mut TpmBuffer) -> Result<(), TpmError>;
+    fn fromBytes(&mut self, buffer: &mut Vec<u8>) -> Result<(), TpmError>;
+}
+ 
+/// Common trait for all TPM enumeration types
+pub trait TpmEnum {
+    /// Get the numeric value of the enum
+    fn get_value(&self) -> u32;
+    /// Create enum from a numeric value
+    fn try_from_trait(value: u32) -> Result<Self, TpmError> where Self: Sized;
+}
+
+/// Trait for TPM union types
+pub trait TpmUnion : TpmStructure { }
+
+/// <summary> Parameters of the TPM command request data structure field, to which session
+/// based encryption can be applied (i.e. the first non-handle field marshaled in size-prefixed
+/// form, if any) </summary>
+pub struct SessEncInfo
+{
+    /// <summary> Length of the size prefix in bytes. The size prefix contains the number of
+    /// elements in the sized area filed (normally just bytes). </summary>
+    pub sizeLen: u16,
+
+    /// <summary> Length of an element of the sized area in bytes (in most cases 1) </summary>
+    pub valLen: u16,
+}
+
+/// <summary> Base class for custom (not TPM 2.0 spec defined) auto-generated classes
+/// representing a TPM command or response parameters and handles, if any. </summary>
+///
+/// <remarks> These data structures differ from the spec-defined ones derived directly from
+/// the TpmStructure class in that their handle fields are not marshaled by their toTpm() and
+/// initFrom() methods, but rather are acceesed and manipulated via an interface defined by
+/// this structs and its derivatives ReqStructure and RespStructure. </remarks>
+pub trait CmdStructure : TpmStructure
+{
+    /// <returns> Number of TPM handles contained (as fields) in this data structure </returns>
+    fn num_handles() -> u16 { 0 }
+
+    /// <returns> Non-zero size info of the encryptable command/response parameter if session
+    /// based encryption can be applied to this object (i.e. its first non-handle field is
+    /// marshaled in size-prefixed form). Otherwise returns zero initialized struct. </returns>
+    fn sess_enc_info() -> SessEncInfo { SessEncInfo { sizeLen: 0, valLen: 0 } }
+}
+
+/// <summary> Base class for custom (not TPM 2.0 spec defined) auto-generated data structures
+/// representing a TPM command parameters and handles, if any. </summary>
+pub trait ReqStructure : CmdStructure
+{
+    /// <returns> A vector of TPM handles contained in this request data structure </returns>
+    fn get_handles() -> &'static [TPM_HANDLE];
+
+    /// <returns> Number of authorization TPM handles contained in this data structure </returns>
+    fn num_auth_handles() -> u16 { 0 }
+
+    /// <summary> Serializable method </summary>
+    fn type_name() -> String { "ReqStructure".to_string() }
+}
+
+/// <summary> Base class for custom (not TPM 2.0 spec defined) auto-generated data structures
+/// representing a TPM response parameters and handles, if any. </summary>
+pub trait RespStructure : CmdStructure
+{
+    /// <returns> this structure's handle field value </returns>
+    fn get_handle() -> TPM_HANDLE;
+
+    /// <summary> Sets this structure's handle field (TPM_HANDLE) if it is present </summary>
+    fn set_handle(handle: &TPM_HANDLE) {}
+
+    /// <summary> Serializable method </summary>
+    fn type_name() -> String { "RespStructure".to_string() }
+}

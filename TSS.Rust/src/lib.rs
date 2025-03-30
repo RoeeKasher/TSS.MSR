@@ -4,3 +4,4 @@ pub mod error;
 pub mod tpm_buffer;
 pub mod device;
 pub mod crypto;
+pub mod tpm_structure;
