@@ -25,6 +25,7 @@ pub trait TpmEnum<T> {
     fn get_value(&self) -> T;
     /// Create enum from a numeric value
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized;
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized;
 }
 
 /// Trait for TPM union types

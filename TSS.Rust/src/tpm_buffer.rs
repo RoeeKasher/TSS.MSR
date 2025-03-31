@@ -151,7 +151,7 @@ impl TpmBuffer {
             res += (self.buf[self.pos] as u64) << 8;
             self.pos += 1;
         }
-        res += self.buf[self.pos] as u64;
+        res += (self.buf[self.pos] as u8) as u64;
         self.pos += 1;
         res
     }
@@ -352,7 +352,7 @@ impl TpmBuffer {
                 break;
             }
 
-            *elt = T::try_from_trait(self.read_num(val_size))?;
+            *elt = T::new_from_trait((self.read_num(val_size) as u32).into())?;
         }
 
         Ok(())

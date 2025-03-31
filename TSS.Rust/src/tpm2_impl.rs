@@ -168,7 +168,7 @@ impl Tpm2 {
     /// Generates an error response buffer
     fn generate_error_response(&self, rc: TPM_RC) -> TpmBuffer {
         let mut resp_buf = TpmBuffer::new(None);
-        resp_buf.writeShort(TPM_ST::NO_SESSIONS as u16);
+        resp_buf.writeShort(TPM_ST::NO_SESSIONS.get_value() as u16);
         resp_buf.writeInt(10);
         resp_buf.writeInt(rc.get_value());
         resp_buf
@@ -183,6 +183,8 @@ impl Tpm2 {
             message: err_msg.to_string(),
         };
         
+        println!("Generating error: {:?}", error);
+
         self.last_error = Some(error.clone());
         
         if self.exceptions_enabled && !errors_allowed {

@@ -138,8 +138,6 @@ namespace CodeGen
 
         void GenEnum(TpmType e, List<TpmNamedConstant> elements)
         {
-            bool hasDuplicates = HasDuplicateValues(elements);
-            
             WriteComment(e);
                
             var enumVals = new Dictionary<string, string>();
@@ -148,197 +146,101 @@ namespace CodeGen
             var sizeInBits = enumUnderlyingType.GetSize() * 8;
             var enumUnderlyingTypeName = enumUnderlyingType.Name;
             var enumUnderlyingTypeSigned = enumUnderlyingTypeName.StartsWith("i") ? true : false;
-            
-            if (hasDuplicates)
-            {
-                // Generate a newtype struct with constants for enums with duplicates
-                WriteComment("Enum with duplicated values - using struct with constants");
-                Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
-                Write($"pub struct {e.Name}(pub {enumUnderlyingTypeName});");
-                Write("");
-                
-                // Generate constants for each enum value
-                TabIn($"impl {e.Name} {{");
-                
-                foreach (var elt in elements)
-                {
-                    WriteComment(AsSummary(elt.Comment));
-                    var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
-                    var enumHexValue = enumUnderlyingTypeSigned ? enumValue.ToString() : ToHex(enumValue);
-                    var originalValueComment = "";
-                    if (enumHexValue != elt.Value)
-                    {
-                        originalValueComment = $" // Original value: {elt.Value}";
-                    }
-                    
-                    Write($"pub const {elt.Name}: Self = Self({enumHexValue});{originalValueComment}");
-                    
-                    // Do not include artificially added named constants into the name conversion maps
-                    if (elt.SpecName != null)
-                        enumVals[elt.Name] = e is TpmEnum ? ToHex(elt.NumericValue) : elt.Value;
-                }
-                
-                // Add TryFrom implementation for the newtype struct
-                Write("");
-                TabIn($"pub fn try_from(value: {enumUnderlyingTypeName}) -> Result<Self, TpmError> {{");
-                TabIn("match value {");
-                foreach (var elt in elements.GroupBy(x => x.NumericValue).Select(g => g.First()))
-                {
-                    var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
 
-                    // Only include first occurrence of each value to avoid duplicate match arms
-                    Write($"{enumValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
-                }
-                Write("_ => Err(TpmError::InvalidEnumValue),");
-                TabOut("}", false);
-                TabOut("}", false);
-                
-                TabOut("}");
-                Write("");
-                
-                // Implement TpmEnum trait for the struct
-                TabIn($"impl TpmEnum<{enumUnderlyingTypeName}> for {e.Name} {{");
-                TabIn($"fn get_value(&self) -> {enumUnderlyingTypeName} {{");
-                Write("self.0.into()");
-                TabOut("}");
-                TabIn("fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {");
-                Write($"{e.Name}::try_from(value as {enumUnderlyingTypeName})");
-                TabOut("}", false);
-                TabOut("}");
-                Write("");
-                
-                // Add numeric conversions
-                TabIn($"impl From<{e.Name}> for u{sizeInBits} {{");
-                TabIn($"fn from(value: {e.Name}) -> Self {{");
-                Write("value.0.into()");
-                TabOut("}", false);
-                TabOut("}");
-                Write("");
-                
-                TabIn($"impl From<{e.Name}> for i{sizeInBits} {{");
-                TabIn($"fn from(value: {e.Name}) -> Self {{");
-                Write($"value.0 as i{sizeInBits} ");
-                TabOut("}", false);
-                TabOut("}");
-                Write("");
-                               
-                // Implement Display trait
-                TabIn($"impl fmt::Display for {e.Name} {{");
-                TabIn("fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {");
-                TabIn("match self.0 {");
-                
-                // Group by value to avoid duplicate match arms
-                var grouped = elements.GroupBy(x => ToRustEnumValue(x, sizeInBits, enumUnderlyingTypeSigned));
-                foreach (var group in grouped)
-                {
-                    if (group.Count() == 1)
-                    {
-                        // Only one variant for this value
-                        Write($"{group.Key} => write!(f, \"{group.First().Name}\"),");
-                    }
-                    else
-                    {
-                        // Multiple variants for this value
-                        var variants = group.Select(elt => elt.Name);
-                        Write($"{group.Key} => write!(f, \"One of <{string.Join(", ", variants)}>\"),");
-                    }
-                }
-                
-                Write("_ => write!(f, \"Unknown({:?})\", self.0),");
-                TabOut("}");
-                TabOut("}");
-                TabOut("}");
-            }
-            else
-            {
-                // Original enum generation for types without duplicates
-                Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
-                Write($"#[repr({enumUnderlyingTypeName})]");
-                Write($"pub enum {e.Name} {{");
-                TabIn();
-
-                Write("#[default]");
-                foreach (var elt in elements)
-                {
-                    WriteComment(AsSummary(elt.Comment));
-                    string delimiter = Separator(elt, elements).Replace(",", ",");
-
-                    var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
-                    var enumHexValue = enumUnderlyingTypeSigned ? enumValue.ToString() : ToHex(enumValue);
-                    var originalValueComment = "";
-                    if (enumHexValue != elt.Value)
-                    {
-                        originalValueComment = $" // Original value: {elt.Value}";
-                    }
-
-                    Write($"{ToRustEnumMemberName(elt.Name)} = {enumHexValue}{delimiter}{originalValueComment}");
-
-                    // Do not include artificially added named constants into the name conversion maps
-                    if (elt.SpecName != null)
-                        enumVals[elt.Name] = e is TpmEnum ? ToHex(elt.NumericValue) : elt.Value;
-                }
-                TabOut("}");
-                
-                TabIn($"impl {e.Name} {{");
-                // Add TryFrom implementation for the newtype struct
-                TabIn($"pub fn try_from(value: {enumUnderlyingTypeName}) -> Result<Self, TpmError> {{");
-                TabIn("match value {");
-
-                foreach (var elt in elements.GroupBy(x => ToRustEnumValue(x, sizeInBits, enumUnderlyingTypeSigned))
-                                            .Select(g => g.First()))
-                {
-                    var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
-                    // Only include first occurrence of each value to avoid duplicate match arms
-                    Write($"{enumValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
-                }
-                Write("_ => Err(TpmError::InvalidEnumValue),");
-                TabOut("}");
-                TabOut("}");
-                TabOut("}");
-                
-
-                // Implement TpmEnum trait for the enum
-                TabIn($"impl TpmEnum<{enumUnderlyingTypeName}> for {e.Name} {{");
-                TabIn($"fn get_value(&self) -> {enumUnderlyingTypeName} {{");
-                Write($"*self as {enumUnderlyingTypeName}");
-                TabOut("}");
-                TabIn($"fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {{");
-                Write($"{e.Name}::try_from(value as {enumUnderlyingTypeName}).map_err(|_| TpmError::InvalidEnumValue)");
-                TabOut("}", false);
-                TabOut("}");
-                Write("");
-                
-                // Add numeric conversions
-                TabIn($"impl From<{e.Name}> for u{sizeInBits} {{");
-                TabIn($"fn from(value: {e.Name}) -> Self {{");
-                Write($"value as u{sizeInBits}");
-                TabOut("}");
-                TabOut("}");
-                Write("");
-                
-                TabIn($"impl From<{e.Name}> for i{sizeInBits} {{");
-                TabIn($"fn from(value: {e.Name}) -> Self {{");
-                Write($"value as i{sizeInBits}");
-                TabOut("}");
-                TabOut("}");
-                Write("");
-                
-                // Implement Display trait
-                TabIn($"impl fmt::Display for {e.Name} {{");
-                TabIn("fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {");
-                TabIn("match self {");
-                foreach (var elt in elements)
-                {
-                    string memberName = ToRustEnumMemberName(elt.Name);
-                    Write($"Self::{memberName} => write!(f, \"{memberName}\"),");
-                }
-                TabOut("}", false);
-                TabOut("}", false);
-                TabOut("}", false);
-            }
+            // Generate a newtype struct with constants for enums with duplicates
+            Write($"#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]");
+            Write($"pub struct {e.Name}(pub {enumUnderlyingTypeName});");
             Write("");
             
-            EnumMap[e.Name] = hasDuplicates ? new Dictionary<string, string>() : enumVals;
+            // Generate constants for each enum value
+            TabIn($"impl {e.Name} {{");
+            
+            foreach (var elt in elements)
+            {
+                WriteComment(AsSummary(elt.Comment));
+                var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
+                var enumHexValue = enumUnderlyingTypeSigned ? enumValue.ToString() : ToHex(enumValue);
+                var originalValueComment = "";
+                if (enumHexValue != elt.Value)
+                {
+                    originalValueComment = $" // Original value: {elt.Value}";
+                }
+                
+                Write($"pub const {elt.Name}: Self = Self({enumHexValue});{originalValueComment}");
+                
+                // Do not include artificially added named constants into the name conversion maps
+                if (elt.SpecName != null)
+                    enumVals[elt.Name] = e is TpmEnum ? ToHex(elt.NumericValue) : elt.Value;
+            }
+            
+            // Add TryFrom implementation for the newtype struct
+            Write("");
+            TabIn($"pub fn try_from(value: {enumUnderlyingTypeName}) -> Result<Self, TpmError> {{");
+            TabIn("match value {");
+            foreach (var elt in elements.GroupBy(x => x.NumericValue).Select(g => g.Last()))
+            {
+                var enumValue = ToRustEnumValue(elt, sizeInBits, enumUnderlyingTypeSigned);
+
+                // Only include first occurrence of each value to avoid duplicate match arms
+                Write($"{enumValue} => Ok(Self::{elt.Name}), // Original value: {elt.Value}");
+            }
+            Write("_ => Err(TpmError::InvalidEnumValue),");
+            TabOut("}", false);
+            TabOut("}", false);
+            
+            TabOut("}");
+            Write("");
+            
+            // Implement TpmEnum trait for the struct
+            TabIn($"impl TpmEnum<{enumUnderlyingTypeName}> for {e.Name} {{");
+            TabIn($"fn get_value(&self) -> {enumUnderlyingTypeName} {{");
+            Write("self.0.into()");
+            TabOut("}");
+            TabIn("fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {");
+            Write($"{e.Name}::try_from(value as {enumUnderlyingTypeName})");
+            TabOut("}");
+            TabIn("fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {");
+            Write($"Ok({e.Name}(value as {enumUnderlyingTypeName}))");
+            TabOut("}", false);
+            TabOut("}");
+            Write("");
+            
+            // Add numeric conversions
+            TabIn($"impl From<{e.Name}> for u{sizeInBits} {{");
+            TabIn($"fn from(value: {e.Name}) -> Self {{");
+            Write($"value.0 as u{sizeInBits}");
+            TabOut("}", false);
+            TabOut("}");
+            Write("");
+            
+            TabIn($"impl From<{e.Name}> for i{sizeInBits} {{");
+            TabIn($"fn from(value: {e.Name}) -> Self {{");
+            Write($"value.0 as i{sizeInBits}");
+            TabOut("}", false);
+            TabOut("}");
+            Write("");
+                            
+            // Implement Display trait
+            TabIn($"impl fmt::Display for {e.Name} {{");
+            TabIn("fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {");
+            TabIn("match self.0 {");
+            
+            // Since several enum variants can map to the same value, we need to group them and only print the last
+            // one in the match statement (the last is the most updated one)
+            var elementsToValues = elements.GroupBy(element => ToRustEnumValue(element, sizeInBits, enumUnderlyingTypeSigned))
+                                           .Select(variants => (variants.Key, variants.Last().Name ));
+            foreach (var elementToValue in elementsToValues)
+            {
+                Write($"{elementToValue.Key} => write!(f, \"{elementToValue.Name}\"),");
+            }
+            
+            Write($"_ => write!(f, \"{{}}\", enum_to_str(self.0 as u64, std::any::TypeId::of::<{e.Name}>())),");
+            TabOut("}", false);
+            TabOut("}", false);
+            TabOut("}");
+            Write("");
+            
+            EnumMap[e.Name] = enumVals;
         }
 
         void GenEnum(TpmEnum e)
@@ -349,54 +251,27 @@ namespace CodeGen
         void GenBitfield(TpmBitfield bf)
         {
             var bitfieldElements = GetBifieldElements(bf);
-            bool hasDuplicates = HasDuplicateValues(bitfieldElements);
+            // Generate the enum with constants approach
+            GenEnum(bf, bitfieldElements);
             
-            if (hasDuplicates)
-            {
-                // Generate the enum with constants approach
-                GenEnum(bf, bitfieldElements);
-                
-                // Add bitwise operations for flags using the newtype pattern
-                TabIn($"impl std::ops::BitOr for {bf.Name} {{");
-                Write("type Output = Self;");
-                Write("");
-                TabIn("fn bitor(self, rhs: Self) -> Self::Output {");
-                Write($"Self(self.0 | rhs.0)");
-                TabOut("}");
-                TabOut("}");
-                Write("");
-                
-                // From impl
-                TabIn($"impl From<u{bf.GetFinalUnderlyingType().GetSize() * 8}> for {bf.Name} {{");
-                TabIn($"fn from(value: u{bf.GetFinalUnderlyingType().GetSize() * 8}) -> Self {{");
-                Write($"Self(value.into())");
-                TabOut("}", false);
-                TabOut("}");
-                Write("");
-            }
-            else
-            {
-                // Original implementation for bitfields without duplicates
-                GenEnum(bf, bitfieldElements);
+            // Add bitwise operations for flags using the newtype pattern
+            TabIn($"impl std::ops::BitOr for {bf.Name} {{");
+            Write("type Output = Self;");
+            Write("");
+            TabIn("fn bitor(self, rhs: Self) -> Self::Output {");
+            Write($"Self(self.0 | rhs.0)");
+            TabOut("}");
+            TabOut("}");
+            Write("");
+            
+            // From impl
+            TabIn($"impl From<u{bf.GetFinalUnderlyingType().GetSize() * 8}> for {bf.Name} {{");
+            TabIn($"fn from(value: u{bf.GetFinalUnderlyingType().GetSize() * 8}) -> Self {{");
+            Write($"Self(value.into())");
+            TabOut("}", false);
+            TabOut("}");
+            Write("");
 
-                // Add bitwise operations for flags
-                Write($"impl std::ops::BitOr for {bf.Name} {{");
-                TabIn("type Output = Self;");
-                Write("");
-                Write("fn bitor(self, rhs: Self) -> Self::Output {");
-                TabIn($"unsafe {{ std::mem::transmute(self as u{bf.GetFinalUnderlyingType().GetSize() * 8} | rhs as u{bf.GetFinalUnderlyingType().GetSize() * 8}) }}");
-                TabOut("}");
-                TabOut("}");
-                Write("");
-
-                // From u32/u16/u8 implementation
-                Write($"impl From<u{bf.GetFinalUnderlyingType().GetSize() * 8}> for {bf.Name} {{");
-                TabIn($"fn from(value: u{bf.GetFinalUnderlyingType().GetSize() * 8}) -> Self {{");
-                TabIn($"unsafe {{ std::mem::transmute(value) }}");
-                TabOut("}");
-                TabOut("}");
-                Write("");
-            }
         }
 
         void GenUnion(TpmUnion u)
@@ -901,7 +776,7 @@ namespace CodeGen
         {
             TabIn("lazy_static::lazy_static! {");
             Write("/// Maps enum type IDs to a map of values to string representations");
-            Write("static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u64, &'static str>> = {");
+            Write("pub static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u64, &'static str>> = {");
             TabIn("let mut map = HashMap::new();");
             
             foreach (var e in EnumMap)

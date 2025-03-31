@@ -655,6 +655,7 @@ void Samples::GetCapability()
 
         // Print alg name and properties
         for (auto p = props->algProperties.begin(); p != props->algProperties.end(); p++)
+            cout << "" << p->alg << ": " << p->algProperties << endl;
             cout << setw(16) << EnumToStr(p->alg) << ": " << EnumToStr(p->algProperties) << endl;
 
         if (!caps.moreData)

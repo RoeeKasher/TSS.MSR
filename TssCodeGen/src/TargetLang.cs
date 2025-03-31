@@ -127,17 +127,26 @@ namespace CodeGen
         public static string GetEnumValue(string enumValue, string enumTypename, int valueSizeInBytes = 4) {
             if (!Rust) return enumValue;
             
-            // In Rust, if the enum type is a primitive type (such as i32), we need to the unsigned version of it
+            // In Rust, if the enum type is a primitive type (such as i32), we need to get the unsigned version of it
             // (e.g. u32) using the "as" operator, as into() isn't implemented for such conversions
-            if (ElementaryTypesCurrentLang.Contains(enumTypename))
+            if (ElementaryTypesCurrentLang.Contains(enumTypename)) {
                 return $"{enumValue} as u{valueSizeInBytes * 8}";
+            }
             
             // Otherwise, we can use the into() method to convert the enum value to the target type
             return $"{enumValue}.into()";
         }
 
-        public static string ParseEnum(string selectorTypeName, string value, string underlyingType) => 
-            Rust ? $"{selectorTypeName}::try_from({value} as {underlyingType}).map_err(|err| TpmError::InvalidEnumValue)?" : $"{value}";
+        public static string ParseEnum(string selectorTypeName, string value, string underlyingType) {
+            if (!Rust) return value;
+
+            if (ElementaryTypesCurrentLang.Contains(selectorTypeName)) 
+            {
+                return $"{value} as {underlyingType}";
+            }
+
+            return $"{selectorTypeName}({value} as {underlyingType})";
+        }
 
 
         public static int MaxCommentLine => TargetLang.Py ? 72 : 90;

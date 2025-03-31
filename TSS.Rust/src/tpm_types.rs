@@ -17,6 +17,7 @@
  //! TPM type definitions
 
 use crate::error::*;
+use crate::tpm2_helpers::*;
 use crate::tpm_buffer::*;
 use crate::crypto::Crypto;
 use std::fmt;
@@ -33,8 +34,6 @@ use crate::tpm_structure::*;
 
 /// Table 2 is the list of algorithms to which the TCG has assigned an algorithm
 /// identifier along with its numeric identifier.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_ALG_ID(pub u16);
 
@@ -184,9 +183,9 @@ impl TPM_ALG_ID {
     pub fn try_from(value: u16) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::ERROR), // Original value: 0x0000
-            1 => Ok(Self::FIRST), // Original value: 0x0001
+            1 => Ok(Self::RSA), // Original value: 0x0001
             3 => Ok(Self::TDES), // Original value: 0x0003
-            4 => Ok(Self::SHA), // Original value: 0x0004
+            4 => Ok(Self::SHA1), // Original value: 0x0004
             5 => Ok(Self::HMAC), // Original value: 0x0005
             6 => Ok(Self::AES), // Original value: 0x0006
             7 => Ok(Self::MGF1), // Original value: 0x0007
@@ -222,7 +221,7 @@ impl TPM_ALG_ID {
             65 => Ok(Self::OFB), // Original value: 0x0041
             66 => Ok(Self::CBC), // Original value: 0x0042
             67 => Ok(Self::CFB), // Original value: 0x0043
-            68 => Ok(Self::ECB), // Original value: 0x0044
+            68 => Ok(Self::LAST), // Original value: 0x0044
             32767 => Ok(Self::ANY), // Original value: 0x7FFF
             32766 => Ok(Self::ANY2), // Original value: 0x7FFE
             _ => Err(TpmError::InvalidEnumValue),
@@ -238,17 +237,21 @@ impl TpmEnum<u16> for TPM_ALG_ID {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_ALG_ID::try_from(value as u16)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_ALG_ID(value as u16))
+    }
 }
 
 impl From<TPM_ALG_ID> for u16 {
     fn from(value: TPM_ALG_ID) -> Self {
-        value.0.into()
+        value.0 as u16
     }
 }
 
 impl From<TPM_ALG_ID> for i16 {
     fn from(value: TPM_ALG_ID) -> Self {
-        value.0 as i16 
+        value.0 as i16
     }
 }
 
@@ -256,9 +259,9 @@ impl fmt::Display for TPM_ALG_ID {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
             0 => write!(f, "ERROR"),
-            1 => write!(f, "One of <FIRST, RSA>"),
+            1 => write!(f, "RSA"),
             3 => write!(f, "TDES"),
-            4 => write!(f, "One of <SHA, SHA1>"),
+            4 => write!(f, "SHA1"),
             5 => write!(f, "HMAC"),
             6 => write!(f, "AES"),
             7 => write!(f, "MGF1"),
@@ -294,39 +297,35 @@ impl fmt::Display for TPM_ALG_ID {
             65 => write!(f, "OFB"),
             66 => write!(f, "CBC"),
             67 => write!(f, "CFB"),
-            68 => write!(f, "One of <ECB, LAST>"),
+            68 => write!(f, "LAST"),
             32767 => write!(f, "ANY"),
             32766 => write!(f, "ANY2"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_ALG_ID>())),
         }
-
     }
-
 }
 
 /// Table 4 is the list of identifiers for TCG-registered curve ID values for elliptic
 /// curve cryptography.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u16)]
-pub enum TPM_ECC_CURVE {
-    #[default]
-    NONE = 0x0, // Original value: 0x0000
-    NIST_P192 = 0x1, // Original value: 0x0001
-    NIST_P224 = 0x2, // Original value: 0x0002
-    NIST_P256 = 0x3, // Original value: 0x0003
-    NIST_P384 = 0x4, // Original value: 0x0004
-    NIST_P521 = 0x5, // Original value: 0x0005
-
-    /// Curve to support ECDAA
-    BN_P256 = 0x10, // Original value: 0x0010
-
-    /// Curve to support ECDAA
-    BN_P638 = 0x11, // Original value: 0x0011
-    SM2_P256 = 0x20, // Original value: 0x0020
-    TEST_P192 = 0x21 // Original value: 0x0021
-}
+pub struct TPM_ECC_CURVE(pub u16);
 
 impl TPM_ECC_CURVE {
+    pub const NONE: Self = Self(0x0); // Original value: 0x0000
+    pub const NIST_P192: Self = Self(0x1); // Original value: 0x0001
+    pub const NIST_P224: Self = Self(0x2); // Original value: 0x0002
+    pub const NIST_P256: Self = Self(0x3); // Original value: 0x0003
+    pub const NIST_P384: Self = Self(0x4); // Original value: 0x0004
+    pub const NIST_P521: Self = Self(0x5); // Original value: 0x0005
+
+    /// Curve to support ECDAA
+    pub const BN_P256: Self = Self(0x10); // Original value: 0x0010
+
+    /// Curve to support ECDAA
+    pub const BN_P638: Self = Self(0x11); // Original value: 0x0011
+    pub const SM2_P256: Self = Self(0x20); // Original value: 0x0020
+    pub const TEST_P192: Self = Self(0x21); // Original value: 0x0021
+
     pub fn try_from(value: u16) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::NONE), // Original value: 0x0000
@@ -341,519 +340,502 @@ impl TPM_ECC_CURVE {
             33 => Ok(Self::TEST_P192), // Original value: 0x0021
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u16> for TPM_ECC_CURVE {
     fn get_value(&self) -> u16 {
-        *self as u16
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_ECC_CURVE::try_from(value as u16).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_ECC_CURVE::try_from(value as u16)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_ECC_CURVE(value as u16))
     }
 }
 
 impl From<TPM_ECC_CURVE> for u16 {
     fn from(value: TPM_ECC_CURVE) -> Self {
-        value as u16
+        value.0 as u16
     }
-
 }
 
 impl From<TPM_ECC_CURVE> for i16 {
     fn from(value: TPM_ECC_CURVE) -> Self {
-        value as i16
+        value.0 as i16
     }
-
 }
 
 impl fmt::Display for TPM_ECC_CURVE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::NONE => write!(f, "NONE"),
-            Self::NIST_P192 => write!(f, "NIST_P192"),
-            Self::NIST_P224 => write!(f, "NIST_P224"),
-            Self::NIST_P256 => write!(f, "NIST_P256"),
-            Self::NIST_P384 => write!(f, "NIST_P384"),
-            Self::NIST_P521 => write!(f, "NIST_P521"),
-            Self::BN_P256 => write!(f, "BN_P256"),
-            Self::BN_P638 => write!(f, "BN_P638"),
-            Self::SM2_P256 => write!(f, "SM2_P256"),
-            Self::TEST_P192 => write!(f, "TEST_P192"),
+        match self.0 {
+            0 => write!(f, "NONE"),
+            1 => write!(f, "NIST_P192"),
+            2 => write!(f, "NIST_P224"),
+            3 => write!(f, "NIST_P256"),
+            4 => write!(f, "NIST_P384"),
+            5 => write!(f, "NIST_P521"),
+            16 => write!(f, "BN_P256"),
+            17 => write!(f, "BN_P638"),
+            32 => write!(f, "SM2_P256"),
+            33 => write!(f, "TEST_P192"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_ECC_CURVE>())),
         }
     }
 }
 
 /// Table 13 Defines for SHA1 Hash Values
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum SHA1 {
-    #[default]
-
-    /// Size of digest in octets
-    DIGEST_SIZE = 0x14, // Original value: 20
-
-    /// Size of hash block in octets
-    BLOCK_SIZE = 0x40 // Original value: 64
-}
+pub struct SHA1(pub u32);
 
 impl SHA1 {
+    /// Size of digest in octets
+    pub const DIGEST_SIZE: Self = Self(0x14); // Original value: 20
+
+    /// Size of hash block in octets
+    pub const BLOCK_SIZE: Self = Self(0x40); // Original value: 64
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             20 => Ok(Self::DIGEST_SIZE), // Original value: 20
             64 => Ok(Self::BLOCK_SIZE), // Original value: 64
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for SHA1 {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        SHA1::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        SHA1::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(SHA1(value as u32))
     }
 }
 
 impl From<SHA1> for u32 {
     fn from(value: SHA1) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<SHA1> for i32 {
     fn from(value: SHA1) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for SHA1 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
-            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
+        match self.0 {
+            20 => write!(f, "DIGEST_SIZE"),
+            64 => write!(f, "BLOCK_SIZE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<SHA1>())),
         }
     }
 }
 
 /// Table 14 Defines for SHA256 Hash Values
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum SHA256 {
-    #[default]
-
-    /// Size of digest
-    DIGEST_SIZE = 0x20, // Original value: 32
-
-    /// Size of hash block
-    BLOCK_SIZE = 0x40 // Original value: 64
-}
+pub struct SHA256(pub u32);
 
 impl SHA256 {
+    /// Size of digest
+    pub const DIGEST_SIZE: Self = Self(0x20); // Original value: 32
+
+    /// Size of hash block
+    pub const BLOCK_SIZE: Self = Self(0x40); // Original value: 64
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             32 => Ok(Self::DIGEST_SIZE), // Original value: 32
             64 => Ok(Self::BLOCK_SIZE), // Original value: 64
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for SHA256 {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        SHA256::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        SHA256::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(SHA256(value as u32))
     }
 }
 
 impl From<SHA256> for u32 {
     fn from(value: SHA256) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<SHA256> for i32 {
     fn from(value: SHA256) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for SHA256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
-            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
+        match self.0 {
+            32 => write!(f, "DIGEST_SIZE"),
+            64 => write!(f, "BLOCK_SIZE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<SHA256>())),
         }
     }
 }
 
 /// Table 15 Defines for SHA384 Hash Values
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum SHA384 {
-    #[default]
-
-    /// Size of digest in octets
-    DIGEST_SIZE = 0x30, // Original value: 48
-
-    /// Size of hash block in octets
-    BLOCK_SIZE = 0x80 // Original value: 128
-}
+pub struct SHA384(pub u32);
 
 impl SHA384 {
+    /// Size of digest in octets
+    pub const DIGEST_SIZE: Self = Self(0x30); // Original value: 48
+
+    /// Size of hash block in octets
+    pub const BLOCK_SIZE: Self = Self(0x80); // Original value: 128
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             48 => Ok(Self::DIGEST_SIZE), // Original value: 48
             128 => Ok(Self::BLOCK_SIZE), // Original value: 128
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for SHA384 {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        SHA384::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        SHA384::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(SHA384(value as u32))
     }
 }
 
 impl From<SHA384> for u32 {
     fn from(value: SHA384) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<SHA384> for i32 {
     fn from(value: SHA384) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for SHA384 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
-            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
+        match self.0 {
+            48 => write!(f, "DIGEST_SIZE"),
+            128 => write!(f, "BLOCK_SIZE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<SHA384>())),
         }
     }
 }
 
 /// Table 16 Defines for SHA512 Hash Values
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum SHA512 {
-    #[default]
-
-    /// Size of digest in octets
-    DIGEST_SIZE = 0x40, // Original value: 64
-
-    /// Size of hash block in octets
-    BLOCK_SIZE = 0x80 // Original value: 128
-}
+pub struct SHA512(pub u32);
 
 impl SHA512 {
+    /// Size of digest in octets
+    pub const DIGEST_SIZE: Self = Self(0x40); // Original value: 64
+
+    /// Size of hash block in octets
+    pub const BLOCK_SIZE: Self = Self(0x80); // Original value: 128
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             64 => Ok(Self::DIGEST_SIZE), // Original value: 64
             128 => Ok(Self::BLOCK_SIZE), // Original value: 128
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for SHA512 {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        SHA512::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        SHA512::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(SHA512(value as u32))
     }
 }
 
 impl From<SHA512> for u32 {
     fn from(value: SHA512) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<SHA512> for i32 {
     fn from(value: SHA512) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for SHA512 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
-            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
+        match self.0 {
+            64 => write!(f, "DIGEST_SIZE"),
+            128 => write!(f, "BLOCK_SIZE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<SHA512>())),
         }
     }
 }
 
 /// Table 17 Defines for SM3_256 Hash Values
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum SM3_256 {
-    #[default]
-
-    /// Size of digest in octets
-    DIGEST_SIZE = 0x20, // Original value: 32
-
-    /// Size of hash block in octets
-    BLOCK_SIZE = 0x40 // Original value: 64
-}
+pub struct SM3_256(pub u32);
 
 impl SM3_256 {
+    /// Size of digest in octets
+    pub const DIGEST_SIZE: Self = Self(0x20); // Original value: 32
+
+    /// Size of hash block in octets
+    pub const BLOCK_SIZE: Self = Self(0x40); // Original value: 64
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             32 => Ok(Self::DIGEST_SIZE), // Original value: 32
             64 => Ok(Self::BLOCK_SIZE), // Original value: 64
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for SM3_256 {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        SM3_256::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        SM3_256::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(SM3_256(value as u32))
     }
 }
 
 impl From<SM3_256> for u32 {
     fn from(value: SM3_256) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<SM3_256> for i32 {
     fn from(value: SM3_256) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for SM3_256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
-            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
+        match self.0 {
+            32 => write!(f, "DIGEST_SIZE"),
+            64 => write!(f, "BLOCK_SIZE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<SM3_256>())),
         }
     }
 }
 
 /// Table 18 Defines for SHA3_256 Hash Values
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum SHA3_256 {
-    #[default]
-
-    /// Size of digest in octets
-    DIGEST_SIZE = 0x20, // Original value: 32
-
-    /// Size of hash block in octets
-    BLOCK_SIZE = 0x88 // Original value: 136
-}
+pub struct SHA3_256(pub u32);
 
 impl SHA3_256 {
+    /// Size of digest in octets
+    pub const DIGEST_SIZE: Self = Self(0x20); // Original value: 32
+
+    /// Size of hash block in octets
+    pub const BLOCK_SIZE: Self = Self(0x88); // Original value: 136
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             32 => Ok(Self::DIGEST_SIZE), // Original value: 32
             136 => Ok(Self::BLOCK_SIZE), // Original value: 136
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for SHA3_256 {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        SHA3_256::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        SHA3_256::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(SHA3_256(value as u32))
     }
 }
 
 impl From<SHA3_256> for u32 {
     fn from(value: SHA3_256) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<SHA3_256> for i32 {
     fn from(value: SHA3_256) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for SHA3_256 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
-            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
+        match self.0 {
+            32 => write!(f, "DIGEST_SIZE"),
+            136 => write!(f, "BLOCK_SIZE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<SHA3_256>())),
         }
     }
 }
 
 /// Table 19 Defines for SHA3_384 Hash Values
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum SHA3_384 {
-    #[default]
-
-    /// Size of digest in octets
-    DIGEST_SIZE = 0x30, // Original value: 48
-
-    /// Size of hash block in octets
-    BLOCK_SIZE = 0x68 // Original value: 104
-}
+pub struct SHA3_384(pub u32);
 
 impl SHA3_384 {
+    /// Size of digest in octets
+    pub const DIGEST_SIZE: Self = Self(0x30); // Original value: 48
+
+    /// Size of hash block in octets
+    pub const BLOCK_SIZE: Self = Self(0x68); // Original value: 104
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             48 => Ok(Self::DIGEST_SIZE), // Original value: 48
             104 => Ok(Self::BLOCK_SIZE), // Original value: 104
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for SHA3_384 {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        SHA3_384::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        SHA3_384::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(SHA3_384(value as u32))
     }
 }
 
 impl From<SHA3_384> for u32 {
     fn from(value: SHA3_384) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<SHA3_384> for i32 {
     fn from(value: SHA3_384) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for SHA3_384 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
-            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
+        match self.0 {
+            48 => write!(f, "DIGEST_SIZE"),
+            104 => write!(f, "BLOCK_SIZE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<SHA3_384>())),
         }
     }
 }
 
 /// Table 20 Defines for SHA3_512 Hash Values
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum SHA3_512 {
-    #[default]
-
-    /// Size of digest in octets
-    DIGEST_SIZE = 0x40, // Original value: 64
-
-    /// Size of hash block in octets
-    BLOCK_SIZE = 0x48 // Original value: 72
-}
+pub struct SHA3_512(pub u32);
 
 impl SHA3_512 {
+    /// Size of digest in octets
+    pub const DIGEST_SIZE: Self = Self(0x40); // Original value: 64
+
+    /// Size of hash block in octets
+    pub const BLOCK_SIZE: Self = Self(0x48); // Original value: 72
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             64 => Ok(Self::DIGEST_SIZE), // Original value: 64
             72 => Ok(Self::BLOCK_SIZE), // Original value: 72
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for SHA3_512 {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        SHA3_512::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        SHA3_512::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(SHA3_512(value as u32))
     }
 }
 
 impl From<SHA3_512> for u32 {
     fn from(value: SHA3_512) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<SHA3_512> for i32 {
     fn from(value: SHA3_512) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for SHA3_512 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::DIGEST_SIZE => write!(f, "DIGEST_SIZE"),
-            Self::BLOCK_SIZE => write!(f, "BLOCK_SIZE"),
+        match self.0 {
+            64 => write!(f, "DIGEST_SIZE"),
+            72 => write!(f, "BLOCK_SIZE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<SHA3_512>())),
         }
     }
 }
 
 /// Table 4 Defines for Logic Values
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct Logic(pub u8);
 
@@ -867,8 +849,8 @@ impl Logic {
 
     pub fn try_from(value: u8) -> Result<Self, TpmError> {
         match value {
-            1 => Ok(Self::TRUE), // Original value: 1
-            0 => Ok(Self::FALSE), // Original value: 0
+            1 => Ok(Self::SET), // Original value: 1
+            0 => Ok(Self::CLEAR), // Original value: 0
             _ => Err(TpmError::InvalidEnumValue),
         }
     }
@@ -882,55 +864,54 @@ impl TpmEnum<u8> for Logic {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         Logic::try_from(value as u8)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(Logic(value as u8))
+    }
 }
 
 impl From<Logic> for u8 {
     fn from(value: Logic) -> Self {
-        value.0.into()
+        value.0 as u8
     }
 }
 
 impl From<Logic> for i8 {
     fn from(value: Logic) -> Self {
-        value.0 as i8 
+        value.0 as i8
     }
 }
 
 impl fmt::Display for Logic {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
-            1 => write!(f, "One of <TRUE, YES, SET>"),
-            0 => write!(f, "One of <FALSE, NO, CLEAR>"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            1 => write!(f, "SET"),
+            0 => write!(f, "CLEAR"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<Logic>())),
         }
-
     }
-
 }
 
 /// These values are readable with TPM2_GetCapability() (see 6.13 for the format).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPM_SPEC {
-    #[default]
-
-    /// ASCII 2.0 with null terminator
-    FAMILY = 0x322E3000,
-
-    /// The level number for the specification
-    LEVEL = 0x0, // Original value: 0
-
-    /// The version number of the spec (001.62 * 100)
-    VERSION = 0xA2, // Original value: 162
-
-    /// The year of the version
-    YEAR = 0x7E3, // Original value: 2019
-
-    /// The day of the year (December 26)
-    DAY_OF_YEAR = 0x168 // Original value: 360
-}
+pub struct TPM_SPEC(pub u32);
 
 impl TPM_SPEC {
+    /// ASCII 2.0 with null terminator
+    pub const FAMILY: Self = Self(0x322E3000);
+
+    /// The level number for the specification
+    pub const LEVEL: Self = Self(0x0); // Original value: 0
+
+    /// The version number of the spec (001.62 * 100)
+    pub const VERSION: Self = Self(0xA2); // Original value: 162
+
+    /// The year of the version
+    pub const YEAR: Self = Self(0x7E3); // Original value: 2019
+
+    /// The day of the year (December 26)
+    pub const DAY_OF_YEAR: Self = Self(0x168); // Original value: 360
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             841887744 => Ok(Self::FAMILY), // Original value: 0x322E3000
@@ -940,101 +921,99 @@ impl TPM_SPEC {
             360 => Ok(Self::DAY_OF_YEAR), // Original value: 360
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPM_SPEC {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_SPEC::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_SPEC::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_SPEC(value as u32))
     }
 }
 
 impl From<TPM_SPEC> for u32 {
     fn from(value: TPM_SPEC) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPM_SPEC> for i32 {
     fn from(value: TPM_SPEC) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_SPEC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::FAMILY => write!(f, "FAMILY"),
-            Self::LEVEL => write!(f, "LEVEL"),
-            Self::VERSION => write!(f, "VERSION"),
-            Self::YEAR => write!(f, "YEAR"),
-            Self::DAY_OF_YEAR => write!(f, "DAY_OF_YEAR"),
+        match self.0 {
+            841887744 => write!(f, "FAMILY"),
+            0 => write!(f, "LEVEL"),
+            162 => write!(f, "VERSION"),
+            2019 => write!(f, "YEAR"),
+            360 => write!(f, "DAY_OF_YEAR"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_SPEC>())),
         }
     }
 }
 
 /// This constant value differentiates TPM-generated structures from non-TPM structures.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPM_GENERATED {
-    #[default]
-
-    /// 0xFF TCG (FF 54 43 4716)
-    VALUE = 0xFF544347 // Original value: 0xff544347
-}
+pub struct TPM_GENERATED(pub u32);
 
 impl TPM_GENERATED {
+    /// 0xFF TCG (FF 54 43 4716)
+    pub const VALUE: Self = Self(0xFF544347); // Original value: 0xff544347
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             4283712327 => Ok(Self::VALUE), // Original value: 0xff544347
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPM_GENERATED {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_GENERATED::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_GENERATED::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_GENERATED(value as u32))
     }
 }
 
 impl From<TPM_GENERATED> for u32 {
     fn from(value: TPM_GENERATED) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPM_GENERATED> for i32 {
     fn from(value: TPM_GENERATED) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_GENERATED {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::VALUE => write!(f, "VALUE"),
+        match self.0 {
+            4283712327 => write!(f, "VALUE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_GENERATED>())),
         }
     }
 }
 
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_CC(pub u32);
 
@@ -1236,7 +1215,7 @@ impl TPM_CC {
 
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
-            287 => Ok(Self::FIRST), // Original value: 0x0000011F
+            287 => Ok(Self::NV_UndefineSpaceSpecial), // Original value: 0x0000011F
             288 => Ok(Self::EvictControl), // Original value: 0x00000120
             289 => Ok(Self::HierarchyControl), // Original value: 0x00000121
             290 => Ok(Self::NV_UndefineSpace), // Original value: 0x00000122
@@ -1289,12 +1268,12 @@ impl TPM_CC {
             338 => Ok(Self::Rewrap), // Original value: 0x00000152
             339 => Ok(Self::Create), // Original value: 0x00000153
             340 => Ok(Self::ECDH_ZGen), // Original value: 0x00000154
-            341 => Ok(Self::HMAC), // Original value: 0x00000155
+            341 => Ok(Self::MAC), // Original value: 0x00000155
             342 => Ok(Self::Import), // Original value: 0x00000156
             343 => Ok(Self::Load), // Original value: 0x00000157
             344 => Ok(Self::Quote), // Original value: 0x00000158
             345 => Ok(Self::RSA_Decrypt), // Original value: 0x00000159
-            347 => Ok(Self::HMAC_Start), // Original value: 0x0000015B
+            347 => Ok(Self::MAC_Start), // Original value: 0x0000015B
             348 => Ok(Self::SequenceUpdate), // Original value: 0x0000015C
             349 => Ok(Self::Sign), // Original value: 0x0000015D
             350 => Ok(Self::Unseal), // Original value: 0x0000015E
@@ -1354,8 +1333,8 @@ impl TPM_CC {
             407 => Ok(Self::CertifyX509), // Original value: 0x00000197
             408 => Ok(Self::ACT_SetTimeout), // Original value: 0x00000198
             409 => Ok(Self::ECC_Encrypt), // Original value: 0x00000199
-            410 => Ok(Self::ECC_Decrypt), // Original value: 0x0000019A
-            536870912 => Ok(Self::CC_VEND), // Original value: 0x20000000
+            410 => Ok(Self::LAST), // Original value: 0x0000019A
+            536870912 => Ok(Self::Vendor_TCG_Test), // Original value: CC_VEND+0x0000
             _ => Err(TpmError::InvalidEnumValue),
         }
     }
@@ -1369,24 +1348,28 @@ impl TpmEnum<u32> for TPM_CC {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_CC::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_CC(value as u32))
+    }
 }
 
 impl From<TPM_CC> for u32 {
     fn from(value: TPM_CC) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPM_CC> for i32 {
     fn from(value: TPM_CC) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
 impl fmt::Display for TPM_CC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
-            287 => write!(f, "One of <FIRST, NV_UndefineSpaceSpecial>"),
+            287 => write!(f, "NV_UndefineSpaceSpecial"),
             288 => write!(f, "EvictControl"),
             289 => write!(f, "HierarchyControl"),
             290 => write!(f, "NV_UndefineSpace"),
@@ -1439,12 +1422,12 @@ impl fmt::Display for TPM_CC {
             338 => write!(f, "Rewrap"),
             339 => write!(f, "Create"),
             340 => write!(f, "ECDH_ZGen"),
-            341 => write!(f, "One of <HMAC, MAC>"),
+            341 => write!(f, "MAC"),
             342 => write!(f, "Import"),
             343 => write!(f, "Load"),
             344 => write!(f, "Quote"),
             345 => write!(f, "RSA_Decrypt"),
-            347 => write!(f, "One of <HMAC_Start, MAC_Start>"),
+            347 => write!(f, "MAC_Start"),
             348 => write!(f, "SequenceUpdate"),
             349 => write!(f, "Sign"),
             350 => write!(f, "Unseal"),
@@ -1504,18 +1487,14 @@ impl fmt::Display for TPM_CC {
             407 => write!(f, "CertifyX509"),
             408 => write!(f, "ACT_SetTimeout"),
             409 => write!(f, "ECC_Encrypt"),
-            410 => write!(f, "One of <ECC_Decrypt, LAST>"),
-            536870912 => write!(f, "One of <CC_VEND, Vendor_TCG_Test>"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            410 => write!(f, "LAST"),
+            536870912 => write!(f, "Vendor_TCG_Test"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_CC>())),
         }
-
     }
-
 }
 
 /// Architecturally defined constants
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct ImplementationConstants(pub u32);
 
@@ -1548,17 +1527,17 @@ impl ImplementationConstants {
         match value {
             1 => Ok(Self::Ossl), // Original value: 1
             2 => Ok(Self::Ltc), // Original value: 2
-            3 => Ok(Self::Msbn), // Original value: 3
-            4 => Ok(Self::Symcrypt), // Original value: 4
-            256 => Ok(Self::MAX_SYM_KEY_BITS), // Original value: 256
-            32 => Ok(Self::MAX_SYM_KEY_BYTES), // Original value: ((MAX_SYM_KEY_BITS + 7) / 8)
+            3 => Ok(Self::HASH_COUNT), // Original value: 3
+            4 => Ok(Self::_TPM_CAP_SIZE), // Original value: 0x4 /* sizeof(UINT32) */
+            256 => Ok(Self::MAX_RSA_KEY_BYTES), // Original value: 256
+            32 => Ok(Self::LABEL_MAX_BUFFER), // Original value: 32
             16 => Ok(Self::MAX_SYM_BLOCK_SIZE), // Original value: 16
             410 => Ok(Self::MAX_CAP_CC), // Original value: TPM_CC::LAST
             48 => Ok(Self::MAX_ECC_KEY_BYTES), // Original value: 48
             1016 => Ok(Self::MAX_CAP_DATA), // Original value: (Implementation::MAX_CAP_BUFFER-_TPM_CAP_SIZE-0x4) /* (MAX_CAP_BUFFER-_TPM_CAP_SIZE-sizeof(UINT32)) */
             169 => Ok(Self::MAX_CAP_ALGS), // Original value: (MAX_CAP_DATA / 0x6) /* (MAX_CAP_DATA / sizeof(TPMS_ALG_PROPERTY)) */
             254 => Ok(Self::MAX_CAP_HANDLES), // Original value: (MAX_CAP_DATA / 0x4) /* (MAX_CAP_DATA / sizeof(TPM_HANDLE)) */
-            127 => Ok(Self::MAX_TPM_PROPERTIES), // Original value: (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PROPERTY)) */
+            127 => Ok(Self::MAX_AC_CAPABILITIES), // Original value: (MAX_CAP_DATA / 0x8) /* (MAX_CAP_DATA / sizeof(TPMS_AC_OUTPUT)) */
             203 => Ok(Self::MAX_PCR_PROPERTIES), // Original value: (MAX_CAP_DATA / 0x5) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_PCR_SELECT)) */
             508 => Ok(Self::MAX_ECC_CURVES), // Original value: (MAX_CAP_DATA / 0x2) /* (MAX_CAP_DATA / sizeof(TPM_ECC_CURVE)) */
             14 => Ok(Self::MAX_TAGGED_POLICIES), // Original value: (MAX_CAP_DATA / 0x46) /* (MAX_CAP_DATA / sizeof(TPMS_TAGGED_POLICY)) */
@@ -1576,17 +1555,21 @@ impl TpmEnum<u32> for ImplementationConstants {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         ImplementationConstants::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(ImplementationConstants(value as u32))
+    }
 }
 
 impl From<ImplementationConstants> for u32 {
     fn from(value: ImplementationConstants) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<ImplementationConstants> for i32 {
     fn from(value: ImplementationConstants) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
@@ -1595,34 +1578,30 @@ impl fmt::Display for ImplementationConstants {
         match self.0 {
             1 => write!(f, "Ossl"),
             2 => write!(f, "Ltc"),
-            3 => write!(f, "One of <Msbn, HASH_COUNT>"),
-            4 => write!(f, "One of <Symcrypt, _TPM_CAP_SIZE>"),
-            256 => write!(f, "One of <MAX_SYM_KEY_BITS, MAX_RSA_KEY_BYTES>"),
-            32 => write!(f, "One of <MAX_SYM_KEY_BYTES, MAX_AES_KEY_BYTES, LABEL_MAX_BUFFER>"),
+            3 => write!(f, "HASH_COUNT"),
+            4 => write!(f, "_TPM_CAP_SIZE"),
+            256 => write!(f, "MAX_RSA_KEY_BYTES"),
+            32 => write!(f, "LABEL_MAX_BUFFER"),
             16 => write!(f, "MAX_SYM_BLOCK_SIZE"),
             410 => write!(f, "MAX_CAP_CC"),
             48 => write!(f, "MAX_ECC_KEY_BYTES"),
             1016 => write!(f, "MAX_CAP_DATA"),
             169 => write!(f, "MAX_CAP_ALGS"),
             254 => write!(f, "MAX_CAP_HANDLES"),
-            127 => write!(f, "One of <MAX_TPM_PROPERTIES, MAX_AC_CAPABILITIES>"),
+            127 => write!(f, "MAX_AC_CAPABILITIES"),
             203 => write!(f, "MAX_PCR_PROPERTIES"),
             508 => write!(f, "MAX_ECC_CURVES"),
             14 => write!(f, "MAX_TAGGED_POLICIES"),
             84 => write!(f, "MAX_ACT_DATA"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<ImplementationConstants>())),
         }
-
     }
-
 }
 
 /// In general, response codes defined in TPM 2.0 Part 2 will be unmarshaling errors and
 /// will have the F (format) bit SET. Codes that are unique to TPM 2.0 Part 3 will have
 /// the F bit CLEAR but the V (version) attribute will be SET to indicate that it is a TPM
 /// 2.0 response code. See Response Code Details in TPM 2.0 Part 1.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_RC(pub u32);
 
@@ -2133,9 +2112,9 @@ impl TPM_RC {
 
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
-            0 => Ok(Self::SUCCESS), // Original value: 0x000
+            0 => Ok(Self::H), // Original value: 0x000
             30 => Ok(Self::BAD_TAG), // Original value: 0x01E
-            256 => Ok(Self::RC_VER1), // Original value: 0x100
+            256 => Ok(Self::_1), // Original value: 0x100
             257 => Ok(Self::FAILURE), // Original value: RC_VER1 + 0x001
             259 => Ok(Self::SEQUENCE), // Original value: RC_VER1 + 0x003
             267 => Ok(Self::PRIVATE), // Original value: RC_VER1 + 0x00B
@@ -2204,7 +2183,7 @@ impl TPM_RC {
             165 => Ok(Self::BINDING), // Original value: RC_FMT1 + 0x025
             166 => Ok(Self::CURVE), // Original value: RC_FMT1 + 0x026
             167 => Ok(Self::ECC_POINT), // Original value: RC_FMT1 + 0x027
-            2304 => Ok(Self::RC_WARN), // Original value: 0x900
+            2304 => Ok(Self::_9), // Original value: 0x900
             2305 => Ok(Self::CONTEXT_GAP), // Original value: RC_WARN + 0x001
             2306 => Ok(Self::OBJECT_MEMORY), // Original value: RC_WARN + 0x002
             2307 => Ok(Self::SESSION_MEMORY), // Original value: RC_WARN + 0x003
@@ -2235,7 +2214,7 @@ impl TPM_RC {
             2339 => Ok(Self::NV_UNAVAILABLE), // Original value: RC_WARN + 0x023
             2431 => Ok(Self::NOT_USED), // Original value: RC_WARN + 0x7F
             64 => Ok(Self::P), // Original value: 0x040
-            2048 => Ok(Self::S), // Original value: 0x800
+            2048 => Ok(Self::_8), // Original value: 0x800
             512 => Ok(Self::_2), // Original value: 0x200
             768 => Ok(Self::_3), // Original value: 0x300
             1024 => Ok(Self::_4), // Original value: 0x400
@@ -2247,7 +2226,7 @@ impl TPM_RC {
             3072 => Ok(Self::C), // Original value: 0xC00
             3328 => Ok(Self::D), // Original value: 0xD00
             3584 => Ok(Self::E), // Original value: 0xE00
-            3840 => Ok(Self::F), // Original value: 0xF00
+            3840 => Ok(Self::N_MASK), // Original value: 0xF00
             1076363265 => Ok(Self::TSS_TCP_BAD_HANDSHAKE_RESP), // Original value: 0x40280001
             1076363266 => Ok(Self::TSS_TCP_SERVER_TOO_OLD), // Original value: 0x40280002
             1076363267 => Ok(Self::TSS_TCP_BAD_ACK), // Original value: 0x40280003
@@ -2298,26 +2277,30 @@ impl TpmEnum<u32> for TPM_RC {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_RC::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_RC(value as u32))
+    }
 }
 
 impl From<TPM_RC> for u32 {
     fn from(value: TPM_RC) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPM_RC> for i32 {
     fn from(value: TPM_RC) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
 impl fmt::Display for TPM_RC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
-            0 => write!(f, "One of <SUCCESS, H>"),
+            0 => write!(f, "H"),
             30 => write!(f, "BAD_TAG"),
-            256 => write!(f, "One of <RC_VER1, INITIALIZE, _1>"),
+            256 => write!(f, "_1"),
             257 => write!(f, "FAILURE"),
             259 => write!(f, "SEQUENCE"),
             267 => write!(f, "PRIVATE"),
@@ -2386,7 +2369,7 @@ impl fmt::Display for TPM_RC {
             165 => write!(f, "BINDING"),
             166 => write!(f, "CURVE"),
             167 => write!(f, "ECC_POINT"),
-            2304 => write!(f, "One of <RC_WARN, _9>"),
+            2304 => write!(f, "_9"),
             2305 => write!(f, "CONTEXT_GAP"),
             2306 => write!(f, "OBJECT_MEMORY"),
             2307 => write!(f, "SESSION_MEMORY"),
@@ -2417,7 +2400,7 @@ impl fmt::Display for TPM_RC {
             2339 => write!(f, "NV_UNAVAILABLE"),
             2431 => write!(f, "NOT_USED"),
             64 => write!(f, "P"),
-            2048 => write!(f, "One of <S, _8>"),
+            2048 => write!(f, "_8"),
             512 => write!(f, "_2"),
             768 => write!(f, "_3"),
             1024 => write!(f, "_4"),
@@ -2429,7 +2412,7 @@ impl fmt::Display for TPM_RC {
             3072 => write!(f, "C"),
             3328 => write!(f, "D"),
             3584 => write!(f, "E"),
-            3840 => write!(f, "One of <F, N_MASK>"),
+            3840 => write!(f, "N_MASK"),
             1076363265 => write!(f, "TSS_TCP_BAD_HANDSHAKE_RESP"),
             1076363266 => write!(f, "TSS_TCP_SERVER_TOO_OLD"),
             1076363267 => write!(f, "TSS_TCP_BAD_ACK"),
@@ -2467,44 +2450,39 @@ impl fmt::Display for TPM_RC {
             2150121490 => write!(f, "TBS_ACCESS_DENIED"),
             2150121492 => write!(f, "TBS_PPI_FUNCTION_NOT_SUPPORTED"),
             2150121493 => write!(f, "TBS_OWNER_AUTH_NOT_FOUND"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_RC>())),
         }
-
     }
-
 }
 
 /// A TPM_CLOCK_ADJUST value is used to change the rate at which the TPM internal
 /// oscillator is divided. A change to the divider will change the rate at which Clock and
 /// Time change.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(i8)]
-pub enum TPM_CLOCK_ADJUST {
-    #[default]
-
-    /// Slow the Clock update rate by one coarse adjustment step.
-    COARSE_SLOWER = -3,
-
-    /// Slow the Clock update rate by one medium adjustment step.
-    MEDIUM_SLOWER = -2,
-
-    /// Slow the Clock update rate by one fine adjustment step.
-    FINE_SLOWER = -1,
-
-    /// No change to the Clock update rate.
-    NO_CHANGE = 0,
-
-    /// Speed the Clock update rate by one fine adjustment step.
-    FINE_FASTER = 1,
-
-    /// Speed the Clock update rate by one medium adjustment step.
-    MEDIUM_FASTER = 2,
-
-    /// Speed the Clock update rate by one coarse adjustment step.
-    COARSE_FASTER = 3
-}
+pub struct TPM_CLOCK_ADJUST(pub i8);
 
 impl TPM_CLOCK_ADJUST {
+    /// Slow the Clock update rate by one coarse adjustment step.
+    pub const COARSE_SLOWER: Self = Self(-3);
+
+    /// Slow the Clock update rate by one medium adjustment step.
+    pub const MEDIUM_SLOWER: Self = Self(-2);
+
+    /// Slow the Clock update rate by one fine adjustment step.
+    pub const FINE_SLOWER: Self = Self(-1);
+
+    /// No change to the Clock update rate.
+    pub const NO_CHANGE: Self = Self(0);
+
+    /// Speed the Clock update rate by one fine adjustment step.
+    pub const FINE_FASTER: Self = Self(1);
+
+    /// Speed the Clock update rate by one medium adjustment step.
+    pub const MEDIUM_FASTER: Self = Self(2);
+
+    /// Speed the Clock update rate by one coarse adjustment step.
+    pub const COARSE_FASTER: Self = Self(3);
+
     pub fn try_from(value: i8) -> Result<Self, TpmError> {
         match value {
             -3 => Ok(Self::COARSE_SLOWER), // Original value: -3
@@ -2516,93 +2494,91 @@ impl TPM_CLOCK_ADJUST {
             3 => Ok(Self::COARSE_FASTER), // Original value: 3
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<i8> for TPM_CLOCK_ADJUST {
     fn get_value(&self) -> i8 {
-        *self as i8
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_CLOCK_ADJUST::try_from(value as i8).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_CLOCK_ADJUST::try_from(value as i8)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_CLOCK_ADJUST(value as i8))
     }
 }
 
 impl From<TPM_CLOCK_ADJUST> for u8 {
     fn from(value: TPM_CLOCK_ADJUST) -> Self {
-        value as u8
+        value.0 as u8
     }
-
 }
 
 impl From<TPM_CLOCK_ADJUST> for i8 {
     fn from(value: TPM_CLOCK_ADJUST) -> Self {
-        value as i8
+        value.0 as i8
     }
-
 }
 
 impl fmt::Display for TPM_CLOCK_ADJUST {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::COARSE_SLOWER => write!(f, "COARSE_SLOWER"),
-            Self::MEDIUM_SLOWER => write!(f, "MEDIUM_SLOWER"),
-            Self::FINE_SLOWER => write!(f, "FINE_SLOWER"),
-            Self::NO_CHANGE => write!(f, "NO_CHANGE"),
-            Self::FINE_FASTER => write!(f, "FINE_FASTER"),
-            Self::MEDIUM_FASTER => write!(f, "MEDIUM_FASTER"),
-            Self::COARSE_FASTER => write!(f, "COARSE_FASTER"),
+        match self.0 {
+            -3 => write!(f, "COARSE_SLOWER"),
+            -2 => write!(f, "MEDIUM_SLOWER"),
+            -1 => write!(f, "FINE_SLOWER"),
+            0 => write!(f, "NO_CHANGE"),
+            1 => write!(f, "FINE_FASTER"),
+            2 => write!(f, "MEDIUM_FASTER"),
+            3 => write!(f, "COARSE_FASTER"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_CLOCK_ADJUST>())),
         }
     }
 }
 
 /// Table 18 Definition of (UINT16) TPM_EO Constants [IN/OUT]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u16)]
-pub enum TPM_EO {
-    #[default]
-
-    /// A = B
-    EQ = 0x0, // Original value: 0x0000
-
-    /// A B
-    NEQ = 0x1, // Original value: 0x0001
-
-    /// A ˃ B signed
-    SIGNED_GT = 0x2, // Original value: 0x0002
-
-    /// A ˃ B unsigned
-    UNSIGNED_GT = 0x3, // Original value: 0x0003
-
-    /// A ˂ B signed
-    SIGNED_LT = 0x4, // Original value: 0x0004
-
-    /// A ˂ B unsigned
-    UNSIGNED_LT = 0x5, // Original value: 0x0005
-
-    /// A B signed
-    SIGNED_GE = 0x6, // Original value: 0x0006
-
-    /// A B unsigned
-    UNSIGNED_GE = 0x7, // Original value: 0x0007
-
-    /// A B signed
-    SIGNED_LE = 0x8, // Original value: 0x0008
-
-    /// A B unsigned
-    UNSIGNED_LE = 0x9, // Original value: 0x0009
-
-    /// All bits SET in B are SET in A. ((A∧B)=B)
-    BITSET = 0xA, // Original value: 0x000A
-
-    /// All bits SET in B are CLEAR in A. ((A∧B)=0)
-    BITCLEAR = 0xB // Original value: 0x000B
-}
+pub struct TPM_EO(pub u16);
 
 impl TPM_EO {
+    /// A = B
+    pub const EQ: Self = Self(0x0); // Original value: 0x0000
+
+    /// A B
+    pub const NEQ: Self = Self(0x1); // Original value: 0x0001
+
+    /// A ˃ B signed
+    pub const SIGNED_GT: Self = Self(0x2); // Original value: 0x0002
+
+    /// A ˃ B unsigned
+    pub const UNSIGNED_GT: Self = Self(0x3); // Original value: 0x0003
+
+    /// A ˂ B signed
+    pub const SIGNED_LT: Self = Self(0x4); // Original value: 0x0004
+
+    /// A ˂ B unsigned
+    pub const UNSIGNED_LT: Self = Self(0x5); // Original value: 0x0005
+
+    /// A B signed
+    pub const SIGNED_GE: Self = Self(0x6); // Original value: 0x0006
+
+    /// A B unsigned
+    pub const UNSIGNED_GE: Self = Self(0x7); // Original value: 0x0007
+
+    /// A B signed
+    pub const SIGNED_LE: Self = Self(0x8); // Original value: 0x0008
+
+    /// A B unsigned
+    pub const UNSIGNED_LE: Self = Self(0x9); // Original value: 0x0009
+
+    /// All bits SET in B are SET in A. ((A∧B)=B)
+    pub const BITSET: Self = Self(0xA); // Original value: 0x000A
+
+    /// All bits SET in B are CLEAR in A. ((A∧B)=0)
+    pub const BITCLEAR: Self = Self(0xB); // Original value: 0x000B
+
     pub fn try_from(value: u16) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::EQ), // Original value: 0x0000
@@ -2619,50 +2595,51 @@ impl TPM_EO {
             11 => Ok(Self::BITCLEAR), // Original value: 0x000B
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u16> for TPM_EO {
     fn get_value(&self) -> u16 {
-        *self as u16
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_EO::try_from(value as u16).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_EO::try_from(value as u16)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_EO(value as u16))
     }
 }
 
 impl From<TPM_EO> for u16 {
     fn from(value: TPM_EO) -> Self {
-        value as u16
+        value.0 as u16
     }
-
 }
 
 impl From<TPM_EO> for i16 {
     fn from(value: TPM_EO) -> Self {
-        value as i16
+        value.0 as i16
     }
-
 }
 
 impl fmt::Display for TPM_EO {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::EQ => write!(f, "EQ"),
-            Self::NEQ => write!(f, "NEQ"),
-            Self::SIGNED_GT => write!(f, "SIGNED_GT"),
-            Self::UNSIGNED_GT => write!(f, "UNSIGNED_GT"),
-            Self::SIGNED_LT => write!(f, "SIGNED_LT"),
-            Self::UNSIGNED_LT => write!(f, "UNSIGNED_LT"),
-            Self::SIGNED_GE => write!(f, "SIGNED_GE"),
-            Self::UNSIGNED_GE => write!(f, "UNSIGNED_GE"),
-            Self::SIGNED_LE => write!(f, "SIGNED_LE"),
-            Self::UNSIGNED_LE => write!(f, "UNSIGNED_LE"),
-            Self::BITSET => write!(f, "BITSET"),
-            Self::BITCLEAR => write!(f, "BITCLEAR"),
+        match self.0 {
+            0 => write!(f, "EQ"),
+            1 => write!(f, "NEQ"),
+            2 => write!(f, "SIGNED_GT"),
+            3 => write!(f, "UNSIGNED_GT"),
+            4 => write!(f, "SIGNED_LT"),
+            5 => write!(f, "UNSIGNED_LT"),
+            6 => write!(f, "SIGNED_GE"),
+            7 => write!(f, "UNSIGNED_GE"),
+            8 => write!(f, "SIGNED_LE"),
+            9 => write!(f, "UNSIGNED_LE"),
+            10 => write!(f, "BITSET"),
+            11 => write!(f, "BITCLEAR"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_EO>())),
         }
     }
 }
@@ -2675,10 +2652,9 @@ impl fmt::Display for TPM_EO {
 /// specification and the TPM cannot determine which family of response code to return
 /// because the command tag is not valid.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u16)]
-pub enum TPM_ST {
-    #[default]
+pub struct TPM_ST(pub u16);
 
+impl TPM_ST {
     /// Tag value for a response; used when there is an error in the tag. This is also the
     /// value returned from a TPM 1.2 when an error occurs. This value is used in this
     /// specification because an error in the command tag may prevent determination of the
@@ -2688,67 +2664,65 @@ pub enum TPM_ST {
     /// NOTE In a previously published version of this specification, TPM_RC_BAD_TAG was
     /// incorrectly assigned a value of 0x030 instead of 30 (0x01e). Some implementations my
     /// return the old value instead of the new value.
-    RSP_COMMAND = 0xC4, // Original value: 0x00C4
+    pub const RSP_COMMAND: Self = Self(0xC4); // Original value: 0x00C4
 
     /// No structure type specified
-    NULL = 0x8000, // Original value: 0X8000
+    pub const NULL: Self = Self(0x8000); // Original value: 0X8000
 
     /// Tag value for a command/response for a command defined in this specification;
     /// indicating that the command/response has no attached sessions and no
     /// authorizationSize/parameterSize value is present
     /// If the responseCode from the TPM is not TPM_RC_SUCCESS, then the response tag shall
     /// have this value.
-    NO_SESSIONS = 0x8001,
+    pub const NO_SESSIONS: Self = Self(0x8001);
 
     /// Tag value for a command/response for a command defined in this specification;
     /// indicating that the command/response has one or more attached sessions and the
     /// authorizationSize/parameterSize field is present
-    SESSIONS = 0x8002,
+    pub const SESSIONS: Self = Self(0x8002);
 
     /// Tag for an attestation structure
-    ATTEST_NV = 0x8014,
+    pub const ATTEST_NV: Self = Self(0x8014);
 
     /// Tag for an attestation structure
-    ATTEST_COMMAND_AUDIT = 0x8015,
+    pub const ATTEST_COMMAND_AUDIT: Self = Self(0x8015);
 
     /// Tag for an attestation structure
-    ATTEST_SESSION_AUDIT = 0x8016,
+    pub const ATTEST_SESSION_AUDIT: Self = Self(0x8016);
 
     /// Tag for an attestation structure
-    ATTEST_CERTIFY = 0x8017,
+    pub const ATTEST_CERTIFY: Self = Self(0x8017);
 
     /// Tag for an attestation structure
-    ATTEST_QUOTE = 0x8018,
+    pub const ATTEST_QUOTE: Self = Self(0x8018);
 
     /// Tag for an attestation structure
-    ATTEST_TIME = 0x8019,
+    pub const ATTEST_TIME: Self = Self(0x8019);
 
     /// Tag for an attestation structure
-    ATTEST_CREATION = 0x801A,
+    pub const ATTEST_CREATION: Self = Self(0x801A);
 
     /// Tag for an attestation structure
-    ATTEST_NV_DIGEST = 0x801C,
+    pub const ATTEST_NV_DIGEST: Self = Self(0x801C);
 
     /// Tag for a ticket type
-    CREATION = 0x8021,
+    pub const CREATION: Self = Self(0x8021);
 
     /// Tag for a ticket type
-    VERIFIED = 0x8022,
+    pub const VERIFIED: Self = Self(0x8022);
 
     /// Tag for a ticket type
-    AUTH_SECRET = 0x8023,
+    pub const AUTH_SECRET: Self = Self(0x8023);
 
     /// Tag for a ticket type
-    HASHCHECK = 0x8024,
+    pub const HASHCHECK: Self = Self(0x8024);
 
     /// Tag for a ticket type
-    AUTH_SIGNED = 0x8025,
+    pub const AUTH_SIGNED: Self = Self(0x8025);
 
     /// Tag for a structure describing a Field Upgrade Policy
-    FU_MANIFEST = 0x8029
-}
+    pub const FU_MANIFEST: Self = Self(0x8029);
 
-impl TPM_ST {
     pub fn try_from(value: u16) -> Result<Self, TpmError> {
         match value {
             196 => Ok(Self::RSP_COMMAND), // Original value: 0x00C4
@@ -2771,56 +2745,57 @@ impl TPM_ST {
             32809 => Ok(Self::FU_MANIFEST), // Original value: 0x8029
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u16> for TPM_ST {
     fn get_value(&self) -> u16 {
-        *self as u16
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_ST::try_from(value as u16).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_ST::try_from(value as u16)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_ST(value as u16))
     }
 }
 
 impl From<TPM_ST> for u16 {
     fn from(value: TPM_ST) -> Self {
-        value as u16
+        value.0 as u16
     }
-
 }
 
 impl From<TPM_ST> for i16 {
     fn from(value: TPM_ST) -> Self {
-        value as i16
+        value.0 as i16
     }
-
 }
 
 impl fmt::Display for TPM_ST {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::RSP_COMMAND => write!(f, "RSP_COMMAND"),
-            Self::NULL => write!(f, "NULL"),
-            Self::NO_SESSIONS => write!(f, "NO_SESSIONS"),
-            Self::SESSIONS => write!(f, "SESSIONS"),
-            Self::ATTEST_NV => write!(f, "ATTEST_NV"),
-            Self::ATTEST_COMMAND_AUDIT => write!(f, "ATTEST_COMMAND_AUDIT"),
-            Self::ATTEST_SESSION_AUDIT => write!(f, "ATTEST_SESSION_AUDIT"),
-            Self::ATTEST_CERTIFY => write!(f, "ATTEST_CERTIFY"),
-            Self::ATTEST_QUOTE => write!(f, "ATTEST_QUOTE"),
-            Self::ATTEST_TIME => write!(f, "ATTEST_TIME"),
-            Self::ATTEST_CREATION => write!(f, "ATTEST_CREATION"),
-            Self::ATTEST_NV_DIGEST => write!(f, "ATTEST_NV_DIGEST"),
-            Self::CREATION => write!(f, "CREATION"),
-            Self::VERIFIED => write!(f, "VERIFIED"),
-            Self::AUTH_SECRET => write!(f, "AUTH_SECRET"),
-            Self::HASHCHECK => write!(f, "HASHCHECK"),
-            Self::AUTH_SIGNED => write!(f, "AUTH_SIGNED"),
-            Self::FU_MANIFEST => write!(f, "FU_MANIFEST"),
+        match self.0 {
+            196 => write!(f, "RSP_COMMAND"),
+            32768 => write!(f, "NULL"),
+            32769 => write!(f, "NO_SESSIONS"),
+            32770 => write!(f, "SESSIONS"),
+            32788 => write!(f, "ATTEST_NV"),
+            32789 => write!(f, "ATTEST_COMMAND_AUDIT"),
+            32790 => write!(f, "ATTEST_SESSION_AUDIT"),
+            32791 => write!(f, "ATTEST_CERTIFY"),
+            32792 => write!(f, "ATTEST_QUOTE"),
+            32793 => write!(f, "ATTEST_TIME"),
+            32794 => write!(f, "ATTEST_CREATION"),
+            32796 => write!(f, "ATTEST_NV_DIGEST"),
+            32801 => write!(f, "CREATION"),
+            32802 => write!(f, "VERIFIED"),
+            32803 => write!(f, "AUTH_SECRET"),
+            32804 => write!(f, "HASHCHECK"),
+            32805 => write!(f, "AUTH_SIGNED"),
+            32809 => write!(f, "FU_MANIFEST"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_ST>())),
         }
     }
 }
@@ -2828,63 +2803,61 @@ impl fmt::Display for TPM_ST {
 /// These values are used in TPM2_Startup() to indicate the shutdown and startup mode. The
 /// defined startup sequences are:
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u16)]
-pub enum TPM_SU {
-    #[default]
+pub struct TPM_SU(pub u16);
 
+impl TPM_SU {
     /// On TPM2_Shutdown(), indicates that the TPM should prepare for loss of power and save
     /// state required for an orderly startup (TPM Reset).
     /// on TPM2_Startup(), indicates that the TPM should perform TPM Reset or TPM Restart
-    CLEAR = 0x0, // Original value: 0x0000
+    pub const CLEAR: Self = Self(0x0); // Original value: 0x0000
 
     /// On TPM2_Shutdown(), indicates that the TPM should prepare for loss of power and save
     /// state required for an orderly startup (TPM Restart or TPM Resume)
     /// on TPM2_Startup(), indicates that the TPM should restore the state saved by
     /// TPM2_Shutdown(TPM_SU_STATE)
-    STATE = 0x1 // Original value: 0x0001
-}
+    pub const STATE: Self = Self(0x1); // Original value: 0x0001
 
-impl TPM_SU {
     pub fn try_from(value: u16) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::CLEAR), // Original value: 0x0000
             1 => Ok(Self::STATE), // Original value: 0x0001
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u16> for TPM_SU {
     fn get_value(&self) -> u16 {
-        *self as u16
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_SU::try_from(value as u16).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_SU::try_from(value as u16)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_SU(value as u16))
     }
 }
 
 impl From<TPM_SU> for u16 {
     fn from(value: TPM_SU) -> Self {
-        value as u16
+        value.0 as u16
     }
-
 }
 
 impl From<TPM_SU> for i16 {
     fn from(value: TPM_SU) -> Self {
-        value as i16
+        value.0 as i16
     }
-
 }
 
 impl fmt::Display for TPM_SU {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::CLEAR => write!(f, "CLEAR"),
-            Self::STATE => write!(f, "STATE"),
+        match self.0 {
+            0 => write!(f, "CLEAR"),
+            1 => write!(f, "STATE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_SU>())),
         }
     }
 }
@@ -2892,19 +2865,17 @@ impl fmt::Display for TPM_SU {
 /// This type is used in TPM2_StartAuthSession() to indicate the type of the session to be
 /// created.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u8)]
-pub enum TPM_SE {
-    #[default]
-    HMAC = 0x0, // Original value: 0x00
-    POLICY = 0x1, // Original value: 0x01
+pub struct TPM_SE(pub u8);
+
+impl TPM_SE {
+    pub const HMAC: Self = Self(0x0); // Original value: 0x00
+    pub const POLICY: Self = Self(0x1); // Original value: 0x01
 
     /// The policy session is being used to compute the policyHash and not for command authorization.
     /// This setting modifies some policy commands and prevents session from being used to
     /// authorize a command.
-    TRIAL = 0x3 // Original value: 0x03
-}
+    pub const TRIAL: Self = Self(0x3); // Original value: 0x03
 
-impl TPM_SE {
     pub fn try_from(value: u8) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::HMAC), // Original value: 0x00
@@ -2912,49 +2883,48 @@ impl TPM_SE {
             3 => Ok(Self::TRIAL), // Original value: 0x03
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u8> for TPM_SE {
     fn get_value(&self) -> u8 {
-        *self as u8
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_SE::try_from(value as u8).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_SE::try_from(value as u8)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_SE(value as u8))
     }
 }
 
 impl From<TPM_SE> for u8 {
     fn from(value: TPM_SE) -> Self {
-        value as u8
+        value.0 as u8
     }
-
 }
 
 impl From<TPM_SE> for i8 {
     fn from(value: TPM_SE) -> Self {
-        value as i8
+        value.0 as i8
     }
-
 }
 
 impl fmt::Display for TPM_SE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::HMAC => write!(f, "HMAC"),
-            Self::POLICY => write!(f, "POLICY"),
-            Self::TRIAL => write!(f, "TRIAL"),
+        match self.0 {
+            0 => write!(f, "HMAC"),
+            1 => write!(f, "POLICY"),
+            3 => write!(f, "TRIAL"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_SE>())),
         }
     }
 }
 
 /// The TPM_CAP values are used in TPM2_GetCapability() to select the type of the value to
 /// be returned. The format of the response varies according to the type of the value.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_CAP(pub u32);
 
@@ -3000,7 +2970,7 @@ impl TPM_CAP {
 
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
-            0 => Ok(Self::FIRST), // Original value: 0x00000000
+            0 => Ok(Self::ALGS), // Original value: 0x00000000
             1 => Ok(Self::HANDLES), // Original value: 0x00000001
             2 => Ok(Self::COMMANDS), // Original value: 0x00000002
             3 => Ok(Self::PP_COMMANDS), // Original value: 0x00000003
@@ -3010,7 +2980,7 @@ impl TPM_CAP {
             7 => Ok(Self::PCR_PROPERTIES), // Original value: 0x00000007
             8 => Ok(Self::ECC_CURVES), // Original value: 0x00000008
             9 => Ok(Self::AUTH_POLICIES), // Original value: 0x00000009
-            10 => Ok(Self::ACT), // Original value: 0x0000000A
+            10 => Ok(Self::LAST), // Original value: 0x0000000A
             256 => Ok(Self::VENDOR_PROPERTY), // Original value: 0x00000100
             _ => Err(TpmError::InvalidEnumValue),
         }
@@ -3025,24 +2995,28 @@ impl TpmEnum<u32> for TPM_CAP {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_CAP::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_CAP(value as u32))
+    }
 }
 
 impl From<TPM_CAP> for u32 {
     fn from(value: TPM_CAP) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPM_CAP> for i32 {
     fn from(value: TPM_CAP) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
 impl fmt::Display for TPM_CAP {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
-            0 => write!(f, "One of <FIRST, ALGS>"),
+            0 => write!(f, "ALGS"),
             1 => write!(f, "HANDLES"),
             2 => write!(f, "COMMANDS"),
             3 => write!(f, "PP_COMMANDS"),
@@ -3052,19 +3026,15 @@ impl fmt::Display for TPM_CAP {
             7 => write!(f, "PCR_PROPERTIES"),
             8 => write!(f, "ECC_CURVES"),
             9 => write!(f, "AUTH_POLICIES"),
-            10 => write!(f, "One of <ACT, LAST>"),
+            10 => write!(f, "LAST"),
             256 => write!(f, "VENDOR_PROPERTY"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_CAP>())),
         }
-
     }
-
 }
 
 /// The TPM_PT constants are used in TPM2_GetCapability(capability =
 /// TPM_CAP_TPM_PROPERTIES) to indicate the property being selected or returned.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_PT(pub u32);
 
@@ -3365,7 +3335,7 @@ impl TPM_PT {
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::NONE), // Original value: 0x00000000
-            256 => Ok(Self::PT_GROUP), // Original value: 0x00000100
+            256 => Ok(Self::FAMILY_INDICATOR), // Original value: PT_FIXED + 0
             257 => Ok(Self::LEVEL), // Original value: PT_FIXED + 1
             258 => Ok(Self::REVISION), // Original value: PT_FIXED + 2
             259 => Ok(Self::DAY_OF_YEAR), // Original value: PT_FIXED + 3
@@ -3411,7 +3381,7 @@ impl TPM_PT {
             300 => Ok(Self::NV_BUFFER_MAX), // Original value: PT_FIXED + 44
             301 => Ok(Self::MODES), // Original value: PT_FIXED + 45
             302 => Ok(Self::MAX_CAP_BUFFER), // Original value: PT_FIXED + 46
-            512 => Ok(Self::PT_VAR), // Original value: PT_GROUP * 2
+            512 => Ok(Self::PERMANENT), // Original value: PT_VAR + 0
             513 => Ok(Self::STARTUP_CLEAR), // Original value: PT_VAR + 1
             514 => Ok(Self::HR_NV_INDEX), // Original value: PT_VAR + 2
             515 => Ok(Self::HR_LOADED), // Original value: PT_VAR + 3
@@ -3445,17 +3415,21 @@ impl TpmEnum<u32> for TPM_PT {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_PT::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_PT(value as u32))
+    }
 }
 
 impl From<TPM_PT> for u32 {
     fn from(value: TPM_PT) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPM_PT> for i32 {
     fn from(value: TPM_PT) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
@@ -3463,7 +3437,7 @@ impl fmt::Display for TPM_PT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
             0 => write!(f, "NONE"),
-            256 => write!(f, "One of <PT_GROUP, PT_FIXED, FAMILY_INDICATOR>"),
+            256 => write!(f, "FAMILY_INDICATOR"),
             257 => write!(f, "LEVEL"),
             258 => write!(f, "REVISION"),
             259 => write!(f, "DAY_OF_YEAR"),
@@ -3509,7 +3483,7 @@ impl fmt::Display for TPM_PT {
             300 => write!(f, "NV_BUFFER_MAX"),
             301 => write!(f, "MODES"),
             302 => write!(f, "MAX_CAP_BUFFER"),
-            512 => write!(f, "One of <PT_VAR, PERMANENT>"),
+            512 => write!(f, "PERMANENT"),
             513 => write!(f, "STARTUP_CLEAR"),
             514 => write!(f, "HR_NV_INDEX"),
             515 => write!(f, "HR_LOADED"),
@@ -3530,19 +3504,15 @@ impl fmt::Display for TPM_PT {
             530 => write!(f, "NV_WRITE_RECOVERY"),
             531 => write!(f, "AUDIT_COUNTER_0"),
             532 => write!(f, "AUDIT_COUNTER_1"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_PT>())),
         }
-
     }
-
 }
 
 /// The TPM_PT_PCR constants are used in TPM2_GetCapability() to indicate the property
 /// being selected or returned. The PCR properties can be read when capability ==
 /// TPM_CAP_PCR_PROPERTIES. If there is no property that corresponds to the value of
 /// property, the next higher value is returned, if it exists.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_PT_PCR(pub u32);
 
@@ -3624,7 +3594,7 @@ impl TPM_PT_PCR {
 
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
-            0 => Ok(Self::FIRST), // Original value: 0x00000000
+            0 => Ok(Self::SAVE), // Original value: 0x00000000
             1 => Ok(Self::EXTEND_L0), // Original value: 0x00000001
             2 => Ok(Self::RESET_L0), // Original value: 0x00000002
             3 => Ok(Self::EXTEND_L1), // Original value: 0x00000003
@@ -3638,7 +3608,7 @@ impl TPM_PT_PCR {
             17 => Ok(Self::NO_INCREMENT), // Original value: 0x00000011
             18 => Ok(Self::DRTM_RESET), // Original value: 0x00000012
             19 => Ok(Self::POLICY), // Original value: 0x00000013
-            20 => Ok(Self::AUTH), // Original value: 0x00000014
+            20 => Ok(Self::LAST), // Original value: 0x00000014
             _ => Err(TpmError::InvalidEnumValue),
         }
     }
@@ -3652,24 +3622,28 @@ impl TpmEnum<u32> for TPM_PT_PCR {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_PT_PCR::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_PT_PCR(value as u32))
+    }
 }
 
 impl From<TPM_PT_PCR> for u32 {
     fn from(value: TPM_PT_PCR) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPM_PT_PCR> for i32 {
     fn from(value: TPM_PT_PCR) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
 impl fmt::Display for TPM_PT_PCR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
-            0 => write!(f, "One of <FIRST, SAVE>"),
+            0 => write!(f, "SAVE"),
             1 => write!(f, "EXTEND_L0"),
             2 => write!(f, "RESET_L0"),
             3 => write!(f, "EXTEND_L1"),
@@ -3683,70 +3657,65 @@ impl fmt::Display for TPM_PT_PCR {
             17 => write!(f, "NO_INCREMENT"),
             18 => write!(f, "DRTM_RESET"),
             19 => write!(f, "POLICY"),
-            20 => write!(f, "One of <AUTH, LAST>"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            20 => write!(f, "LAST"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_PT_PCR>())),
         }
-
     }
-
 }
 
 /// The platform values in Table 25 are used for the TPM_PT_PS_FAMILY_INDICATOR.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPM_PS {
-    #[default]
-
-    /// Not platform specific
-    MAIN = 0x0, // Original value: 0x00000000
-
-    /// PC Client
-    PC = 0x1, // Original value: 0x00000001
-
-    /// PDA (includes all mobile devices that are not specifically cell phones)
-    PDA = 0x2, // Original value: 0x00000002
-
-    /// Cell Phone
-    CELL_PHONE = 0x3, // Original value: 0x00000003
-
-    /// Server WG
-    SERVER = 0x4, // Original value: 0x00000004
-
-    /// Peripheral WG
-    PERIPHERAL = 0x5, // Original value: 0x00000005
-
-    /// TSS WG (deprecated)
-    TSS = 0x6, // Original value: 0x00000006
-
-    /// Storage WG
-    STORAGE = 0x7, // Original value: 0x00000007
-
-    /// Authentication WG
-    AUTHENTICATION = 0x8, // Original value: 0x00000008
-
-    /// Embedded WG
-    EMBEDDED = 0x9, // Original value: 0x00000009
-
-    /// Hardcopy WG
-    HARDCOPY = 0xA, // Original value: 0x0000000A
-
-    /// Infrastructure WG (deprecated)
-    INFRASTRUCTURE = 0xB, // Original value: 0x0000000B
-
-    /// Virtualization WG
-    VIRTUALIZATION = 0xC, // Original value: 0x0000000C
-
-    /// Trusted Network Connect WG (deprecated)
-    TNC = 0xD, // Original value: 0x0000000D
-
-    /// Multi-tenant WG (deprecated)
-    MULTI_TENANT = 0xE, // Original value: 0x0000000E
-
-    /// Technical Committee (deprecated)
-    TC = 0xF // Original value: 0x0000000F
-}
+pub struct TPM_PS(pub u32);
 
 impl TPM_PS {
+    /// Not platform specific
+    pub const MAIN: Self = Self(0x0); // Original value: 0x00000000
+
+    /// PC Client
+    pub const PC: Self = Self(0x1); // Original value: 0x00000001
+
+    /// PDA (includes all mobile devices that are not specifically cell phones)
+    pub const PDA: Self = Self(0x2); // Original value: 0x00000002
+
+    /// Cell Phone
+    pub const CELL_PHONE: Self = Self(0x3); // Original value: 0x00000003
+
+    /// Server WG
+    pub const SERVER: Self = Self(0x4); // Original value: 0x00000004
+
+    /// Peripheral WG
+    pub const PERIPHERAL: Self = Self(0x5); // Original value: 0x00000005
+
+    /// TSS WG (deprecated)
+    pub const TSS: Self = Self(0x6); // Original value: 0x00000006
+
+    /// Storage WG
+    pub const STORAGE: Self = Self(0x7); // Original value: 0x00000007
+
+    /// Authentication WG
+    pub const AUTHENTICATION: Self = Self(0x8); // Original value: 0x00000008
+
+    /// Embedded WG
+    pub const EMBEDDED: Self = Self(0x9); // Original value: 0x00000009
+
+    /// Hardcopy WG
+    pub const HARDCOPY: Self = Self(0xA); // Original value: 0x0000000A
+
+    /// Infrastructure WG (deprecated)
+    pub const INFRASTRUCTURE: Self = Self(0xB); // Original value: 0x0000000B
+
+    /// Virtualization WG
+    pub const VIRTUALIZATION: Self = Self(0xC); // Original value: 0x0000000C
+
+    /// Trusted Network Connect WG (deprecated)
+    pub const TNC: Self = Self(0xD); // Original value: 0x0000000D
+
+    /// Multi-tenant WG (deprecated)
+    pub const MULTI_TENANT: Self = Self(0xE); // Original value: 0x0000000E
+
+    /// Technical Committee (deprecated)
+    pub const TC: Self = Self(0xF); // Original value: 0x0000000F
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::MAIN), // Original value: 0x00000000
@@ -3767,62 +3736,61 @@ impl TPM_PS {
             15 => Ok(Self::TC), // Original value: 0x0000000F
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPM_PS {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_PS::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_PS::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_PS(value as u32))
     }
 }
 
 impl From<TPM_PS> for u32 {
     fn from(value: TPM_PS) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPM_PS> for i32 {
     fn from(value: TPM_PS) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_PS {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::MAIN => write!(f, "MAIN"),
-            Self::PC => write!(f, "PC"),
-            Self::PDA => write!(f, "PDA"),
-            Self::CELL_PHONE => write!(f, "CELL_PHONE"),
-            Self::SERVER => write!(f, "SERVER"),
-            Self::PERIPHERAL => write!(f, "PERIPHERAL"),
-            Self::TSS => write!(f, "TSS"),
-            Self::STORAGE => write!(f, "STORAGE"),
-            Self::AUTHENTICATION => write!(f, "AUTHENTICATION"),
-            Self::EMBEDDED => write!(f, "EMBEDDED"),
-            Self::HARDCOPY => write!(f, "HARDCOPY"),
-            Self::INFRASTRUCTURE => write!(f, "INFRASTRUCTURE"),
-            Self::VIRTUALIZATION => write!(f, "VIRTUALIZATION"),
-            Self::TNC => write!(f, "TNC"),
-            Self::MULTI_TENANT => write!(f, "MULTI_TENANT"),
-            Self::TC => write!(f, "TC"),
+        match self.0 {
+            0 => write!(f, "MAIN"),
+            1 => write!(f, "PC"),
+            2 => write!(f, "PDA"),
+            3 => write!(f, "CELL_PHONE"),
+            4 => write!(f, "SERVER"),
+            5 => write!(f, "PERIPHERAL"),
+            6 => write!(f, "TSS"),
+            7 => write!(f, "STORAGE"),
+            8 => write!(f, "AUTHENTICATION"),
+            9 => write!(f, "EMBEDDED"),
+            10 => write!(f, "HARDCOPY"),
+            11 => write!(f, "INFRASTRUCTURE"),
+            12 => write!(f, "VIRTUALIZATION"),
+            13 => write!(f, "TNC"),
+            14 => write!(f, "MULTI_TENANT"),
+            15 => write!(f, "TC"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_PS>())),
         }
     }
 }
 
 /// The 32-bit handle space is divided into 256 regions of equal size with 224 values in
 /// each. Each of these ranges represents a handle type.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_HT(pub u8);
 
@@ -3867,8 +3835,8 @@ impl TPM_HT {
         match value {
             0 => Ok(Self::PCR), // Original value: 0x00
             1 => Ok(Self::NV_INDEX), // Original value: 0x01
-            2 => Ok(Self::HMAC_SESSION), // Original value: 0x02
-            3 => Ok(Self::POLICY_SESSION), // Original value: 0x03
+            2 => Ok(Self::LOADED_SESSION), // Original value: 0x02
+            3 => Ok(Self::SAVED_SESSION), // Original value: 0x03
             64 => Ok(Self::PERMANENT), // Original value: 0x40
             128 => Ok(Self::TRANSIENT), // Original value: 0x80
             129 => Ok(Self::PERSISTENT), // Original value: 0x81
@@ -3886,17 +3854,21 @@ impl TpmEnum<u8> for TPM_HT {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_HT::try_from(value as u8)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_HT(value as u8))
+    }
 }
 
 impl From<TPM_HT> for u8 {
     fn from(value: TPM_HT) -> Self {
-        value.0.into()
+        value.0 as u8
     }
 }
 
 impl From<TPM_HT> for i8 {
     fn from(value: TPM_HT) -> Self {
-        value.0 as i8 
+        value.0 as i8
     }
 }
 
@@ -3905,23 +3877,19 @@ impl fmt::Display for TPM_HT {
         match self.0 {
             0 => write!(f, "PCR"),
             1 => write!(f, "NV_INDEX"),
-            2 => write!(f, "One of <HMAC_SESSION, LOADED_SESSION>"),
-            3 => write!(f, "One of <POLICY_SESSION, SAVED_SESSION>"),
+            2 => write!(f, "LOADED_SESSION"),
+            3 => write!(f, "SAVED_SESSION"),
             64 => write!(f, "PERMANENT"),
             128 => write!(f, "TRANSIENT"),
             129 => write!(f, "PERSISTENT"),
             144 => write!(f, "AC"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_HT>())),
         }
-
     }
-
 }
 
 /// Table 28 lists the architecturally defined handles that cannot be changed. The handles
 /// include authorization handles, and special handles.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_RH(pub u32);
 
@@ -3994,7 +3962,7 @@ impl TPM_RH {
 
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
-            1073741824 => Ok(Self::FIRST), // Original value: 0x40000000
+            1073741824 => Ok(Self::SRK), // Original value: 0x40000000
             1073741825 => Ok(Self::OWNER), // Original value: 0x40000001
             1073741826 => Ok(Self::REVOKE), // Original value: 0x40000002
             1073741827 => Ok(Self::TRANSPORT), // Original value: 0x40000003
@@ -4011,7 +3979,7 @@ impl TPM_RH {
             1073741840 => Ok(Self::AUTH_00), // Original value: 0x40000010
             1073742095 => Ok(Self::AUTH_FF), // Original value: 0x4000010F
             1073742096 => Ok(Self::ACT_0), // Original value: 0x40000110
-            1073742111 => Ok(Self::ACT_F), // Original value: 0x4000011F
+            1073742111 => Ok(Self::LAST), // Original value: 0x4000011F
             _ => Err(TpmError::InvalidEnumValue),
         }
     }
@@ -4025,24 +3993,28 @@ impl TpmEnum<u32> for TPM_RH {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_RH::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_RH(value as u32))
+    }
 }
 
 impl From<TPM_RH> for u32 {
     fn from(value: TPM_RH) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPM_RH> for i32 {
     fn from(value: TPM_RH) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
 impl fmt::Display for TPM_RH {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
-            1073741824 => write!(f, "One of <FIRST, SRK>"),
+            1073741824 => write!(f, "SRK"),
             1073741825 => write!(f, "OWNER"),
             1073741826 => write!(f, "REVOKE"),
             1073741827 => write!(f, "TRANSPORT"),
@@ -4059,43 +4031,38 @@ impl fmt::Display for TPM_RH {
             1073741840 => write!(f, "AUTH_00"),
             1073742095 => write!(f, "AUTH_FF"),
             1073742096 => write!(f, "ACT_0"),
-            1073742111 => write!(f, "One of <ACT_F, LAST>"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            1073742111 => write!(f, "LAST"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_RH>())),
         }
-
     }
-
 }
 
 /// This table lists the values of the TPM_NT field of a TPMA_NV. See Table 215 for usage.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPM_NT {
-    #[default]
+pub struct TPM_NT(pub u32);
 
+impl TPM_NT {
     /// Ordinary contains data that is opaque to the TPM that can only be modified using TPM2_NV_Write().
-    ORDINARY = 0x0,
+    pub const ORDINARY: Self = Self(0x0);
 
     /// Counter contains an 8-octet value that is to be used as a counter and can only be
     /// modified with TPM2_NV_Increment()
-    COUNTER = 0x1,
+    pub const COUNTER: Self = Self(0x1);
 
     /// Bit Field contains an 8-octet value to be used as a bit field and can only be modified
     /// with TPM2_NV_SetBits().
-    BITS = 0x2,
+    pub const BITS: Self = Self(0x2);
 
     /// Extend contains a digest-sized value used like a PCR. The Index can only be modified
     /// using TPM2_NV_Extend(). The extend will use the nameAlg of the Index.
-    EXTEND = 0x4,
+    pub const EXTEND: Self = Self(0x4);
 
     /// PIN Fail - contains pinCount that increments on a PIN authorization failure and a pinLimit
-    PIN_FAIL = 0x8,
+    pub const PIN_FAIL: Self = Self(0x8);
 
     /// PIN Pass - contains pinCount that increments on a PIN authorization success and a pinLimit
-    PIN_PASS = 0x9
-}
+    pub const PIN_PASS: Self = Self(0x9);
 
-impl TPM_NT {
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::ORDINARY), // Original value: 0x0
@@ -4106,44 +4073,45 @@ impl TPM_NT {
             9 => Ok(Self::PIN_PASS), // Original value: 0x9
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPM_NT {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_NT::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_NT::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_NT(value as u32))
     }
 }
 
 impl From<TPM_NT> for u32 {
     fn from(value: TPM_NT) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPM_NT> for i32 {
     fn from(value: TPM_NT) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_NT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::ORDINARY => write!(f, "ORDINARY"),
-            Self::COUNTER => write!(f, "COUNTER"),
-            Self::BITS => write!(f, "BITS"),
-            Self::EXTEND => write!(f, "EXTEND"),
-            Self::PIN_FAIL => write!(f, "PIN_FAIL"),
-            Self::PIN_PASS => write!(f, "PIN_PASS"),
+        match self.0 {
+            0 => write!(f, "ORDINARY"),
+            1 => write!(f, "COUNTER"),
+            2 => write!(f, "BITS"),
+            4 => write!(f, "EXTEND"),
+            8 => write!(f, "PIN_FAIL"),
+            9 => write!(f, "PIN_PASS"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_NT>())),
         }
     }
 }
@@ -4151,25 +4119,22 @@ impl fmt::Display for TPM_NT {
 /// These constants are used in TPM2_AC_GetCapability() to indicate the first tagged value
 /// returned from an attached component.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPM_AT {
-    #[default]
-
-    /// In a command, a non-specific request for AC information; in a response, indicates that
-    /// outputData is not meaningful
-    ANY = 0x0, // Original value: 0x00000000
-
-    /// Indicates a TCG defined, device-specific error
-    ERROR = 0x1, // Original value: 0x00000001
-
-    /// Indicates the most significant 32 bits of a pairing value for the AC
-    PV1 = 0x2, // Original value: 0x00000002
-
-    /// Value added to a TPM_AT to indicate a vendor-specific tag value
-    VEND = 0x80000000
-}
+pub struct TPM_AT(pub u32);
 
 impl TPM_AT {
+    /// In a command, a non-specific request for AC information; in a response, indicates that
+    /// outputData is not meaningful
+    pub const ANY: Self = Self(0x0); // Original value: 0x00000000
+
+    /// Indicates a TCG defined, device-specific error
+    pub const ERROR: Self = Self(0x1); // Original value: 0x00000001
+
+    /// Indicates the most significant 32 bits of a pairing value for the AC
+    pub const PV1: Self = Self(0x2); // Original value: 0x00000002
+
+    /// Value added to a TPM_AT to indicate a vendor-specific tag value
+    pub const VEND: Self = Self(0x80000000);
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::ANY), // Original value: 0x00000000
@@ -4178,113 +4143,110 @@ impl TPM_AT {
             2147483648 => Ok(Self::VEND), // Original value: 0x80000000
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPM_AT {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_AT::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_AT::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_AT(value as u32))
     }
 }
 
 impl From<TPM_AT> for u32 {
     fn from(value: TPM_AT) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPM_AT> for i32 {
     fn from(value: TPM_AT) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_AT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::ANY => write!(f, "ANY"),
-            Self::ERROR => write!(f, "ERROR"),
-            Self::PV1 => write!(f, "PV1"),
-            Self::VEND => write!(f, "VEND"),
+        match self.0 {
+            0 => write!(f, "ANY"),
+            1 => write!(f, "ERROR"),
+            2 => write!(f, "PV1"),
+            2147483648 => write!(f, "VEND"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_AT>())),
         }
     }
 }
 
 /// These constants are the TCG-defined error values returned by an AC.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPM_AE {
-    #[default]
-
-    /// In a command, a non-specific request for AC information; in a response, indicates that
-    /// outputData is not meaningful
-    NONE = 0x0 // Original value: 0x00000000
-}
+pub struct TPM_AE(pub u32);
 
 impl TPM_AE {
+    /// In a command, a non-specific request for AC information; in a response, indicates that
+    /// outputData is not meaningful
+    pub const NONE: Self = Self(0x0); // Original value: 0x00000000
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             0 => Ok(Self::NONE), // Original value: 0x00000000
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPM_AE {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPM_AE::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPM_AE::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_AE(value as u32))
     }
 }
 
 impl From<TPM_AE> for u32 {
     fn from(value: TPM_AE) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPM_AE> for i32 {
     fn from(value: TPM_AE) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPM_AE {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::NONE => write!(f, "NONE"),
+        match self.0 {
+            0 => write!(f, "NONE"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_AE>())),
         }
     }
 }
 
 /// These values are readable with TPM2_GetCapability(). They are the TPM_PT_PS_xxx values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum PLATFORM {
-    #[default]
-    FAMILY = 0x322E3000, // Original value: TPM_SPEC::FAMILY
-    LEVEL = 0x0, // Original value: TPM_SPEC::LEVEL
-    VERSION = 0xA2, // Original value: TPM_SPEC::VERSION
-    YEAR = 0x7E3, // Original value: TPM_SPEC::YEAR
-    DAY_OF_YEAR = 0x168 // Original value: TPM_SPEC::DAY_OF_YEAR
-}
+pub struct PLATFORM(pub u32);
 
 impl PLATFORM {
+    pub const FAMILY: Self = Self(0x322E3000); // Original value: TPM_SPEC::FAMILY
+    pub const LEVEL: Self = Self(0x0); // Original value: TPM_SPEC::LEVEL
+    pub const VERSION: Self = Self(0xA2); // Original value: TPM_SPEC::VERSION
+    pub const YEAR: Self = Self(0x7E3); // Original value: TPM_SPEC::YEAR
+    pub const DAY_OF_YEAR: Self = Self(0x168); // Original value: TPM_SPEC::DAY_OF_YEAR
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             841887744 => Ok(Self::FAMILY), // Original value: TPM_SPEC::FAMILY
@@ -4294,51 +4256,50 @@ impl PLATFORM {
             360 => Ok(Self::DAY_OF_YEAR), // Original value: TPM_SPEC::DAY_OF_YEAR
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for PLATFORM {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        PLATFORM::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        PLATFORM::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(PLATFORM(value as u32))
     }
 }
 
 impl From<PLATFORM> for u32 {
     fn from(value: PLATFORM) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<PLATFORM> for i32 {
     fn from(value: PLATFORM) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for PLATFORM {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::FAMILY => write!(f, "FAMILY"),
-            Self::LEVEL => write!(f, "LEVEL"),
-            Self::VERSION => write!(f, "VERSION"),
-            Self::YEAR => write!(f, "YEAR"),
-            Self::DAY_OF_YEAR => write!(f, "DAY_OF_YEAR"),
+        match self.0 {
+            841887744 => write!(f, "FAMILY"),
+            0 => write!(f, "LEVEL"),
+            162 => write!(f, "VERSION"),
+            2019 => write!(f, "YEAR"),
+            360 => write!(f, "DAY_OF_YEAR"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<PLATFORM>())),
         }
     }
 }
 
 /// This table contains a collection of values used in various parts of the reference
 /// code. The values shown are illustrative.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct Implementation(pub u32);
 
@@ -4480,29 +4441,29 @@ impl Implementation {
 
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
-            0 => Ok(Self::FIELD_UPGRADE_IMPLEMENTED), // Original value: Logic::NO
-            1 => Ok(Self::HASH_LIB), // Original value: ImplementationConstants::Ossl
-            24 => Ok(Self::IMPLEMENTATION_PCR), // Original value: 24
-            3 => Ok(Self::PCR_SELECT_MAX), // Original value: ((IMPLEMENTATION_PCR+7)/8)
+            0 => Ok(Self::VENDOR_COMMAND_COUNT), // Original value: 0
+            1 => Ok(Self::CRT_FORMAT_RSA), // Original value: Logic::YES
+            24 => Ok(Self::PLATFORM_PCR), // Original value: 24
+            3 => Ok(Self::MAX_LOADED_OBJECTS), // Original value: 3
             17 => Ok(Self::DRTM_PCR), // Original value: 17
             5 => Ok(Self::NUM_LOCALITIES), // Original value: 5
-            64 => Ok(Self::MAX_ACTIVE_SESSIONS), // Original value: 64
+            64 => Ok(Self::MAX_RNG_ENTROPY_SIZE), // Original value: 64
             2 => Ok(Self::MIN_EVICT_OBJECTS), // Original value: 2
             1264 => Ok(Self::MAX_CONTEXT_SIZE), // Original value: 1264
-            1024 => Ok(Self::MAX_DIGEST_BUFFER), // Original value: 1024
+            1024 => Ok(Self::MAX_VENDOR_BUFFER_SIZE), // Original value: 1024
             2048 => Ok(Self::MAX_NV_INDEX_SIZE), // Original value: 2048
             16384 => Ok(Self::NV_MEMORY_SIZE), // Original value: 16384
-            8 => Ok(Self::MIN_COUNTER_INDICES), // Original value: 8
+            8 => Ok(Self::ORDERLY_BITS), // Original value: 8
             16 => Ok(Self::NUM_STATIC_PCR), // Original value: 16
             32 => Ok(Self::PRIMARY_SEED_SIZE), // Original value: 32
             6 => Ok(Self::CONTEXT_ENCRYPT_ALGORITHM), // Original value: TPM_ALG_ID::AES
             12 => Ok(Self::NV_CLOCK_UPDATE_INTERVAL), // Original value: 12
-            4096 => Ok(Self::MAX_COMMAND_SIZE), // Original value: 4096
-            128 => Ok(Self::MAX_SYM_DATA), // Original value: 128
+            4096 => Ok(Self::MAX_RESPONSE_SIZE), // Original value: 4096
+            128 => Ok(Self::RSA_MAX_PRIME), // Original value: (ImplementationConstants::MAX_RSA_KEY_BYTES/2)
             512 => Ok(Self::RAM_INDEX_SPACE), // Original value: 512
             65537 => Ok(Self::RSA_DEFAULT_PUBLIC_EXPONENT), // Original value: 0x00010001
             8192 => Ok(Self::MAX_DERIVATION_BITS), // Original value: 8192
-            640 => Ok(Self::RSA_PRIVATE_SIZE), // Original value: (RSA_MAX_PRIME * 5)
+            640 => Ok(Self::PRIVATE_VENDOR_SPECIFIC_BYTES), // Original value: RSA_PRIVATE_SIZE
             20 => Ok(Self::SIZE_OF_X509_SERIAL_NUMBER), // Original value: 20
             _ => Err(TpmError::InvalidEnumValue),
         }
@@ -4517,57 +4478,57 @@ impl TpmEnum<u32> for Implementation {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         Implementation::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(Implementation(value as u32))
+    }
 }
 
 impl From<Implementation> for u32 {
     fn from(value: Implementation) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<Implementation> for i32 {
     fn from(value: Implementation) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
 impl fmt::Display for Implementation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
-            0 => write!(f, "One of <FIELD_UPGRADE_IMPLEMENTED, HCRTM_PCR, VENDOR_COMMAND_COUNT>"),
-            1 => write!(f, "One of <HASH_LIB, SYM_LIB, MATH_LIB, NUM_POLICY_PCR_GROUP, NUM_AUTHVALUE_PCR_GROUP, NUM_POLICY_PCR, ENABLE_PCR_NO_INCREMENT, CRT_FORMAT_RSA>"),
-            24 => write!(f, "One of <IMPLEMENTATION_PCR, PLATFORM_PCR>"),
-            3 => write!(f, "One of <PCR_SELECT_MAX, PCR_SELECT_MIN, MAX_HANDLE_NUM, MAX_LOADED_SESSIONS, MAX_SESSION_NUM, MAX_LOADED_OBJECTS>"),
+            0 => write!(f, "VENDOR_COMMAND_COUNT"),
+            1 => write!(f, "CRT_FORMAT_RSA"),
+            24 => write!(f, "PLATFORM_PCR"),
+            3 => write!(f, "MAX_LOADED_OBJECTS"),
             17 => write!(f, "DRTM_PCR"),
             5 => write!(f, "NUM_LOCALITIES"),
-            64 => write!(f, "One of <MAX_ACTIVE_SESSIONS, MAX_ALG_LIST_SIZE, MAX_RNG_ENTROPY_SIZE>"),
+            64 => write!(f, "MAX_RNG_ENTROPY_SIZE"),
             2 => write!(f, "MIN_EVICT_OBJECTS"),
             1264 => write!(f, "MAX_CONTEXT_SIZE"),
-            1024 => write!(f, "One of <MAX_DIGEST_BUFFER, MAX_NV_BUFFER_SIZE, MAX_CAP_BUFFER, MAX_VENDOR_BUFFER_SIZE>"),
+            1024 => write!(f, "MAX_VENDOR_BUFFER_SIZE"),
             2048 => write!(f, "MAX_NV_INDEX_SIZE"),
             16384 => write!(f, "NV_MEMORY_SIZE"),
-            8 => write!(f, "One of <MIN_COUNTER_INDICES, ORDERLY_BITS>"),
+            8 => write!(f, "ORDERLY_BITS"),
             16 => write!(f, "NUM_STATIC_PCR"),
             32 => write!(f, "PRIMARY_SEED_SIZE"),
             6 => write!(f, "CONTEXT_ENCRYPT_ALGORITHM"),
             12 => write!(f, "NV_CLOCK_UPDATE_INTERVAL"),
-            4096 => write!(f, "One of <MAX_COMMAND_SIZE, MAX_RESPONSE_SIZE>"),
-            128 => write!(f, "One of <MAX_SYM_DATA, RSA_MAX_PRIME>"),
+            4096 => write!(f, "MAX_RESPONSE_SIZE"),
+            128 => write!(f, "RSA_MAX_PRIME"),
             512 => write!(f, "RAM_INDEX_SPACE"),
             65537 => write!(f, "RSA_DEFAULT_PUBLIC_EXPONENT"),
             8192 => write!(f, "MAX_DERIVATION_BITS"),
-            640 => write!(f, "One of <RSA_PRIVATE_SIZE, PRIVATE_VENDOR_SPECIFIC_BYTES>"),
+            640 => write!(f, "PRIVATE_VENDOR_SPECIFIC_BYTES"),
             20 => write!(f, "SIZE_OF_X509_SERIAL_NUMBER"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<Implementation>())),
         }
-
     }
-
 }
 
 /// The definitions in Table 29 are used to define many of the interface data types.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_HC(pub u32);
 
@@ -4662,24 +4623,24 @@ impl TPM_HC {
             16777215 => Ok(Self::HR_HANDLE_MASK), // Original value: 0x00FFFFFF
             4278190080 => Ok(Self::HR_RANGE_MASK), // Original value: 0xFF000000
             24 => Ok(Self::HR_SHIFT), // Original value: 24
-            0 => Ok(Self::HR_PCR), // Original value: (TPM_HT::PCR  <<  HR_SHIFT)
-            33554432 => Ok(Self::HR_HMAC_SESSION), // Original value: (TPM_HT::HMAC_SESSION  <<  HR_SHIFT)
-            50331648 => Ok(Self::HR_POLICY_SESSION), // Original value: (TPM_HT::POLICY_SESSION  <<  HR_SHIFT)
-            2147483648 => Ok(Self::HR_TRANSIENT), // Original value: (TPM_HT::TRANSIENT  <<  HR_SHIFT)
-            2164260864 => Ok(Self::HR_PERSISTENT), // Original value: (TPM_HT::PERSISTENT  <<  HR_SHIFT)
-            16777216 => Ok(Self::HR_NV_INDEX), // Original value: (TPM_HT::NV_INDEX  <<  HR_SHIFT)
-            1073741824 => Ok(Self::HR_PERMANENT), // Original value: (TPM_HT::PERMANENT  <<  HR_SHIFT)
+            0 => Ok(Self::PCR_FIRST), // Original value: (HR_PCR + 0)
+            33554432 => Ok(Self::LOADED_SESSION_FIRST), // Original value: HMAC_SESSION_FIRST
+            50331648 => Ok(Self::ACTIVE_SESSION_FIRST), // Original value: POLICY_SESSION_FIRST
+            2147483648 => Ok(Self::TRANSIENT_FIRST), // Original value: (HR_TRANSIENT + 0)
+            2164260864 => Ok(Self::PERSISTENT_FIRST), // Original value: (HR_PERSISTENT + 0)
+            16777216 => Ok(Self::NV_INDEX_FIRST), // Original value: (HR_NV_INDEX + 0)
+            1073741824 => Ok(Self::PERMANENT_FIRST), // Original value: TPM_RH::FIRST
             23 => Ok(Self::PCR_LAST), // Original value: (PCR_FIRST + Implementation::IMPLEMENTATION_PCR-1)
-            33554495 => Ok(Self::HMAC_SESSION_LAST), // Original value: (HMAC_SESSION_FIRST+Implementation::MAX_ACTIVE_SESSIONS-1)
-            50331711 => Ok(Self::POLICY_SESSION_LAST), // Original value: (POLICY_SESSION_FIRST + Implementation::MAX_ACTIVE_SESSIONS-1)
+            33554495 => Ok(Self::LOADED_SESSION_LAST), // Original value: HMAC_SESSION_LAST
+            50331711 => Ok(Self::ACTIVE_SESSION_LAST), // Original value: POLICY_SESSION_LAST
             2147483650 => Ok(Self::TRANSIENT_LAST), // Original value: (TRANSIENT_FIRST+Implementation::MAX_LOADED_OBJECTS-1)
             2181038079 => Ok(Self::PERSISTENT_LAST), // Original value: (PERSISTENT_FIRST + 0x00FFFFFF)
             2172649472 => Ok(Self::PLATFORM_PERSISTENT), // Original value: (PERSISTENT_FIRST + 0x00800000)
             33554431 => Ok(Self::NV_INDEX_LAST), // Original value: (NV_INDEX_FIRST + 0x00FFFFFF)
             1073742111 => Ok(Self::PERMANENT_LAST), // Original value: TPM_RH::LAST
-            30408704 => Ok(Self::HR_NV_AC), // Original value: ((TPM_HT::NV_INDEX  <<  HR_SHIFT) + 0xD00000)
+            30408704 => Ok(Self::NV_AC_FIRST), // Original value: (HR_NV_AC + 0)
             30474239 => Ok(Self::NV_AC_LAST), // Original value: (HR_NV_AC + 0x0000FFFF)
-            2415919104 => Ok(Self::HR_AC), // Original value: (TPM_HT::AC  <<  HR_SHIFT)
+            2415919104 => Ok(Self::AC_FIRST), // Original value: (HR_AC + 0)
             2415984639 => Ok(Self::AC_LAST), // Original value: (HR_AC + 0x0000FFFF)
             _ => Err(TpmError::InvalidEnumValue),
         }
@@ -4694,17 +4655,21 @@ impl TpmEnum<u32> for TPM_HC {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_HC::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_HC(value as u32))
+    }
 }
 
 impl From<TPM_HC> for u32 {
     fn from(value: TPM_HC) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPM_HC> for i32 {
     fn from(value: TPM_HC) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
@@ -4714,70 +4679,65 @@ impl fmt::Display for TPM_HC {
             16777215 => write!(f, "HR_HANDLE_MASK"),
             4278190080 => write!(f, "HR_RANGE_MASK"),
             24 => write!(f, "HR_SHIFT"),
-            0 => write!(f, "One of <HR_PCR, PCR_FIRST>"),
-            33554432 => write!(f, "One of <HR_HMAC_SESSION, HMAC_SESSION_FIRST, LOADED_SESSION_FIRST>"),
-            50331648 => write!(f, "One of <HR_POLICY_SESSION, POLICY_SESSION_FIRST, ACTIVE_SESSION_FIRST>"),
-            2147483648 => write!(f, "One of <HR_TRANSIENT, TRANSIENT_FIRST>"),
-            2164260864 => write!(f, "One of <HR_PERSISTENT, PERSISTENT_FIRST>"),
-            16777216 => write!(f, "One of <HR_NV_INDEX, NV_INDEX_FIRST>"),
-            1073741824 => write!(f, "One of <HR_PERMANENT, PERMANENT_FIRST>"),
+            0 => write!(f, "PCR_FIRST"),
+            33554432 => write!(f, "LOADED_SESSION_FIRST"),
+            50331648 => write!(f, "ACTIVE_SESSION_FIRST"),
+            2147483648 => write!(f, "TRANSIENT_FIRST"),
+            2164260864 => write!(f, "PERSISTENT_FIRST"),
+            16777216 => write!(f, "NV_INDEX_FIRST"),
+            1073741824 => write!(f, "PERMANENT_FIRST"),
             23 => write!(f, "PCR_LAST"),
-            33554495 => write!(f, "One of <HMAC_SESSION_LAST, LOADED_SESSION_LAST>"),
-            50331711 => write!(f, "One of <POLICY_SESSION_LAST, ACTIVE_SESSION_LAST>"),
+            33554495 => write!(f, "LOADED_SESSION_LAST"),
+            50331711 => write!(f, "ACTIVE_SESSION_LAST"),
             2147483650 => write!(f, "TRANSIENT_LAST"),
             2181038079 => write!(f, "PERSISTENT_LAST"),
             2172649472 => write!(f, "PLATFORM_PERSISTENT"),
             33554431 => write!(f, "NV_INDEX_LAST"),
             1073742111 => write!(f, "PERMANENT_LAST"),
-            30408704 => write!(f, "One of <HR_NV_AC, NV_AC_FIRST>"),
+            30408704 => write!(f, "NV_AC_FIRST"),
             30474239 => write!(f, "NV_AC_LAST"),
-            2415919104 => write!(f, "One of <HR_AC, AC_FIRST>"),
+            2415919104 => write!(f, "AC_FIRST"),
             2415984639 => write!(f, "AC_LAST"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_HC>())),
         }
-
     }
-
 }
 
 /// This structure defines the attributes of an algorithm.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPMA_ALGORITHM {
-    #[default]
+pub struct TPMA_ALGORITHM(pub u32);
 
+impl TPMA_ALGORITHM {
     /// SET (1): an asymmetric algorithm with public and private portions
     /// CLEAR (0): not an asymmetric algorithm
-    asymmetric = 0x1,
+    pub const asymmetric: Self = Self(0x1);
 
     /// SET (1): a symmetric block cipher
     /// CLEAR (0): not a symmetric block cipher
-    symmetric = 0x2,
+    pub const symmetric: Self = Self(0x2);
 
     /// SET (1): a hash algorithm
     /// CLEAR (0): not a hash algorithm
-    hash = 0x4,
+    pub const hash: Self = Self(0x4);
 
     /// SET (1): an algorithm that may be used as an object type
     /// CLEAR (0): an algorithm that is not used as an object type
-    object = 0x8,
+    pub const object: Self = Self(0x8);
 
     /// SET (1): a signing algorithm. The setting of asymmetric, symmetric, and hash will
     /// indicate the type of signing algorithm.
     /// CLEAR (0): not a signing algorithm
-    signing = 0x100,
+    pub const signing: Self = Self(0x100);
 
     /// SET (1): an encryption/decryption algorithm. The setting of asymmetric, symmetric, and
     /// hash will indicate the type of encryption/decryption algorithm.
     /// CLEAR (0): not an encryption/decryption algorithm
-    encrypting = 0x200,
+    pub const encrypting: Self = Self(0x200);
 
     /// SET (1): a method such as a key derivative function (KDF)
     /// CLEAR (0): not a method
-    method = 0x400
-}
+    pub const method: Self = Self(0x400);
 
-impl TPMA_ALGORITHM {
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             1 => Ok(Self::asymmetric), // Original value: 0x1
@@ -4789,68 +4749,67 @@ impl TPMA_ALGORITHM {
             1024 => Ok(Self::method), // Original value: 0x400
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPMA_ALGORITHM {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPMA_ALGORITHM::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPMA_ALGORITHM::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_ALGORITHM(value as u32))
     }
 }
 
 impl From<TPMA_ALGORITHM> for u32 {
     fn from(value: TPMA_ALGORITHM) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPMA_ALGORITHM> for i32 {
     fn from(value: TPMA_ALGORITHM) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_ALGORITHM {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::asymmetric => write!(f, "asymmetric"),
-            Self::symmetric => write!(f, "symmetric"),
-            Self::hash => write!(f, "hash"),
-            Self::object => write!(f, "object"),
-            Self::signing => write!(f, "signing"),
-            Self::encrypting => write!(f, "encrypting"),
-            Self::method => write!(f, "method"),
+        match self.0 {
+            1 => write!(f, "asymmetric"),
+            2 => write!(f, "symmetric"),
+            4 => write!(f, "hash"),
+            8 => write!(f, "object"),
+            256 => write!(f, "signing"),
+            512 => write!(f, "encrypting"),
+            1024 => write!(f, "method"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_ALGORITHM>())),
         }
     }
 }
 
 impl std::ops::BitOr for TPMA_ALGORITHM {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+        Self(self.0 | rhs.0)
     }
 
 }
 
 impl From<u32> for TPMA_ALGORITHM {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// This attribute structure indicates an objects use, its authorization types, and its
 /// relationship to other objects.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPMA_OBJECT(pub u32);
 
@@ -4934,7 +4893,7 @@ impl TPMA_OBJECT {
             2048 => Ok(Self::encryptedDuplication), // Original value: 0x800
             65536 => Ok(Self::restricted), // Original value: 0x10000
             131072 => Ok(Self::decrypt), // Original value: 0x20000
-            262144 => Ok(Self::sign), // Original value: 0x40000
+            262144 => Ok(Self::encrypt), // Original value: 0x40000
             524288 => Ok(Self::x509sign), // Original value: 0x80000
             _ => Err(TpmError::InvalidEnumValue),
         }
@@ -4949,17 +4908,21 @@ impl TpmEnum<u32> for TPMA_OBJECT {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_OBJECT::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_OBJECT(value as u32))
+    }
 }
 
 impl From<TPMA_OBJECT> for u32 {
     fn from(value: TPMA_OBJECT) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPMA_OBJECT> for i32 {
     fn from(value: TPMA_OBJECT) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
@@ -4976,13 +4939,11 @@ impl fmt::Display for TPMA_OBJECT {
             2048 => write!(f, "encryptedDuplication"),
             65536 => write!(f, "restricted"),
             131072 => write!(f, "decrypt"),
-            262144 => write!(f, "One of <sign, encrypt>"),
+            262144 => write!(f, "encrypt"),
             524288 => write!(f, "x509sign"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_OBJECT>())),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_OBJECT {
@@ -5003,10 +4964,9 @@ impl From<u32> for TPMA_OBJECT {
 /// This octet in each session is used to identify the session type, indicate its
 /// relationship to any handles in the command, and indicate its use in parameter encryption.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u8)]
-pub enum TPMA_SESSION {
-    #[default]
+pub struct TPMA_SESSION(pub u8);
 
+impl TPMA_SESSION {
     /// SET (1): In a command, this setting indicates that the session is to remain active
     /// after successful completion of the command. In a response, it indicates that the
     /// session is still active. If SET in the command, this attribute shall be SET in the response.
@@ -5020,7 +4980,7 @@ pub enum TPMA_SESSION {
     /// the space is available. A session created after another session is ended may have the
     /// same handle but logically is not the same session.
     /// This attribute has no effect if the command does not complete successfully.
-    continueSession = 0x1,
+    pub const continueSession: Self = Self(0x1);
 
     /// SET (1): In a command, this setting indicates that the command should only be executed
     /// if the session is exclusive at the start of the command. In a response, it indicates
@@ -5028,14 +4988,14 @@ pub enum TPMA_SESSION {
     /// SET (TPM_RC_ATTRIBUTES).
     /// CLEAR (0): In a command, indicates that the session need not be exclusive at the start
     /// of the command. In a response, indicates that the session is not exclusive.
-    auditExclusive = 0x2,
+    pub const auditExclusive: Self = Self(0x2);
 
     /// SET (1): In a command, this setting indicates that the audit digest of the session
     /// should be initialized and the exclusive status of the session SET. This setting is
     /// only allowed if the audit attribute is SET (TPM_RC_ATTRIBUTES).
     /// CLEAR (0): In a command, indicates that the audit digest should not be initialized.
     /// This bit is always CLEAR in a response.
-    auditReset = 0x4,
+    pub const auditReset: Self = Self(0x4);
 
     /// SET (1): In a command, this setting indicates that the first parameter in the command
     /// is symmetrically encrypted using the parameter encryption scheme described in TPM 2.0
@@ -5047,7 +5007,7 @@ pub enum TPMA_SESSION {
     /// This attribute may be SET in a session that is not associated with a command handle.
     /// Such a session is provided for purposes of encrypting a parameter and not for authorization.
     /// This attribute may be SET in combination with any other session attributes.
-    decrypt = 0x20,
+    pub const decrypt: Self = Self(0x20);
 
     /// SET (1): In a command, this setting indicates that the TPM should use this session to
     /// encrypt the first parameter in the response. In a response, it indicates that the
@@ -5058,7 +5018,7 @@ pub enum TPMA_SESSION {
     /// For a password authorization, this attribute will be CLEAR in both the command and response.
     /// This attribute may be SET in a session that is not associated with a command handle.
     /// Such a session is provided for purposes of encrypting a parameter and not for authorization.
-    encrypt = 0x40,
+    pub const encrypt: Self = Self(0x40);
 
     /// SET (1): In a command or response, this setting indicates that the session is for
     /// audit and that auditExclusive and auditReset have meaning. This session may also be
@@ -5066,10 +5026,8 @@ pub enum TPMA_SESSION {
     /// may be SET or CLEAR.
     /// CLEAR (0): Session is not used for audit.
     /// If SET in the command, then this attribute will be SET in the response.
-    audit = 0x80
-}
+    pub const audit: Self = Self(0x80);
 
-impl TPMA_SESSION {
     pub fn try_from(value: u8) -> Result<Self, TpmError> {
         match value {
             1 => Ok(Self::continueSession), // Original value: 0x1
@@ -5080,83 +5038,82 @@ impl TPMA_SESSION {
             128 => Ok(Self::audit), // Original value: 0x80
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u8> for TPMA_SESSION {
     fn get_value(&self) -> u8 {
-        *self as u8
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPMA_SESSION::try_from(value as u8).map_err(|_| TpmError::InvalidEnumValue)
+        TPMA_SESSION::try_from(value as u8)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_SESSION(value as u8))
     }
 }
 
 impl From<TPMA_SESSION> for u8 {
     fn from(value: TPMA_SESSION) -> Self {
-        value as u8
+        value.0 as u8
     }
-
 }
 
 impl From<TPMA_SESSION> for i8 {
     fn from(value: TPMA_SESSION) -> Self {
-        value as i8
+        value.0 as i8
     }
-
 }
 
 impl fmt::Display for TPMA_SESSION {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::continueSession => write!(f, "continueSession"),
-            Self::auditExclusive => write!(f, "auditExclusive"),
-            Self::auditReset => write!(f, "auditReset"),
-            Self::decrypt => write!(f, "decrypt"),
-            Self::encrypt => write!(f, "encrypt"),
-            Self::audit => write!(f, "audit"),
+        match self.0 {
+            1 => write!(f, "continueSession"),
+            2 => write!(f, "auditExclusive"),
+            4 => write!(f, "auditReset"),
+            32 => write!(f, "decrypt"),
+            64 => write!(f, "encrypt"),
+            128 => write!(f, "audit"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_SESSION>())),
         }
     }
 }
 
 impl std::ops::BitOr for TPMA_SESSION {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u8 | rhs as u8) }
+        Self(self.0 | rhs.0)
     }
 
 }
 
 impl From<u8> for TPMA_SESSION {
-fn from(value: u8) -> Self {
-    unsafe { std::mem::transmute(value) }
+    fn from(value: u8) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// In a TPMS_CREATION_DATA structure, this structure is used to indicate the locality of
 /// the command that created the object. No more than one of the locality attributes shall
 /// be set in the creation data.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u8)]
-pub enum TPMA_LOCALITY {
-    #[default]
-    LOC_ZERO = 0x1,
-    LOC_ONE = 0x2,
-    LOC_TWO = 0x4,
-    LOC_THREE = 0x8,
-    LOC_FOUR = 0x10,
-
-    /// If any of these bits is set, an extended locality is indicated
-    Extended_BIT_MASK = 0xE0,
-    Extended_BIT_OFFSET = 0x5, // Original value: 5
-    Extended_BIT_LENGTH = 0x3 // Original value: 3
-}
+pub struct TPMA_LOCALITY(pub u8);
 
 impl TPMA_LOCALITY {
+    pub const LOC_ZERO: Self = Self(0x1);
+    pub const LOC_ONE: Self = Self(0x2);
+    pub const LOC_TWO: Self = Self(0x4);
+    pub const LOC_THREE: Self = Self(0x8);
+    pub const LOC_FOUR: Self = Self(0x10);
+
+    /// If any of these bits is set, an extended locality is indicated
+    pub const Extended_BIT_MASK: Self = Self(0xE0);
+    pub const Extended_BIT_OFFSET: Self = Self(0x5); // Original value: 5
+    pub const Extended_BIT_LENGTH: Self = Self(0x3); // Original value: 3
+
     pub fn try_from(value: u8) -> Result<Self, TpmError> {
         match value {
             1 => Ok(Self::LOC_ZERO), // Original value: 0x1
@@ -5169,63 +5126,64 @@ impl TPMA_LOCALITY {
             3 => Ok(Self::Extended_BIT_LENGTH), // Original value: 3
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u8> for TPMA_LOCALITY {
     fn get_value(&self) -> u8 {
-        *self as u8
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPMA_LOCALITY::try_from(value as u8).map_err(|_| TpmError::InvalidEnumValue)
+        TPMA_LOCALITY::try_from(value as u8)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_LOCALITY(value as u8))
     }
 }
 
 impl From<TPMA_LOCALITY> for u8 {
     fn from(value: TPMA_LOCALITY) -> Self {
-        value as u8
+        value.0 as u8
     }
-
 }
 
 impl From<TPMA_LOCALITY> for i8 {
     fn from(value: TPMA_LOCALITY) -> Self {
-        value as i8
+        value.0 as i8
     }
-
 }
 
 impl fmt::Display for TPMA_LOCALITY {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::LOC_ZERO => write!(f, "LOC_ZERO"),
-            Self::LOC_ONE => write!(f, "LOC_ONE"),
-            Self::LOC_TWO => write!(f, "LOC_TWO"),
-            Self::LOC_THREE => write!(f, "LOC_THREE"),
-            Self::LOC_FOUR => write!(f, "LOC_FOUR"),
-            Self::Extended_BIT_MASK => write!(f, "Extended_BIT_MASK"),
-            Self::Extended_BIT_OFFSET => write!(f, "Extended_BIT_OFFSET"),
-            Self::Extended_BIT_LENGTH => write!(f, "Extended_BIT_LENGTH"),
+        match self.0 {
+            1 => write!(f, "LOC_ZERO"),
+            2 => write!(f, "LOC_ONE"),
+            4 => write!(f, "LOC_TWO"),
+            8 => write!(f, "LOC_THREE"),
+            16 => write!(f, "LOC_FOUR"),
+            224 => write!(f, "Extended_BIT_MASK"),
+            5 => write!(f, "Extended_BIT_OFFSET"),
+            3 => write!(f, "Extended_BIT_LENGTH"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_LOCALITY>())),
         }
     }
 }
 
 impl std::ops::BitOr for TPMA_LOCALITY {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u8 | rhs as u8) }
+        Self(self.0 | rhs.0)
     }
 
 }
 
 impl From<u8> for TPMA_LOCALITY {
-fn from(value: u8) -> Self {
-    unsafe { std::mem::transmute(value) }
+    fn from(value: u8) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// The attributes in this structure are persistent and are not changed as a result of
@@ -5233,38 +5191,35 @@ fn from(value: u8) -> Self {
 /// as the result of specific Protected Capabilities. This structure may be read using
 /// TPM2_GetCapability(capability = TPM_CAP_TPM_PROPERTIES, property = TPM_PT_PERMANENT).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPMA_PERMANENT {
-    #[default]
+pub struct TPMA_PERMANENT(pub u32);
 
+impl TPMA_PERMANENT {
     /// SET (1): TPM2_HierarchyChangeAuth() with ownerAuth has been executed since the last TPM2_Clear().
     /// CLEAR (0): ownerAuth has not been changed since TPM2_Clear().
-    ownerAuthSet = 0x1,
+    pub const ownerAuthSet: Self = Self(0x1);
 
     /// SET (1): TPM2_HierarchyChangeAuth() with endorsementAuth has been executed since the
     /// last TPM2_Clear().
     /// CLEAR (0): endorsementAuth has not been changed since TPM2_Clear().
-    endorsementAuthSet = 0x2,
+    pub const endorsementAuthSet: Self = Self(0x2);
 
     /// SET (1): TPM2_HierarchyChangeAuth() with lockoutAuth has been executed since the last
     /// TPM2_Clear().
     /// CLEAR (0): lockoutAuth has not been changed since TPM2_Clear().
-    lockoutAuthSet = 0x4,
+    pub const lockoutAuthSet: Self = Self(0x4);
 
     /// SET (1): TPM2_Clear() is disabled.
     /// CLEAR (0): TPM2_Clear() is enabled.
     /// NOTE See TPM2_ClearControl in TPM 2.0 Part 3 for details on changing this attribute.
-    disableClear = 0x100,
+    pub const disableClear: Self = Self(0x100);
 
     /// SET (1): The TPM is in lockout, when failedTries is equal to maxTries.
-    inLockout = 0x200,
+    pub const inLockout: Self = Self(0x200);
 
     /// SET (1): The EPS was created by the TPM.
     /// CLEAR (0): The EPS was created outside of the TPM using a manufacturer-specific process.
-    tpmGeneratedEPS = 0x400
-}
+    pub const tpmGeneratedEPS: Self = Self(0x400);
 
-impl TPMA_PERMANENT {
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             1 => Ok(Self::ownerAuthSet), // Original value: 0x1
@@ -5275,76 +5230,76 @@ impl TPMA_PERMANENT {
             1024 => Ok(Self::tpmGeneratedEPS), // Original value: 0x400
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPMA_PERMANENT {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPMA_PERMANENT::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPMA_PERMANENT::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_PERMANENT(value as u32))
     }
 }
 
 impl From<TPMA_PERMANENT> for u32 {
     fn from(value: TPMA_PERMANENT) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPMA_PERMANENT> for i32 {
     fn from(value: TPMA_PERMANENT) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_PERMANENT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::ownerAuthSet => write!(f, "ownerAuthSet"),
-            Self::endorsementAuthSet => write!(f, "endorsementAuthSet"),
-            Self::lockoutAuthSet => write!(f, "lockoutAuthSet"),
-            Self::disableClear => write!(f, "disableClear"),
-            Self::inLockout => write!(f, "inLockout"),
-            Self::tpmGeneratedEPS => write!(f, "tpmGeneratedEPS"),
+        match self.0 {
+            1 => write!(f, "ownerAuthSet"),
+            2 => write!(f, "endorsementAuthSet"),
+            4 => write!(f, "lockoutAuthSet"),
+            256 => write!(f, "disableClear"),
+            512 => write!(f, "inLockout"),
+            1024 => write!(f, "tpmGeneratedEPS"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_PERMANENT>())),
         }
     }
 }
 
 impl std::ops::BitOr for TPMA_PERMANENT {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+        Self(self.0 | rhs.0)
     }
 
 }
 
 impl From<u32> for TPMA_PERMANENT {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// This structure may be read using TPM2_GetCapability(capability =
 /// TPM_CAP_TPM_PROPERTIES, property = TPM_PT_STARTUP_CLEAR).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPMA_STARTUP_CLEAR {
-    #[default]
+pub struct TPMA_STARTUP_CLEAR(pub u32);
 
+impl TPMA_STARTUP_CLEAR {
     /// SET (1): The platform hierarchy is enabled and platformAuth or platformPolicy may be
     /// used for authorization.
     /// CLEAR (0): platformAuth and platformPolicy may not be used for authorizations, and
     /// objects in the platform hierarchy, including persistent objects, cannot be used.
     /// NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute.
-    phEnable = 0x1,
+    pub const phEnable: Self = Self(0x1);
 
     /// SET (1): The Storage hierarchy is enabled and ownerAuth or ownerPolicy may be used for
     /// authorization. NV indices defined using owner authorization are accessible.
@@ -5352,14 +5307,14 @@ pub enum TPMA_STARTUP_CLEAR {
     /// in the Storage hierarchy, persistent objects, and NV indices defined using owner
     /// authorization cannot be used.
     /// NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute.
-    shEnable = 0x2,
+    pub const shEnable: Self = Self(0x2);
 
     /// SET (1): The EPS hierarchy is enabled and Endorsement Authorization may be used to
     /// authorize commands.
     /// CLEAR (0): Endorsement Authorization may not be used for authorizations, and objects
     /// in the endorsement hierarchy, including persistent objects, cannot be used.
     /// NOTE See TPM2_HierarchyControl in TPM 2.0 Part 3 for details on changing this attribute.
-    ehEnable = 0x4,
+    pub const ehEnable: Self = Self(0x4);
 
     /// SET (1): NV indices that have TPMA_NV_PLATFORMCREATE SET may be read or written. The
     /// platform can create define and undefine indices.
@@ -5374,17 +5329,15 @@ pub enum TPMA_STARTUP_CLEAR {
     /// whether phEnableNV is applicable. Since the TPM will return TPM_RC_HANDLE if the index
     /// does not exist, it also returns this error code if the index is disabled. Otherwise,
     /// the TPM would leak the existence of an index even when disabled.
-    phEnableNV = 0x8,
+    pub const phEnableNV: Self = Self(0x8);
 
     /// SET (1): The TPM received a TPM2_Shutdown() and a matching TPM2_Startup().
     /// CLEAR (0): TPM2_Startup(TPM_SU_CLEAR) was not preceded by a TPM2_Shutdown() of any type.
     /// NOTE A shutdown is orderly if the TPM receives a TPM2_Shutdown() of any type followed
     /// by a TPM2_Startup() of any type. However, the TPM will return an error if
     /// TPM2_Startup(TPM_SU_STATE) was not preceded by TPM2_Shutdown(TPM_SU_STATE).
-    orderly = 0x80000000 // Original value: 0xFFFFFFFF80000000
-}
+    pub const orderly: Self = Self(0x80000000); // Original value: 0xFFFFFFFF80000000
 
-impl TPMA_STARTUP_CLEAR {
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             1 => Ok(Self::phEnable), // Original value: 0x1
@@ -5394,91 +5347,89 @@ impl TPMA_STARTUP_CLEAR {
             2147483648 => Ok(Self::orderly), // Original value: 0xFFFFFFFF80000000
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPMA_STARTUP_CLEAR {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPMA_STARTUP_CLEAR::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPMA_STARTUP_CLEAR::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_STARTUP_CLEAR(value as u32))
     }
 }
 
 impl From<TPMA_STARTUP_CLEAR> for u32 {
     fn from(value: TPMA_STARTUP_CLEAR) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPMA_STARTUP_CLEAR> for i32 {
     fn from(value: TPMA_STARTUP_CLEAR) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_STARTUP_CLEAR {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::phEnable => write!(f, "phEnable"),
-            Self::shEnable => write!(f, "shEnable"),
-            Self::ehEnable => write!(f, "ehEnable"),
-            Self::phEnableNV => write!(f, "phEnableNV"),
-            Self::orderly => write!(f, "orderly"),
+        match self.0 {
+            1 => write!(f, "phEnable"),
+            2 => write!(f, "shEnable"),
+            4 => write!(f, "ehEnable"),
+            8 => write!(f, "phEnableNV"),
+            2147483648 => write!(f, "orderly"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_STARTUP_CLEAR>())),
         }
     }
 }
 
 impl std::ops::BitOr for TPMA_STARTUP_CLEAR {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+        Self(self.0 | rhs.0)
     }
 
 }
 
 impl From<u32> for TPMA_STARTUP_CLEAR {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// This structure of this attribute is used to report the memory management method used
 /// by the TPM for transient objects and authorization sessions. This structure may be
 /// read using TPM2_GetCapability(capability = TPM_CAP_TPM_PROPERTIES, property = TPM_PT_MEMORY).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPMA_MEMORY {
-    #[default]
+pub struct TPMA_MEMORY(pub u32);
 
+impl TPMA_MEMORY {
     /// SET (1): indicates that the RAM memory used for authorization session contexts is
     /// shared with the memory used for transient objects
     /// CLEAR (0): indicates that the memory used for authorization sessions is not shared
     /// with memory used for transient objects
-    sharedRAM = 0x1,
+    pub const sharedRAM: Self = Self(0x1);
 
     /// SET (1): indicates that the NV memory used for persistent objects is shared with the
     /// NV memory used for NV Index values
     /// CLEAR (0): indicates that the persistent objects and NV Index values are allocated
     /// from separate sections of NV
-    sharedNV = 0x2,
+    pub const sharedNV: Self = Self(0x2);
 
     /// SET (1): indicates that the TPM copies persistent objects to a transient-object slot
     /// in RAM when the persistent object is referenced in a command. The TRM is required to
     /// make sure that an object slot is available.
     /// CLEAR (0): indicates that the TPM does not use transient-object slots when persistent
     /// objects are referenced
-    objectCopiedToRam = 0x4
-}
+    pub const objectCopiedToRam: Self = Self(0x4);
 
-impl TPMA_MEMORY {
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             1 => Ok(Self::sharedRAM), // Original value: 0x1
@@ -5486,105 +5437,103 @@ impl TPMA_MEMORY {
             4 => Ok(Self::objectCopiedToRam), // Original value: 0x4
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPMA_MEMORY {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPMA_MEMORY::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPMA_MEMORY::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_MEMORY(value as u32))
     }
 }
 
 impl From<TPMA_MEMORY> for u32 {
     fn from(value: TPMA_MEMORY) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPMA_MEMORY> for i32 {
     fn from(value: TPMA_MEMORY) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_MEMORY {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::sharedRAM => write!(f, "sharedRAM"),
-            Self::sharedNV => write!(f, "sharedNV"),
-            Self::objectCopiedToRam => write!(f, "objectCopiedToRam"),
+        match self.0 {
+            1 => write!(f, "sharedRAM"),
+            2 => write!(f, "sharedNV"),
+            4 => write!(f, "objectCopiedToRam"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_MEMORY>())),
         }
     }
 }
 
 impl std::ops::BitOr for TPMA_MEMORY {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+        Self(self.0 | rhs.0)
     }
 
 }
 
 impl From<u32> for TPMA_MEMORY {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// This structure defines the attributes of a command from a context management
 /// perspective. The fields of the structure indicate to the TPM Resource Manager (TRM)
 /// the number of resources required by a command and how the command affects the TPMs resources.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPMA_CC {
-    #[default]
+pub struct TPMA_CC(pub u32);
 
+impl TPMA_CC {
     /// Indicates the command being selected
-    commandIndex_BIT_MASK = 0xFFFF,
-    commandIndex_BIT_OFFSET = 0x0, // Original value: 0
-    commandIndex_BIT_LENGTH = 0x10, // Original value: 16
+    pub const commandIndex_BIT_MASK: Self = Self(0xFFFF);
+    pub const commandIndex_BIT_OFFSET: Self = Self(0x0); // Original value: 0
+    pub const commandIndex_BIT_LENGTH: Self = Self(0x10); // Original value: 16
 
     /// SET (1): indicates that the command may write to NV
     /// CLEAR (0): indicates that the command does not write to NV
-    nv = 0x400000,
+    pub const nv: Self = Self(0x400000);
 
     /// SET (1): This command could flush any number of loaded contexts.
     /// CLEAR (0): no additional changes other than indicated by the flushed attribute
-    extensive = 0x800000,
+    pub const extensive: Self = Self(0x800000);
 
     /// SET (1): The context associated with any transient handle in the command will be
     /// flushed when this command completes.
     /// CLEAR (0): No context is flushed as a side effect of this command.
-    flushed = 0x1000000,
+    pub const flushed: Self = Self(0x1000000);
 
     /// Indicates the number of the handles in the handle area for this command
-    cHandles_BIT_MASK = 0xE000000,
-    cHandles_BIT_OFFSET = 0x19, // Original value: 25
-    cHandles_BIT_LENGTH = 0x3, // Original value: 3
+    pub const cHandles_BIT_MASK: Self = Self(0xE000000);
+    pub const cHandles_BIT_OFFSET: Self = Self(0x19); // Original value: 25
+    pub const cHandles_BIT_LENGTH: Self = Self(0x3); // Original value: 3
 
     /// SET (1): indicates the presence of the handle area in the response
-    rHandle = 0x10000000,
+    pub const rHandle: Self = Self(0x10000000);
 
     /// SET (1): indicates that the command is vendor-specific
     /// CLEAR (0): indicates that the command is defined in a version of this specification
-    V = 0x20000000,
+    pub const V: Self = Self(0x20000000);
 
     /// Allocated for software; shall be zero
-    Res_BIT_MASK = 0xC0000000, // Original value: 0xFFFFFFFFC0000000
-    Res_BIT_OFFSET = 0x1E, // Original value: 30
-    Res_BIT_LENGTH = 0x2 // Original value: 2
-}
+    pub const Res_BIT_MASK: Self = Self(0xC0000000); // Original value: 0xFFFFFFFFC0000000
+    pub const Res_BIT_OFFSET: Self = Self(0x1E); // Original value: 30
+    pub const Res_BIT_LENGTH: Self = Self(0x2); // Original value: 2
 
-impl TPMA_CC {
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             65535 => Ok(Self::commandIndex_BIT_MASK), // Original value: 0xFFFF
@@ -5603,140 +5552,139 @@ impl TPMA_CC {
             2 => Ok(Self::Res_BIT_LENGTH), // Original value: 2
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPMA_CC {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPMA_CC::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPMA_CC::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_CC(value as u32))
     }
 }
 
 impl From<TPMA_CC> for u32 {
     fn from(value: TPMA_CC) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPMA_CC> for i32 {
     fn from(value: TPMA_CC) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_CC {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::commandIndex_BIT_MASK => write!(f, "commandIndex_BIT_MASK"),
-            Self::commandIndex_BIT_OFFSET => write!(f, "commandIndex_BIT_OFFSET"),
-            Self::commandIndex_BIT_LENGTH => write!(f, "commandIndex_BIT_LENGTH"),
-            Self::nv => write!(f, "nv"),
-            Self::extensive => write!(f, "extensive"),
-            Self::flushed => write!(f, "flushed"),
-            Self::cHandles_BIT_MASK => write!(f, "cHandles_BIT_MASK"),
-            Self::cHandles_BIT_OFFSET => write!(f, "cHandles_BIT_OFFSET"),
-            Self::cHandles_BIT_LENGTH => write!(f, "cHandles_BIT_LENGTH"),
-            Self::rHandle => write!(f, "rHandle"),
-            Self::V => write!(f, "V"),
-            Self::Res_BIT_MASK => write!(f, "Res_BIT_MASK"),
-            Self::Res_BIT_OFFSET => write!(f, "Res_BIT_OFFSET"),
-            Self::Res_BIT_LENGTH => write!(f, "Res_BIT_LENGTH"),
+        match self.0 {
+            65535 => write!(f, "commandIndex_BIT_MASK"),
+            0 => write!(f, "commandIndex_BIT_OFFSET"),
+            16 => write!(f, "commandIndex_BIT_LENGTH"),
+            4194304 => write!(f, "nv"),
+            8388608 => write!(f, "extensive"),
+            16777216 => write!(f, "flushed"),
+            234881024 => write!(f, "cHandles_BIT_MASK"),
+            25 => write!(f, "cHandles_BIT_OFFSET"),
+            3 => write!(f, "cHandles_BIT_LENGTH"),
+            268435456 => write!(f, "rHandle"),
+            536870912 => write!(f, "V"),
+            3221225472 => write!(f, "Res_BIT_MASK"),
+            30 => write!(f, "Res_BIT_OFFSET"),
+            2 => write!(f, "Res_BIT_LENGTH"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_CC>())),
         }
     }
 }
 
 impl std::ops::BitOr for TPMA_CC {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+        Self(self.0 | rhs.0)
     }
 
 }
 
 impl From<u32> for TPMA_CC {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// This structure of this attribute is used to report that the TPM is designed for these
 /// modes. This structure may be read using TPM2_GetCapability(capability =
 /// TPM_CAP_TPM_PROPERTIES, property = TPM_PT_MODES).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPMA_MODES {
-    #[default]
-
-    /// SET (1): indicates that the TPM is designed to comply with all of the FIPS 140-2
-    /// requirements at Level 1 or higher.
-    FIPS_140_2 = 0x1
-}
+pub struct TPMA_MODES(pub u32);
 
 impl TPMA_MODES {
+    /// SET (1): indicates that the TPM is designed to comply with all of the FIPS 140-2
+    /// requirements at Level 1 or higher.
+    pub const FIPS_140_2: Self = Self(0x1);
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             1 => Ok(Self::FIPS_140_2), // Original value: 0x1
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPMA_MODES {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPMA_MODES::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPMA_MODES::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_MODES(value as u32))
     }
 }
 
 impl From<TPMA_MODES> for u32 {
     fn from(value: TPMA_MODES) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPMA_MODES> for i32 {
     fn from(value: TPMA_MODES) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_MODES {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::FIPS_140_2 => write!(f, "FIPS_140_2"),
+        match self.0 {
+            1 => write!(f, "FIPS_140_2"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_MODES>())),
         }
     }
 }
 
 impl std::ops::BitOr for TPMA_MODES {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+        Self(self.0 | rhs.0)
     }
 
 }
 
 impl From<u32> for TPMA_MODES {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// These attributes are as specified in clause 4.2.1.3. of RFC 5280 Internet X.509 Public
@@ -5744,8 +5692,6 @@ fn from(value: u32) -> Self {
 /// TPM2_CertifyX509, when a caller provides a DER encoded Key Usage in
 /// partialCertificate, the TPM will validate that the key to be certified meets the
 /// requirements of Key Usage.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPMA_X509_KEY_USAGE(pub u32);
 
@@ -5789,7 +5735,7 @@ impl TPMA_X509_KEY_USAGE {
             134217728 => Ok(Self::keyAgreement), // Original value: 0x8000000
             268435456 => Ok(Self::dataEncipherment), // Original value: 0x10000000
             536870912 => Ok(Self::keyEncipherment), // Original value: 0x20000000
-            1073741824 => Ok(Self::nonrepudiation), // Original value: 0x40000000
+            1073741824 => Ok(Self::contentCommitment), // Original value: 0x40000000
             2147483648 => Ok(Self::digitalSignature), // Original value: 0xFFFFFFFF80000000
             _ => Err(TpmError::InvalidEnumValue),
         }
@@ -5804,17 +5750,21 @@ impl TpmEnum<u32> for TPMA_X509_KEY_USAGE {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_X509_KEY_USAGE::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_X509_KEY_USAGE(value as u32))
+    }
 }
 
 impl From<TPMA_X509_KEY_USAGE> for u32 {
     fn from(value: TPMA_X509_KEY_USAGE) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPMA_X509_KEY_USAGE> for i32 {
     fn from(value: TPMA_X509_KEY_USAGE) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
@@ -5828,13 +5778,11 @@ impl fmt::Display for TPMA_X509_KEY_USAGE {
             134217728 => write!(f, "keyAgreement"),
             268435456 => write!(f, "dataEncipherment"),
             536870912 => write!(f, "keyEncipherment"),
-            1073741824 => write!(f, "One of <nonrepudiation, contentCommitment>"),
+            1073741824 => write!(f, "contentCommitment"),
             2147483648 => write!(f, "digitalSignature"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_X509_KEY_USAGE>())),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_X509_KEY_USAGE {
@@ -5857,84 +5805,80 @@ impl From<u32> for TPMA_X509_KEY_USAGE {
 /// ACT number (0-F)). The signaled value must be preserved across TPM Resume or if the
 /// TPM has not lost power. The signaled value may be preserved over a power cycle of a TPM.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[repr(u32)]
-pub enum TPMA_ACT {
-    #[default]
-
-    /// SET (1): The ACT has signaled
-    /// CLEAR (0): The ACT has not signaled
-    signaled = 0x1,
-
-    /// Preserves the state of signaled, depending on the power cycle
-    preserveSignaled = 0x2
-}
+pub struct TPMA_ACT(pub u32);
 
 impl TPMA_ACT {
+    /// SET (1): The ACT has signaled
+    /// CLEAR (0): The ACT has not signaled
+    pub const signaled: Self = Self(0x1);
+
+    /// Preserves the state of signaled, depending on the power cycle
+    pub const preserveSignaled: Self = Self(0x2);
+
     pub fn try_from(value: u32) -> Result<Self, TpmError> {
         match value {
             1 => Ok(Self::signaled), // Original value: 0x1
             2 => Ok(Self::preserveSignaled), // Original value: 0x2
             _ => Err(TpmError::InvalidEnumValue),
         }
-
     }
-
 }
 
 impl TpmEnum<u32> for TPMA_ACT {
     fn get_value(&self) -> u32 {
-        *self as u32
+        self.0.into()
     }
 
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
-        TPMA_ACT::try_from(value as u32).map_err(|_| TpmError::InvalidEnumValue)
+        TPMA_ACT::try_from(value as u32)
+    }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_ACT(value as u32))
     }
 }
 
 impl From<TPMA_ACT> for u32 {
     fn from(value: TPMA_ACT) -> Self {
-        value as u32
+        value.0 as u32
     }
-
 }
 
 impl From<TPMA_ACT> for i32 {
     fn from(value: TPMA_ACT) -> Self {
-        value as i32
+        value.0 as i32
     }
-
 }
 
 impl fmt::Display for TPMA_ACT {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::signaled => write!(f, "signaled"),
-            Self::preserveSignaled => write!(f, "preserveSignaled"),
+        match self.0 {
+            1 => write!(f, "signaled"),
+            2 => write!(f, "preserveSignaled"),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_ACT>())),
         }
     }
 }
 
 impl std::ops::BitOr for TPMA_ACT {
-type Output = Self;
+    type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self::Output {
-    unsafe { std::mem::transmute(self as u32 | rhs as u32) }
+        Self(self.0 | rhs.0)
     }
 
 }
 
 impl From<u32> for TPMA_ACT {
-fn from(value: u32) -> Self {
-    unsafe { std::mem::transmute(value) }
+    fn from(value: u32) -> Self {
+        Self(value.into())
     }
-
 }
 
 /// A TPM_NV_INDEX is used to reference a defined location in NV memory. The format of the
 /// Index is changed from TPM 1.2 in order to include the Index in the reserved handle
 /// space. Handles in this range use the digest of the public area of the Index as the
 /// Name of the entity in authorization computations
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPM_NV_INDEX(pub u32);
 
@@ -5953,7 +5897,7 @@ impl TPM_NV_INDEX {
         match value {
             16777215 => Ok(Self::index_BIT_MASK), // Original value: 0xFFFFFF
             0 => Ok(Self::index_BIT_OFFSET), // Original value: 0
-            24 => Ok(Self::index_BIT_LENGTH), // Original value: 24
+            24 => Ok(Self::RhNv_BIT_OFFSET), // Original value: 24
             4278190080 => Ok(Self::RhNv_BIT_MASK), // Original value: 0xFFFFFFFFFF000000
             8 => Ok(Self::RhNv_BIT_LENGTH), // Original value: 8
             _ => Err(TpmError::InvalidEnumValue),
@@ -5969,17 +5913,21 @@ impl TpmEnum<u32> for TPM_NV_INDEX {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPM_NV_INDEX::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPM_NV_INDEX(value as u32))
+    }
 }
 
 impl From<TPM_NV_INDEX> for u32 {
     fn from(value: TPM_NV_INDEX) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPM_NV_INDEX> for i32 {
     fn from(value: TPM_NV_INDEX) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
@@ -5988,14 +5936,12 @@ impl fmt::Display for TPM_NV_INDEX {
         match self.0 {
             16777215 => write!(f, "index_BIT_MASK"),
             0 => write!(f, "index_BIT_OFFSET"),
-            24 => write!(f, "One of <index_BIT_LENGTH, RhNv_BIT_OFFSET>"),
+            24 => write!(f, "RhNv_BIT_OFFSET"),
             4278190080 => write!(f, "RhNv_BIT_MASK"),
             8 => write!(f, "RhNv_BIT_LENGTH"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPM_NV_INDEX>())),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPM_NV_INDEX {
@@ -6015,8 +5961,6 @@ impl From<u32> for TPM_NV_INDEX {
 
 /// This structure allows the TPM to keep track of the data and permissions to manipulate
 /// an NV Index.
-
-/// Enum with duplicated values - using struct with constants
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct TPMA_NV(pub u32);
 
@@ -6161,7 +6105,7 @@ impl TPMA_NV {
         match value {
             1 => Ok(Self::PPWRITE), // Original value: 0x1
             2 => Ok(Self::OWNERWRITE), // Original value: 0x2
-            4 => Ok(Self::AUTHWRITE), // Original value: 0x4
+            4 => Ok(Self::TpmNt_BIT_LENGTH), // Original value: 4
             8 => Ok(Self::POLICYWRITE), // Original value: 0x8
             0 => Ok(Self::ORDINARY), // Original value: 0x0
             16 => Ok(Self::COUNTER), // Original value: 0x10
@@ -6200,17 +6144,21 @@ impl TpmEnum<u32> for TPMA_NV {
     fn try_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
         TPMA_NV::try_from(value as u32)
     }
+
+    fn new_from_trait(value: u64) -> Result<Self, TpmError> where Self: Sized {
+        Ok(TPMA_NV(value as u32))
+    }
 }
 
 impl From<TPMA_NV> for u32 {
     fn from(value: TPMA_NV) -> Self {
-        value.0.into()
+        value.0 as u32
     }
 }
 
 impl From<TPMA_NV> for i32 {
     fn from(value: TPMA_NV) -> Self {
-        value.0 as i32 
+        value.0 as i32
     }
 }
 
@@ -6219,7 +6167,7 @@ impl fmt::Display for TPMA_NV {
         match self.0 {
             1 => write!(f, "PPWRITE"),
             2 => write!(f, "OWNERWRITE"),
-            4 => write!(f, "One of <AUTHWRITE, TpmNt_BIT_OFFSET, TpmNt_BIT_LENGTH>"),
+            4 => write!(f, "TpmNt_BIT_LENGTH"),
             8 => write!(f, "POLICYWRITE"),
             0 => write!(f, "ORDINARY"),
             16 => write!(f, "COUNTER"),
@@ -6245,11 +6193,9 @@ impl fmt::Display for TPMA_NV {
             536870912 => write!(f, "WRITTEN"),
             1073741824 => write!(f, "PLATFORMCREATE"),
             2147483648 => write!(f, "READ_STCLEAR"),
-            _ => write!(f, "Unknown({:?})", self.0),
+            _ => write!(f, "{}", enum_to_str(self.0 as u64, std::any::TypeId::of::<TPMA_NV>())),
         }
-
     }
-
 }
 
 impl std::ops::BitOr for TPMA_NV {
@@ -7975,7 +7921,7 @@ impl TpmStructure for TPM_HANDLE {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.handle = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.handle = buf.readInt() as u32;
         Ok(())
     }
 
@@ -8141,8 +8087,8 @@ impl TpmStructure for TPMS_ALGORITHM_DESCRIPTION {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.alg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.attributes = TPMA_ALGORITHM::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.alg = TPM_ALG_ID(buf.readShort() as u16);
+        self.attributes = TPMA_ALGORITHM(buf.readInt() as u32);
         Ok(())
     }
 
@@ -8215,7 +8161,7 @@ impl TpmStructure for TPMT_HA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         self.digest = buf.readByteBuf(Crypto::digestSize(self.hashAlg));
         Ok(())
     }
@@ -8838,7 +8784,7 @@ impl TpmStructure for TPMS_PCR_SELECTION {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hash = TPM_ALG_ID(buf.readShort() as u16);
         self.pcrSelect = buf.readSizedByteBuf(1);
         Ok(())
     }
@@ -9051,7 +8997,7 @@ impl TpmStructure for TPMT_TK_AUTH {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tag = TPM_ST::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.tag = TPM_ST(buf.readShort() as u16);
         self.hierarchy.initFromTpm(buf);
         self.digest = buf.readSizedByteBuf(2);
         Ok(())
@@ -9188,8 +9134,8 @@ impl TpmStructure for TPMS_ALG_PROPERTY {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.alg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.algProperties = TPMA_ALGORITHM::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.alg = TPM_ALG_ID(buf.readShort() as u16);
+        self.algProperties = TPMA_ALGORITHM(buf.readInt() as u32);
         Ok(())
     }
 
@@ -9255,8 +9201,8 @@ impl TpmStructure for TPMS_TAGGED_PROPERTY {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.property = TPM_PT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.value = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.property = TPM_PT(buf.readInt() as u32);
+        self.value = buf.readInt() as u32;
         Ok(())
     }
 
@@ -9321,7 +9267,7 @@ impl TpmStructure for TPMS_TAGGED_PCR_SELECT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tag = TPM_PT_PCR::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.tag = TPM_PT_PCR(buf.readInt() as u32);
         self.pcrSelect = buf.readSizedByteBuf(1);
         Ok(())
     }
@@ -9461,8 +9407,8 @@ impl TpmStructure for TPMS_ACT_DATA {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.handle.initFromTpm(buf);
-        self.timeout = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.attributes = TPMA_ACT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.timeout = buf.readInt() as u32;
+        self.attributes = TPMA_ACT(buf.readInt() as u32);
         Ok(())
     }
 
@@ -10344,7 +10290,7 @@ impl TpmStructure for TPMS_CAPABILITY_DATA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#capability: TPM_CAP = TPM_CAP::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#capability: TPM_CAP = TPM_CAP(buf.readInt() as u32);
         self.data = TPMU_CAPABILITIES::create(r#capability)?;
         self.data.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -10430,10 +10376,10 @@ impl TpmStructure for TPMS_CLOCK_INFO {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.clock = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.resetCount = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.restartCount = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.safe = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.clock = buf.readInt64() as u64;
+        self.resetCount = buf.readInt() as u32;
+        self.restartCount = buf.readInt() as u32;
+        self.safe = buf.readByte() as u8;
         Ok(())
     }
 
@@ -10499,7 +10445,7 @@ impl TpmStructure for TPMS_TIME_INFO {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.time = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.time = buf.readInt64() as u64;
         self.clockInfo.initFromTpm(buf);
         Ok(())
     }
@@ -10569,7 +10515,7 @@ impl TpmStructure for TPMS_TIME_ATTEST_INFO {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.time.initFromTpm(buf);
-        self.firmwareVersion = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.firmwareVersion = buf.readInt64() as u64;
         Ok(())
     }
 
@@ -10787,8 +10733,8 @@ impl TpmStructure for TPMS_COMMAND_AUDIT_INFO {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.auditCounter = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.digestAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.auditCounter = buf.readInt64() as u64;
+        self.digestAlg = TPM_ALG_ID(buf.readShort() as u16);
         self.auditDigest = buf.readSizedByteBuf(2);
         self.commandDigest = buf.readSizedByteBuf(2);
         Ok(())
@@ -10860,7 +10806,7 @@ impl TpmStructure for TPMS_SESSION_AUDIT_INFO {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.exclusiveSession = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.exclusiveSession = buf.readByte() as u8;
         self.sessionDigest = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -11006,7 +10952,7 @@ impl TpmStructure for TPMS_NV_CERTIFY_INFO {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.indexName = buf.readSizedByteBuf(2);
-        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = buf.readShort() as u16;
         self.nvContents = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -11176,12 +11122,12 @@ impl TpmStructure for TPMS_ATTEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.magic = TPM_GENERATED::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#type: TPM_ST = TPM_ST::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.magic = TPM_GENERATED(buf.readInt() as u32);
+        let r#type: TPM_ST = TPM_ST(buf.readShort() as u16);
         self.qualifiedSigner = buf.readSizedByteBuf(2);
         self.extraData = buf.readSizedByteBuf(2);
         self.clockInfo.initFromTpm(buf);
-        self.firmwareVersion = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.firmwareVersion = buf.readInt64() as u64;
         self.attested = TPMU_ATTEST::create(r#type)?;
         self.attested.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -11322,7 +11268,7 @@ impl TpmStructure for TPMS_AUTH_COMMAND {
         // Deserialize fields
         self.sessionHandle.initFromTpm(buf);
         self.nonce = buf.readSizedByteBuf(2);
-        self.sessionAttributes = TPMA_SESSION::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sessionAttributes = TPMA_SESSION(buf.readByte() as u8);
         self.hmac = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -11397,7 +11343,7 @@ impl TpmStructure for TPMS_AUTH_RESPONSE {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.nonce = buf.readSizedByteBuf(2);
-        self.sessionAttributes = TPMA_SESSION::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sessionAttributes = TPMA_SESSION(buf.readByte() as u8);
         self.hmac = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -11814,10 +11760,10 @@ impl TpmStructure for TPMT_SYM_DEF {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.algorithm = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.algorithm = TPM_ALG_ID(buf.readShort() as u16);
         if (self.algorithm == TPM_ALG_ID::NULL) { return Ok(()) };
-        self.keyBits = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.mode = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.keyBits = buf.readShort() as u16;
+        self.mode = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -11894,10 +11840,10 @@ impl TpmStructure for TPMT_SYM_DEF_OBJECT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.algorithm = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.algorithm = TPM_ALG_ID(buf.readShort() as u16);
         if (self.algorithm == TPM_ALG_ID::NULL) { return Ok(()) };
-        self.keyBits = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.mode = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.keyBits = buf.readShort() as u16;
+        self.mode = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -12462,7 +12408,7 @@ impl TpmStructure for TPMS_SCHEME_HASH {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -12530,8 +12476,8 @@ impl TpmStructure for TPMS_SCHEME_ECDAA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.count = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
+        self.count = buf.readShort() as u16;
         Ok(())
     }
 
@@ -12647,8 +12593,8 @@ impl TpmStructure for TPMS_SCHEME_XOR {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.kdf = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
+        self.kdf = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -12761,7 +12707,7 @@ impl TpmStructure for TPMT_KEYEDHASH_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.details = TPMU_SCHEME_KEYEDHASH::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13174,7 +13120,7 @@ impl TpmStructure for TPMT_SIG_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.details = TPMU_SIG_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13682,7 +13628,7 @@ impl TpmStructure for TPMT_KDF_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.details = TPMU_KDF_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13802,7 +13748,7 @@ impl TpmStructure for TPMT_ASYM_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.details = TPMU_ASYM_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13871,7 +13817,7 @@ impl TpmStructure for TPMT_RSA_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.details = TPMU_ASYM_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -13940,7 +13886,7 @@ impl TpmStructure for TPMT_RSA_DECRYPT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.details = TPMU_ASYM_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -14323,7 +14269,7 @@ impl TpmStructure for TPMT_ECC_SCHEME {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#scheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#scheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.details = TPMU_ASYM_SCHEME::create(r#scheme)?;
         self.details.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -14458,12 +14404,12 @@ impl TpmStructure for TPMS_ALGORITHM_DETAIL_ECC {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.keySize = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#kdfScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.curveID = TPM_ECC_CURVE(buf.readShort() as u16);
+        self.keySize = buf.readShort() as u16;
+        let r#kdfScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.kdf = TPMU_KDF_SCHEME::create(r#kdfScheme)?;
         self.kdf.as_mut().unwrap().initFromTpm(buf);
-        let r#signScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.sign = TPMU_ASYM_SCHEME::create(r#signScheme)?;
         self.sign.as_mut().unwrap().initFromTpm(buf);
         self.p = buf.readSizedByteBuf(2);
@@ -14541,7 +14487,7 @@ impl TpmStructure for TPMS_SIGNATURE_RSA {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hash = TPM_ALG_ID(buf.readShort() as u16);
         self.sig = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -14709,7 +14655,7 @@ impl TpmStructure for TPMS_SIGNATURE_ECC {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.hash = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hash = TPM_ALG_ID(buf.readShort() as u16);
         self.signatureR = buf.readSizedByteBuf(2);
         self.signatureS = buf.readSizedByteBuf(2);
         Ok(())
@@ -15022,7 +14968,7 @@ impl TpmStructure for TPMT_SIGNATURE {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#sigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#sigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#sigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -15153,7 +15099,7 @@ impl TpmStructure for TPMS_KEYEDHASH_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.scheme = TPMU_SCHEME_KEYEDHASH::create(r#schemeScheme)?;
         self.scheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -15238,7 +15184,7 @@ impl TpmStructure for TPMS_ASYM_PARMS {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.symmetric.initFromTpm(buf);
-        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.scheme = TPMU_ASYM_SCHEME::create(r#schemeScheme)?;
         self.scheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -15342,11 +15288,11 @@ impl TpmStructure for TPMS_RSA_PARMS {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.symmetric.initFromTpm(buf);
-        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.scheme = TPMU_ASYM_SCHEME::create(r#schemeScheme)?;
         self.scheme.as_mut().unwrap().initFromTpm(buf);
-        self.keyBits = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.exponent = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.keyBits = buf.readShort() as u16;
+        self.exponent = buf.readInt() as u32;
         Ok(())
     }
 
@@ -15450,11 +15396,11 @@ impl TpmStructure for TPMS_ECC_PARMS {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.symmetric.initFromTpm(buf);
-        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#schemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.scheme = TPMU_ASYM_SCHEME::create(r#schemeScheme)?;
         self.scheme.as_mut().unwrap().initFromTpm(buf);
-        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#kdfScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.curveID = TPM_ECC_CURVE(buf.readShort() as u16);
+        let r#kdfScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.kdf = TPMU_KDF_SCHEME::create(r#kdfScheme)?;
         self.kdf.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -15522,7 +15468,7 @@ impl TpmStructure for TPMT_PUBLIC_PARMS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#type: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#type: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.parameters = TPMU_PUBLIC_PARMS::create(r#type)?;
         self.parameters.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -15621,9 +15567,9 @@ impl TpmStructure for TPMT_PUBLIC {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#type: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.nameAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.objectAttributes = TPMA_OBJECT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#type: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
+        self.nameAlg = TPM_ALG_ID(buf.readShort() as u16);
+        self.objectAttributes = TPMA_OBJECT(buf.readInt() as u32);
         self.authPolicy = buf.readSizedByteBuf(2);
         self.parameters = TPMU_PUBLIC_PARMS::create(r#type)?;
         self.parameters.as_mut().unwrap().initFromTpm(buf);
@@ -15895,7 +15841,7 @@ impl TpmStructure for TPMT_SENSITIVE {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#sensitiveType: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#sensitiveType: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.authValue = buf.readSizedByteBuf(2);
         self.seedValue = buf.readSizedByteBuf(2);
         self.sensitive = TPMU_SENSITIVE_COMPOSITE::create(r#sensitiveType)?;
@@ -16292,8 +16238,8 @@ impl TpmStructure for TPMS_NV_PIN_COUNTER_PARAMETERS {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pinCount = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.pinLimit = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.pinCount = buf.readInt() as u32;
+        self.pinLimit = buf.readInt() as u32;
         Ok(())
     }
 
@@ -16381,10 +16327,10 @@ impl TpmStructure for TPMS_NV_PUBLIC {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.nvIndex.initFromTpm(buf);
-        self.nameAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.attributes = TPMA_NV::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.nameAlg = TPM_ALG_ID(buf.readShort() as u16);
+        self.attributes = TPMA_NV(buf.readInt() as u32);
         self.authPolicy = buf.readSizedByteBuf(2);
-        self.dataSize = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.dataSize = buf.readShort() as u16;
         Ok(())
     }
 
@@ -16708,7 +16654,7 @@ impl TpmStructure for TPMS_CONTEXT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.sequence = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sequence = buf.readInt64() as u64;
         self.savedHandle.initFromTpm(buf);
         self.hierarchy.initFromTpm(buf);
         buf.readSizedObj(&mut self.contextBlob);
@@ -16818,8 +16764,8 @@ impl TpmStructure for TPMS_CREATION_DATA {
         // Deserialize fields
         buf.readObjArr(self.pcrSelect.as_mut());
         self.pcrDigest = buf.readSizedByteBuf(2);
-        self.locality = TPMA_LOCALITY::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.parentNameAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.locality = TPMA_LOCALITY(buf.readByte() as u8);
+        self.parentNameAlg = TPM_ALG_ID(buf.readShort() as u16);
         self.parentName = buf.readSizedByteBuf(2);
         self.parentQualifiedName = buf.readSizedByteBuf(2);
         self.outsideInfo = buf.readSizedByteBuf(2);
@@ -16947,8 +16893,8 @@ impl TpmStructure for TPMS_AC_OUTPUT {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.tag = TPM_AT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.data = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.tag = TPM_AT(buf.readInt() as u32);
+        self.data = buf.readInt() as u32;
         Ok(())
     }
 
@@ -17071,7 +17017,7 @@ impl TpmStructure for TPM2_Startup_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.startupType = TPM_SU::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.startupType = TPM_SU(buf.readShort() as u16);
         Ok(())
     }
 
@@ -17142,7 +17088,7 @@ impl TpmStructure for TPM2_Shutdown_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.shutdownType = TPM_SU::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.shutdownType = TPM_SU(buf.readShort() as u16);
         Ok(())
     }
 
@@ -17215,7 +17161,7 @@ impl TpmStructure for TPM2_SelfTest_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.fullTest = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.fullTest = buf.readByte() as u8;
         Ok(())
     }
 
@@ -17469,7 +17415,7 @@ impl TpmStructure for GetTestResultResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.outData = buf.readSizedByteBuf(2);
-        self.testResult = TPM_RC::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.testResult = TPM_RC(buf.readInt() as u32);
         Ok(())
     }
 
@@ -17586,9 +17532,9 @@ impl TpmStructure for TPM2_StartAuthSession_REQUEST {
         // Deserialize fields
         self.nonceCaller = buf.readSizedByteBuf(2);
         self.encryptedSalt = buf.readSizedByteBuf(2);
-        self.sessionType = TPM_SE::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sessionType = TPM_SE(buf.readByte() as u8);
         self.symmetric.initFromTpm(buf);
-        self.authHash = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.authHash = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -19744,7 +19690,7 @@ impl TpmStructure for TPM2_RSA_Encrypt_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.message = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_ASYM_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.label = buf.readSizedByteBuf(2);
@@ -19911,7 +19857,7 @@ impl TpmStructure for TPM2_RSA_Decrypt_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.cipherText = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_ASYM_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.label = buf.readSizedByteBuf(2);
@@ -20331,7 +20277,7 @@ impl TpmStructure for TPM2_ECC_Parameters_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.curveID = TPM_ECC_CURVE(buf.readShort() as u16);
         Ok(())
     }
 
@@ -20492,8 +20438,8 @@ impl TpmStructure for TPM2_ZGen_2Phase_REQUEST {
         // Deserialize fields
         buf.readSizedObj(&mut self.inQsB);
         buf.readSizedObj(&mut self.inQeB);
-        self.inScheme = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.counter = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.inScheme = TPM_ALG_ID(buf.readShort() as u16);
+        self.counter = buf.readShort() as u16;
         Ok(())
     }
 
@@ -20651,7 +20597,7 @@ impl TpmStructure for TPM2_ECC_Encrypt_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.plainText = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_KDF_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -20828,7 +20774,7 @@ impl TpmStructure for TPM2_ECC_Decrypt_REQUEST {
         buf.readSizedObj(&mut self.C1);
         self.C2 = buf.readSizedByteBuf(2);
         self.C3 = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_KDF_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -20989,8 +20935,8 @@ impl TpmStructure for TPM2_EncryptDecrypt_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.decrypt = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.mode = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.decrypt = buf.readByte() as u8;
+        self.mode = TPM_ALG_ID(buf.readShort() as u16);
         self.ivIn = buf.readSizedByteBuf(2);
         self.inData = buf.readSizedByteBuf(2);
         Ok(())
@@ -21157,8 +21103,8 @@ impl TpmStructure for TPM2_EncryptDecrypt2_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.inData = buf.readSizedByteBuf(2);
-        self.decrypt = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.mode = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.decrypt = buf.readByte() as u8;
+        self.mode = TPM_ALG_ID(buf.readShort() as u16);
         self.ivIn = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -21310,7 +21256,7 @@ impl TpmStructure for TPM2_Hash_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.data = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         self.hierarchy.initFromTpm(buf);
         Ok(())
     }
@@ -21464,7 +21410,7 @@ impl TpmStructure for TPM2_HMAC_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.buffer = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -21611,7 +21557,7 @@ impl TpmStructure for TPM2_MAC_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.buffer = buf.readSizedByteBuf(2);
-        self.inScheme = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.inScheme = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -21744,7 +21690,7 @@ impl TpmStructure for TPM2_GetRandom_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.bytesRequested = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.bytesRequested = buf.readShort() as u16;
         Ok(())
     }
 
@@ -21962,7 +21908,7 @@ impl TpmStructure for TPM2_HMAC_Start_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.auth = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -22109,7 +22055,7 @@ impl TpmStructure for TPM2_MAC_Start_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.auth = buf.readSizedByteBuf(2);
-        self.inScheme = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.inScheme = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -22251,7 +22197,7 @@ impl TpmStructure for TPM2_HashSequenceStart_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.auth = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -22802,7 +22748,7 @@ impl TpmStructure for TPM2_Certify_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -22880,7 +22826,7 @@ impl TpmStructure for CertifyResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.certifyInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -22995,7 +22941,7 @@ impl TpmStructure for TPM2_CertifyCreation_REQUEST {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
         self.creationHash = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.creationTicket.initFromTpm(buf);
@@ -23073,7 +23019,7 @@ impl TpmStructure for CertifyCreationResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.certifyInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23172,7 +23118,7 @@ impl TpmStructure for TPM2_Quote_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         buf.readObjArr(self.PCRselect.as_mut());
@@ -23247,7 +23193,7 @@ impl TpmStructure for QuoteResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.quoted);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23353,7 +23299,7 @@ impl TpmStructure for TPM2_GetSessionAuditDigest_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23427,7 +23373,7 @@ impl TpmStructure for GetSessionAuditDigestResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.auditInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23529,7 +23475,7 @@ impl TpmStructure for TPM2_GetCommandAuditDigest_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23605,7 +23551,7 @@ impl TpmStructure for GetCommandAuditDigestResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.auditInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23705,7 +23651,7 @@ impl TpmStructure for TPM2_GetTime_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23779,7 +23725,7 @@ impl TpmStructure for GetTimeResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.timeInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -23890,7 +23836,7 @@ impl TpmStructure for TPM2_CertifyX509_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.reserved = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.partialCertificate = buf.readSizedByteBuf(2);
@@ -23976,7 +23922,7 @@ impl TpmStructure for CertifyX509Response {
         // Deserialize fields
         self.addedToCertificate = buf.readSizedByteBuf(2);
         self.tbsDigest = buf.readSizedByteBuf(2);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -24152,7 +24098,7 @@ impl TpmStructure for CommitResponse {
         buf.readSizedObj(&mut self.K);
         buf.readSizedObj(&mut self.L);
         buf.readSizedObj(&mut self.E);
-        self.counter = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.counter = buf.readShort() as u16;
         Ok(())
     }
 
@@ -24223,7 +24169,7 @@ impl TpmStructure for TPM2_EC_Ephemeral_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.curveID = TPM_ECC_CURVE::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.curveID = TPM_ECC_CURVE(buf.readShort() as u16);
         Ok(())
     }
 
@@ -24288,7 +24234,7 @@ impl TpmStructure for EC_EphemeralResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.Q);
-        self.counter = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.counter = buf.readShort() as u16;
         Ok(())
     }
 
@@ -24379,7 +24325,7 @@ impl TpmStructure for TPM2_VerifySignature_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.digest = buf.readSizedByteBuf(2);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -24541,7 +24487,7 @@ impl TpmStructure for TPM2_Sign_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.digest = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
         self.validation.initFromTpm(buf);
@@ -24613,7 +24559,7 @@ impl TpmStructure for SignResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -24706,7 +24652,7 @@ impl TpmStructure for TPM2_SetCommandCodeAuditStatus_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.auditAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.auditAlg = TPM_ALG_ID(buf.readShort() as u16);
         buf.readValArr(self.setList.as_mut(), 4)?;
         buf.readValArr(self.clearList.as_mut(), 4)?;
         Ok(())
@@ -25066,7 +25012,7 @@ impl TpmStructure for PCR_ReadResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.pcrUpdateCounter = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.pcrUpdateCounter = buf.readInt() as u32;
         buf.readObjArr(self.pcrSelectionOut.as_mut());
         buf.readObjArr(self.pcrValues.as_mut());
         Ok(())
@@ -25220,10 +25166,10 @@ impl TpmStructure for PCR_AllocateResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.allocationSuccess = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.maxPCR = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.sizeNeeded = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.sizeAvailable = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.allocationSuccess = buf.readByte() as u8;
+        self.maxPCR = buf.readInt() as u32;
+        self.sizeNeeded = buf.readInt() as u32;
+        self.sizeAvailable = buf.readInt() as u32;
         Ok(())
     }
 
@@ -25314,7 +25260,7 @@ impl TpmStructure for TPM2_PCR_SetAuthPolicy_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.authPolicy = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         self.pcrNum.initFromTpm(buf);
         Ok(())
     }
@@ -25588,8 +25534,8 @@ impl TpmStructure for TPM2_PolicySigned_REQUEST {
         self.nonceTPM = buf.readSizedByteBuf(2);
         self.cpHashA = buf.readSizedByteBuf(2);
         self.policyRef = buf.readSizedByteBuf(2);
-        self.expiration = i32::try_from(buf.readInt() as i32).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#authSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.expiration = buf.readInt() as i32;
+        let r#authSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.auth = TPMU_SIGNATURE::create(r#authSigAlg)?;
         self.auth.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -25774,7 +25720,7 @@ impl TpmStructure for TPM2_PolicySecret_REQUEST {
         self.nonceTPM = buf.readSizedByteBuf(2);
         self.cpHashA = buf.readSizedByteBuf(2);
         self.policyRef = buf.readSizedByteBuf(2);
-        self.expiration = i32::try_from(buf.readInt() as i32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.expiration = buf.readInt() as i32;
         Ok(())
     }
 
@@ -26199,7 +26145,7 @@ impl TpmStructure for TPM2_PolicyLocality_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.locality = TPMA_LOCALITY::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.locality = TPMA_LOCALITY(buf.readByte() as u8);
         Ok(())
     }
 
@@ -26303,8 +26249,8 @@ impl TpmStructure for TPM2_PolicyNV_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.operandB = buf.readSizedByteBuf(2);
-        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.operation = TPM_EO::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = buf.readShort() as u16;
+        self.operation = TPM_EO(buf.readShort() as u16);
         Ok(())
     }
 
@@ -26395,8 +26341,8 @@ impl TpmStructure for TPM2_PolicyCounterTimer_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.operandB = buf.readSizedByteBuf(2);
-        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.operation = TPM_EO::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = buf.readShort() as u16;
+        self.operation = TPM_EO(buf.readShort() as u16);
         Ok(())
     }
 
@@ -26473,7 +26419,7 @@ impl TpmStructure for TPM2_PolicyCommandCode_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.code = TPM_CC::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.code = TPM_CC(buf.readInt() as u32);
         Ok(())
     }
 
@@ -26790,7 +26736,7 @@ impl TpmStructure for TPM2_PolicyDuplicationSelect_REQUEST {
         // Deserialize fields
         self.objectName = buf.readSizedByteBuf(2);
         self.newParentName = buf.readSizedByteBuf(2);
-        self.includeObject = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.includeObject = buf.readByte() as u8;
         Ok(())
     }
 
@@ -27240,7 +27186,7 @@ impl TpmStructure for TPM2_PolicyNvWritten_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.writtenSet = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.writtenSet = buf.readByte() as u8;
         Ok(())
     }
 
@@ -27684,7 +27630,7 @@ impl TpmStructure for TPM2_HierarchyControl_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.enable.initFromTpm(buf);
-        self.state = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.state = buf.readByte() as u8;
         Ok(())
     }
 
@@ -27774,7 +27720,7 @@ impl TpmStructure for TPM2_SetPrimaryPolicy_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.authPolicy = buf.readSizedByteBuf(2);
-        self.hashAlg = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -28068,7 +28014,7 @@ impl TpmStructure for TPM2_ClearControl_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.disable = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.disable = buf.readByte() as u8;
         Ok(())
     }
 
@@ -28310,9 +28256,9 @@ impl TpmStructure for TPM2_DictionaryAttackParameters_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.newMaxTries = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.newRecoveryTime = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.lockoutRecovery = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.newMaxTries = buf.readInt() as u32;
+        self.newRecoveryTime = buf.readInt() as u32;
+        self.lockoutRecovery = buf.readInt() as u32;
         Ok(())
     }
 
@@ -28476,7 +28422,7 @@ impl TpmStructure for TPM2_SetAlgorithmSet_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.algorithmSet = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.algorithmSet = buf.readInt() as u32;
         Ok(())
     }
 
@@ -28574,7 +28520,7 @@ impl TpmStructure for TPM2_FieldUpgradeStart_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.fuDigest = buf.readSizedByteBuf(2);
-        let r#manifestSignatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#manifestSignatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.manifestSignature = TPMU_SIGNATURE::create(r#manifestSignatureSigAlg)?;
         self.manifestSignature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -28791,7 +28737,7 @@ impl TpmStructure for TPM2_FirmwareRead_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.sequenceNumber = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.sequenceNumber = buf.readInt() as u32;
         Ok(())
     }
 
@@ -29466,7 +29412,7 @@ impl TpmStructure for TPM2_ClockSet_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.newTime = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.newTime = buf.readInt64() as u64;
         Ok(())
     }
 
@@ -29544,7 +29490,7 @@ impl TpmStructure for TPM2_ClockRateAdjust_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.rateAdjust = TPM_CLOCK_ADJUST::try_from(buf.readByte() as i8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.rateAdjust = TPM_CLOCK_ADJUST(buf.readByte() as i8);
         Ok(())
     }
 
@@ -29626,9 +29572,9 @@ impl TpmStructure for TPM2_GetCapability_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.capability = TPM_CAP::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.property = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.propertyCount = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.capability = TPM_CAP(buf.readInt() as u32);
+        self.property = buf.readInt() as u32;
+        self.propertyCount = buf.readInt() as u32;
         Ok(())
     }
 
@@ -29698,8 +29644,8 @@ impl TpmStructure for GetCapabilityResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.moreData = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
-        let r#capabilityDataCapability: TPM_CAP = TPM_CAP::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.moreData = buf.readByte() as u8;
+        let r#capabilityDataCapability: TPM_CAP = TPM_CAP(buf.readInt() as u32);
         self.capabilityData = TPMU_CAPABILITIES::create(r#capabilityDataCapability)?;
         self.capabilityData.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -29778,7 +29724,7 @@ impl TpmStructure for TPM2_TestParms_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        let r#parametersType: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#parametersType: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.parameters = TPMU_PUBLIC_PARMS::create(r#parametersType)?;
         self.parameters.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -30249,7 +30195,7 @@ impl TpmStructure for TPM2_NV_Write_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.data = buf.readSizedByteBuf(2);
-        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.offset = buf.readShort() as u16;
         Ok(())
     }
 
@@ -30497,7 +30443,7 @@ impl TpmStructure for TPM2_NV_SetBits_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.bits = u64::try_from(buf.readInt64() as u64).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.bits = buf.readInt64() as u64;
         Ok(())
     }
 
@@ -30735,8 +30681,8 @@ impl TpmStructure for TPM2_NV_Read_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.size = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.size = buf.readShort() as u16;
+        self.offset = buf.readShort() as u16;
         Ok(())
     }
 
@@ -31069,11 +31015,11 @@ impl TpmStructure for TPM2_NV_Certify_REQUEST {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.qualifyingData = buf.readSizedByteBuf(2);
-        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#inSchemeScheme: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.inScheme = TPMU_SIG_SCHEME::create(r#inSchemeScheme)?;
         self.inScheme.as_mut().unwrap().initFromTpm(buf);
-        self.size = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.offset = u16::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.size = buf.readShort() as u16;
+        self.offset = buf.readShort() as u16;
         Ok(())
     }
 
@@ -31146,7 +31092,7 @@ impl TpmStructure for NV_CertifyResponse {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         buf.readSizedObj(&mut self.certifyInfo);
-        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
+        let r#signatureSigAlg: TPM_ALG_ID = TPM_ALG_ID(buf.readShort() as u16);
         self.signature = TPMU_SIGNATURE::create(r#signatureSigAlg)?;
         self.signature.as_mut().unwrap().initFromTpm(buf);
         Ok(())
@@ -31232,8 +31178,8 @@ impl TpmStructure for TPM2_AC_GetCapability_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.capability = TPM_AT::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.count = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.capability = TPM_AT(buf.readInt() as u32);
+        self.count = buf.readInt() as u32;
         Ok(())
     }
 
@@ -31298,7 +31244,7 @@ impl TpmStructure for AC_GetCapabilityResponse {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.moreData = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.moreData = buf.readByte() as u8;
         buf.readObjArr(self.capabilitiesData.as_mut());
         Ok(())
     }
@@ -31552,7 +31498,7 @@ impl TpmStructure for TPM2_Policy_AC_SendSelect_REQUEST {
         self.objectName = buf.readSizedByteBuf(2);
         self.authHandleName = buf.readSizedByteBuf(2);
         self.acName = buf.readSizedByteBuf(2);
-        self.includeObject = u8::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.includeObject = buf.readByte() as u8;
         Ok(())
     }
 
@@ -31631,7 +31577,7 @@ impl TpmStructure for TPM2_ACT_SetTimeout_REQUEST {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.startTimeout = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.startTimeout = buf.readInt() as u32;
         Ok(())
     }
 
@@ -31966,7 +31912,7 @@ impl TpmStructure for PcrValue {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.index = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.index = buf.readInt() as u32;
         self.value.initFromTpm(buf);
         Ok(())
     }
@@ -32046,7 +31992,7 @@ impl TpmStructure for SessionIn {
         // Deserialize fields
         self.handle.initFromTpm(buf);
         self.nonceCaller = buf.readSizedByteBuf(2);
-        self.attributes = TPMA_SESSION::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.attributes = TPMA_SESSION(buf.readByte() as u8);
         self.auth = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -32119,7 +32065,7 @@ impl TpmStructure for SessionOut {
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.nonceTpm = buf.readSizedByteBuf(2);
-        self.attributes = TPMA_SESSION::try_from(buf.readByte() as u8).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.attributes = TPMA_SESSION(buf.readByte() as u8);
         self.auth = buf.readSizedByteBuf(2);
         Ok(())
     }
@@ -32191,9 +32137,9 @@ impl TpmStructure for CommandHeader {
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
-        self.Tag = TPM_ST::try_from(buf.readShort() as u16).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.CommandSize = u32::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
-        self.CommandCode = TPM_CC::try_from(buf.readInt() as u32).map_err(|err| TpmError::InvalidEnumValue)?;
+        self.Tag = TPM_ST(buf.readShort() as u16);
+        self.CommandSize = buf.readInt() as u32;
+        self.CommandCode = TPM_CC(buf.readInt() as u32);
         Ok(())
     }
 
@@ -32376,9 +32322,54 @@ impl TpmMarshaller for TPM2B_DIGEST_KEYEDHASH {
 
 lazy_static::lazy_static! {
     /// Maps enum type IDs to a map of values to string representations
-    static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u64, &'static str>> = {
+    pub static ref ENUM_TO_STR_MAP: HashMap<std::any::TypeId, HashMap<u64, &'static str>> = {
     let mut map = HashMap::new();
-        let  TPM_ALG_ID_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPM_ALG_ID_map: HashMap<u64, &'static str> = HashMap::new();
+        TPM_ALG_ID_map.insert(0x0, "ERROR");
+        TPM_ALG_ID_map.insert(0x1, "FIRST");
+        TPM_ALG_ID_map.insert(0x1, "RSA");
+        TPM_ALG_ID_map.insert(0x3, "TDES");
+        TPM_ALG_ID_map.insert(0x4, "SHA");
+        TPM_ALG_ID_map.insert(0x4, "SHA1");
+        TPM_ALG_ID_map.insert(0x5, "HMAC");
+        TPM_ALG_ID_map.insert(0x6, "AES");
+        TPM_ALG_ID_map.insert(0x7, "MGF1");
+        TPM_ALG_ID_map.insert(0x8, "KEYEDHASH");
+        TPM_ALG_ID_map.insert(0xA, "XOR");
+        TPM_ALG_ID_map.insert(0xB, "SHA256");
+        TPM_ALG_ID_map.insert(0xC, "SHA384");
+        TPM_ALG_ID_map.insert(0xD, "SHA512");
+        TPM_ALG_ID_map.insert(0x10, "NULL");
+        TPM_ALG_ID_map.insert(0x12, "SM3_256");
+        TPM_ALG_ID_map.insert(0x13, "SM4");
+        TPM_ALG_ID_map.insert(0x14, "RSASSA");
+        TPM_ALG_ID_map.insert(0x15, "RSAES");
+        TPM_ALG_ID_map.insert(0x16, "RSAPSS");
+        TPM_ALG_ID_map.insert(0x17, "OAEP");
+        TPM_ALG_ID_map.insert(0x18, "ECDSA");
+        TPM_ALG_ID_map.insert(0x19, "ECDH");
+        TPM_ALG_ID_map.insert(0x1A, "ECDAA");
+        TPM_ALG_ID_map.insert(0x1B, "SM2");
+        TPM_ALG_ID_map.insert(0x1C, "ECSCHNORR");
+        TPM_ALG_ID_map.insert(0x1D, "ECMQV");
+        TPM_ALG_ID_map.insert(0x20, "KDF1_SP800_56A");
+        TPM_ALG_ID_map.insert(0x21, "KDF2");
+        TPM_ALG_ID_map.insert(0x22, "KDF1_SP800_108");
+        TPM_ALG_ID_map.insert(0x23, "ECC");
+        TPM_ALG_ID_map.insert(0x25, "SYMCIPHER");
+        TPM_ALG_ID_map.insert(0x26, "CAMELLIA");
+        TPM_ALG_ID_map.insert(0x27, "SHA3_256");
+        TPM_ALG_ID_map.insert(0x28, "SHA3_384");
+        TPM_ALG_ID_map.insert(0x29, "SHA3_512");
+        TPM_ALG_ID_map.insert(0x3F, "CMAC");
+        TPM_ALG_ID_map.insert(0x40, "CTR");
+        TPM_ALG_ID_map.insert(0x41, "OFB");
+        TPM_ALG_ID_map.insert(0x42, "CBC");
+        TPM_ALG_ID_map.insert(0x43, "CFB");
+        TPM_ALG_ID_map.insert(0x44, "ECB");
+        TPM_ALG_ID_map.insert(0x44, "LAST");
+        TPM_ALG_ID_map.insert(0x7FFF, "ANY");
+        TPM_ALG_ID_map.insert(0x7FFE, "ANY2");
         map.insert(std::any::TypeId::of::<TPM_ALG_ID>(), TPM_ALG_ID_map);
 
         let mut TPM_ECC_CURVE_map: HashMap<u64, &'static str> = HashMap::new();
@@ -32434,7 +32425,13 @@ lazy_static::lazy_static! {
         SHA3_512_map.insert(0x48, "BLOCK_SIZE");
         map.insert(std::any::TypeId::of::<SHA3_512>(), SHA3_512_map);
 
-        let  Logic_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut Logic_map: HashMap<u64, &'static str> = HashMap::new();
+        Logic_map.insert(0x1, "TRUE");
+        Logic_map.insert(0x0, "FALSE");
+        Logic_map.insert(0x1, "YES");
+        Logic_map.insert(0x0, "NO");
+        Logic_map.insert(0x1, "SET");
+        Logic_map.insert(0x0, "CLEAR");
         map.insert(std::any::TypeId::of::<Logic>(), Logic_map);
 
         let mut TPM_SPEC_map: HashMap<u64, &'static str> = HashMap::new();
@@ -32449,13 +32446,319 @@ lazy_static::lazy_static! {
         TPM_GENERATED_map.insert(0xFF544347, "VALUE");
         map.insert(std::any::TypeId::of::<TPM_GENERATED>(), TPM_GENERATED_map);
 
-        let  TPM_CC_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPM_CC_map: HashMap<u64, &'static str> = HashMap::new();
+        TPM_CC_map.insert(0x11F, "FIRST");
+        TPM_CC_map.insert(0x11F, "NV_UndefineSpaceSpecial");
+        TPM_CC_map.insert(0x120, "EvictControl");
+        TPM_CC_map.insert(0x121, "HierarchyControl");
+        TPM_CC_map.insert(0x122, "NV_UndefineSpace");
+        TPM_CC_map.insert(0x124, "ChangeEPS");
+        TPM_CC_map.insert(0x125, "ChangePPS");
+        TPM_CC_map.insert(0x126, "Clear");
+        TPM_CC_map.insert(0x127, "ClearControl");
+        TPM_CC_map.insert(0x128, "ClockSet");
+        TPM_CC_map.insert(0x129, "HierarchyChangeAuth");
+        TPM_CC_map.insert(0x12A, "NV_DefineSpace");
+        TPM_CC_map.insert(0x12B, "PCR_Allocate");
+        TPM_CC_map.insert(0x12C, "PCR_SetAuthPolicy");
+        TPM_CC_map.insert(0x12D, "PP_Commands");
+        TPM_CC_map.insert(0x12E, "SetPrimaryPolicy");
+        TPM_CC_map.insert(0x12F, "FieldUpgradeStart");
+        TPM_CC_map.insert(0x130, "ClockRateAdjust");
+        TPM_CC_map.insert(0x131, "CreatePrimary");
+        TPM_CC_map.insert(0x132, "NV_GlobalWriteLock");
+        TPM_CC_map.insert(0x133, "GetCommandAuditDigest");
+        TPM_CC_map.insert(0x134, "NV_Increment");
+        TPM_CC_map.insert(0x135, "NV_SetBits");
+        TPM_CC_map.insert(0x136, "NV_Extend");
+        TPM_CC_map.insert(0x137, "NV_Write");
+        TPM_CC_map.insert(0x138, "NV_WriteLock");
+        TPM_CC_map.insert(0x139, "DictionaryAttackLockReset");
+        TPM_CC_map.insert(0x13A, "DictionaryAttackParameters");
+        TPM_CC_map.insert(0x13B, "NV_ChangeAuth");
+        TPM_CC_map.insert(0x13C, "PCR_Event");
+        TPM_CC_map.insert(0x13D, "PCR_Reset");
+        TPM_CC_map.insert(0x13E, "SequenceComplete");
+        TPM_CC_map.insert(0x13F, "SetAlgorithmSet");
+        TPM_CC_map.insert(0x140, "SetCommandCodeAuditStatus");
+        TPM_CC_map.insert(0x141, "FieldUpgradeData");
+        TPM_CC_map.insert(0x142, "IncrementalSelfTest");
+        TPM_CC_map.insert(0x143, "SelfTest");
+        TPM_CC_map.insert(0x144, "Startup");
+        TPM_CC_map.insert(0x145, "Shutdown");
+        TPM_CC_map.insert(0x146, "StirRandom");
+        TPM_CC_map.insert(0x147, "ActivateCredential");
+        TPM_CC_map.insert(0x148, "Certify");
+        TPM_CC_map.insert(0x149, "PolicyNV");
+        TPM_CC_map.insert(0x14A, "CertifyCreation");
+        TPM_CC_map.insert(0x14B, "Duplicate");
+        TPM_CC_map.insert(0x14C, "GetTime");
+        TPM_CC_map.insert(0x14D, "GetSessionAuditDigest");
+        TPM_CC_map.insert(0x14E, "NV_Read");
+        TPM_CC_map.insert(0x14F, "NV_ReadLock");
+        TPM_CC_map.insert(0x150, "ObjectChangeAuth");
+        TPM_CC_map.insert(0x151, "PolicySecret");
+        TPM_CC_map.insert(0x152, "Rewrap");
+        TPM_CC_map.insert(0x153, "Create");
+        TPM_CC_map.insert(0x154, "ECDH_ZGen");
+        TPM_CC_map.insert(0x155, "HMAC");
+        TPM_CC_map.insert(0x155, "MAC");
+        TPM_CC_map.insert(0x156, "Import");
+        TPM_CC_map.insert(0x157, "Load");
+        TPM_CC_map.insert(0x158, "Quote");
+        TPM_CC_map.insert(0x159, "RSA_Decrypt");
+        TPM_CC_map.insert(0x15B, "HMAC_Start");
+        TPM_CC_map.insert(0x15B, "MAC_Start");
+        TPM_CC_map.insert(0x15C, "SequenceUpdate");
+        TPM_CC_map.insert(0x15D, "Sign");
+        TPM_CC_map.insert(0x15E, "Unseal");
+        TPM_CC_map.insert(0x160, "PolicySigned");
+        TPM_CC_map.insert(0x161, "ContextLoad");
+        TPM_CC_map.insert(0x162, "ContextSave");
+        TPM_CC_map.insert(0x163, "ECDH_KeyGen");
+        TPM_CC_map.insert(0x164, "EncryptDecrypt");
+        TPM_CC_map.insert(0x165, "FlushContext");
+        TPM_CC_map.insert(0x167, "LoadExternal");
+        TPM_CC_map.insert(0x168, "MakeCredential");
+        TPM_CC_map.insert(0x169, "NV_ReadPublic");
+        TPM_CC_map.insert(0x16A, "PolicyAuthorize");
+        TPM_CC_map.insert(0x16B, "PolicyAuthValue");
+        TPM_CC_map.insert(0x16C, "PolicyCommandCode");
+        TPM_CC_map.insert(0x16D, "PolicyCounterTimer");
+        TPM_CC_map.insert(0x16E, "PolicyCpHash");
+        TPM_CC_map.insert(0x16F, "PolicyLocality");
+        TPM_CC_map.insert(0x170, "PolicyNameHash");
+        TPM_CC_map.insert(0x171, "PolicyOR");
+        TPM_CC_map.insert(0x172, "PolicyTicket");
+        TPM_CC_map.insert(0x173, "ReadPublic");
+        TPM_CC_map.insert(0x174, "RSA_Encrypt");
+        TPM_CC_map.insert(0x176, "StartAuthSession");
+        TPM_CC_map.insert(0x177, "VerifySignature");
+        TPM_CC_map.insert(0x178, "ECC_Parameters");
+        TPM_CC_map.insert(0x179, "FirmwareRead");
+        TPM_CC_map.insert(0x17A, "GetCapability");
+        TPM_CC_map.insert(0x17B, "GetRandom");
+        TPM_CC_map.insert(0x17C, "GetTestResult");
+        TPM_CC_map.insert(0x17D, "Hash");
+        TPM_CC_map.insert(0x17E, "PCR_Read");
+        TPM_CC_map.insert(0x17F, "PolicyPCR");
+        TPM_CC_map.insert(0x180, "PolicyRestart");
+        TPM_CC_map.insert(0x181, "ReadClock");
+        TPM_CC_map.insert(0x182, "PCR_Extend");
+        TPM_CC_map.insert(0x183, "PCR_SetAuthValue");
+        TPM_CC_map.insert(0x184, "NV_Certify");
+        TPM_CC_map.insert(0x185, "EventSequenceComplete");
+        TPM_CC_map.insert(0x186, "HashSequenceStart");
+        TPM_CC_map.insert(0x187, "PolicyPhysicalPresence");
+        TPM_CC_map.insert(0x188, "PolicyDuplicationSelect");
+        TPM_CC_map.insert(0x189, "PolicyGetDigest");
+        TPM_CC_map.insert(0x18A, "TestParms");
+        TPM_CC_map.insert(0x18B, "Commit");
+        TPM_CC_map.insert(0x18C, "PolicyPassword");
+        TPM_CC_map.insert(0x18D, "ZGen_2Phase");
+        TPM_CC_map.insert(0x18E, "EC_Ephemeral");
+        TPM_CC_map.insert(0x18F, "PolicyNvWritten");
+        TPM_CC_map.insert(0x190, "PolicyTemplate");
+        TPM_CC_map.insert(0x191, "CreateLoaded");
+        TPM_CC_map.insert(0x192, "PolicyAuthorizeNV");
+        TPM_CC_map.insert(0x193, "EncryptDecrypt2");
+        TPM_CC_map.insert(0x194, "AC_GetCapability");
+        TPM_CC_map.insert(0x195, "AC_Send");
+        TPM_CC_map.insert(0x196, "Policy_AC_SendSelect");
+        TPM_CC_map.insert(0x197, "CertifyX509");
+        TPM_CC_map.insert(0x198, "ACT_SetTimeout");
+        TPM_CC_map.insert(0x199, "ECC_Encrypt");
+        TPM_CC_map.insert(0x19A, "ECC_Decrypt");
+        TPM_CC_map.insert(0x19A, "LAST");
+        TPM_CC_map.insert(0x20000000, "CC_VEND");
+        TPM_CC_map.insert(0x20000000, "Vendor_TCG_Test");
         map.insert(std::any::TypeId::of::<TPM_CC>(), TPM_CC_map);
 
-        let  ImplementationConstants_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut ImplementationConstants_map: HashMap<u64, &'static str> = HashMap::new();
+        ImplementationConstants_map.insert(0x1, "Ossl");
+        ImplementationConstants_map.insert(0x2, "Ltc");
+        ImplementationConstants_map.insert(0x3, "Msbn");
+        ImplementationConstants_map.insert(0x4, "Symcrypt");
+        ImplementationConstants_map.insert(0x3, "HASH_COUNT");
+        ImplementationConstants_map.insert(0x100, "MAX_SYM_KEY_BITS");
+        ImplementationConstants_map.insert(0x20, "MAX_SYM_KEY_BYTES");
+        ImplementationConstants_map.insert(0x10, "MAX_SYM_BLOCK_SIZE");
+        ImplementationConstants_map.insert(0x19A, "MAX_CAP_CC");
+        ImplementationConstants_map.insert(0x100, "MAX_RSA_KEY_BYTES");
+        ImplementationConstants_map.insert(0x20, "MAX_AES_KEY_BYTES");
+        ImplementationConstants_map.insert(0x30, "MAX_ECC_KEY_BYTES");
+        ImplementationConstants_map.insert(0x20, "LABEL_MAX_BUFFER");
+        ImplementationConstants_map.insert(0x4, "_TPM_CAP_SIZE");
+        ImplementationConstants_map.insert(0x3F8, "MAX_CAP_DATA");
+        ImplementationConstants_map.insert(0xA9, "MAX_CAP_ALGS");
+        ImplementationConstants_map.insert(0xFE, "MAX_CAP_HANDLES");
+        ImplementationConstants_map.insert(0x7F, "MAX_TPM_PROPERTIES");
+        ImplementationConstants_map.insert(0xCB, "MAX_PCR_PROPERTIES");
+        ImplementationConstants_map.insert(0x1FC, "MAX_ECC_CURVES");
+        ImplementationConstants_map.insert(0xE, "MAX_TAGGED_POLICIES");
+        ImplementationConstants_map.insert(0x7F, "MAX_AC_CAPABILITIES");
+        ImplementationConstants_map.insert(0x54, "MAX_ACT_DATA");
         map.insert(std::any::TypeId::of::<ImplementationConstants>(), ImplementationConstants_map);
 
-        let  TPM_RC_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPM_RC_map: HashMap<u64, &'static str> = HashMap::new();
+        TPM_RC_map.insert(0x0, "SUCCESS");
+        TPM_RC_map.insert(0x1E, "BAD_TAG");
+        TPM_RC_map.insert(0x100, "RC_VER1");
+        TPM_RC_map.insert(0x100, "INITIALIZE");
+        TPM_RC_map.insert(0x101, "FAILURE");
+        TPM_RC_map.insert(0x103, "SEQUENCE");
+        TPM_RC_map.insert(0x10B, "PRIVATE");
+        TPM_RC_map.insert(0x119, "HMAC");
+        TPM_RC_map.insert(0x120, "DISABLED");
+        TPM_RC_map.insert(0x121, "EXCLUSIVE");
+        TPM_RC_map.insert(0x124, "AUTH_TYPE");
+        TPM_RC_map.insert(0x125, "AUTH_MISSING");
+        TPM_RC_map.insert(0x126, "POLICY");
+        TPM_RC_map.insert(0x127, "PCR");
+        TPM_RC_map.insert(0x128, "PCR_CHANGED");
+        TPM_RC_map.insert(0x12D, "UPGRADE");
+        TPM_RC_map.insert(0x12E, "TOO_MANY_CONTEXTS");
+        TPM_RC_map.insert(0x12F, "AUTH_UNAVAILABLE");
+        TPM_RC_map.insert(0x130, "REBOOT");
+        TPM_RC_map.insert(0x131, "UNBALANCED");
+        TPM_RC_map.insert(0x142, "COMMAND_SIZE");
+        TPM_RC_map.insert(0x143, "COMMAND_CODE");
+        TPM_RC_map.insert(0x144, "AUTHSIZE");
+        TPM_RC_map.insert(0x145, "AUTH_CONTEXT");
+        TPM_RC_map.insert(0x146, "NV_RANGE");
+        TPM_RC_map.insert(0x147, "NV_SIZE");
+        TPM_RC_map.insert(0x148, "NV_LOCKED");
+        TPM_RC_map.insert(0x149, "NV_AUTHORIZATION");
+        TPM_RC_map.insert(0x14A, "NV_UNINITIALIZED");
+        TPM_RC_map.insert(0x14B, "NV_SPACE");
+        TPM_RC_map.insert(0x14C, "NV_DEFINED");
+        TPM_RC_map.insert(0x150, "BAD_CONTEXT");
+        TPM_RC_map.insert(0x151, "CPHASH");
+        TPM_RC_map.insert(0x152, "PARENT");
+        TPM_RC_map.insert(0x153, "NEEDS_TEST");
+        TPM_RC_map.insert(0x154, "NO_RESULT");
+        TPM_RC_map.insert(0x155, "SENSITIVE");
+        TPM_RC_map.insert(0x17F, "RC_MAX_FM0");
+        TPM_RC_map.insert(0x80, "RC_FMT1");
+        TPM_RC_map.insert(0x81, "ASYMMETRIC");
+        TPM_RC_map.insert(0x82, "ATTRIBUTES");
+        TPM_RC_map.insert(0x83, "HASH");
+        TPM_RC_map.insert(0x84, "VALUE");
+        TPM_RC_map.insert(0x85, "HIERARCHY");
+        TPM_RC_map.insert(0x87, "KEY_SIZE");
+        TPM_RC_map.insert(0x88, "MGF");
+        TPM_RC_map.insert(0x89, "MODE");
+        TPM_RC_map.insert(0x8A, "TYPE");
+        TPM_RC_map.insert(0x8B, "HANDLE");
+        TPM_RC_map.insert(0x8C, "KDF");
+        TPM_RC_map.insert(0x8D, "RANGE");
+        TPM_RC_map.insert(0x8E, "AUTH_FAIL");
+        TPM_RC_map.insert(0x8F, "NONCE");
+        TPM_RC_map.insert(0x90, "PP");
+        TPM_RC_map.insert(0x92, "SCHEME");
+        TPM_RC_map.insert(0x95, "SIZE");
+        TPM_RC_map.insert(0x96, "SYMMETRIC");
+        TPM_RC_map.insert(0x97, "TAG");
+        TPM_RC_map.insert(0x98, "SELECTOR");
+        TPM_RC_map.insert(0x9A, "INSUFFICIENT");
+        TPM_RC_map.insert(0x9B, "SIGNATURE");
+        TPM_RC_map.insert(0x9C, "KEY");
+        TPM_RC_map.insert(0x9D, "POLICY_FAIL");
+        TPM_RC_map.insert(0x9F, "INTEGRITY");
+        TPM_RC_map.insert(0xA0, "TICKET");
+        TPM_RC_map.insert(0xA1, "RESERVED_BITS");
+        TPM_RC_map.insert(0xA2, "BAD_AUTH");
+        TPM_RC_map.insert(0xA3, "EXPIRED");
+        TPM_RC_map.insert(0xA4, "POLICY_CC");
+        TPM_RC_map.insert(0xA5, "BINDING");
+        TPM_RC_map.insert(0xA6, "CURVE");
+        TPM_RC_map.insert(0xA7, "ECC_POINT");
+        TPM_RC_map.insert(0x900, "RC_WARN");
+        TPM_RC_map.insert(0x901, "CONTEXT_GAP");
+        TPM_RC_map.insert(0x902, "OBJECT_MEMORY");
+        TPM_RC_map.insert(0x903, "SESSION_MEMORY");
+        TPM_RC_map.insert(0x904, "MEMORY");
+        TPM_RC_map.insert(0x905, "SESSION_HANDLES");
+        TPM_RC_map.insert(0x906, "OBJECT_HANDLES");
+        TPM_RC_map.insert(0x907, "LOCALITY");
+        TPM_RC_map.insert(0x908, "YIELDED");
+        TPM_RC_map.insert(0x909, "CANCELED");
+        TPM_RC_map.insert(0x90A, "TESTING");
+        TPM_RC_map.insert(0x910, "REFERENCE_H0");
+        TPM_RC_map.insert(0x911, "REFERENCE_H1");
+        TPM_RC_map.insert(0x912, "REFERENCE_H2");
+        TPM_RC_map.insert(0x913, "REFERENCE_H3");
+        TPM_RC_map.insert(0x914, "REFERENCE_H4");
+        TPM_RC_map.insert(0x915, "REFERENCE_H5");
+        TPM_RC_map.insert(0x916, "REFERENCE_H6");
+        TPM_RC_map.insert(0x918, "REFERENCE_S0");
+        TPM_RC_map.insert(0x919, "REFERENCE_S1");
+        TPM_RC_map.insert(0x91A, "REFERENCE_S2");
+        TPM_RC_map.insert(0x91B, "REFERENCE_S3");
+        TPM_RC_map.insert(0x91C, "REFERENCE_S4");
+        TPM_RC_map.insert(0x91D, "REFERENCE_S5");
+        TPM_RC_map.insert(0x91E, "REFERENCE_S6");
+        TPM_RC_map.insert(0x920, "NV_RATE");
+        TPM_RC_map.insert(0x921, "LOCKOUT");
+        TPM_RC_map.insert(0x922, "RETRY");
+        TPM_RC_map.insert(0x923, "NV_UNAVAILABLE");
+        TPM_RC_map.insert(0x97F, "NOT_USED");
+        TPM_RC_map.insert(0x0, "H");
+        TPM_RC_map.insert(0x40, "P");
+        TPM_RC_map.insert(0x800, "S");
+        TPM_RC_map.insert(0x100, "_1");
+        TPM_RC_map.insert(0x200, "_2");
+        TPM_RC_map.insert(0x300, "_3");
+        TPM_RC_map.insert(0x400, "_4");
+        TPM_RC_map.insert(0x500, "_5");
+        TPM_RC_map.insert(0x600, "_6");
+        TPM_RC_map.insert(0x700, "_7");
+        TPM_RC_map.insert(0x800, "_8");
+        TPM_RC_map.insert(0x900, "_9");
+        TPM_RC_map.insert(0xA00, "A");
+        TPM_RC_map.insert(0xB00, "B");
+        TPM_RC_map.insert(0xC00, "C");
+        TPM_RC_map.insert(0xD00, "D");
+        TPM_RC_map.insert(0xE00, "E");
+        TPM_RC_map.insert(0xF00, "F");
+        TPM_RC_map.insert(0xF00, "N_MASK");
+        TPM_RC_map.insert(0x40280001, "TSS_TCP_BAD_HANDSHAKE_RESP");
+        TPM_RC_map.insert(0x40280002, "TSS_TCP_SERVER_TOO_OLD");
+        TPM_RC_map.insert(0x40280003, "TSS_TCP_BAD_ACK");
+        TPM_RC_map.insert(0x40280004, "TSS_TCP_BAD_RESP_LEN");
+        TPM_RC_map.insert(0x40280005, "TSS_TCP_UNEXPECTED_STARTUP_RESP");
+        TPM_RC_map.insert(0x40280006, "TSS_TCP_INVALID_SIZE_TAG");
+        TPM_RC_map.insert(0x40280007, "TSS_TCP_DISCONNECTED");
+        TPM_RC_map.insert(0x40280010, "TSS_DISPATCH_FAILED");
+        TPM_RC_map.insert(0x40280011, "TSS_SEND_OP_FAILED");
+        TPM_RC_map.insert(0x40280021, "TSS_RESP_BUF_TOO_SHORT");
+        TPM_RC_map.insert(0x40280022, "TSS_RESP_BUF_INVALID_SESSION_TAG");
+        TPM_RC_map.insert(0x40280023, "TSS_RESP_BUF_INVALID_SIZE");
+        TPM_RC_map.insert(0x80280400, "TBS_COMMAND_BLOCKED");
+        TPM_RC_map.insert(0x80280401, "TBS_INVALID_HANDLE");
+        TPM_RC_map.insert(0x80280402, "TBS_DUPLICATE_V_HANDLE");
+        TPM_RC_map.insert(0x80280403, "TBS_EMBEDDED_COMMAND_BLOCKED");
+        TPM_RC_map.insert(0x80280404, "TBS_EMBEDDED_COMMAND_UNSUPPORTED");
+        TPM_RC_map.insert(0x80284000, "TBS_UNKNOWN_ERROR");
+        TPM_RC_map.insert(0x80284001, "TBS_INTERNAL_ERROR");
+        TPM_RC_map.insert(0x80284002, "TBS_BAD_PARAMETER");
+        TPM_RC_map.insert(0x80284003, "TBS_INVALID_OUTPUT_POINTER");
+        TPM_RC_map.insert(0x80284004, "TBS_INVALID_CONTEXT");
+        TPM_RC_map.insert(0x80284005, "TBS_INSUFFICIENT_BUFFER");
+        TPM_RC_map.insert(0x80284006, "TBS_IO_ERROR");
+        TPM_RC_map.insert(0x80284007, "TBS_INVALID_CONTEXT_PARAM");
+        TPM_RC_map.insert(0x80284008, "TBS_SERVICE_NOT_RUNNING");
+        TPM_RC_map.insert(0x80284009, "TBS_TOO_MANY_CONTEXTS");
+        TPM_RC_map.insert(0x8028400A, "TBS_TOO_MANY_RESOURCES");
+        TPM_RC_map.insert(0x8028400B, "TBS_SERVICE_START_PENDING");
+        TPM_RC_map.insert(0x8028400C, "TBS_PPI_NOT_SUPPORTED");
+        TPM_RC_map.insert(0x8028400D, "TBS_COMMAND_CANCELED");
+        TPM_RC_map.insert(0x8028400E, "TBS_BUFFER_TOO_LARGE");
+        TPM_RC_map.insert(0x8028400F, "TBS_TPM_NOT_FOUND");
+        TPM_RC_map.insert(0x80284010, "TBS_SERVICE_DISABLED");
+        TPM_RC_map.insert(0x80284012, "TBS_ACCESS_DENIED");
+        TPM_RC_map.insert(0x80284014, "TBS_PPI_FUNCTION_NOT_SUPPORTED");
+        TPM_RC_map.insert(0x80284015, "TBS_OWNER_AUTH_NOT_FOUND");
         map.insert(std::any::TypeId::of::<TPM_RC>(), TPM_RC_map);
 
         let mut TPM_CLOCK_ADJUST_map: HashMap<u64, &'static str> = HashMap::new();
@@ -32515,13 +32818,115 @@ lazy_static::lazy_static! {
         TPM_SE_map.insert(0x3, "TRIAL");
         map.insert(std::any::TypeId::of::<TPM_SE>(), TPM_SE_map);
 
-        let  TPM_CAP_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPM_CAP_map: HashMap<u64, &'static str> = HashMap::new();
+        TPM_CAP_map.insert(0x0, "FIRST");
+        TPM_CAP_map.insert(0x0, "ALGS");
+        TPM_CAP_map.insert(0x1, "HANDLES");
+        TPM_CAP_map.insert(0x2, "COMMANDS");
+        TPM_CAP_map.insert(0x3, "PP_COMMANDS");
+        TPM_CAP_map.insert(0x4, "AUDIT_COMMANDS");
+        TPM_CAP_map.insert(0x5, "PCRS");
+        TPM_CAP_map.insert(0x6, "TPM_PROPERTIES");
+        TPM_CAP_map.insert(0x7, "PCR_PROPERTIES");
+        TPM_CAP_map.insert(0x8, "ECC_CURVES");
+        TPM_CAP_map.insert(0x9, "AUTH_POLICIES");
+        TPM_CAP_map.insert(0xA, "ACT");
+        TPM_CAP_map.insert(0xA, "LAST");
+        TPM_CAP_map.insert(0x100, "VENDOR_PROPERTY");
         map.insert(std::any::TypeId::of::<TPM_CAP>(), TPM_CAP_map);
 
-        let  TPM_PT_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPM_PT_map: HashMap<u64, &'static str> = HashMap::new();
+        TPM_PT_map.insert(0x0, "NONE");
+        TPM_PT_map.insert(0x100, "PT_GROUP");
+        TPM_PT_map.insert(0x100, "PT_FIXED");
+        TPM_PT_map.insert(0x100, "FAMILY_INDICATOR");
+        TPM_PT_map.insert(0x101, "LEVEL");
+        TPM_PT_map.insert(0x102, "REVISION");
+        TPM_PT_map.insert(0x103, "DAY_OF_YEAR");
+        TPM_PT_map.insert(0x104, "YEAR");
+        TPM_PT_map.insert(0x105, "MANUFACTURER");
+        TPM_PT_map.insert(0x106, "VENDOR_STRING_1");
+        TPM_PT_map.insert(0x107, "VENDOR_STRING_2");
+        TPM_PT_map.insert(0x108, "VENDOR_STRING_3");
+        TPM_PT_map.insert(0x109, "VENDOR_STRING_4");
+        TPM_PT_map.insert(0x10A, "VENDOR_TPM_TYPE");
+        TPM_PT_map.insert(0x10B, "FIRMWARE_VERSION_1");
+        TPM_PT_map.insert(0x10C, "FIRMWARE_VERSION_2");
+        TPM_PT_map.insert(0x10D, "INPUT_BUFFER");
+        TPM_PT_map.insert(0x10E, "HR_TRANSIENT_MIN");
+        TPM_PT_map.insert(0x10F, "HR_PERSISTENT_MIN");
+        TPM_PT_map.insert(0x110, "HR_LOADED_MIN");
+        TPM_PT_map.insert(0x111, "ACTIVE_SESSIONS_MAX");
+        TPM_PT_map.insert(0x112, "PCR_COUNT");
+        TPM_PT_map.insert(0x113, "PCR_SELECT_MIN");
+        TPM_PT_map.insert(0x114, "CONTEXT_GAP_MAX");
+        TPM_PT_map.insert(0x116, "NV_COUNTERS_MAX");
+        TPM_PT_map.insert(0x117, "NV_INDEX_MAX");
+        TPM_PT_map.insert(0x118, "MEMORY");
+        TPM_PT_map.insert(0x119, "CLOCK_UPDATE");
+        TPM_PT_map.insert(0x11A, "CONTEXT_HASH");
+        TPM_PT_map.insert(0x11B, "CONTEXT_SYM");
+        TPM_PT_map.insert(0x11C, "CONTEXT_SYM_SIZE");
+        TPM_PT_map.insert(0x11D, "ORDERLY_COUNT");
+        TPM_PT_map.insert(0x11E, "MAX_COMMAND_SIZE");
+        TPM_PT_map.insert(0x11F, "MAX_RESPONSE_SIZE");
+        TPM_PT_map.insert(0x120, "MAX_DIGEST");
+        TPM_PT_map.insert(0x121, "MAX_OBJECT_CONTEXT");
+        TPM_PT_map.insert(0x122, "MAX_SESSION_CONTEXT");
+        TPM_PT_map.insert(0x123, "PS_FAMILY_INDICATOR");
+        TPM_PT_map.insert(0x124, "PS_LEVEL");
+        TPM_PT_map.insert(0x125, "PS_REVISION");
+        TPM_PT_map.insert(0x126, "PS_DAY_OF_YEAR");
+        TPM_PT_map.insert(0x127, "PS_YEAR");
+        TPM_PT_map.insert(0x128, "SPLIT_MAX");
+        TPM_PT_map.insert(0x129, "TOTAL_COMMANDS");
+        TPM_PT_map.insert(0x12A, "LIBRARY_COMMANDS");
+        TPM_PT_map.insert(0x12B, "VENDOR_COMMANDS");
+        TPM_PT_map.insert(0x12C, "NV_BUFFER_MAX");
+        TPM_PT_map.insert(0x12D, "MODES");
+        TPM_PT_map.insert(0x12E, "MAX_CAP_BUFFER");
+        TPM_PT_map.insert(0x200, "PT_VAR");
+        TPM_PT_map.insert(0x200, "PERMANENT");
+        TPM_PT_map.insert(0x201, "STARTUP_CLEAR");
+        TPM_PT_map.insert(0x202, "HR_NV_INDEX");
+        TPM_PT_map.insert(0x203, "HR_LOADED");
+        TPM_PT_map.insert(0x204, "HR_LOADED_AVAIL");
+        TPM_PT_map.insert(0x205, "HR_ACTIVE");
+        TPM_PT_map.insert(0x206, "HR_ACTIVE_AVAIL");
+        TPM_PT_map.insert(0x207, "HR_TRANSIENT_AVAIL");
+        TPM_PT_map.insert(0x208, "HR_PERSISTENT");
+        TPM_PT_map.insert(0x209, "HR_PERSISTENT_AVAIL");
+        TPM_PT_map.insert(0x20A, "NV_COUNTERS");
+        TPM_PT_map.insert(0x20B, "NV_COUNTERS_AVAIL");
+        TPM_PT_map.insert(0x20C, "ALGORITHM_SET");
+        TPM_PT_map.insert(0x20D, "LOADED_CURVES");
+        TPM_PT_map.insert(0x20E, "LOCKOUT_COUNTER");
+        TPM_PT_map.insert(0x20F, "MAX_AUTH_FAIL");
+        TPM_PT_map.insert(0x210, "LOCKOUT_INTERVAL");
+        TPM_PT_map.insert(0x211, "LOCKOUT_RECOVERY");
+        TPM_PT_map.insert(0x212, "NV_WRITE_RECOVERY");
+        TPM_PT_map.insert(0x213, "AUDIT_COUNTER_0");
+        TPM_PT_map.insert(0x214, "AUDIT_COUNTER_1");
         map.insert(std::any::TypeId::of::<TPM_PT>(), TPM_PT_map);
 
-        let  TPM_PT_PCR_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPM_PT_PCR_map: HashMap<u64, &'static str> = HashMap::new();
+        TPM_PT_PCR_map.insert(0x0, "FIRST");
+        TPM_PT_PCR_map.insert(0x0, "SAVE");
+        TPM_PT_PCR_map.insert(0x1, "EXTEND_L0");
+        TPM_PT_PCR_map.insert(0x2, "RESET_L0");
+        TPM_PT_PCR_map.insert(0x3, "EXTEND_L1");
+        TPM_PT_PCR_map.insert(0x4, "RESET_L1");
+        TPM_PT_PCR_map.insert(0x5, "EXTEND_L2");
+        TPM_PT_PCR_map.insert(0x6, "RESET_L2");
+        TPM_PT_PCR_map.insert(0x7, "EXTEND_L3");
+        TPM_PT_PCR_map.insert(0x8, "RESET_L3");
+        TPM_PT_PCR_map.insert(0x9, "EXTEND_L4");
+        TPM_PT_PCR_map.insert(0xA, "RESET_L4");
+        TPM_PT_PCR_map.insert(0x11, "NO_INCREMENT");
+        TPM_PT_PCR_map.insert(0x12, "DRTM_RESET");
+        TPM_PT_PCR_map.insert(0x13, "POLICY");
+        TPM_PT_PCR_map.insert(0x14, "AUTH");
+        TPM_PT_PCR_map.insert(0x14, "LAST");
         map.insert(std::any::TypeId::of::<TPM_PT_PCR>(), TPM_PT_PCR_map);
 
         let mut TPM_PS_map: HashMap<u64, &'static str> = HashMap::new();
@@ -32543,10 +32948,40 @@ lazy_static::lazy_static! {
         TPM_PS_map.insert(0xF, "TC");
         map.insert(std::any::TypeId::of::<TPM_PS>(), TPM_PS_map);
 
-        let  TPM_HT_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPM_HT_map: HashMap<u64, &'static str> = HashMap::new();
+        TPM_HT_map.insert(0x0, "PCR");
+        TPM_HT_map.insert(0x1, "NV_INDEX");
+        TPM_HT_map.insert(0x2, "HMAC_SESSION");
+        TPM_HT_map.insert(0x2, "LOADED_SESSION");
+        TPM_HT_map.insert(0x3, "POLICY_SESSION");
+        TPM_HT_map.insert(0x3, "SAVED_SESSION");
+        TPM_HT_map.insert(0x40, "PERMANENT");
+        TPM_HT_map.insert(0x80, "TRANSIENT");
+        TPM_HT_map.insert(0x81, "PERSISTENT");
+        TPM_HT_map.insert(0x90, "AC");
         map.insert(std::any::TypeId::of::<TPM_HT>(), TPM_HT_map);
 
-        let  TPM_RH_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPM_RH_map: HashMap<u64, &'static str> = HashMap::new();
+        TPM_RH_map.insert(0x40000000, "FIRST");
+        TPM_RH_map.insert(0x40000000, "SRK");
+        TPM_RH_map.insert(0x40000001, "OWNER");
+        TPM_RH_map.insert(0x40000002, "REVOKE");
+        TPM_RH_map.insert(0x40000003, "TRANSPORT");
+        TPM_RH_map.insert(0x40000004, "OPERATOR");
+        TPM_RH_map.insert(0x40000005, "ADMIN");
+        TPM_RH_map.insert(0x40000006, "EK");
+        TPM_RH_map.insert(0x40000007, "NULL");
+        TPM_RH_map.insert(0x40000008, "UNASSIGNED");
+        TPM_RH_map.insert(0x40000009, "PW");
+        TPM_RH_map.insert(0x4000000A, "LOCKOUT");
+        TPM_RH_map.insert(0x4000000B, "ENDORSEMENT");
+        TPM_RH_map.insert(0x4000000C, "PLATFORM");
+        TPM_RH_map.insert(0x4000000D, "PLATFORM_NV");
+        TPM_RH_map.insert(0x40000010, "AUTH_00");
+        TPM_RH_map.insert(0x4000010F, "AUTH_FF");
+        TPM_RH_map.insert(0x40000110, "ACT_0");
+        TPM_RH_map.insert(0x4000011F, "ACT_F");
+        TPM_RH_map.insert(0x4000011F, "LAST");
         map.insert(std::any::TypeId::of::<TPM_RH>(), TPM_RH_map);
 
         let mut TPM_NT_map: HashMap<u64, &'static str> = HashMap::new();
@@ -32577,10 +33012,93 @@ lazy_static::lazy_static! {
         PLATFORM_map.insert(0x168, "DAY_OF_YEAR");
         map.insert(std::any::TypeId::of::<PLATFORM>(), PLATFORM_map);
 
-        let  Implementation_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut Implementation_map: HashMap<u64, &'static str> = HashMap::new();
+        Implementation_map.insert(0x0, "FIELD_UPGRADE_IMPLEMENTED");
+        Implementation_map.insert(0x1, "HASH_LIB");
+        Implementation_map.insert(0x1, "SYM_LIB");
+        Implementation_map.insert(0x1, "MATH_LIB");
+        Implementation_map.insert(0x18, "IMPLEMENTATION_PCR");
+        Implementation_map.insert(0x3, "PCR_SELECT_MAX");
+        Implementation_map.insert(0x18, "PLATFORM_PCR");
+        Implementation_map.insert(0x3, "PCR_SELECT_MIN");
+        Implementation_map.insert(0x11, "DRTM_PCR");
+        Implementation_map.insert(0x0, "HCRTM_PCR");
+        Implementation_map.insert(0x5, "NUM_LOCALITIES");
+        Implementation_map.insert(0x3, "MAX_HANDLE_NUM");
+        Implementation_map.insert(0x40, "MAX_ACTIVE_SESSIONS");
+        Implementation_map.insert(0x3, "MAX_LOADED_SESSIONS");
+        Implementation_map.insert(0x3, "MAX_SESSION_NUM");
+        Implementation_map.insert(0x3, "MAX_LOADED_OBJECTS");
+        Implementation_map.insert(0x2, "MIN_EVICT_OBJECTS");
+        Implementation_map.insert(0x1, "NUM_POLICY_PCR_GROUP");
+        Implementation_map.insert(0x1, "NUM_AUTHVALUE_PCR_GROUP");
+        Implementation_map.insert(0x4F0, "MAX_CONTEXT_SIZE");
+        Implementation_map.insert(0x400, "MAX_DIGEST_BUFFER");
+        Implementation_map.insert(0x800, "MAX_NV_INDEX_SIZE");
+        Implementation_map.insert(0x400, "MAX_NV_BUFFER_SIZE");
+        Implementation_map.insert(0x400, "MAX_CAP_BUFFER");
+        Implementation_map.insert(0x4000, "NV_MEMORY_SIZE");
+        Implementation_map.insert(0x8, "MIN_COUNTER_INDICES");
+        Implementation_map.insert(0x10, "NUM_STATIC_PCR");
+        Implementation_map.insert(0x40, "MAX_ALG_LIST_SIZE");
+        Implementation_map.insert(0x20, "PRIMARY_SEED_SIZE");
+        Implementation_map.insert(0x6, "CONTEXT_ENCRYPT_ALGORITHM");
+        Implementation_map.insert(0xC, "NV_CLOCK_UPDATE_INTERVAL");
+        Implementation_map.insert(0x1, "NUM_POLICY_PCR");
+        Implementation_map.insert(0x1000, "MAX_COMMAND_SIZE");
+        Implementation_map.insert(0x1000, "MAX_RESPONSE_SIZE");
+        Implementation_map.insert(0x8, "ORDERLY_BITS");
+        Implementation_map.insert(0x80, "MAX_SYM_DATA");
+        Implementation_map.insert(0x40, "MAX_RNG_ENTROPY_SIZE");
+        Implementation_map.insert(0x200, "RAM_INDEX_SPACE");
+        Implementation_map.insert(0x10001, "RSA_DEFAULT_PUBLIC_EXPONENT");
+        Implementation_map.insert(0x1, "ENABLE_PCR_NO_INCREMENT");
+        Implementation_map.insert(0x1, "CRT_FORMAT_RSA");
+        Implementation_map.insert(0x0, "VENDOR_COMMAND_COUNT");
+        Implementation_map.insert(0x400, "MAX_VENDOR_BUFFER_SIZE");
+        Implementation_map.insert(0x2000, "MAX_DERIVATION_BITS");
+        Implementation_map.insert(0x80, "RSA_MAX_PRIME");
+        Implementation_map.insert(0x280, "RSA_PRIVATE_SIZE");
+        Implementation_map.insert(0x14, "SIZE_OF_X509_SERIAL_NUMBER");
+        Implementation_map.insert(0x280, "PRIVATE_VENDOR_SPECIFIC_BYTES");
         map.insert(std::any::TypeId::of::<Implementation>(), Implementation_map);
 
-        let  TPM_HC_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPM_HC_map: HashMap<u64, &'static str> = HashMap::new();
+        TPM_HC_map.insert(0xFFFFFF, "HR_HANDLE_MASK");
+        TPM_HC_map.insert(0xFF000000, "HR_RANGE_MASK");
+        TPM_HC_map.insert(0x18, "HR_SHIFT");
+        TPM_HC_map.insert(0x0, "HR_PCR");
+        TPM_HC_map.insert(0x2000000, "HR_HMAC_SESSION");
+        TPM_HC_map.insert(0x3000000, "HR_POLICY_SESSION");
+        TPM_HC_map.insert(0x80000000, "HR_TRANSIENT");
+        TPM_HC_map.insert(0x81000000, "HR_PERSISTENT");
+        TPM_HC_map.insert(0x1000000, "HR_NV_INDEX");
+        TPM_HC_map.insert(0x40000000, "HR_PERMANENT");
+        TPM_HC_map.insert(0x0, "PCR_FIRST");
+        TPM_HC_map.insert(0x17, "PCR_LAST");
+        TPM_HC_map.insert(0x2000000, "HMAC_SESSION_FIRST");
+        TPM_HC_map.insert(0x200003F, "HMAC_SESSION_LAST");
+        TPM_HC_map.insert(0x2000000, "LOADED_SESSION_FIRST");
+        TPM_HC_map.insert(0x200003F, "LOADED_SESSION_LAST");
+        TPM_HC_map.insert(0x3000000, "POLICY_SESSION_FIRST");
+        TPM_HC_map.insert(0x300003F, "POLICY_SESSION_LAST");
+        TPM_HC_map.insert(0x80000000, "TRANSIENT_FIRST");
+        TPM_HC_map.insert(0x3000000, "ACTIVE_SESSION_FIRST");
+        TPM_HC_map.insert(0x300003F, "ACTIVE_SESSION_LAST");
+        TPM_HC_map.insert(0x80000002, "TRANSIENT_LAST");
+        TPM_HC_map.insert(0x81000000, "PERSISTENT_FIRST");
+        TPM_HC_map.insert(0x81FFFFFF, "PERSISTENT_LAST");
+        TPM_HC_map.insert(0x81800000, "PLATFORM_PERSISTENT");
+        TPM_HC_map.insert(0x1000000, "NV_INDEX_FIRST");
+        TPM_HC_map.insert(0x1FFFFFF, "NV_INDEX_LAST");
+        TPM_HC_map.insert(0x40000000, "PERMANENT_FIRST");
+        TPM_HC_map.insert(0x4000011F, "PERMANENT_LAST");
+        TPM_HC_map.insert(0x1D00000, "HR_NV_AC");
+        TPM_HC_map.insert(0x1D00000, "NV_AC_FIRST");
+        TPM_HC_map.insert(0x1D0FFFF, "NV_AC_LAST");
+        TPM_HC_map.insert(0x90000000, "HR_AC");
+        TPM_HC_map.insert(0x90000000, "AC_FIRST");
+        TPM_HC_map.insert(0x9000FFFF, "AC_LAST");
         map.insert(std::any::TypeId::of::<TPM_HC>(), TPM_HC_map);
 
         let mut TPMA_ALGORITHM_map: HashMap<u64, &'static str> = HashMap::new();
@@ -32593,7 +33111,20 @@ lazy_static::lazy_static! {
         TPMA_ALGORITHM_map.insert(0x400, "method");
         map.insert(std::any::TypeId::of::<TPMA_ALGORITHM>(), TPMA_ALGORITHM_map);
 
-        let  TPMA_OBJECT_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPMA_OBJECT_map: HashMap<u64, &'static str> = HashMap::new();
+        TPMA_OBJECT_map.insert(0x2, "fixedTPM");
+        TPMA_OBJECT_map.insert(0x4, "stClear");
+        TPMA_OBJECT_map.insert(0x10, "fixedParent");
+        TPMA_OBJECT_map.insert(0x20, "sensitiveDataOrigin");
+        TPMA_OBJECT_map.insert(0x40, "userWithAuth");
+        TPMA_OBJECT_map.insert(0x80, "adminWithPolicy");
+        TPMA_OBJECT_map.insert(0x400, "noDA");
+        TPMA_OBJECT_map.insert(0x800, "encryptedDuplication");
+        TPMA_OBJECT_map.insert(0x10000, "restricted");
+        TPMA_OBJECT_map.insert(0x20000, "decrypt");
+        TPMA_OBJECT_map.insert(0x40000, "sign");
+        TPMA_OBJECT_map.insert(0x40000, "encrypt");
+        TPMA_OBJECT_map.insert(0x80000, "x509sign");
         map.insert(std::any::TypeId::of::<TPMA_OBJECT>(), TPMA_OBJECT_map);
 
         let mut TPMA_SESSION_map: HashMap<u64, &'static str> = HashMap::new();
@@ -32648,7 +33179,17 @@ lazy_static::lazy_static! {
         TPMA_MODES_map.insert(0x1, "FIPS_140_2");
         map.insert(std::any::TypeId::of::<TPMA_MODES>(), TPMA_MODES_map);
 
-        let  TPMA_X509_KEY_USAGE_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPMA_X509_KEY_USAGE_map: HashMap<u64, &'static str> = HashMap::new();
+        TPMA_X509_KEY_USAGE_map.insert(0x800000, "decipherOnly");
+        TPMA_X509_KEY_USAGE_map.insert(0x1000000, "encipherOnly");
+        TPMA_X509_KEY_USAGE_map.insert(0x2000000, "cRLSign");
+        TPMA_X509_KEY_USAGE_map.insert(0x4000000, "keyCertSign");
+        TPMA_X509_KEY_USAGE_map.insert(0x8000000, "keyAgreement");
+        TPMA_X509_KEY_USAGE_map.insert(0x10000000, "dataEncipherment");
+        TPMA_X509_KEY_USAGE_map.insert(0x20000000, "keyEncipherment");
+        TPMA_X509_KEY_USAGE_map.insert(0x40000000, "nonrepudiation");
+        TPMA_X509_KEY_USAGE_map.insert(0x40000000, "contentCommitment");
+        TPMA_X509_KEY_USAGE_map.insert(0xFFFFFFFF80000000, "digitalSignature");
         map.insert(std::any::TypeId::of::<TPMA_X509_KEY_USAGE>(), TPMA_X509_KEY_USAGE_map);
 
         let mut TPMA_ACT_map: HashMap<u64, &'static str> = HashMap::new();
@@ -32659,7 +33200,34 @@ lazy_static::lazy_static! {
         let  TPM_NV_INDEX_map: HashMap<u64, &'static str> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_NV_INDEX>(), TPM_NV_INDEX_map);
 
-        let  TPMA_NV_map: HashMap<u64, &'static str> = HashMap::new();
+        let mut TPMA_NV_map: HashMap<u64, &'static str> = HashMap::new();
+        TPMA_NV_map.insert(0x1, "PPWRITE");
+        TPMA_NV_map.insert(0x2, "OWNERWRITE");
+        TPMA_NV_map.insert(0x4, "AUTHWRITE");
+        TPMA_NV_map.insert(0x8, "POLICYWRITE");
+        TPMA_NV_map.insert(0x0, "ORDINARY");
+        TPMA_NV_map.insert(0x10, "COUNTER");
+        TPMA_NV_map.insert(0x20, "BITS");
+        TPMA_NV_map.insert(0x40, "EXTEND");
+        TPMA_NV_map.insert(0x80, "PIN_FAIL");
+        TPMA_NV_map.insert(0x90, "PIN_PASS");
+        TPMA_NV_map.insert(0x400, "POLICY_DELETE");
+        TPMA_NV_map.insert(0x800, "WRITELOCKED");
+        TPMA_NV_map.insert(0x1000, "WRITEALL");
+        TPMA_NV_map.insert(0x2000, "WRITEDEFINE");
+        TPMA_NV_map.insert(0x4000, "WRITE_STCLEAR");
+        TPMA_NV_map.insert(0x8000, "GLOBALLOCK");
+        TPMA_NV_map.insert(0x10000, "PPREAD");
+        TPMA_NV_map.insert(0x20000, "OWNERREAD");
+        TPMA_NV_map.insert(0x40000, "AUTHREAD");
+        TPMA_NV_map.insert(0x80000, "POLICYREAD");
+        TPMA_NV_map.insert(0x2000000, "NO_DA");
+        TPMA_NV_map.insert(0x4000000, "ORDERLY");
+        TPMA_NV_map.insert(0x8000000, "CLEAR_STCLEAR");
+        TPMA_NV_map.insert(0x10000000, "READLOCKED");
+        TPMA_NV_map.insert(0x20000000, "WRITTEN");
+        TPMA_NV_map.insert(0x40000000, "PLATFORMCREATE");
+        TPMA_NV_map.insert(0xFFFFFFFF80000000, "READ_STCLEAR");
         map.insert(std::any::TypeId::of::<TPMA_NV>(), TPMA_NV_map);
 
         map
@@ -32668,7 +33236,52 @@ lazy_static::lazy_static! {
     /// Maps enum type IDs to a map of string representations to values
     static ref STR_TO_ENUM_MAP: HashMap<std::any::TypeId, HashMap<&'static str, u64>> = {
     let mut map = HashMap::new();
-        let  TPM_ALG_ID_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPM_ALG_ID_map: HashMap<&'static str, u64> = HashMap::new();
+        TPM_ALG_ID_map.insert("ERROR", 0x0);
+        TPM_ALG_ID_map.insert("FIRST", 0x1);
+        TPM_ALG_ID_map.insert("RSA", 0x1);
+        TPM_ALG_ID_map.insert("TDES", 0x3);
+        TPM_ALG_ID_map.insert("SHA", 0x4);
+        TPM_ALG_ID_map.insert("SHA1", 0x4);
+        TPM_ALG_ID_map.insert("HMAC", 0x5);
+        TPM_ALG_ID_map.insert("AES", 0x6);
+        TPM_ALG_ID_map.insert("MGF1", 0x7);
+        TPM_ALG_ID_map.insert("KEYEDHASH", 0x8);
+        TPM_ALG_ID_map.insert("XOR", 0xA);
+        TPM_ALG_ID_map.insert("SHA256", 0xB);
+        TPM_ALG_ID_map.insert("SHA384", 0xC);
+        TPM_ALG_ID_map.insert("SHA512", 0xD);
+        TPM_ALG_ID_map.insert("NULL", 0x10);
+        TPM_ALG_ID_map.insert("SM3_256", 0x12);
+        TPM_ALG_ID_map.insert("SM4", 0x13);
+        TPM_ALG_ID_map.insert("RSASSA", 0x14);
+        TPM_ALG_ID_map.insert("RSAES", 0x15);
+        TPM_ALG_ID_map.insert("RSAPSS", 0x16);
+        TPM_ALG_ID_map.insert("OAEP", 0x17);
+        TPM_ALG_ID_map.insert("ECDSA", 0x18);
+        TPM_ALG_ID_map.insert("ECDH", 0x19);
+        TPM_ALG_ID_map.insert("ECDAA", 0x1A);
+        TPM_ALG_ID_map.insert("SM2", 0x1B);
+        TPM_ALG_ID_map.insert("ECSCHNORR", 0x1C);
+        TPM_ALG_ID_map.insert("ECMQV", 0x1D);
+        TPM_ALG_ID_map.insert("KDF1_SP800_56A", 0x20);
+        TPM_ALG_ID_map.insert("KDF2", 0x21);
+        TPM_ALG_ID_map.insert("KDF1_SP800_108", 0x22);
+        TPM_ALG_ID_map.insert("ECC", 0x23);
+        TPM_ALG_ID_map.insert("SYMCIPHER", 0x25);
+        TPM_ALG_ID_map.insert("CAMELLIA", 0x26);
+        TPM_ALG_ID_map.insert("SHA3_256", 0x27);
+        TPM_ALG_ID_map.insert("SHA3_384", 0x28);
+        TPM_ALG_ID_map.insert("SHA3_512", 0x29);
+        TPM_ALG_ID_map.insert("CMAC", 0x3F);
+        TPM_ALG_ID_map.insert("CTR", 0x40);
+        TPM_ALG_ID_map.insert("OFB", 0x41);
+        TPM_ALG_ID_map.insert("CBC", 0x42);
+        TPM_ALG_ID_map.insert("CFB", 0x43);
+        TPM_ALG_ID_map.insert("ECB", 0x44);
+        TPM_ALG_ID_map.insert("LAST", 0x44);
+        TPM_ALG_ID_map.insert("ANY", 0x7FFF);
+        TPM_ALG_ID_map.insert("ANY2", 0x7FFE);
         map.insert(std::any::TypeId::of::<TPM_ALG_ID>(), TPM_ALG_ID_map);
 
         let mut TPM_ECC_CURVE_map: HashMap<&'static str, u64> = HashMap::new();
@@ -32724,7 +33337,13 @@ lazy_static::lazy_static! {
         SHA3_512_map.insert("BLOCK_SIZE", 0x48);
         map.insert(std::any::TypeId::of::<SHA3_512>(), SHA3_512_map);
 
-        let  Logic_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut Logic_map: HashMap<&'static str, u64> = HashMap::new();
+        Logic_map.insert("TRUE", 0x1);
+        Logic_map.insert("FALSE", 0x0);
+        Logic_map.insert("YES", 0x1);
+        Logic_map.insert("NO", 0x0);
+        Logic_map.insert("SET", 0x1);
+        Logic_map.insert("CLEAR", 0x0);
         map.insert(std::any::TypeId::of::<Logic>(), Logic_map);
 
         let mut TPM_SPEC_map: HashMap<&'static str, u64> = HashMap::new();
@@ -32739,13 +33358,319 @@ lazy_static::lazy_static! {
         TPM_GENERATED_map.insert("VALUE", 0xFF544347);
         map.insert(std::any::TypeId::of::<TPM_GENERATED>(), TPM_GENERATED_map);
 
-        let  TPM_CC_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPM_CC_map: HashMap<&'static str, u64> = HashMap::new();
+        TPM_CC_map.insert("FIRST", 0x11F);
+        TPM_CC_map.insert("NV_UndefineSpaceSpecial", 0x11F);
+        TPM_CC_map.insert("EvictControl", 0x120);
+        TPM_CC_map.insert("HierarchyControl", 0x121);
+        TPM_CC_map.insert("NV_UndefineSpace", 0x122);
+        TPM_CC_map.insert("ChangeEPS", 0x124);
+        TPM_CC_map.insert("ChangePPS", 0x125);
+        TPM_CC_map.insert("Clear", 0x126);
+        TPM_CC_map.insert("ClearControl", 0x127);
+        TPM_CC_map.insert("ClockSet", 0x128);
+        TPM_CC_map.insert("HierarchyChangeAuth", 0x129);
+        TPM_CC_map.insert("NV_DefineSpace", 0x12A);
+        TPM_CC_map.insert("PCR_Allocate", 0x12B);
+        TPM_CC_map.insert("PCR_SetAuthPolicy", 0x12C);
+        TPM_CC_map.insert("PP_Commands", 0x12D);
+        TPM_CC_map.insert("SetPrimaryPolicy", 0x12E);
+        TPM_CC_map.insert("FieldUpgradeStart", 0x12F);
+        TPM_CC_map.insert("ClockRateAdjust", 0x130);
+        TPM_CC_map.insert("CreatePrimary", 0x131);
+        TPM_CC_map.insert("NV_GlobalWriteLock", 0x132);
+        TPM_CC_map.insert("GetCommandAuditDigest", 0x133);
+        TPM_CC_map.insert("NV_Increment", 0x134);
+        TPM_CC_map.insert("NV_SetBits", 0x135);
+        TPM_CC_map.insert("NV_Extend", 0x136);
+        TPM_CC_map.insert("NV_Write", 0x137);
+        TPM_CC_map.insert("NV_WriteLock", 0x138);
+        TPM_CC_map.insert("DictionaryAttackLockReset", 0x139);
+        TPM_CC_map.insert("DictionaryAttackParameters", 0x13A);
+        TPM_CC_map.insert("NV_ChangeAuth", 0x13B);
+        TPM_CC_map.insert("PCR_Event", 0x13C);
+        TPM_CC_map.insert("PCR_Reset", 0x13D);
+        TPM_CC_map.insert("SequenceComplete", 0x13E);
+        TPM_CC_map.insert("SetAlgorithmSet", 0x13F);
+        TPM_CC_map.insert("SetCommandCodeAuditStatus", 0x140);
+        TPM_CC_map.insert("FieldUpgradeData", 0x141);
+        TPM_CC_map.insert("IncrementalSelfTest", 0x142);
+        TPM_CC_map.insert("SelfTest", 0x143);
+        TPM_CC_map.insert("Startup", 0x144);
+        TPM_CC_map.insert("Shutdown", 0x145);
+        TPM_CC_map.insert("StirRandom", 0x146);
+        TPM_CC_map.insert("ActivateCredential", 0x147);
+        TPM_CC_map.insert("Certify", 0x148);
+        TPM_CC_map.insert("PolicyNV", 0x149);
+        TPM_CC_map.insert("CertifyCreation", 0x14A);
+        TPM_CC_map.insert("Duplicate", 0x14B);
+        TPM_CC_map.insert("GetTime", 0x14C);
+        TPM_CC_map.insert("GetSessionAuditDigest", 0x14D);
+        TPM_CC_map.insert("NV_Read", 0x14E);
+        TPM_CC_map.insert("NV_ReadLock", 0x14F);
+        TPM_CC_map.insert("ObjectChangeAuth", 0x150);
+        TPM_CC_map.insert("PolicySecret", 0x151);
+        TPM_CC_map.insert("Rewrap", 0x152);
+        TPM_CC_map.insert("Create", 0x153);
+        TPM_CC_map.insert("ECDH_ZGen", 0x154);
+        TPM_CC_map.insert("HMAC", 0x155);
+        TPM_CC_map.insert("MAC", 0x155);
+        TPM_CC_map.insert("Import", 0x156);
+        TPM_CC_map.insert("Load", 0x157);
+        TPM_CC_map.insert("Quote", 0x158);
+        TPM_CC_map.insert("RSA_Decrypt", 0x159);
+        TPM_CC_map.insert("HMAC_Start", 0x15B);
+        TPM_CC_map.insert("MAC_Start", 0x15B);
+        TPM_CC_map.insert("SequenceUpdate", 0x15C);
+        TPM_CC_map.insert("Sign", 0x15D);
+        TPM_CC_map.insert("Unseal", 0x15E);
+        TPM_CC_map.insert("PolicySigned", 0x160);
+        TPM_CC_map.insert("ContextLoad", 0x161);
+        TPM_CC_map.insert("ContextSave", 0x162);
+        TPM_CC_map.insert("ECDH_KeyGen", 0x163);
+        TPM_CC_map.insert("EncryptDecrypt", 0x164);
+        TPM_CC_map.insert("FlushContext", 0x165);
+        TPM_CC_map.insert("LoadExternal", 0x167);
+        TPM_CC_map.insert("MakeCredential", 0x168);
+        TPM_CC_map.insert("NV_ReadPublic", 0x169);
+        TPM_CC_map.insert("PolicyAuthorize", 0x16A);
+        TPM_CC_map.insert("PolicyAuthValue", 0x16B);
+        TPM_CC_map.insert("PolicyCommandCode", 0x16C);
+        TPM_CC_map.insert("PolicyCounterTimer", 0x16D);
+        TPM_CC_map.insert("PolicyCpHash", 0x16E);
+        TPM_CC_map.insert("PolicyLocality", 0x16F);
+        TPM_CC_map.insert("PolicyNameHash", 0x170);
+        TPM_CC_map.insert("PolicyOR", 0x171);
+        TPM_CC_map.insert("PolicyTicket", 0x172);
+        TPM_CC_map.insert("ReadPublic", 0x173);
+        TPM_CC_map.insert("RSA_Encrypt", 0x174);
+        TPM_CC_map.insert("StartAuthSession", 0x176);
+        TPM_CC_map.insert("VerifySignature", 0x177);
+        TPM_CC_map.insert("ECC_Parameters", 0x178);
+        TPM_CC_map.insert("FirmwareRead", 0x179);
+        TPM_CC_map.insert("GetCapability", 0x17A);
+        TPM_CC_map.insert("GetRandom", 0x17B);
+        TPM_CC_map.insert("GetTestResult", 0x17C);
+        TPM_CC_map.insert("Hash", 0x17D);
+        TPM_CC_map.insert("PCR_Read", 0x17E);
+        TPM_CC_map.insert("PolicyPCR", 0x17F);
+        TPM_CC_map.insert("PolicyRestart", 0x180);
+        TPM_CC_map.insert("ReadClock", 0x181);
+        TPM_CC_map.insert("PCR_Extend", 0x182);
+        TPM_CC_map.insert("PCR_SetAuthValue", 0x183);
+        TPM_CC_map.insert("NV_Certify", 0x184);
+        TPM_CC_map.insert("EventSequenceComplete", 0x185);
+        TPM_CC_map.insert("HashSequenceStart", 0x186);
+        TPM_CC_map.insert("PolicyPhysicalPresence", 0x187);
+        TPM_CC_map.insert("PolicyDuplicationSelect", 0x188);
+        TPM_CC_map.insert("PolicyGetDigest", 0x189);
+        TPM_CC_map.insert("TestParms", 0x18A);
+        TPM_CC_map.insert("Commit", 0x18B);
+        TPM_CC_map.insert("PolicyPassword", 0x18C);
+        TPM_CC_map.insert("ZGen_2Phase", 0x18D);
+        TPM_CC_map.insert("EC_Ephemeral", 0x18E);
+        TPM_CC_map.insert("PolicyNvWritten", 0x18F);
+        TPM_CC_map.insert("PolicyTemplate", 0x190);
+        TPM_CC_map.insert("CreateLoaded", 0x191);
+        TPM_CC_map.insert("PolicyAuthorizeNV", 0x192);
+        TPM_CC_map.insert("EncryptDecrypt2", 0x193);
+        TPM_CC_map.insert("AC_GetCapability", 0x194);
+        TPM_CC_map.insert("AC_Send", 0x195);
+        TPM_CC_map.insert("Policy_AC_SendSelect", 0x196);
+        TPM_CC_map.insert("CertifyX509", 0x197);
+        TPM_CC_map.insert("ACT_SetTimeout", 0x198);
+        TPM_CC_map.insert("ECC_Encrypt", 0x199);
+        TPM_CC_map.insert("ECC_Decrypt", 0x19A);
+        TPM_CC_map.insert("LAST", 0x19A);
+        TPM_CC_map.insert("CC_VEND", 0x20000000);
+        TPM_CC_map.insert("Vendor_TCG_Test", 0x20000000);
         map.insert(std::any::TypeId::of::<TPM_CC>(), TPM_CC_map);
 
-        let  ImplementationConstants_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut ImplementationConstants_map: HashMap<&'static str, u64> = HashMap::new();
+        ImplementationConstants_map.insert("Ossl", 0x1);
+        ImplementationConstants_map.insert("Ltc", 0x2);
+        ImplementationConstants_map.insert("Msbn", 0x3);
+        ImplementationConstants_map.insert("Symcrypt", 0x4);
+        ImplementationConstants_map.insert("HASH_COUNT", 0x3);
+        ImplementationConstants_map.insert("MAX_SYM_KEY_BITS", 0x100);
+        ImplementationConstants_map.insert("MAX_SYM_KEY_BYTES", 0x20);
+        ImplementationConstants_map.insert("MAX_SYM_BLOCK_SIZE", 0x10);
+        ImplementationConstants_map.insert("MAX_CAP_CC", 0x19A);
+        ImplementationConstants_map.insert("MAX_RSA_KEY_BYTES", 0x100);
+        ImplementationConstants_map.insert("MAX_AES_KEY_BYTES", 0x20);
+        ImplementationConstants_map.insert("MAX_ECC_KEY_BYTES", 0x30);
+        ImplementationConstants_map.insert("LABEL_MAX_BUFFER", 0x20);
+        ImplementationConstants_map.insert("_TPM_CAP_SIZE", 0x4);
+        ImplementationConstants_map.insert("MAX_CAP_DATA", 0x3F8);
+        ImplementationConstants_map.insert("MAX_CAP_ALGS", 0xA9);
+        ImplementationConstants_map.insert("MAX_CAP_HANDLES", 0xFE);
+        ImplementationConstants_map.insert("MAX_TPM_PROPERTIES", 0x7F);
+        ImplementationConstants_map.insert("MAX_PCR_PROPERTIES", 0xCB);
+        ImplementationConstants_map.insert("MAX_ECC_CURVES", 0x1FC);
+        ImplementationConstants_map.insert("MAX_TAGGED_POLICIES", 0xE);
+        ImplementationConstants_map.insert("MAX_AC_CAPABILITIES", 0x7F);
+        ImplementationConstants_map.insert("MAX_ACT_DATA", 0x54);
         map.insert(std::any::TypeId::of::<ImplementationConstants>(), ImplementationConstants_map);
 
-        let  TPM_RC_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPM_RC_map: HashMap<&'static str, u64> = HashMap::new();
+        TPM_RC_map.insert("SUCCESS", 0x0);
+        TPM_RC_map.insert("BAD_TAG", 0x1E);
+        TPM_RC_map.insert("RC_VER1", 0x100);
+        TPM_RC_map.insert("INITIALIZE", 0x100);
+        TPM_RC_map.insert("FAILURE", 0x101);
+        TPM_RC_map.insert("SEQUENCE", 0x103);
+        TPM_RC_map.insert("PRIVATE", 0x10B);
+        TPM_RC_map.insert("HMAC", 0x119);
+        TPM_RC_map.insert("DISABLED", 0x120);
+        TPM_RC_map.insert("EXCLUSIVE", 0x121);
+        TPM_RC_map.insert("AUTH_TYPE", 0x124);
+        TPM_RC_map.insert("AUTH_MISSING", 0x125);
+        TPM_RC_map.insert("POLICY", 0x126);
+        TPM_RC_map.insert("PCR", 0x127);
+        TPM_RC_map.insert("PCR_CHANGED", 0x128);
+        TPM_RC_map.insert("UPGRADE", 0x12D);
+        TPM_RC_map.insert("TOO_MANY_CONTEXTS", 0x12E);
+        TPM_RC_map.insert("AUTH_UNAVAILABLE", 0x12F);
+        TPM_RC_map.insert("REBOOT", 0x130);
+        TPM_RC_map.insert("UNBALANCED", 0x131);
+        TPM_RC_map.insert("COMMAND_SIZE", 0x142);
+        TPM_RC_map.insert("COMMAND_CODE", 0x143);
+        TPM_RC_map.insert("AUTHSIZE", 0x144);
+        TPM_RC_map.insert("AUTH_CONTEXT", 0x145);
+        TPM_RC_map.insert("NV_RANGE", 0x146);
+        TPM_RC_map.insert("NV_SIZE", 0x147);
+        TPM_RC_map.insert("NV_LOCKED", 0x148);
+        TPM_RC_map.insert("NV_AUTHORIZATION", 0x149);
+        TPM_RC_map.insert("NV_UNINITIALIZED", 0x14A);
+        TPM_RC_map.insert("NV_SPACE", 0x14B);
+        TPM_RC_map.insert("NV_DEFINED", 0x14C);
+        TPM_RC_map.insert("BAD_CONTEXT", 0x150);
+        TPM_RC_map.insert("CPHASH", 0x151);
+        TPM_RC_map.insert("PARENT", 0x152);
+        TPM_RC_map.insert("NEEDS_TEST", 0x153);
+        TPM_RC_map.insert("NO_RESULT", 0x154);
+        TPM_RC_map.insert("SENSITIVE", 0x155);
+        TPM_RC_map.insert("RC_MAX_FM0", 0x17F);
+        TPM_RC_map.insert("RC_FMT1", 0x80);
+        TPM_RC_map.insert("ASYMMETRIC", 0x81);
+        TPM_RC_map.insert("ATTRIBUTES", 0x82);
+        TPM_RC_map.insert("HASH", 0x83);
+        TPM_RC_map.insert("VALUE", 0x84);
+        TPM_RC_map.insert("HIERARCHY", 0x85);
+        TPM_RC_map.insert("KEY_SIZE", 0x87);
+        TPM_RC_map.insert("MGF", 0x88);
+        TPM_RC_map.insert("MODE", 0x89);
+        TPM_RC_map.insert("TYPE", 0x8A);
+        TPM_RC_map.insert("HANDLE", 0x8B);
+        TPM_RC_map.insert("KDF", 0x8C);
+        TPM_RC_map.insert("RANGE", 0x8D);
+        TPM_RC_map.insert("AUTH_FAIL", 0x8E);
+        TPM_RC_map.insert("NONCE", 0x8F);
+        TPM_RC_map.insert("PP", 0x90);
+        TPM_RC_map.insert("SCHEME", 0x92);
+        TPM_RC_map.insert("SIZE", 0x95);
+        TPM_RC_map.insert("SYMMETRIC", 0x96);
+        TPM_RC_map.insert("TAG", 0x97);
+        TPM_RC_map.insert("SELECTOR", 0x98);
+        TPM_RC_map.insert("INSUFFICIENT", 0x9A);
+        TPM_RC_map.insert("SIGNATURE", 0x9B);
+        TPM_RC_map.insert("KEY", 0x9C);
+        TPM_RC_map.insert("POLICY_FAIL", 0x9D);
+        TPM_RC_map.insert("INTEGRITY", 0x9F);
+        TPM_RC_map.insert("TICKET", 0xA0);
+        TPM_RC_map.insert("RESERVED_BITS", 0xA1);
+        TPM_RC_map.insert("BAD_AUTH", 0xA2);
+        TPM_RC_map.insert("EXPIRED", 0xA3);
+        TPM_RC_map.insert("POLICY_CC", 0xA4);
+        TPM_RC_map.insert("BINDING", 0xA5);
+        TPM_RC_map.insert("CURVE", 0xA6);
+        TPM_RC_map.insert("ECC_POINT", 0xA7);
+        TPM_RC_map.insert("RC_WARN", 0x900);
+        TPM_RC_map.insert("CONTEXT_GAP", 0x901);
+        TPM_RC_map.insert("OBJECT_MEMORY", 0x902);
+        TPM_RC_map.insert("SESSION_MEMORY", 0x903);
+        TPM_RC_map.insert("MEMORY", 0x904);
+        TPM_RC_map.insert("SESSION_HANDLES", 0x905);
+        TPM_RC_map.insert("OBJECT_HANDLES", 0x906);
+        TPM_RC_map.insert("LOCALITY", 0x907);
+        TPM_RC_map.insert("YIELDED", 0x908);
+        TPM_RC_map.insert("CANCELED", 0x909);
+        TPM_RC_map.insert("TESTING", 0x90A);
+        TPM_RC_map.insert("REFERENCE_H0", 0x910);
+        TPM_RC_map.insert("REFERENCE_H1", 0x911);
+        TPM_RC_map.insert("REFERENCE_H2", 0x912);
+        TPM_RC_map.insert("REFERENCE_H3", 0x913);
+        TPM_RC_map.insert("REFERENCE_H4", 0x914);
+        TPM_RC_map.insert("REFERENCE_H5", 0x915);
+        TPM_RC_map.insert("REFERENCE_H6", 0x916);
+        TPM_RC_map.insert("REFERENCE_S0", 0x918);
+        TPM_RC_map.insert("REFERENCE_S1", 0x919);
+        TPM_RC_map.insert("REFERENCE_S2", 0x91A);
+        TPM_RC_map.insert("REFERENCE_S3", 0x91B);
+        TPM_RC_map.insert("REFERENCE_S4", 0x91C);
+        TPM_RC_map.insert("REFERENCE_S5", 0x91D);
+        TPM_RC_map.insert("REFERENCE_S6", 0x91E);
+        TPM_RC_map.insert("NV_RATE", 0x920);
+        TPM_RC_map.insert("LOCKOUT", 0x921);
+        TPM_RC_map.insert("RETRY", 0x922);
+        TPM_RC_map.insert("NV_UNAVAILABLE", 0x923);
+        TPM_RC_map.insert("NOT_USED", 0x97F);
+        TPM_RC_map.insert("H", 0x0);
+        TPM_RC_map.insert("P", 0x40);
+        TPM_RC_map.insert("S", 0x800);
+        TPM_RC_map.insert("_1", 0x100);
+        TPM_RC_map.insert("_2", 0x200);
+        TPM_RC_map.insert("_3", 0x300);
+        TPM_RC_map.insert("_4", 0x400);
+        TPM_RC_map.insert("_5", 0x500);
+        TPM_RC_map.insert("_6", 0x600);
+        TPM_RC_map.insert("_7", 0x700);
+        TPM_RC_map.insert("_8", 0x800);
+        TPM_RC_map.insert("_9", 0x900);
+        TPM_RC_map.insert("A", 0xA00);
+        TPM_RC_map.insert("B", 0xB00);
+        TPM_RC_map.insert("C", 0xC00);
+        TPM_RC_map.insert("D", 0xD00);
+        TPM_RC_map.insert("E", 0xE00);
+        TPM_RC_map.insert("F", 0xF00);
+        TPM_RC_map.insert("N_MASK", 0xF00);
+        TPM_RC_map.insert("TSS_TCP_BAD_HANDSHAKE_RESP", 0x40280001);
+        TPM_RC_map.insert("TSS_TCP_SERVER_TOO_OLD", 0x40280002);
+        TPM_RC_map.insert("TSS_TCP_BAD_ACK", 0x40280003);
+        TPM_RC_map.insert("TSS_TCP_BAD_RESP_LEN", 0x40280004);
+        TPM_RC_map.insert("TSS_TCP_UNEXPECTED_STARTUP_RESP", 0x40280005);
+        TPM_RC_map.insert("TSS_TCP_INVALID_SIZE_TAG", 0x40280006);
+        TPM_RC_map.insert("TSS_TCP_DISCONNECTED", 0x40280007);
+        TPM_RC_map.insert("TSS_DISPATCH_FAILED", 0x40280010);
+        TPM_RC_map.insert("TSS_SEND_OP_FAILED", 0x40280011);
+        TPM_RC_map.insert("TSS_RESP_BUF_TOO_SHORT", 0x40280021);
+        TPM_RC_map.insert("TSS_RESP_BUF_INVALID_SESSION_TAG", 0x40280022);
+        TPM_RC_map.insert("TSS_RESP_BUF_INVALID_SIZE", 0x40280023);
+        TPM_RC_map.insert("TBS_COMMAND_BLOCKED", 0x80280400);
+        TPM_RC_map.insert("TBS_INVALID_HANDLE", 0x80280401);
+        TPM_RC_map.insert("TBS_DUPLICATE_V_HANDLE", 0x80280402);
+        TPM_RC_map.insert("TBS_EMBEDDED_COMMAND_BLOCKED", 0x80280403);
+        TPM_RC_map.insert("TBS_EMBEDDED_COMMAND_UNSUPPORTED", 0x80280404);
+        TPM_RC_map.insert("TBS_UNKNOWN_ERROR", 0x80284000);
+        TPM_RC_map.insert("TBS_INTERNAL_ERROR", 0x80284001);
+        TPM_RC_map.insert("TBS_BAD_PARAMETER", 0x80284002);
+        TPM_RC_map.insert("TBS_INVALID_OUTPUT_POINTER", 0x80284003);
+        TPM_RC_map.insert("TBS_INVALID_CONTEXT", 0x80284004);
+        TPM_RC_map.insert("TBS_INSUFFICIENT_BUFFER", 0x80284005);
+        TPM_RC_map.insert("TBS_IO_ERROR", 0x80284006);
+        TPM_RC_map.insert("TBS_INVALID_CONTEXT_PARAM", 0x80284007);
+        TPM_RC_map.insert("TBS_SERVICE_NOT_RUNNING", 0x80284008);
+        TPM_RC_map.insert("TBS_TOO_MANY_CONTEXTS", 0x80284009);
+        TPM_RC_map.insert("TBS_TOO_MANY_RESOURCES", 0x8028400A);
+        TPM_RC_map.insert("TBS_SERVICE_START_PENDING", 0x8028400B);
+        TPM_RC_map.insert("TBS_PPI_NOT_SUPPORTED", 0x8028400C);
+        TPM_RC_map.insert("TBS_COMMAND_CANCELED", 0x8028400D);
+        TPM_RC_map.insert("TBS_BUFFER_TOO_LARGE", 0x8028400E);
+        TPM_RC_map.insert("TBS_TPM_NOT_FOUND", 0x8028400F);
+        TPM_RC_map.insert("TBS_SERVICE_DISABLED", 0x80284010);
+        TPM_RC_map.insert("TBS_ACCESS_DENIED", 0x80284012);
+        TPM_RC_map.insert("TBS_PPI_FUNCTION_NOT_SUPPORTED", 0x80284014);
+        TPM_RC_map.insert("TBS_OWNER_AUTH_NOT_FOUND", 0x80284015);
         map.insert(std::any::TypeId::of::<TPM_RC>(), TPM_RC_map);
 
         let mut TPM_CLOCK_ADJUST_map: HashMap<&'static str, u64> = HashMap::new();
@@ -32805,13 +33730,115 @@ lazy_static::lazy_static! {
         TPM_SE_map.insert("TRIAL", 0x3);
         map.insert(std::any::TypeId::of::<TPM_SE>(), TPM_SE_map);
 
-        let  TPM_CAP_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPM_CAP_map: HashMap<&'static str, u64> = HashMap::new();
+        TPM_CAP_map.insert("FIRST", 0x0);
+        TPM_CAP_map.insert("ALGS", 0x0);
+        TPM_CAP_map.insert("HANDLES", 0x1);
+        TPM_CAP_map.insert("COMMANDS", 0x2);
+        TPM_CAP_map.insert("PP_COMMANDS", 0x3);
+        TPM_CAP_map.insert("AUDIT_COMMANDS", 0x4);
+        TPM_CAP_map.insert("PCRS", 0x5);
+        TPM_CAP_map.insert("TPM_PROPERTIES", 0x6);
+        TPM_CAP_map.insert("PCR_PROPERTIES", 0x7);
+        TPM_CAP_map.insert("ECC_CURVES", 0x8);
+        TPM_CAP_map.insert("AUTH_POLICIES", 0x9);
+        TPM_CAP_map.insert("ACT", 0xA);
+        TPM_CAP_map.insert("LAST", 0xA);
+        TPM_CAP_map.insert("VENDOR_PROPERTY", 0x100);
         map.insert(std::any::TypeId::of::<TPM_CAP>(), TPM_CAP_map);
 
-        let  TPM_PT_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPM_PT_map: HashMap<&'static str, u64> = HashMap::new();
+        TPM_PT_map.insert("NONE", 0x0);
+        TPM_PT_map.insert("PT_GROUP", 0x100);
+        TPM_PT_map.insert("PT_FIXED", 0x100);
+        TPM_PT_map.insert("FAMILY_INDICATOR", 0x100);
+        TPM_PT_map.insert("LEVEL", 0x101);
+        TPM_PT_map.insert("REVISION", 0x102);
+        TPM_PT_map.insert("DAY_OF_YEAR", 0x103);
+        TPM_PT_map.insert("YEAR", 0x104);
+        TPM_PT_map.insert("MANUFACTURER", 0x105);
+        TPM_PT_map.insert("VENDOR_STRING_1", 0x106);
+        TPM_PT_map.insert("VENDOR_STRING_2", 0x107);
+        TPM_PT_map.insert("VENDOR_STRING_3", 0x108);
+        TPM_PT_map.insert("VENDOR_STRING_4", 0x109);
+        TPM_PT_map.insert("VENDOR_TPM_TYPE", 0x10A);
+        TPM_PT_map.insert("FIRMWARE_VERSION_1", 0x10B);
+        TPM_PT_map.insert("FIRMWARE_VERSION_2", 0x10C);
+        TPM_PT_map.insert("INPUT_BUFFER", 0x10D);
+        TPM_PT_map.insert("HR_TRANSIENT_MIN", 0x10E);
+        TPM_PT_map.insert("HR_PERSISTENT_MIN", 0x10F);
+        TPM_PT_map.insert("HR_LOADED_MIN", 0x110);
+        TPM_PT_map.insert("ACTIVE_SESSIONS_MAX", 0x111);
+        TPM_PT_map.insert("PCR_COUNT", 0x112);
+        TPM_PT_map.insert("PCR_SELECT_MIN", 0x113);
+        TPM_PT_map.insert("CONTEXT_GAP_MAX", 0x114);
+        TPM_PT_map.insert("NV_COUNTERS_MAX", 0x116);
+        TPM_PT_map.insert("NV_INDEX_MAX", 0x117);
+        TPM_PT_map.insert("MEMORY", 0x118);
+        TPM_PT_map.insert("CLOCK_UPDATE", 0x119);
+        TPM_PT_map.insert("CONTEXT_HASH", 0x11A);
+        TPM_PT_map.insert("CONTEXT_SYM", 0x11B);
+        TPM_PT_map.insert("CONTEXT_SYM_SIZE", 0x11C);
+        TPM_PT_map.insert("ORDERLY_COUNT", 0x11D);
+        TPM_PT_map.insert("MAX_COMMAND_SIZE", 0x11E);
+        TPM_PT_map.insert("MAX_RESPONSE_SIZE", 0x11F);
+        TPM_PT_map.insert("MAX_DIGEST", 0x120);
+        TPM_PT_map.insert("MAX_OBJECT_CONTEXT", 0x121);
+        TPM_PT_map.insert("MAX_SESSION_CONTEXT", 0x122);
+        TPM_PT_map.insert("PS_FAMILY_INDICATOR", 0x123);
+        TPM_PT_map.insert("PS_LEVEL", 0x124);
+        TPM_PT_map.insert("PS_REVISION", 0x125);
+        TPM_PT_map.insert("PS_DAY_OF_YEAR", 0x126);
+        TPM_PT_map.insert("PS_YEAR", 0x127);
+        TPM_PT_map.insert("SPLIT_MAX", 0x128);
+        TPM_PT_map.insert("TOTAL_COMMANDS", 0x129);
+        TPM_PT_map.insert("LIBRARY_COMMANDS", 0x12A);
+        TPM_PT_map.insert("VENDOR_COMMANDS", 0x12B);
+        TPM_PT_map.insert("NV_BUFFER_MAX", 0x12C);
+        TPM_PT_map.insert("MODES", 0x12D);
+        TPM_PT_map.insert("MAX_CAP_BUFFER", 0x12E);
+        TPM_PT_map.insert("PT_VAR", 0x200);
+        TPM_PT_map.insert("PERMANENT", 0x200);
+        TPM_PT_map.insert("STARTUP_CLEAR", 0x201);
+        TPM_PT_map.insert("HR_NV_INDEX", 0x202);
+        TPM_PT_map.insert("HR_LOADED", 0x203);
+        TPM_PT_map.insert("HR_LOADED_AVAIL", 0x204);
+        TPM_PT_map.insert("HR_ACTIVE", 0x205);
+        TPM_PT_map.insert("HR_ACTIVE_AVAIL", 0x206);
+        TPM_PT_map.insert("HR_TRANSIENT_AVAIL", 0x207);
+        TPM_PT_map.insert("HR_PERSISTENT", 0x208);
+        TPM_PT_map.insert("HR_PERSISTENT_AVAIL", 0x209);
+        TPM_PT_map.insert("NV_COUNTERS", 0x20A);
+        TPM_PT_map.insert("NV_COUNTERS_AVAIL", 0x20B);
+        TPM_PT_map.insert("ALGORITHM_SET", 0x20C);
+        TPM_PT_map.insert("LOADED_CURVES", 0x20D);
+        TPM_PT_map.insert("LOCKOUT_COUNTER", 0x20E);
+        TPM_PT_map.insert("MAX_AUTH_FAIL", 0x20F);
+        TPM_PT_map.insert("LOCKOUT_INTERVAL", 0x210);
+        TPM_PT_map.insert("LOCKOUT_RECOVERY", 0x211);
+        TPM_PT_map.insert("NV_WRITE_RECOVERY", 0x212);
+        TPM_PT_map.insert("AUDIT_COUNTER_0", 0x213);
+        TPM_PT_map.insert("AUDIT_COUNTER_1", 0x214);
         map.insert(std::any::TypeId::of::<TPM_PT>(), TPM_PT_map);
 
-        let  TPM_PT_PCR_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPM_PT_PCR_map: HashMap<&'static str, u64> = HashMap::new();
+        TPM_PT_PCR_map.insert("FIRST", 0x0);
+        TPM_PT_PCR_map.insert("SAVE", 0x0);
+        TPM_PT_PCR_map.insert("EXTEND_L0", 0x1);
+        TPM_PT_PCR_map.insert("RESET_L0", 0x2);
+        TPM_PT_PCR_map.insert("EXTEND_L1", 0x3);
+        TPM_PT_PCR_map.insert("RESET_L1", 0x4);
+        TPM_PT_PCR_map.insert("EXTEND_L2", 0x5);
+        TPM_PT_PCR_map.insert("RESET_L2", 0x6);
+        TPM_PT_PCR_map.insert("EXTEND_L3", 0x7);
+        TPM_PT_PCR_map.insert("RESET_L3", 0x8);
+        TPM_PT_PCR_map.insert("EXTEND_L4", 0x9);
+        TPM_PT_PCR_map.insert("RESET_L4", 0xA);
+        TPM_PT_PCR_map.insert("NO_INCREMENT", 0x11);
+        TPM_PT_PCR_map.insert("DRTM_RESET", 0x12);
+        TPM_PT_PCR_map.insert("POLICY", 0x13);
+        TPM_PT_PCR_map.insert("AUTH", 0x14);
+        TPM_PT_PCR_map.insert("LAST", 0x14);
         map.insert(std::any::TypeId::of::<TPM_PT_PCR>(), TPM_PT_PCR_map);
 
         let mut TPM_PS_map: HashMap<&'static str, u64> = HashMap::new();
@@ -32833,10 +33860,40 @@ lazy_static::lazy_static! {
         TPM_PS_map.insert("TC", 0xF);
         map.insert(std::any::TypeId::of::<TPM_PS>(), TPM_PS_map);
 
-        let  TPM_HT_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPM_HT_map: HashMap<&'static str, u64> = HashMap::new();
+        TPM_HT_map.insert("PCR", 0x0);
+        TPM_HT_map.insert("NV_INDEX", 0x1);
+        TPM_HT_map.insert("HMAC_SESSION", 0x2);
+        TPM_HT_map.insert("LOADED_SESSION", 0x2);
+        TPM_HT_map.insert("POLICY_SESSION", 0x3);
+        TPM_HT_map.insert("SAVED_SESSION", 0x3);
+        TPM_HT_map.insert("PERMANENT", 0x40);
+        TPM_HT_map.insert("TRANSIENT", 0x80);
+        TPM_HT_map.insert("PERSISTENT", 0x81);
+        TPM_HT_map.insert("AC", 0x90);
         map.insert(std::any::TypeId::of::<TPM_HT>(), TPM_HT_map);
 
-        let  TPM_RH_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPM_RH_map: HashMap<&'static str, u64> = HashMap::new();
+        TPM_RH_map.insert("FIRST", 0x40000000);
+        TPM_RH_map.insert("SRK", 0x40000000);
+        TPM_RH_map.insert("OWNER", 0x40000001);
+        TPM_RH_map.insert("REVOKE", 0x40000002);
+        TPM_RH_map.insert("TRANSPORT", 0x40000003);
+        TPM_RH_map.insert("OPERATOR", 0x40000004);
+        TPM_RH_map.insert("ADMIN", 0x40000005);
+        TPM_RH_map.insert("EK", 0x40000006);
+        TPM_RH_map.insert("NULL", 0x40000007);
+        TPM_RH_map.insert("UNASSIGNED", 0x40000008);
+        TPM_RH_map.insert("PW", 0x40000009);
+        TPM_RH_map.insert("LOCKOUT", 0x4000000A);
+        TPM_RH_map.insert("ENDORSEMENT", 0x4000000B);
+        TPM_RH_map.insert("PLATFORM", 0x4000000C);
+        TPM_RH_map.insert("PLATFORM_NV", 0x4000000D);
+        TPM_RH_map.insert("AUTH_00", 0x40000010);
+        TPM_RH_map.insert("AUTH_FF", 0x4000010F);
+        TPM_RH_map.insert("ACT_0", 0x40000110);
+        TPM_RH_map.insert("ACT_F", 0x4000011F);
+        TPM_RH_map.insert("LAST", 0x4000011F);
         map.insert(std::any::TypeId::of::<TPM_RH>(), TPM_RH_map);
 
         let mut TPM_NT_map: HashMap<&'static str, u64> = HashMap::new();
@@ -32867,10 +33924,93 @@ lazy_static::lazy_static! {
         PLATFORM_map.insert("DAY_OF_YEAR", 0x168);
         map.insert(std::any::TypeId::of::<PLATFORM>(), PLATFORM_map);
 
-        let  Implementation_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut Implementation_map: HashMap<&'static str, u64> = HashMap::new();
+        Implementation_map.insert("FIELD_UPGRADE_IMPLEMENTED", 0x0);
+        Implementation_map.insert("HASH_LIB", 0x1);
+        Implementation_map.insert("SYM_LIB", 0x1);
+        Implementation_map.insert("MATH_LIB", 0x1);
+        Implementation_map.insert("IMPLEMENTATION_PCR", 0x18);
+        Implementation_map.insert("PCR_SELECT_MAX", 0x3);
+        Implementation_map.insert("PLATFORM_PCR", 0x18);
+        Implementation_map.insert("PCR_SELECT_MIN", 0x3);
+        Implementation_map.insert("DRTM_PCR", 0x11);
+        Implementation_map.insert("HCRTM_PCR", 0x0);
+        Implementation_map.insert("NUM_LOCALITIES", 0x5);
+        Implementation_map.insert("MAX_HANDLE_NUM", 0x3);
+        Implementation_map.insert("MAX_ACTIVE_SESSIONS", 0x40);
+        Implementation_map.insert("MAX_LOADED_SESSIONS", 0x3);
+        Implementation_map.insert("MAX_SESSION_NUM", 0x3);
+        Implementation_map.insert("MAX_LOADED_OBJECTS", 0x3);
+        Implementation_map.insert("MIN_EVICT_OBJECTS", 0x2);
+        Implementation_map.insert("NUM_POLICY_PCR_GROUP", 0x1);
+        Implementation_map.insert("NUM_AUTHVALUE_PCR_GROUP", 0x1);
+        Implementation_map.insert("MAX_CONTEXT_SIZE", 0x4F0);
+        Implementation_map.insert("MAX_DIGEST_BUFFER", 0x400);
+        Implementation_map.insert("MAX_NV_INDEX_SIZE", 0x800);
+        Implementation_map.insert("MAX_NV_BUFFER_SIZE", 0x400);
+        Implementation_map.insert("MAX_CAP_BUFFER", 0x400);
+        Implementation_map.insert("NV_MEMORY_SIZE", 0x4000);
+        Implementation_map.insert("MIN_COUNTER_INDICES", 0x8);
+        Implementation_map.insert("NUM_STATIC_PCR", 0x10);
+        Implementation_map.insert("MAX_ALG_LIST_SIZE", 0x40);
+        Implementation_map.insert("PRIMARY_SEED_SIZE", 0x20);
+        Implementation_map.insert("CONTEXT_ENCRYPT_ALGORITHM", 0x6);
+        Implementation_map.insert("NV_CLOCK_UPDATE_INTERVAL", 0xC);
+        Implementation_map.insert("NUM_POLICY_PCR", 0x1);
+        Implementation_map.insert("MAX_COMMAND_SIZE", 0x1000);
+        Implementation_map.insert("MAX_RESPONSE_SIZE", 0x1000);
+        Implementation_map.insert("ORDERLY_BITS", 0x8);
+        Implementation_map.insert("MAX_SYM_DATA", 0x80);
+        Implementation_map.insert("MAX_RNG_ENTROPY_SIZE", 0x40);
+        Implementation_map.insert("RAM_INDEX_SPACE", 0x200);
+        Implementation_map.insert("RSA_DEFAULT_PUBLIC_EXPONENT", 0x10001);
+        Implementation_map.insert("ENABLE_PCR_NO_INCREMENT", 0x1);
+        Implementation_map.insert("CRT_FORMAT_RSA", 0x1);
+        Implementation_map.insert("VENDOR_COMMAND_COUNT", 0x0);
+        Implementation_map.insert("MAX_VENDOR_BUFFER_SIZE", 0x400);
+        Implementation_map.insert("MAX_DERIVATION_BITS", 0x2000);
+        Implementation_map.insert("RSA_MAX_PRIME", 0x80);
+        Implementation_map.insert("RSA_PRIVATE_SIZE", 0x280);
+        Implementation_map.insert("SIZE_OF_X509_SERIAL_NUMBER", 0x14);
+        Implementation_map.insert("PRIVATE_VENDOR_SPECIFIC_BYTES", 0x280);
         map.insert(std::any::TypeId::of::<Implementation>(), Implementation_map);
 
-        let  TPM_HC_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPM_HC_map: HashMap<&'static str, u64> = HashMap::new();
+        TPM_HC_map.insert("HR_HANDLE_MASK", 0xFFFFFF);
+        TPM_HC_map.insert("HR_RANGE_MASK", 0xFF000000);
+        TPM_HC_map.insert("HR_SHIFT", 0x18);
+        TPM_HC_map.insert("HR_PCR", 0x0);
+        TPM_HC_map.insert("HR_HMAC_SESSION", 0x2000000);
+        TPM_HC_map.insert("HR_POLICY_SESSION", 0x3000000);
+        TPM_HC_map.insert("HR_TRANSIENT", 0x80000000);
+        TPM_HC_map.insert("HR_PERSISTENT", 0x81000000);
+        TPM_HC_map.insert("HR_NV_INDEX", 0x1000000);
+        TPM_HC_map.insert("HR_PERMANENT", 0x40000000);
+        TPM_HC_map.insert("PCR_FIRST", 0x0);
+        TPM_HC_map.insert("PCR_LAST", 0x17);
+        TPM_HC_map.insert("HMAC_SESSION_FIRST", 0x2000000);
+        TPM_HC_map.insert("HMAC_SESSION_LAST", 0x200003F);
+        TPM_HC_map.insert("LOADED_SESSION_FIRST", 0x2000000);
+        TPM_HC_map.insert("LOADED_SESSION_LAST", 0x200003F);
+        TPM_HC_map.insert("POLICY_SESSION_FIRST", 0x3000000);
+        TPM_HC_map.insert("POLICY_SESSION_LAST", 0x300003F);
+        TPM_HC_map.insert("TRANSIENT_FIRST", 0x80000000);
+        TPM_HC_map.insert("ACTIVE_SESSION_FIRST", 0x3000000);
+        TPM_HC_map.insert("ACTIVE_SESSION_LAST", 0x300003F);
+        TPM_HC_map.insert("TRANSIENT_LAST", 0x80000002);
+        TPM_HC_map.insert("PERSISTENT_FIRST", 0x81000000);
+        TPM_HC_map.insert("PERSISTENT_LAST", 0x81FFFFFF);
+        TPM_HC_map.insert("PLATFORM_PERSISTENT", 0x81800000);
+        TPM_HC_map.insert("NV_INDEX_FIRST", 0x1000000);
+        TPM_HC_map.insert("NV_INDEX_LAST", 0x1FFFFFF);
+        TPM_HC_map.insert("PERMANENT_FIRST", 0x40000000);
+        TPM_HC_map.insert("PERMANENT_LAST", 0x4000011F);
+        TPM_HC_map.insert("HR_NV_AC", 0x1D00000);
+        TPM_HC_map.insert("NV_AC_FIRST", 0x1D00000);
+        TPM_HC_map.insert("NV_AC_LAST", 0x1D0FFFF);
+        TPM_HC_map.insert("HR_AC", 0x90000000);
+        TPM_HC_map.insert("AC_FIRST", 0x90000000);
+        TPM_HC_map.insert("AC_LAST", 0x9000FFFF);
         map.insert(std::any::TypeId::of::<TPM_HC>(), TPM_HC_map);
 
         let mut TPMA_ALGORITHM_map: HashMap<&'static str, u64> = HashMap::new();
@@ -32883,7 +34023,20 @@ lazy_static::lazy_static! {
         TPMA_ALGORITHM_map.insert("method", 0x400);
         map.insert(std::any::TypeId::of::<TPMA_ALGORITHM>(), TPMA_ALGORITHM_map);
 
-        let  TPMA_OBJECT_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPMA_OBJECT_map: HashMap<&'static str, u64> = HashMap::new();
+        TPMA_OBJECT_map.insert("fixedTPM", 0x2);
+        TPMA_OBJECT_map.insert("stClear", 0x4);
+        TPMA_OBJECT_map.insert("fixedParent", 0x10);
+        TPMA_OBJECT_map.insert("sensitiveDataOrigin", 0x20);
+        TPMA_OBJECT_map.insert("userWithAuth", 0x40);
+        TPMA_OBJECT_map.insert("adminWithPolicy", 0x80);
+        TPMA_OBJECT_map.insert("noDA", 0x400);
+        TPMA_OBJECT_map.insert("encryptedDuplication", 0x800);
+        TPMA_OBJECT_map.insert("restricted", 0x10000);
+        TPMA_OBJECT_map.insert("decrypt", 0x20000);
+        TPMA_OBJECT_map.insert("sign", 0x40000);
+        TPMA_OBJECT_map.insert("encrypt", 0x40000);
+        TPMA_OBJECT_map.insert("x509sign", 0x80000);
         map.insert(std::any::TypeId::of::<TPMA_OBJECT>(), TPMA_OBJECT_map);
 
         let mut TPMA_SESSION_map: HashMap<&'static str, u64> = HashMap::new();
@@ -32938,7 +34091,17 @@ lazy_static::lazy_static! {
         TPMA_MODES_map.insert("FIPS_140_2", 0x1);
         map.insert(std::any::TypeId::of::<TPMA_MODES>(), TPMA_MODES_map);
 
-        let  TPMA_X509_KEY_USAGE_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPMA_X509_KEY_USAGE_map: HashMap<&'static str, u64> = HashMap::new();
+        TPMA_X509_KEY_USAGE_map.insert("decipherOnly", 0x800000);
+        TPMA_X509_KEY_USAGE_map.insert("encipherOnly", 0x1000000);
+        TPMA_X509_KEY_USAGE_map.insert("cRLSign", 0x2000000);
+        TPMA_X509_KEY_USAGE_map.insert("keyCertSign", 0x4000000);
+        TPMA_X509_KEY_USAGE_map.insert("keyAgreement", 0x8000000);
+        TPMA_X509_KEY_USAGE_map.insert("dataEncipherment", 0x10000000);
+        TPMA_X509_KEY_USAGE_map.insert("keyEncipherment", 0x20000000);
+        TPMA_X509_KEY_USAGE_map.insert("nonrepudiation", 0x40000000);
+        TPMA_X509_KEY_USAGE_map.insert("contentCommitment", 0x40000000);
+        TPMA_X509_KEY_USAGE_map.insert("digitalSignature", 0xFFFFFFFF80000000);
         map.insert(std::any::TypeId::of::<TPMA_X509_KEY_USAGE>(), TPMA_X509_KEY_USAGE_map);
 
         let mut TPMA_ACT_map: HashMap<&'static str, u64> = HashMap::new();
@@ -32949,7 +34112,34 @@ lazy_static::lazy_static! {
         let  TPM_NV_INDEX_map: HashMap<&'static str, u64> = HashMap::new();
         map.insert(std::any::TypeId::of::<TPM_NV_INDEX>(), TPM_NV_INDEX_map);
 
-        let  TPMA_NV_map: HashMap<&'static str, u64> = HashMap::new();
+        let mut TPMA_NV_map: HashMap<&'static str, u64> = HashMap::new();
+        TPMA_NV_map.insert("PPWRITE", 0x1);
+        TPMA_NV_map.insert("OWNERWRITE", 0x2);
+        TPMA_NV_map.insert("AUTHWRITE", 0x4);
+        TPMA_NV_map.insert("POLICYWRITE", 0x8);
+        TPMA_NV_map.insert("ORDINARY", 0x0);
+        TPMA_NV_map.insert("COUNTER", 0x10);
+        TPMA_NV_map.insert("BITS", 0x20);
+        TPMA_NV_map.insert("EXTEND", 0x40);
+        TPMA_NV_map.insert("PIN_FAIL", 0x80);
+        TPMA_NV_map.insert("PIN_PASS", 0x90);
+        TPMA_NV_map.insert("POLICY_DELETE", 0x400);
+        TPMA_NV_map.insert("WRITELOCKED", 0x800);
+        TPMA_NV_map.insert("WRITEALL", 0x1000);
+        TPMA_NV_map.insert("WRITEDEFINE", 0x2000);
+        TPMA_NV_map.insert("WRITE_STCLEAR", 0x4000);
+        TPMA_NV_map.insert("GLOBALLOCK", 0x8000);
+        TPMA_NV_map.insert("PPREAD", 0x10000);
+        TPMA_NV_map.insert("OWNERREAD", 0x20000);
+        TPMA_NV_map.insert("AUTHREAD", 0x40000);
+        TPMA_NV_map.insert("POLICYREAD", 0x80000);
+        TPMA_NV_map.insert("NO_DA", 0x2000000);
+        TPMA_NV_map.insert("ORDERLY", 0x4000000);
+        TPMA_NV_map.insert("CLEAR_STCLEAR", 0x8000000);
+        TPMA_NV_map.insert("READLOCKED", 0x10000000);
+        TPMA_NV_map.insert("WRITTEN", 0x20000000);
+        TPMA_NV_map.insert("PLATFORMCREATE", 0x40000000);
+        TPMA_NV_map.insert("READ_STCLEAR", 0xFFFFFFFF80000000);
         map.insert(std::any::TypeId::of::<TPMA_NV>(), TPMA_NV_map);
 
         map
