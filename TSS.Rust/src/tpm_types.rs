@@ -7864,6 +7864,9 @@ pub struct TPM_HANDLE {
 
     /// The authorization value associated with this handle
     pub auth_value: Vec<u8>,
+
+    /// The name associated with this handle
+    pub name: Vec<u8>,
 }
 
 impl TPM_HANDLE {
@@ -7879,7 +7882,7 @@ impl TPM_HANDLE {
 
     /// Creates a handle for a persistent object
     pub fn persistent(handle_offset: u32) -> Self {
-        Self::new(((TPM_HT::Persistent as u32) << 24) + handle_offset)
+        Self::new(((TPM_HT::PERSISTENT.get_value() as u32) << 24) + handle_offset)
     }
 
     /// Creates a handle for a PCR
@@ -7889,7 +7892,7 @@ impl TPM_HANDLE {
 
     /// Creates a handle for an NV slot
     pub fn nv(nv_index: u32) -> Self {
-        Self::new(((TPM_HT::NvIndex as u32) << 24) + nv_index)
+        Self::new(((TPM_HT::NV_INDEX.get_value() as u32) << 24) + nv_index)
     }
 
     /// Set the authorization value for this TPM_HANDLE.  The default auth-value is NULL
@@ -7903,21 +7906,47 @@ impl TPM_HANDLE {
         unsafe { std::mem::transmute((self.handle >> 24) as u8) }
     }
 
+    pub fn set_name(&mut self, name: &[u8]) -> Result<(), TpmError> {
+        let handle_type = self.get_type();
+
+        if (handle_type == TPM_HT::NV_INDEX ||
+            handle_type == TPM_HT::TRANSIENT || 
+            handle_type == TPM_HT::PERSISTENT ||
+            handle_type == TPM_HT::PERSISTENT)
+        {
+            self.name = name.to_vec();
+            return Ok(());
+        }
+        
+        if (name != self.get_name()?)
+        {
+            return Err(TpmError::GenericError(format!("Setting an invalid name of an entity with the name defined by the handle value, handle type: {}", handle_type)));
+        }
+
+        Ok(())
+    }
+
     /// Get the TPM name of this handle
-    pub fn get_name(&self) -> Vec<u8> {
+    pub fn get_name(&self) -> Result<Vec<u8>, TpmError> {
         let handle_type = self.get_type();
         
         // Per spec: handles of these types have their handle value as their name
-        if handle_type == TPM_HT::Pcr || handle_type == TPM_HT::NvIndex || 
-            handle_type == TPM_HT::Permanent || handle_type == TPM_HT::Transient {
+        if handle_type == TPM_HT::PCR || handle_type == TPM_HT::HMAC_SESSION || 
+            handle_type == TPM_HT::POLICY_SESSION || handle_type == TPM_HT::PERMANENT {
             let mut name = Vec::with_capacity(4);
             name.extend_from_slice(&self.handle.to_be_bytes());
-            return name;
+            return Ok(name);
+        }
+
+        if handle_type == TPM_HT::NV_INDEX || handle_type == TPM_HT::TRANSIENT ||
+            handle_type == TPM_HT::PERSISTENT {
+            if (self.name.is_empty()) {
+                return Err(TpmError::GenericError(format!("Name is not set for handle, handle type: {}", handle_type)));
+            }
+            return Ok(self.name.clone());
         }
         
-        // Other handle types might need more complex name calculation
-        // This would depend on the implementation details
-        panic!("Name calculation not implemented for this handle type")
+        Err(TpmError::GenericError(format!("Unknown handle type, handle type: {}", handle_type)))
     }
 
     /// Get a string representation of this handle

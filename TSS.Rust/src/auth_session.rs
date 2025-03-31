@@ -47,7 +47,7 @@ impl Session {
     
     /// Check if this is a password authorization session
     pub fn is_pwap(&self) -> bool {
-        self.sess_in.sessionHandle.get_value() == TPM_RH::PW.get_value()
+        self.sess_in.sessionHandle.handle == TPM_RH::PW.get_value()
     }
     
     /// Set authorization value for HMAC calculation
@@ -76,7 +76,7 @@ impl Session {
         
         // For PWAP sessions just return the auth value
         if self.is_pwap() && associated_handle.is_some() {
-            return associated_handle.unwrap().get_auth();
+            return associated_handle.unwrap().auth_value.clone();
         }
         
         // For now return empty HMAC
