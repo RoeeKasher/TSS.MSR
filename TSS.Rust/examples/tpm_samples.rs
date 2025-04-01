@@ -183,8 +183,11 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     let primary_key = make_storage_primary(tpm)?;
     let sig_key = make_child_signing_key(tpm, &primary_key, true)?;
 
-    println!("Created and loaded signing key with handle: {:?}", sig_key);
+    let nonce = vec![2, 6, 1, 1, 9];
 
+    println!(">> PCR Quoting");
+    println!("Created and loaded signing key with handle: {:?}", sig_key);
+    
     // Set up PCR selection for the quote
     let pcrs_to_quote = vec![
         TPMS_PCR_SELECTION::new( TPM_ALG_ID::SHA1, vec![1,1,1] )
@@ -197,24 +200,58 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     let pcr_vals = tpm.PCR_Read(pcrs_to_quote.clone())?;
 
     // Do the quote.  Note that we provide a nonce.
-    let nonce = "TPM Quote Test Data".as_bytes().to_vec();
-    let quote = tpm.Quote(sig_key, nonce, TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?, pcrs_to_quote)?;
+    let quote = tpm.Quote(sig_key.clone(), nonce, TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?, pcrs_to_quote)?;
     
     // Need to cast to the proper attestation type to validate
     let attested = quote.quoted.attested;
     
     if let Some(TPMU_ATTEST::quote(quote_attest)) = attested {
-        println!("Quote obtained successfully");
-        println!("Quote: {:?}", quote_attest);
+        println!("PCR Quote obtained successfully");
+        println!("  PCR Quote: {:?}", quote_attest);
+        println!("  Signing key: {:?}", quote.quoted.qualifiedSigner);
     } else {
         println!("Failed to cast to quote attestation");
         return Err(TpmError::InvalidParameter);
     } ;
 
+    let time_nonce: Vec<u8> = vec![1, 6, 8, 2, 1];
+    println!(">> Time Quoting, using nonce {:?}", time_nonce);
+
+    let time_quote = tpm.GetTime(TPM_HANDLE::new(TPM_RH::ENDORSEMENT.get_value()), sig_key.clone(), time_nonce, TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?)?;
+
+    if let Some(TPMU_ATTEST::time(time_attest)) = time_quote.timeInfo.attested {
+        println!("Time Quote obtained successfully");
+        let clock_info = time_attest.time.clockInfo;
+        println!("   Firmware Version: {}", time_attest.firmwareVersion);
+        println!("   Time: {}", time_attest.time.time);
+        println!("   Clock: {}", clock_info.clock);
+        println!("   ResetCount: {}", clock_info.resetCount);
+        println!("   RestartCount: {}", clock_info.restartCount);
+        println!("   Signing key: {:?}", time_quote.timeInfo.qualifiedSigner);
+    } else {
+        println!("Failed to cast to quote attestation");
+        return Err(TpmError::InvalidParameter);
+    } ;
+
+    // Get a key attestation.  For simplicity we have the signingKey self-certify b
+    let key_nonce: Vec<u8> = vec![0, 9, 1, 1, 2, 3];
+    println!(">> Key Quoting, using nonce {:?}", key_nonce);
+
+    let key_quote = tpm.Certify(sig_key.clone(), sig_key.clone(), key_nonce, TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?)?;
+
+    if let Some(TPMU_ATTEST::certify(certify_attest)) = key_quote.certifyInfo.attested {
+        println!("Key certification obtained successfully");
+        println!("   Name of certified key: {:?}", certify_attest.name);
+        println!("   Qualified name of certified key: {:?}", certify_attest.qualifiedName);
+        println!("   Signing key: {:?}", key_quote.certifyInfo.qualifiedSigner);
+    } else {
+        println!("Failed to cast to quote attestation");
+        return Err(TpmError::InvalidParameter);
+    } ;
     // // Read public key to verify the quote signature
     // let pub_key = tpm.ReadPublic(signing_key_handle)?;
     // println!("Retrieved public key to verify quote");
-
+    
     // // Verify the signature using the public key
     // let signature = quote_result.signature.unwrap();
     // let mut to_verify = vec![];
