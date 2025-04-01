@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See the LICENSE file in the project root for full license information.
  */
 
-use crate::{tpm_structure::TpmEnum, tpm_types::ENUM_TO_STR_MAP};
+use crate::{tpm_buffer::TpmBuffer, tpm_structure::TpmEnum, tpm_types::ENUM_TO_STR_MAP};
 use std::collections::HashMap;
 
 /// Convert a numeric enum value to its string representation
@@ -47,4 +47,10 @@ pub fn enum_to_str(enum_val: u64, enum_id: std::any::TypeId) -> String {
     }
 
     res // Return empty string if enum ID is not found
+}
+
+pub fn int_to_tpm<T: Into<u64>>(val: T) -> Vec<u8> {
+    let mut buffer = TpmBuffer::new(None);
+    buffer.write_num(val.into(), std::mem::size_of::<T>().into());
+    buffer.trim().to_vec()
 }

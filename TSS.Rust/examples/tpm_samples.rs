@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 use tss_rust::{
-    device::{TpmDevice, TpmTbsDevice}, error::TpmError, tpm2_impl::*, tpm_structure::{TpmEnum, TpmStructure}, tpm_types::*
+    device::{TpmDevice, TpmTbsDevice}, error::TpmError, tpm2_impl::*, tpm_structure::{TpmEnum}, tpm_types::*, tpm_type_extensions::*
 };
 
 fn set_color(color: u8) {
@@ -155,8 +155,6 @@ fn make_child_signing_key(tpm: &mut Tpm2, parent: &TPM_HANDLE, restricted: bool)
 {
     let restricted_attribute: TPMA_OBJECT = if restricted { TPMA_OBJECT::restricted } else { TPMA_OBJECT(0) };
 
-    println!("Restricted attribute: {:?}", restricted_attribute);
-
     let object_attributes = TPMA_OBJECT::sign | TPMA_OBJECT::fixedParent | TPMA_OBJECT::fixedTPM
                 | TPMA_OBJECT::sensitiveDataOrigin | TPMA_OBJECT::userWithAuth | restricted_attribute;
 
@@ -208,7 +206,7 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     if let Some(TPMU_ATTEST::quote(quote_attest)) = attested {
         println!("PCR Quote obtained successfully");
         println!("  PCR Quote: {:?}", quote_attest);
-        println!("  Signing key: {:?}", quote.quoted.qualifiedSigner);
+        println!("  Nonce: {:?}", quote.quoted.extraData);
     } else {
         println!("Failed to cast to quote attestation");
         return Err(TpmError::InvalidParameter);
@@ -227,7 +225,7 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
         println!("   Clock: {}", clock_info.clock);
         println!("   ResetCount: {}", clock_info.resetCount);
         println!("   RestartCount: {}", clock_info.restartCount);
-        println!("   Signing key: {:?}", time_quote.timeInfo.qualifiedSigner);
+        println!("   Nonce: {:?}", time_quote.timeInfo.extraData);
     } else {
         println!("Failed to cast to quote attestation");
         return Err(TpmError::InvalidParameter);
@@ -237,37 +235,26 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     let key_nonce: Vec<u8> = vec![0, 9, 1, 1, 2, 3];
     println!(">> Key Quoting, using nonce {:?}", key_nonce);
 
-    let key_quote = tpm.Certify(sig_key.clone(), sig_key.clone(), key_nonce, TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?)?;
+    let key_quote = tpm.Certify(sig_key.clone(), sig_key.clone(), key_nonce.clone(), TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?)?;
 
-    if let Some(TPMU_ATTEST::certify(certify_attest)) = key_quote.certifyInfo.attested {
+    if let Some(TPMU_ATTEST::certify(certify_attest)) = &key_quote.certifyInfo.attested {
         println!("Key certification obtained successfully");
         println!("   Name of certified key: {:?}", certify_attest.name);
         println!("   Qualified name of certified key: {:?}", certify_attest.qualifiedName);
-        println!("   Signing key: {:?}", key_quote.certifyInfo.qualifiedSigner);
+        println!("   nonce: {:?}", &key_quote.certifyInfo.extraData);
+        println!("   Signature: {:?}", &key_quote.signature);
     } else {
         println!("Failed to cast to quote attestation");
         return Err(TpmError::InvalidParameter);
     } ;
-    // // Read public key to verify the quote signature
-    // let pub_key = tpm.ReadPublic(signing_key_handle)?;
-    // println!("Retrieved public key to verify quote");
-    
-    // // Verify the signature using the public key
-    // let signature = quote_result.signature.unwrap();
-    // let mut to_verify = vec![];
-    // quote_result.quoted.serialize(&mut to_verify)?;
 
-    // let verification_result = crypto_helper::verify_signature(
-    //     &pub_key.outPublic.publicArea,
-    //     &to_verify,
-    //     &signature
-    // )?;
+    let pub_key = tpm.ReadPublic(sig_key)?;
 
-    // if verification_result {
-    //     println!("Quote signature verification SUCCESSFUL! ✅");
-    // } else {
-    //     println!("Quote signature verification FAILED! ❌");
-    // }
+    if (pub_key.outPublic.validate_certify(&pub_key.outPublic, &key_nonce, &key_quote)?) {
+        println!("Key certification signature verification SUCCESSFUL! ✅");
+    } else {
+        println!("Key certification signature verification FAILED! ❌");
+    }
 
     // // Clean up - flush keys from TPM
     // tpm.FlushContext(signing_key_handle)?;

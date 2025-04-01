@@ -100,7 +100,7 @@ impl TpmBuffer {
         true
     }
 
-    fn write_num(&mut self, val: u64, len: usize) {
+    pub fn write_num(&mut self, val: u64, len: usize) {
         if !self.check_len(len) {
             return;
         }

@@ -1,5 +1,6 @@
-use crate::{error::TpmError, tpm_types::TPM_ALG_ID};
+use crate::{error::TpmError, tpm_types::*};
 use hmac::{Hmac, Mac};
+use rsa::{pkcs1v15::{SigningKey, VerifyingKey}, BigUint, Pkcs1v15Sign, RsaPublicKey};
 use sha1::Sha1;
 use sha2::{Digest as Sha2Digest, Sha256, Sha384, Sha512};
 use sm3::Sm3;
@@ -118,5 +119,45 @@ impl Crypto {
                 )))
             }
         }
+    }
+
+    pub fn validate_signature(
+        public_key: &TPMT_PUBLIC,
+        signed_blob_hash: Vec<u8>,
+        signature: &Option<TPMU_SIGNATURE>,
+    ) -> Result<bool, TpmError> {
+        let rsa_params = if let Some(TPMU_PUBLIC_PARMS::rsaDetail(rsa_params)) = &public_key.parameters {
+            rsa_params
+        } else {
+            return Err(TpmError::NotSupported(
+                "ValidateSignature: Only RSA is supported".to_string(),
+            ));
+        };
+
+        let signature = if let Some(TPMU_SIGNATURE::rsassa(signature)) = &signature {
+            signature
+        } else {
+            return Err(TpmError::NotSupported(
+                "ValidateSignature: Only RSASSA scheme is supported".to_string(),
+            ));
+        };
+
+        let rsa_pub_key = if let Some(TPMU_PUBLIC_ID::rsa(unique)) = &public_key.unique {
+            &unique.buffer
+        } else {
+            return Err(TpmError::NotSupported(
+                "ValidateSignature: Only RSA public key is supported".to_string(),
+            ));
+        };
+
+        let rsa_public_key = RsaPublicKey::new(BigUint::from_bytes_be(rsa_pub_key), BigUint::from_bytes_be(&[1, 0, 1]))
+            .map_err(|_| TpmError::InvalidArraySize("Invalid RSA public key".to_string()))?;
+
+        Ok(rsa_public_key
+            .verify(
+                Pkcs1v15Sign::new::<Sha1>(),
+                &signed_blob_hash,
+                &signature.sig
+            ).is_ok())
     }
 }
