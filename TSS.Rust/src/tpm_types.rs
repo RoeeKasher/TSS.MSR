@@ -12597,6 +12597,9 @@ impl TpmMarshaller for TPMS_SCHEME_ECDAA {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SCHEME_HMAC {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_SCHEME_HMAC {
@@ -12619,11 +12622,13 @@ impl TpmStructure for TPMS_SCHEME_HMAC {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -12835,7 +12840,7 @@ impl TpmMarshaller for TPMT_KEYEDHASH_SCHEME {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIG_SCHEME_RSASSA {
-    /// Algorithm for the hash being computed shall not be TPM_ALG_NULL
+    /// The hash algorithm used to digest the message
     #[derivative(Default(value="TPM_ALG_ID::NULL"))]
     pub hashAlg: TPM_ALG_ID,
 }
@@ -12861,14 +12866,12 @@ impl TpmStructure for TPMS_SIG_SCHEME_RSASSA {
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
         buf.writeShort(self.hashAlg.into());
-
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
         self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
-        
         Ok(())
     }
 
@@ -12891,6 +12894,9 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_RSASSA {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIG_SCHEME_RSAPSS {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_SIG_SCHEME_RSAPSS {
@@ -12913,11 +12919,13 @@ impl TpmStructure for TPMS_SIG_SCHEME_RSAPSS {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -12942,6 +12950,9 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_RSAPSS {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIG_SCHEME_ECDSA {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_SIG_SCHEME_ECDSA {
@@ -12964,11 +12975,13 @@ impl TpmStructure for TPMS_SIG_SCHEME_ECDSA {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -12993,6 +13006,9 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_ECDSA {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIG_SCHEME_SM2 {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_SIG_SCHEME_SM2 {
@@ -13015,11 +13031,13 @@ impl TpmStructure for TPMS_SIG_SCHEME_SM2 {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -13044,6 +13062,9 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_SM2 {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIG_SCHEME_ECSCHNORR {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_SIG_SCHEME_ECSCHNORR {
@@ -13066,11 +13087,13 @@ impl TpmStructure for TPMS_SIG_SCHEME_ECSCHNORR {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -13095,6 +13118,12 @@ impl TpmMarshaller for TPMS_SIG_SCHEME_ECSCHNORR {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIG_SCHEME_ECDAA {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
+
+    /// The counter value that is used between TPM2_Commit() and the sign operation
+    pub count: u16,
 }
 
 impl TPMS_SIG_SCHEME_ECDAA {
@@ -13117,11 +13146,15 @@ impl TpmStructure for TPMS_SIG_SCHEME_ECDAA {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
+        buf.writeShort(self.count as u16);
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
+        self.count = buf.readShort() as u16;
         Ok(())
     }
 
@@ -13263,6 +13296,9 @@ impl TpmMarshaller for TPMT_SIG_SCHEME {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_ENC_SCHEME_OAEP {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_ENC_SCHEME_OAEP {
@@ -13285,11 +13321,13 @@ impl TpmStructure for TPMS_ENC_SCHEME_OAEP {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -13361,6 +13399,9 @@ impl TpmMarshaller for TPMS_ENC_SCHEME_RSAES {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_KEY_SCHEME_ECDH {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_KEY_SCHEME_ECDH {
@@ -13383,11 +13424,13 @@ impl TpmStructure for TPMS_KEY_SCHEME_ECDH {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -13410,6 +13453,9 @@ impl TpmMarshaller for TPMS_KEY_SCHEME_ECDH {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_KEY_SCHEME_ECMQV {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_KEY_SCHEME_ECMQV {
@@ -13432,11 +13478,13 @@ impl TpmStructure for TPMS_KEY_SCHEME_ECMQV {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -13461,6 +13509,9 @@ impl TpmMarshaller for TPMS_KEY_SCHEME_ECMQV {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_KDF_SCHEME_MGF1 {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_KDF_SCHEME_MGF1 {
@@ -13483,11 +13534,13 @@ impl TpmStructure for TPMS_KDF_SCHEME_MGF1 {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -13512,6 +13565,9 @@ impl TpmMarshaller for TPMS_KDF_SCHEME_MGF1 {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_KDF_SCHEME_KDF1_SP800_56A {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_KDF_SCHEME_KDF1_SP800_56A {
@@ -13534,11 +13590,13 @@ impl TpmStructure for TPMS_KDF_SCHEME_KDF1_SP800_56A {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -13563,6 +13621,9 @@ impl TpmMarshaller for TPMS_KDF_SCHEME_KDF1_SP800_56A {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_KDF_SCHEME_KDF2 {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_KDF_SCHEME_KDF2 {
@@ -13585,11 +13646,13 @@ impl TpmStructure for TPMS_KDF_SCHEME_KDF2 {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -13614,6 +13677,9 @@ impl TpmMarshaller for TPMS_KDF_SCHEME_KDF2 {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_KDF_SCHEME_KDF1_SP800_108 {
+    /// The hash algorithm used to digest the message
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hashAlg: TPM_ALG_ID,
 }
 
 impl TPMS_KDF_SCHEME_KDF1_SP800_108 {
@@ -13636,11 +13702,13 @@ impl TpmStructure for TPMS_KDF_SCHEME_KDF1_SP800_108 {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hashAlg.into());
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hashAlg = TPM_ALG_ID(buf.readShort() as u16);
         Ok(())
     }
 
@@ -14652,6 +14720,13 @@ impl TpmMarshaller for TPMS_SIGNATURE_RSA {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIGNATURE_RSASSA {
+    /// The hash algorithm used to digest the message
+    /// TPM_ALG_NULL is not allowed.
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hash: TPM_ALG_ID,
+
+    /// The signature is the size of a public key.
+    pub sig: Vec<u8>,
 }
 
 impl TPMS_SIGNATURE_RSASSA {
@@ -14674,11 +14749,15 @@ impl TpmStructure for TPMS_SIGNATURE_RSASSA {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hash.into());
+        buf.writeSizedByteBuf(&self.sig, 2);
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hash = TPM_ALG_ID(buf.readShort() as u16);
+        self.sig = buf.readSizedByteBuf(2);
         Ok(())
     }
 
@@ -14701,6 +14780,13 @@ impl TpmMarshaller for TPMS_SIGNATURE_RSASSA {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIGNATURE_RSAPSS {
+    /// The hash algorithm used to digest the message
+    /// TPM_ALG_NULL is not allowed.
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hash: TPM_ALG_ID,
+
+    /// The signature is the size of a public key.
+    pub sig: Vec<u8>,
 }
 
 impl TPMS_SIGNATURE_RSAPSS {
@@ -14723,11 +14809,15 @@ impl TpmStructure for TPMS_SIGNATURE_RSAPSS {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hash.into());
+        buf.writeSizedByteBuf(&self.sig, 2);
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hash = TPM_ALG_ID(buf.readShort() as u16);
+        self.sig = buf.readSizedByteBuf(2);
         Ok(())
     }
 
@@ -14825,6 +14915,12 @@ impl TpmMarshaller for TPMS_SIGNATURE_ECC {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIGNATURE_ECDSA {
+    /// The hash algorithm used in the signature process
+    /// TPM_ALG_NULL is not allowed.
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hash: TPM_ALG_ID,
+    pub signatureR: Vec<u8>,
+    pub signatureS: Vec<u8>,
 }
 
 impl TPMS_SIGNATURE_ECDSA {
@@ -14847,11 +14943,17 @@ impl TpmStructure for TPMS_SIGNATURE_ECDSA {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hash.into());
+        buf.writeSizedByteBuf(&self.signatureR, 2);
+        buf.writeSizedByteBuf(&self.signatureS, 2);
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hash = TPM_ALG_ID(buf.readShort() as u16);
+        self.signatureR = buf.readSizedByteBuf(2);
+        self.signatureS = buf.readSizedByteBuf(2);
         Ok(())
     }
 
@@ -14874,6 +14976,12 @@ impl TpmMarshaller for TPMS_SIGNATURE_ECDSA {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIGNATURE_ECDAA {
+    /// The hash algorithm used in the signature process
+    /// TPM_ALG_NULL is not allowed.
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hash: TPM_ALG_ID,
+    pub signatureR: Vec<u8>,
+    pub signatureS: Vec<u8>,
 }
 
 impl TPMS_SIGNATURE_ECDAA {
@@ -14896,11 +15004,17 @@ impl TpmStructure for TPMS_SIGNATURE_ECDAA {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hash.into());
+        buf.writeSizedByteBuf(&self.signatureR, 2);
+        buf.writeSizedByteBuf(&self.signatureS, 2);
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hash = TPM_ALG_ID(buf.readShort() as u16);
+        self.signatureR = buf.readSizedByteBuf(2);
+        self.signatureS = buf.readSizedByteBuf(2);
         Ok(())
     }
 
@@ -14923,6 +15037,12 @@ impl TpmMarshaller for TPMS_SIGNATURE_ECDAA {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIGNATURE_SM2 {
+    /// The hash algorithm used in the signature process
+    /// TPM_ALG_NULL is not allowed.
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hash: TPM_ALG_ID,
+    pub signatureR: Vec<u8>,
+    pub signatureS: Vec<u8>,
 }
 
 impl TPMS_SIGNATURE_SM2 {
@@ -14945,11 +15065,17 @@ impl TpmStructure for TPMS_SIGNATURE_SM2 {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hash.into());
+        buf.writeSizedByteBuf(&self.signatureR, 2);
+        buf.writeSizedByteBuf(&self.signatureS, 2);
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hash = TPM_ALG_ID(buf.readShort() as u16);
+        self.signatureR = buf.readSizedByteBuf(2);
+        self.signatureS = buf.readSizedByteBuf(2);
         Ok(())
     }
 
@@ -14972,6 +15098,12 @@ impl TpmMarshaller for TPMS_SIGNATURE_SM2 {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPMS_SIGNATURE_ECSCHNORR {
+    /// The hash algorithm used in the signature process
+    /// TPM_ALG_NULL is not allowed.
+    #[derivative(Default(value="TPM_ALG_ID::NULL"))]
+    pub hash: TPM_ALG_ID,
+    pub signatureR: Vec<u8>,
+    pub signatureS: Vec<u8>,
 }
 
 impl TPMS_SIGNATURE_ECSCHNORR {
@@ -14994,11 +15126,17 @@ impl TpmStructure for TPMS_SIGNATURE_ECSCHNORR {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeShort(self.hash.into());
+        buf.writeSizedByteBuf(&self.signatureR, 2);
+        buf.writeSizedByteBuf(&self.signatureS, 2);
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.hash = TPM_ALG_ID(buf.readShort() as u16);
+        self.signatureR = buf.readSizedByteBuf(2);
+        self.signatureS = buf.readSizedByteBuf(2);
         Ok(())
     }
 
@@ -32769,6 +32907,8 @@ impl TpmMarshaller for TSS_KEY {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPM2B_DIGEST_SYMCIPHER {
+    /// The buffer area that can be no larger than a digest
+    pub buffer: Vec<u8>,
 }
 
 impl TPM2B_DIGEST_SYMCIPHER {
@@ -32791,11 +32931,13 @@ impl TpmStructure for TPM2B_DIGEST_SYMCIPHER {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeSizedByteBuf(&self.buffer, 2);
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.buffer = buf.readSizedByteBuf(2);
         Ok(())
     }
 
@@ -32818,6 +32960,8 @@ impl TpmMarshaller for TPM2B_DIGEST_SYMCIPHER {
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Default)]
 pub struct TPM2B_DIGEST_KEYEDHASH {
+    /// The buffer area that can be no larger than a digest
+    pub buffer: Vec<u8>,
 }
 
 impl TPM2B_DIGEST_KEYEDHASH {
@@ -32840,11 +32984,13 @@ impl TpmStructure for TPM2B_DIGEST_KEYEDHASH {
     // Implement serialization/deserialization
     fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Serialize fields
+        buf.writeSizedByteBuf(&self.buffer, 2);
         Ok(())
     }
 
     fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {
         // Deserialize fields
+        self.buffer = buf.readSizedByteBuf(2);
         Ok(())
     }
 

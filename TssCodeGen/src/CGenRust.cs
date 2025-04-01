@@ -451,7 +451,88 @@ namespace CodeGen
             Write($"pub struct {structName} {{");
             TabIn();
 
+            GenFields(s);
+
+            TabOut("}");
+            Write("");
+
+            // Implement struct methods
+            TabIn($"impl {structName} {{");
+
+            // Constructor
+            if (!s.Info.IsResponse() && s.NonTagFields.Count() > 0)
+            {
+                Write("/// Creates a new instance with the specified values");
+                Write("pub fn new(");
+                TabIn();
+
+                GenConstructorFieldsDecl(s);
+
+                Write($") -> Self {{");
+                TabIn("Self {");
+
+                GenConstructorFieldsInit(s);
+
+                Write("..Default::default()");
+
+                TabOut("}", false);
+                TabOut("}", false);
+                Write("");
+            }
+
+            GenGetUnionSelector(s);
+
+            InsertSnip(s.Name + "_impl");
+
+            TabOut("}");
+
+            GenTpmStructureImplementation(s);
+
+            GenTpmMarshallerImplementation(s);
+
+            GenTpmCmdStructureImplementation(s);
+
+            Write("");
+        }
+
+        // Generates the constructor fields initialization, supporting "derived" structs by containing the same fields
+        void GenConstructorFieldsInit(TpmStruct s) {
+            if (s.DerivedFrom != null)
+            {
+                GenConstructorFieldsInit(s.DerivedFrom);
+            }
+
+            foreach (var f in s.NonTagFields)
+            {
+                if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
+                    continue;
+
+                Write($"{ToSnakeCase(f.Name)},");
+            }
+        }
+
+        // Generates the constructor fields declaration, supporting "derived" structs by containing the same fields
+        void GenConstructorFieldsDecl(TpmStruct s) {
+            if (s.DerivedFrom != null) {
+                GenConstructorFieldsDecl(s.DerivedFrom);
+            }
+
+            foreach (var f in s.NonTagFields)
+            {
+                if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
+                    continue;
+
+                Write($"{ToSnakeCase(f.Name)}: {TransType(f)},");
+            }
+        }
+
+        // Generates the struct's fields, supporting "derived" structs by containing the same fields
+        void GenFields(TpmStruct s) {
             var fieldsToInit = s.NonDefaultInitFields.Select(f => f.Name).ToHashSet();
+
+            if (s.DerivedFrom != null) {
+                GenFields(s.DerivedFrom);
+            }
 
             // Fields
             foreach (var f in s.NonSizeFields)
@@ -475,76 +556,7 @@ namespace CodeGen
             }
 
             InsertSnip(s.Name + "_fields");
-
-            TabOut("}");
-            Write("");
-
-            // Implement struct methods
-            TabIn($"impl {structName} {{");
-
-            // Constructor
-            if (!s.Info.IsResponse() && s.NonTagFields.Count() > 0)
-            {
-                Write("/// Creates a new instance with the specified values");
-                Write("pub fn new(");
-                TabIn();
-
-                foreach (var f in s.NonTagFields)
-                {
-                    if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
-                        continue;
-
-                    Write($"{ToSnakeCase(f.Name)}: {TransType(f)},");
-                }
-
-                Write($") -> Self {{");
-                TabIn("Self {");
-
-                foreach (var f in s.NonTagFields)
-                {
-                    if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
-                        continue;
-
-                    Write($"{ToSnakeCase(f.Name)},");
-                }
-
-                Write("..Default::default()");
-
-                TabOut("}", false);
-                TabOut("}", false);
-                Write("");
-            }
-
-            GenGetUnionSelector(s);
-
-            InsertSnip(s.Name + "_impl");
-
-            TabOut("}");
-
-            GenTpmStructureImplementation(s);
-
-            GenTpmMarshallerImplementation(s);
-
-            GenTpmCmdStructureImplementation(s);
-
-            // GenDefaultStructureImplementation(s);
-
-            Write("");
         }
-
-        // void GenDefaultStructureImplementation(TpmStruct s) {
-        //     TabIn($"impl Default for {s.Name} {{");
-        //     TabIn("fn default() -> Self {");
-        //     TabIn("Self {");
-        //     foreach (var f in s.NonTagFields)
-        //     {
-        //         Write($"{f.Name}: {f.GetInitVal()},");
-        //     }
-        //     // Write("..Default::default()");
-        //     TabOut("}", false);
-        //     TabOut("}", false);
-        //     TabOut("}");
-        // }
 
         void GenTpmStructureImplementation(TpmStruct s)
         {
@@ -606,11 +618,6 @@ namespace CodeGen
             }
 
             TabOut("}");
-
-            // if (info.NumHandles == 0)
-            // {
-            //     return;
-            // }
 
             if (info.IsRequest())
             {
@@ -858,13 +865,12 @@ namespace CodeGen
 
         void GenStructMarshalingImpl(TpmStruct s)
         {
-            var fields = s.MarshalFields;
             Write("// Implement serialization/deserialization");
 
             // To TPM implementation
             TabIn("fn serialize(&self, buf: &mut TpmBuffer) -> Result<(), TpmError> {");
             Write("// Serialize fields");
-            var toTpmOps = GetToTpmFieldsMarshalOps(fields);
+            var toTpmOps = GetFieldsMarshalOpsRecursive(s, GetToTpmFieldsMarshalOps);
 
             foreach (var op in toTpmOps)
             {
@@ -877,13 +883,27 @@ namespace CodeGen
             // From TPM implementation
             TabIn("fn deserialize(&mut self, buf: &mut TpmBuffer) -> Result<(), TpmError> {");
             Write("// Deserialize fields");
-            var fromTpmOps = CodeGenBase.GetFromTpmFieldsMarshalOps(s.MarshalFields);
+            var fromTpmOps = GetFieldsMarshalOpsRecursive(s, GetFromTpmFieldsMarshalOps);
             foreach (var op in fromTpmOps)
             {
                 Write(op + ";");
             }
             Write("Ok(())");
             TabOut("}");
+        }
+
+        // Recursively gets all marshal ops for the struct and its base classes (fields are contained in rust rather
+        // than derived)
+        List<string> GetFieldsMarshalOpsRecursive(TpmStruct s, Func<StructField[], List<string>> getMarshalOpsFunc) {
+            var ops = new List<string>();
+
+            if (s.DerivedFrom != null) {
+                ops.AddRange(GetFieldsMarshalOpsRecursive(s.DerivedFrom, getMarshalOpsFunc));
+            }
+
+            ops.AddRange(getMarshalOpsFunc(s.MarshalFields));
+
+            return ops;
         }
 
         // Helper methods for Rust-specific formatting

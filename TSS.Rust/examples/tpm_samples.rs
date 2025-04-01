@@ -187,11 +187,11 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
 
     // Set up PCR selection for the quote
     let pcrs_to_quote = vec![
-        TPMS_PCR_SELECTION::new( TPM_ALG_ID::SHA1, vec![7] )
+        TPMS_PCR_SELECTION::new( TPM_ALG_ID::SHA1, vec![1,1,1] )
     ];
 
     // Do an event to make sure the value is non-zero
-    tpm.PCR_Event(TPM_HANDLE::pcr(7), vec![ 1, 2, 3])?;
+    tpm.PCR_Event(TPM_HANDLE::pcr(7), vec![0x80, 0, 0])?;
 
     // Then read the value so that we can validate the signature later
     let pcr_vals = tpm.PCR_Read(pcrs_to_quote.clone())?;
@@ -199,7 +199,6 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     // Do the quote.  Note that we provide a nonce.
     let nonce = "TPM Quote Test Data".as_bytes().to_vec();
     let quote = tpm.Quote(sig_key, nonce, TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?, pcrs_to_quote)?;
-    
     
     // Need to cast to the proper attestation type to validate
     let attested = quote.quoted.attested;
