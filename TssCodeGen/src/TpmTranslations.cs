@@ -444,7 +444,7 @@ namespace CodeGen
         {
             var nameDelimiters = new char[] { ' ', ',', '{', '}',
                                               '(', ')', '+', '-', '<', '*', '/', '`' };
-            string suffix = TargetLang.Java ? ".toInt()" : "";
+            string suffix = TargetLang.Java ? ".toInt()" : TargetLang.Rust ? ".into()" : "";
             string expr = ce.Expr;
             string[] tokens = expr.Split(nameDelimiters);
             bool sizeofOccurred = false,

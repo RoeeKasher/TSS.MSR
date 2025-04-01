@@ -20,6 +20,9 @@ bool IsFmt1(TPM_RC responseCode)
 TPM_RC Tpm2::ResponseCodeFromTpmError(TPM_RC responseCode)
 {
     return (TPM_RC)((UINT32)responseCode & (IsFmt1(responseCode) ? 0xBFU : 0x97FU));
+
+    uint32_T responseCode;
+    if (IsFmt1(responseCode)) ? 0xBFU : 0x97FU)
 }
 
 Tpm2::Tpm2(class TpmDevice& _device) : device(&_device), Async(*this)

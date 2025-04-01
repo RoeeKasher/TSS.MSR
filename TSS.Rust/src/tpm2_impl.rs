@@ -152,19 +152,18 @@ impl Tpm2 {
     }
 
     /// Cleans the raw response code from the TPM
-    fn clean_response_code(raw_response: TPM_RC) -> TPM_RC {
+    fn response_code_from_tpm_error(raw_response: TPM_RC) -> TPM_RC {
         if Self::is_comm_medium_error(raw_response) {
             return raw_response;
         }
 
         let raw_response_u32 = raw_response.get_value();
-        let mask: u32 = if (raw_response_u32) & (TPM_RC::RC_FMT1.get_value()) != 0 {
-            (TPM_RC::RC_FMT1.get_value()) | 0x3F
-        } else {
-            (TPM_RC::RC_WARN.get_value()) | (TPM_RC::RC_VER1.get_value()) | 0x7F
-        };
+        let is_fmt = (raw_response_u32 & TPM_RC::RC_FMT1.get_value()) != 0;
 
-        unsafe { std::mem::transmute((raw_response_u32) & mask) }
+
+        let mask: u32 = if is_fmt { 0xBF } else { 0x97F };
+
+        TPM_RC { 0: (raw_response_u32 & mask) }
     }
 
     /// Generates an error response buffer
@@ -424,7 +423,7 @@ impl Tpm2 {
         }
 
         // Clean and store the response code
-        self.last_response_code = Self::clean_response_code(resp_code);
+        self.last_response_code = Self::response_code_from_tpm_error(resp_code);
 
         // Figure out our reaction to the received response. This logic depends on:
         //   errors_allowed - no exception, regardless of success or failure

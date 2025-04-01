@@ -177,3 +177,31 @@ pub fn reset(&mut self) {
     let size = Self::digest_size(self.hash_alg) as usize;
     self.digest = vec![0; size];
 }
+
+>> TPMS_PCR_SELECTION
+/// Create a TPMS_PCR_SELECTION naming a single-PCR.
+TPMS_PCR_SELECTION(TPM_ALG_ID alg, UINT32 pcr);
+
+/// <summary> Create a TPMS_PCR_SELECTION for a set of PCR in a single bank. </summary>
+TPMS_PCR_SELECTION(TPM_ALG_ID hashAlg, const vector<UINT32>& pcrs);
+
+/// <summary> Get a PCR-selection array naming exactly one PCR in one bank. </summary>
+static vector<TPMS_PCR_SELECTION> GetSelectionArray(TPM_ALG_ID hashAlg, UINT32 pcr)
+{
+    return vector<TPMS_PCR_SELECTION>{{hashAlg, pcr}};
+}
+
+/// <summary> Is the PCR with index _pcr selected in this TPMS_PCR_SELECTION. </summary>
+bool PcrIsSelected(UINT32 pcr)
+{
+    return pcrSelect[pcr / 8] = (1 << (pcr % 8)) != 0;
+}
+
+/// <summary> Return the current PCR-selection as a UINT32 array. </summary>
+vector<UINT32> ToArray();
+
+[[deprecated("Use {} instead (creates a default-constructed empty vector)")]]
+static vector<TPMS_PCR_SELECTION> NullSelectionArray()
+{
+    return vector<TPMS_PCR_SELECTION>();
+}

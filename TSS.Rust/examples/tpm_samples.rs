@@ -1,9 +1,6 @@
 use std::io::{self, Write};
 use tss_rust::{
-    device::{TpmDevice, TpmTbsDevice},
-    tpm2_impl::*,
-    tpm_structure::TpmEnum,
-    tpm_types::{TPMU_CAPABILITIES, TPM_CAP, TPM_CC},
+    device::{TpmDevice, TpmTbsDevice}, error::TpmError, tpm2_impl::*, tpm_structure::{TpmEnum, TpmStructure}, tpm_types::*
 };
 
 fn set_color(color: u8) {
@@ -27,12 +24,7 @@ fn announce(test_name: &str) {
     set_color(0); // Set color (e.g., green)
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Example usage of the TSS.Rust library
-    let mut device = Box::new(TpmTbsDevice::new());
-    device.connect()?;
-    let mut tpm = create_tpm_with_device(device);
-
+fn get_capabilities(tpm: &mut Tpm2) -> Result<(), Box<dyn std::error::Error>> {
     let mut start_val = 0;
 
     announce("************************* Algorithms *************************");
@@ -125,23 +117,146 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!(); // Print newline after each row
     }
 
+    Ok(())
+}
+
+fn make_storage_primary(tpm: &mut Tpm2) -> Result<TPM_HANDLE, TpmError> {
+
+    let object_attributes = TPMA_OBJECT::decrypt | TPMA_OBJECT::restricted
+        | TPMA_OBJECT::fixedParent | TPMA_OBJECT::fixedTPM
+        | TPMA_OBJECT::sensitiveDataOrigin | TPMA_OBJECT::userWithAuth;
+    
+    let Aes128Cfb = TPMT_SYM_DEF_OBJECT::new(TPM_ALG_ID::AES, 128, TPM_ALG_ID::CFB);
+
+    let parameters = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(Aes128Cfb.clone(), Some(TPMU_ASYM_SCHEME::null(TPMS_NULL_ASYM_SCHEME::default())), 2048, 65537));
+
+    let unique = TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default());
+
+
+    let storage_primary_template = TPMT_PUBLIC::new(TPM_ALG_ID::SHA1,
+                    object_attributes,
+                    Vec::new(),           // No policy
+                    Some(parameters),
+                    Some(unique));
+    // Create the key
+    // if (auth_session)
+    //     tpm[*auth_session];
+
+    let create_primary_response = tpm.CreatePrimary(TPM_HANDLE::new(TPM_RH::OWNER.get_value()),
+    TPMS_SENSITIVE_CREATE::default(),
+    storage_primary_template,
+       Default::default(),
+       Default::default())?;
+
+    Ok(create_primary_response.handle)
+}
+
+fn make_child_signing_key(tpm: &mut Tpm2, parent: &TPM_HANDLE, restricted: bool) -> Result<TPM_HANDLE, TpmError>
+{
+    let restricted_attribute: TPMA_OBJECT = if restricted { TPMA_OBJECT::restricted } else { TPMA_OBJECT(0) };
+
+    println!("Restricted attribute: {:?}", restricted_attribute);
+
+    let object_attributes = TPMA_OBJECT::sign | TPMA_OBJECT::fixedParent | TPMA_OBJECT::fixedTPM
+                | TPMA_OBJECT::sensitiveDataOrigin | TPMA_OBJECT::userWithAuth | restricted_attribute;
+
+    let parameters = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(Default::default(), 
+        Some(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA { hashAlg: TPM_ALG_ID::SHA1 })), 2048, 65537)); // PKCS1.5
+
+    let unique = TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default());
+
+    let templ = TPMT_PUBLIC::new(TPM_ALG_ID::SHA1, object_attributes, Default::default(), Some(parameters), Some(unique));
+
+    let new_signing_key = tpm.Create(parent.clone(), Default::default(), templ, Default::default(), Default::default())?;
+
+    tpm.Load(parent.clone(), new_signing_key.outPrivate.clone(), new_signing_key.outPublic.clone())
+}
+
+
+fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("Attestation Sample");
+
+    // Attestation is the TPM signing internal data structures. The TPM can perform
+    // several-types of attestation: we demonstrate signing PCR, keys, and time.
+
+    // To get attestation information we need a restricted signing key and privacy authorization.
+    let primary_key = make_storage_primary(tpm)?;
+    let sig_key = make_child_signing_key(tpm, &primary_key, true)?;
+
+    println!("Created and loaded signing key with handle: {:?}", sig_key);
+
+    // Set up PCR selection for the quote
+    let pcrs_to_quote = vec![
+        TPMS_PCR_SELECTION::new( TPM_ALG_ID::SHA1, vec![7] )
+    ];
+
+    // Do an event to make sure the value is non-zero
+    tpm.PCR_Event(TPM_HANDLE::pcr(7), vec![ 1, 2, 3])?;
+
+    // Then read the value so that we can validate the signature later
+    let pcr_vals = tpm.PCR_Read(pcrs_to_quote.clone())?;
+
+    // Do the quote.  Note that we provide a nonce.
+    let nonce = "TPM Quote Test Data".as_bytes().to_vec();
+    let quote = tpm.Quote(sig_key, nonce, TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?, pcrs_to_quote)?;
+    
+    
+    // Need to cast to the proper attestation type to validate
+    let attested = quote.quoted.attested;
+    
+    if let Some(TPMU_ATTEST::quote(quote_attest)) = attested {
+        println!("Quote obtained successfully");
+        println!("Quote: {:?}", quote_attest);
+    } else {
+        println!("Failed to cast to quote attestation");
+        return Err(TpmError::InvalidParameter);
+    } ;
+
+    // // Read public key to verify the quote signature
+    // let pub_key = tpm.ReadPublic(signing_key_handle)?;
+    // println!("Retrieved public key to verify quote");
+
+    // // Verify the signature using the public key
+    // let signature = quote_result.signature.unwrap();
+    // let mut to_verify = vec![];
+    // quote_result.quoted.serialize(&mut to_verify)?;
+
+    // let verification_result = crypto_helper::verify_signature(
+    //     &pub_key.outPublic.publicArea,
+    //     &to_verify,
+    //     &signature
+    // )?;
+
+    // if verification_result {
+    //     println!("Quote signature verification SUCCESSFUL! ✅");
+    // } else {
+    //     println!("Quote signature verification FAILED! ❌");
+    // }
+
+    // // Clean up - flush keys from TPM
+    // tpm.FlushContext(signing_key_handle)?;
+    // tpm.FlushContext(sk_handle)?;
+    // tpm.FlushContext(ek_handle)?;
+    println!("Cleaned up keys from TPM");
+
+    Ok(())
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Example usage of the TSS.Rust library
+    let mut device = Box::new(TpmTbsDevice::new());
+    device.connect()?;
+    let mut tpm = create_tpm_with_device(device);
+
+    // Run capabilities test
+    get_capabilities(&mut tpm)?;
+    
+    // Run attestation sample
+    attestation(&mut tpm)?;
+
     announce(
         "************************* 🦀🦀🦀 Generated by Tss.Rust 🦀🦀🦀 *************************",
     );
 
     Ok(())
-    // startVal = 0;
-    // cout << "PCRS: " << endl;
-    // auto caps2 = tpm.GetCapability(TPM_CAP::PCRS, 0, 1);
-    // auto pcrs = dynamic_cast<TPML_PCR_SELECTION*>(&*caps2.capabilityData);
-
-    // for (auto it = pcrs->pcrSelections.begin(); it != pcrs->pcrSelections.end(); it++)
-    // {
-    //     cout << EnumToStr(it->hash) << "\t";
-    //     auto pcrsWithThisHash = it->ToArray();
-
-    //     for (auto p = pcrsWithThisHash.begin(); p != pcrsWithThisHash.end(); p++)
-    //         cout << *p << " ";
-    //     cout << endl;
-    // }
 }

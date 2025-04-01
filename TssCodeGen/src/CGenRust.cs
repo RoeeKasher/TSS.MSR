@@ -321,7 +321,7 @@ namespace CodeGen
             TabOut("}", false);
             TabOut("}");
 
-            TabIn($"fn create(selector: {unionSelectorType}) -> Result<Option<Self>, TpmError> {{");
+            TabIn($"pub fn create(selector: {unionSelectorType}) -> Result<Option<Self>, TpmError> {{");
             TabIn("match selector {");
             foreach (var m in u.Members)
             {
@@ -446,9 +446,12 @@ namespace CodeGen
             }
 
             WriteComment(s);
-            Write($"#[derive(Debug, Default, Clone)]");
+            Write($"#[derive(Debug, Clone, Derivative)]");
+            Write("#[derivative(Default)]");
             Write($"pub struct {structName} {{");
             TabIn();
+
+            var fieldsToInit = s.NonDefaultInitFields.Select(f => f.Name).ToHashSet();
 
             // Fields
             foreach (var f in s.NonSizeFields)
@@ -464,6 +467,10 @@ namespace CodeGen
                     continue;
                 }
 
+                if (fieldsToInit.Contains(f.Name))
+                {
+                    Write($"#[derivative(Default(value=\"{f.GetInitVal()}\"))]");
+                }
                 Write($"pub {ToSnakeCase(f.Name)}: {TransType(f)},");
             }
 
@@ -520,8 +527,24 @@ namespace CodeGen
 
             GenTpmCmdStructureImplementation(s);
 
+            // GenDefaultStructureImplementation(s);
+
             Write("");
         }
+
+        // void GenDefaultStructureImplementation(TpmStruct s) {
+        //     TabIn($"impl Default for {s.Name} {{");
+        //     TabIn("fn default() -> Self {");
+        //     TabIn("Self {");
+        //     foreach (var f in s.NonTagFields)
+        //     {
+        //         Write($"{f.Name}: {f.GetInitVal()},");
+        //     }
+        //     // Write("..Default::default()");
+        //     TabOut("}", false);
+        //     TabOut("}", false);
+        //     TabOut("}");
+        // }
 
         void GenTpmStructureImplementation(TpmStruct s)
         {

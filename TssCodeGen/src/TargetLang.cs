@@ -154,7 +154,7 @@ namespace CodeGen
         public static string EnumeratorAsUint(string name)
         {
             // TranslateConstExpr() takes care of .toInt() required in Java
-            return (TargetLang.DotNet ? "(uint)" : TargetLang.Rust ? "as u32" : "") + TranslateConstExpr(name);
+            return (TargetLang.DotNet ? "(uint)" : "") + TranslateConstExpr(name);
         }
 
         public static CodeGenBase NewCodeGen (Lang lang, string rootDir)
@@ -170,7 +170,7 @@ namespace CodeGen
 
             _curLang = lang;
             _thisQual = DotNet || Cpp || Java ? "" : This + ".";
-            _null = Py ? "None" : Rust ? "None" : Cpp ? "nullptr" : "null";
+            _null = Py ? "None" : Rust ? "Default::default()" : Cpp ? "nullptr" : "null";
             _new = DotNet || Java || Node ? "new " : Rust ? "" : "";
             _quote = Py || Node ? "'" : Rust ? "\"" : "\"";
             _digestSize = Cpp ? "TPMT_HA::DigestSize" : Rust ? "Crypto::digestSize" : "Crypto.digestSize";
