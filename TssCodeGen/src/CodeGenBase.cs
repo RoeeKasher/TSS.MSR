@@ -42,11 +42,11 @@ namespace CodeGen
                 LoadSnips(rootDir + snipsFileName);
         }
 
-        
+
         internal abstract void Generate();
 
 
-        static void AddBitfieldElt(List<TpmNamedConstant> elements,  string name, long val, 
+        static void AddBitfieldElt(List<TpmNamedConstant> elements, string name, long val,
                                    string comment = null, string oldStyleName = null, bool custom = false)
         {
             // Comment is null only for custom enumerators "XXX_BIT_OFFSET" and "XXX_BIT_LENGTH"
@@ -90,7 +90,7 @@ namespace CodeGen
                     string nameBase = b.Name.Contains("_") ? TargetLang.NameToDotNet(b.Name) : b.Name;
                     int len = b.StartBit - b.EndBit + 1;
                     var suff = TargetLang.DotNet ? new string[] { "BitMask", "BitOffset", "BitLength" }
-                                                 : new string[] { "_BIT_MASK" , "_BIT_OFFSET", "_BIT_LENGTH" };
+                                                 : new string[] { "_BIT_MASK", "_BIT_OFFSET", "_BIT_LENGTH" };
                     AddBitfieldElt(elements, nameBase + suff[0], ((1 << len) - 1) << b.EndBit, b.Comment, null, true);
                     AddBitfieldElt(elements, nameBase + suff[1], b.EndBit, null, null, true);
                     AddBitfieldElt(elements, nameBase + suff[2], len, null, null, true);
@@ -109,6 +109,7 @@ namespace CodeGen
         {
             var marshalOps = new List<string>();
             string fieldNamePrefix = TargetLang.Rust ? "&" : "";
+            string resultSuffix = TargetLang.Rust ? "?" : "";
 
             foreach (StructField f in fields)
             {
@@ -120,7 +121,7 @@ namespace CodeGen
                         if (f.IsValueType())
                             marshalOps.Add($"buf.write{WireNameForInt(size)}({TargetLang.GetEnumValue(fieldName, f.TypeName, size)})");
                         else
-                            marshalOps.Add($"{fieldName}.toTpm(buf)");
+                            marshalOps.Add($"{fieldName}.toTpm(buf){resultSuffix}");
 
                         if (f.Attrs.HasFlag(StructFieldAttr.TermOnNull))
                         {
@@ -135,7 +136,7 @@ namespace CodeGen
 
                     case MarshalType.SizedStruct:
                         Debug.Assert(f.SizeTagField != null);
-                        marshalOps.Add($"buf.writeSizedObj({fieldNamePrefix + fieldName})");
+                        marshalOps.Add($"buf.writeSizedObj({fieldNamePrefix + fieldName}){resultSuffix}");
                         break;
 
                     case MarshalType.EncryptedVariableLengthArray:
@@ -146,7 +147,7 @@ namespace CodeGen
 
                     case MarshalType.VariableLengthArray:
                         var sizeTagLen = f.SizeTagField.Type.GetSize();
-                        if (f.IsByteBuffer()) 
+                        if (f.IsByteBuffer())
                         {
                             // Rust doesn't support default arguments for functions, so we need to pass the size tag length explicitly
                             bool shouldNotPassSizeTag = sizeTagLen == 2 && !TargetLang.Rust;
@@ -155,7 +156,7 @@ namespace CodeGen
                         else if (f.IsValueType())
                             marshalOps.Add($"buf.writeValArr({fieldName + TargetLang.AsReference(true)}, {size})");
                         else
-                            marshalOps.Add($"buf.writeObjArr({fieldName + TargetLang.AsReference(true)})");
+                            marshalOps.Add($"buf.writeObjArr({fieldName + TargetLang.AsReference(true)}){resultSuffix}");
                         break;
 
                     case MarshalType.UnionSelector:
@@ -166,12 +167,12 @@ namespace CodeGen
                             string earlyReturnValue = TargetLang.Rust ? "Ok(())" : "";
                             marshalOps.Add(TargetLang.IfNull(unionField) + $" {{ return {earlyReturnValue} }}");
                         }
-                        
+
                         marshalOps.Add($"buf.write{WireNameForInt(size)}({unionField}{TargetLang.UnionMember(true)}GetUnionSelector(){TargetLang.GetUnionValue(size)})");
                         break;
 
                     case MarshalType.UnionObject:
-                        marshalOps.Add($"{fieldName}{TargetLang.UnionMember(true)}toTpm(buf)");
+                        marshalOps.Add($"{fieldName}{TargetLang.UnionMember(true)}toTpm(buf){resultSuffix}");
                         break;
 
                     default:
@@ -184,6 +185,8 @@ namespace CodeGen
 
         public static List<string> GetFromTpmFieldsMarshalOps(StructField[] fields)
         {
+            string resultSuffix = TargetLang.Rust ? "?" : "";
+
             var marshalOps = new List<string>();
             foreach (StructField f in fields)
             {
@@ -195,8 +198,8 @@ namespace CodeGen
                         if (f.IsValueType())
                             marshalOps.Add($"{fieldName} = {TargetLang.ParseEnum(f.TypeName, $"buf.read{WireNameForInt(size)}()", f.Type.GetFinalUnderlyingType().Name)}");
                         else
-                            marshalOps.Add(TargetLang.Cpp || TargetLang.Rust ? $"{fieldName}.initFromTpm(buf)"
-                                                          : $"{fieldName} = {f.TypeName}.fromTpm(buf)");
+                            marshalOps.Add(TargetLang.Cpp || TargetLang.Rust ? $"{fieldName}.initFromTpm(buf){resultSuffix}"
+                                                          : $"{fieldName} = {f.TypeName}.fromTpm(buf){resultSuffix}");
 
                         if (f.Attrs.HasFlag(StructFieldAttr.TermOnNull))
                         {
@@ -213,7 +216,7 @@ namespace CodeGen
                     case MarshalType.SizedStruct:
                         Debug.Assert(f.SizeTagField != null);
                         marshalOps.Add(TargetLang.Cpp ? $"buf.readSizedObj({fieldName})" :
-                                       TargetLang.Rust ? $"buf.readSizedObj(&mut {fieldName})" :
+                                       TargetLang.Rust ? $"buf.readSizedObj(&mut {fieldName})?" :
                                        $"{fieldName} = buf.createSizedObj({TargetLang.TypeInfo(f.TypeName)})");
                         break;
 
@@ -240,7 +243,7 @@ namespace CodeGen
                                            TargetLang.Rust ? $"buf.readValArr({fieldName + TargetLang.AsReference(false)}, {f.Type.GetSize()})?" :
                                            $"{fieldName} = buf.readValArr({f.Type.GetSize()})");
                         else
-                            marshalOps.Add(TargetLang.Cpp || TargetLang.Rust ? $"buf.readObjArr({fieldName + TargetLang.AsReference(false)})"
+                            marshalOps.Add(TargetLang.Cpp || TargetLang.Rust ? $"buf.readObjArr({fieldName + TargetLang.AsReference(false)}){resultSuffix}"
                                                           : $"{fieldName} = buf.readObjArr({TargetLang.TypeInfo(f.TypeName.TrimEnd('[', ']'))})");
                         break;
 
@@ -251,7 +254,7 @@ namespace CodeGen
                             marshalOps.Add($"{localVar} = {TargetLang.ParseEnum(f.TypeName, $"buf.read{WireNameForInt(size)}()", f.Type.GetFinalUnderlyingType().Name)}");
                         }
                         else
-                            marshalOps.Add($"{localVar} = {f.TypeName}.fromTpm(buf)");
+                            marshalOps.Add($"{localVar} = {f.TypeName}.fromTpm(buf){resultSuffix}");
                         break;
 
                     case MarshalType.UnionObject:
@@ -263,8 +266,8 @@ namespace CodeGen
                             marshalOps.Add($"{fieldName} = {f.TypeName}::create(r#{selectorName})?");
                         else
                             marshalOps.Add($"{fieldName} = UnionFactory.create({TargetLang.Quote(f.TypeName)}, {selectorName})");
-                        
-                        marshalOps.Add($"{fieldName}{TargetLang.UnionMember(false)}initFromTpm(buf)");
+
+                        marshalOps.Add($"{fieldName}{TargetLang.UnionMember(false)}initFromTpm(buf){resultSuffix}");
                         break;
                     default:
                         break;
@@ -393,7 +396,8 @@ namespace CodeGen
 
         internal static string WireNameForInt(int size)
         {
-            switch(size){
+            switch (size)
+            {
                 case 1: return "Byte";
                 case 2: return "Short";
                 case 4: return "Int";
@@ -461,7 +465,7 @@ namespace CodeGen
 
         public static string AsSummary(string comment)
         {
-            return  string.IsNullOrEmpty(comment) ? comment
+            return string.IsNullOrEmpty(comment) ? comment
                     : (TargetLang.Cpp || TargetLang.DotNet)
                     ? "<summary> " + comment + " </summary>" : comment;
         }
@@ -553,12 +557,12 @@ namespace CodeGen
                 if (!comment.Contains('\n'))
                 {
                     if (end.StartsWith("\n"))
-                        end =  end.Substring(1);
+                        end = end.Substring(1);
                     end = " " + end.TrimStart(' ');
                 }
                 comment += end;
             }
-            var lines = comment.Split(new char[] {'\n'});
+            var lines = comment.Split(new char[] { '\n' });
             for (int i = 0; i < lines.Length; ++i)
                 Write(lines[i]);
             CommentWritten = true;
@@ -586,12 +590,12 @@ namespace CodeGen
             WriteComment(AsSummary(nc.Comment));
         }
 
-        protected bool  NewLine = true,
+        protected bool NewLine = true,
                         EmptyLineWritten = false,
                         CommentWritten = false;
 
         protected const int SpacesPerTab = 4;
-        protected int   IndentLevel;
+        protected int IndentLevel;
 
         protected string CurIndent()
         {
@@ -620,9 +624,9 @@ namespace CodeGen
                 NewLine = true;
             }
 
-            string  curIndent = CurIndent(),
+            string curIndent = CurIndent(),
                     indent = NewLine ? curIndent : "";
-            var lines = str.Replace("\r", "").Split(new char[] {'\n'});
+            var lines = str.Replace("\r", "").Split(new char[] { '\n' });
             for (int i = 0; i < lines.Length; ++i)
             {
                 GeneratedCode.Append(indent + lines[i]);

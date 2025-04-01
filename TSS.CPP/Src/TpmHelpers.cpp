@@ -39,7 +39,7 @@ uint32_t StrToEnum(const string& enumName, size_t enumID)
     auto& enumMap = Str2EnumMap[enumID];
     auto it = enumMap.find(enumName);
     if (it != enumMap.end())
-        return it->second;
+    return it->second;
 
     uint32_t val = 0;
     size_t  beg = 0,

@@ -1,3 +1,7 @@
+// Since all of the functions here are called from auto-generated code that expects a specific names,
+// we have to use those names and not the Rust convention of snake_case
+#![allow(non_snake_case)]
+
 use crate::error::TpmError;
 use crate::tpm_structure::TpmEnum;
 
@@ -248,16 +252,16 @@ impl TpmBuffer {
         self.readByteBuf(size)
     }
 
-    pub fn createObj<T: TpmMarshaller + Default>(&mut self) -> T {
+    pub fn createObj<T: TpmMarshaller + Default>(&mut self) -> Result<T, TpmError> {
         let mut new_obj = T::default();
-        new_obj.initFromTpm(self);
-        new_obj
+        new_obj.initFromTpm(self)?;
+        Ok(new_obj)
     }
 
-    pub fn writeSizedObj<T: TpmMarshaller>(&mut self, obj: &T) {
+    pub fn writeSizedObj<T: TpmMarshaller>(&mut self, obj: &T) -> Result<(), TpmError> {
         const LEN_SIZE: usize = 2; // Length of the object size is always 2 bytes
         if !self.check_len(LEN_SIZE) {
-            return;
+            return Ok(());
         }
 
         // Remember position to marshal the size of the data structure
@@ -265,19 +269,24 @@ impl TpmBuffer {
         // Account for the reserved size area
         self.pos += LEN_SIZE;
         // Marshal the object
-        obj.toTpm(self);
+        obj.toTpm(self)?;
         // Calc marshaled object len
         let obj_size = self.pos - (size_pos + LEN_SIZE);
         // Marshal it in the appropriate position
         self.pos = size_pos;
         self.writeShort(obj_size as u16);
         self.pos += obj_size;
+
+        Ok(())
     }
 
-    pub fn readSizedObj<T: TpmMarshaller + Default>(&mut self, obj: &mut T) {
+    pub fn readSizedObj<T: TpmMarshaller + Default>(
+        &mut self,
+        obj: &mut T,
+    ) -> Result<(), TpmError> {
         let size = self.readShort();
         if size == 0 {
-            return;
+            return Ok(());
         }
 
         self.sized_struct_sizes.push(SizedStructInfo {
@@ -285,40 +294,48 @@ impl TpmBuffer {
             size: size as usize,
         });
 
-        obj.initFromTpm(self);
+        obj.initFromTpm(self)?;
 
         self.sized_struct_sizes.pop();
+        Ok(())
     }
 
-    pub fn writeObjArr<T: TpmMarshaller>(&mut self, arr: &[T]) {
+    pub fn writeObjArr<T: TpmMarshaller>(&mut self, arr: &[T]) -> Result<(), TpmError> {
         self.writeInt(arr.len() as u32);
         for elt in arr {
             if !self.isOk() {
                 break;
             }
-            elt.toTpm(self);
+            elt.toTpm(self)?;
         }
+
+        Ok(())
     }
 
-    pub fn readObjArr<T: TpmMarshaller + Default>(&mut self, arr: &mut Vec<T>) {
+    pub fn readObjArr<T: TpmMarshaller + Default>(
+        &mut self,
+        arr: &mut Vec<T>,
+    ) -> Result<(), TpmError> {
         let len = self.readInt();
         if len == 0 {
-            return arr.clear();
+            return Ok(arr.clear());
         }
 
         arr.resize_with(len as usize, T::default);
-        arr.iter_mut().for_each(|elt| {
+        for elt in arr {
             if !self.isOk() {
-                return;
+                break;
             }
-            elt.initFromTpm(self);
-        });
+            elt.initFromTpm(self)?;
+        }
+
+        Ok(())
     }
 
     pub fn writeValArr<T, U>(&mut self, arr: &[T], val_size: usize)
-    where       
+    where
         T: TpmEnum<U> + Default,
-        U: Into<u64>
+        U: Into<u64>,
     {
         // Length of the array size is always 4 bytes
         self.writeInt(arr.len() as u32);
@@ -330,14 +347,10 @@ impl TpmBuffer {
         }
     }
 
-    pub fn readValArr<T, U>(
-        &mut self,
-        arr: &mut Vec<T>,
-        val_size: usize,
-    ) -> Result<(), TpmError> 
-    where       
+    pub fn readValArr<T, U>(&mut self, arr: &mut Vec<T>, val_size: usize) -> Result<(), TpmError>
+    where
         T: TpmEnum<U> + Default,
-        U: Into<u64>
+        U: Into<u64>,
     {
         // Length of the array size is always 4 bytes
         let len = self.readInt();

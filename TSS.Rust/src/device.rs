@@ -6,9 +6,6 @@
 //! TPM device communication implementations
 
 use crate::error::TpmError;
-use std::io::{Read, Write};
-use std::net::TcpStream;
-use std::time::Duration;
 
 #[cfg(target_os = "windows")]
 use std::os::raw::c_void;
@@ -90,18 +87,20 @@ pub trait TpmDevice {
     fn response_is_ready(&self) -> Result<bool, TpmError>;
 
     /// Power control
-    fn power_ctl(&mut self, on: bool) -> Result<(), TpmError> {
-        Err(TpmError::NotSupported)
+    fn power_ctl(&mut self, _on: bool) -> Result<(), TpmError> {
+        Err(TpmError::NotSupported("power_ctl".to_string()))
     }
 
     /// Assert physical presence
-    fn assert_physical_presence(&mut self, on: bool) -> Result<(), TpmError> {
-        Err(TpmError::NotSupported)
+    fn assert_physical_presence(&mut self, _on: bool) -> Result<(), TpmError> {
+        Err(TpmError::NotSupported(
+            "assert_physical_presence".to_string(),
+        ))
     }
 
     /// Set locality for subsequent commands
-    fn set_locality(&mut self, locality: u32) -> Result<(), TpmError> {
-        Err(TpmError::NotSupported)
+    fn set_locality(&mut self, _locality: u32) -> Result<(), TpmError> {
+        Err(TpmError::NotSupported("set_locality".to_string()))
     }
 
     /// Check if platform is available
@@ -476,8 +475,12 @@ impl TpmDevice for TpmTbsDevice {
 
         // Get device info to check if TPM 2.0 is available
         let mut info = TPM_DEVICE_INFO::default();
-        let res =
-            unsafe { Tbsi_GetDeviceInfo(std::mem::size_of::<TPM_DEVICE_INFO>() as u32, &mut info as *mut _ as *mut c_void) };
+        let res = unsafe {
+            Tbsi_GetDeviceInfo(
+                std::mem::size_of::<TPM_DEVICE_INFO>() as u32,
+                &mut info as *mut _ as *mut c_void,
+            )
+        };
 
         if res != TBS_SUCCESS {
             return Err(TpmError::TbsError("Failed to get device info".to_string()));

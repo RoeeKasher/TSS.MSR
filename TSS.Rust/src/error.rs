@@ -1,7 +1,7 @@
 //! Error types for TPM operations
 
-use std::fmt;
 use std::error::Error;
+use std::fmt;
 
 use crate::tpm_types::TPM_HANDLE;
 
@@ -10,58 +10,58 @@ use crate::tpm_types::TPM_HANDLE;
 pub enum TpmError {
     /// Buffer underflow occurred during deserialization
     BufferUnderflow,
-    
+
     /// Buffer overflow occurred during serialization
     BufferOverflow,
-    
+
     /// Invalid array size
-    InvalidArraySize,
-    
+    InvalidArraySize(String),
+
     /// Invalid enum value
     InvalidEnumValue,
-    
+
     /// Invalid union type
     InvalidUnion,
-    
+
     /// Incorrect tag value
     IncorrectTag(u32, u32), // expected, actual
-    
+
     /// I/O error
     IoError(String),
-    
+
     /// Device communication error
     DeviceError(String),
-    
+
     /// Generic TPM error
     GenericError(String),
-    
-    /// Operation not supported on this device
-    NotSupported,
-    
+
+    /// Operation not supported
+    NotSupported(String),
+
     /// TPM device not connected
     NotConnected,
-    
+
     /// Bad end tag received from TPM
     BadEndTag,
-    
+
     /// Command failed
     CommandFailed,
-    
+
     /// Invalid parameter provided
     InvalidParameter,
-    
+
     /// No response available
     NoResponse,
-    
+
     /// Unexpected device state
     UnexpectedState,
-    
+
     /// Incompatible TPM/proxy
     IncompatibleTpm,
-    
+
     /// Invalid TPM device type
     InvalidTpmType,
-    
+
     /// Windows TBS specific error
     #[cfg(target_os = "windows")]
     TbsError(String),
@@ -72,14 +72,18 @@ impl fmt::Display for TpmError {
         match self {
             Self::BufferUnderflow => write!(f, "Buffer underflow during deserialization"),
             Self::BufferOverflow => write!(f, "Buffer overflow during serialization"),
-            Self::InvalidArraySize => write!(f, "Invalid array size"),
+            Self::InvalidArraySize(msg) => write!(f, "Invalid array size: {}", msg),
             Self::InvalidEnumValue => write!(f, "Invalid enum value"),
             Self::InvalidUnion => write!(f, "Invalid union type"),
-            Self::IncorrectTag(expected, actual) => write!(f, "Incorrect tag: expected 0x{:X}, got 0x{:X}", expected, actual),
+            Self::IncorrectTag(expected, actual) => write!(
+                f,
+                "Incorrect tag: expected 0x{:X}, got 0x{:X}",
+                expected, actual
+            ),
             Self::IoError(msg) => write!(f, "I/O error: {}", msg),
             Self::DeviceError(msg) => write!(f, "Device error: {}", msg),
             Self::GenericError(msg) => write!(f, "TPM error: {}", msg),
-            Self::NotSupported => write!(f, "Operation not supported on this device"),
+            Self::NotSupported(operation) => write!(f, "Operation not supported: {}", operation),
             Self::NotConnected => write!(f, "TPM device not connected"),
             Self::BadEndTag => write!(f, "Bad end tag received from TPM"),
             Self::CommandFailed => write!(f, "TPM command failed"),
