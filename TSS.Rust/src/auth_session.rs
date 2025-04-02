@@ -24,12 +24,15 @@ impl Session {
     ) -> Self {
         Session {
             sess_in: TPMS_AUTH_COMMAND::new(
-                session_handle,
-                nonce_caller.to_vec(),
+                &session_handle,
+                &nonce_caller.to_vec(),
                 session_attributes,
-                Vec::new(),
+                &Vec::new(),
             ),
-            sess_out: TPMS_AUTH_RESPONSE::new(nonce_tpm.to_vec(), session_attributes, Vec::new()),
+            sess_out: TPMS_AUTH_RESPONSE::new(
+                &nonce_tpm.to_vec(), 
+    session_attributes,
+                 &Vec::new()),
             hash_alg: TPM_ALG_ID::SHA256, // Default
             session_type: TPM_SE::HMAC,   // Default
             needs_hmac: true,

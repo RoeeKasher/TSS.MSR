@@ -81,9 +81,9 @@ impl Tpm2 {
         &mut self,
         startupType: TPM_SU,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Startup_REQUEST {
+        let req = TPM2_Startup_REQUEST::new(
             startupType,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::Startup, req, &mut resp)?;
@@ -97,9 +97,9 @@ impl Tpm2 {
         &mut self,
         shutdownType: TPM_SU,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Shutdown_REQUEST {
+        let req = TPM2_Shutdown_REQUEST::new(
             shutdownType,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::Shutdown, req, &mut resp)?;
@@ -115,9 +115,9 @@ impl Tpm2 {
         &mut self,
         fullTest: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SelfTest_REQUEST {
+        let req = TPM2_SelfTest_REQUEST::new(
             fullTest,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SelfTest, req, &mut resp)?;
@@ -129,11 +129,11 @@ impl Tpm2 {
     ///     toDoList - List of algorithms that need testing
     pub fn IncrementalSelfTest(
         &mut self,
-        toTest: Vec<TPM_ALG_ID>,
+        toTest: &Vec<TPM_ALG_ID>,
     ) -> Result<Vec<TPM_ALG_ID>, TpmError> {
-        let req = TPM2_IncrementalSelfTest_REQUEST {
+        let req = TPM2_IncrementalSelfTest_REQUEST::new(
             toTest,
-        };
+        );
 
         let mut resp = IncrementalSelfTestResponse::default();
         self.dispatch(TPM_CC::IncrementalSelfTest, req, &mut resp)?;
@@ -177,15 +177,15 @@ impl Tpm2 {
     ///     nonceTPM - The initial nonce from the TPM, used in the computation of the sessionKey
     pub fn StartAuthSession(
         &mut self,
-        tpmKey: TPM_HANDLE,
-        bind: TPM_HANDLE,
-        nonceCaller: Vec<u8>,
-        encryptedSalt: Vec<u8>,
+        tpmKey: &TPM_HANDLE,
+        bind: &TPM_HANDLE,
+        nonceCaller: &Vec<u8>,
+        encryptedSalt: &Vec<u8>,
         sessionType: TPM_SE,
-        symmetric: TPMT_SYM_DEF,
+        symmetric: &TPMT_SYM_DEF,
         authHash: TPM_ALG_ID,
     ) -> Result<StartAuthSessionResponse, TpmError> {
-        let req = TPM2_StartAuthSession_REQUEST {
+        let req = TPM2_StartAuthSession_REQUEST::new(
             tpmKey,
             bind,
             nonceCaller,
@@ -193,7 +193,7 @@ impl Tpm2 {
             sessionType,
             symmetric,
             authHash,
-        };
+        );
 
         let mut resp = StartAuthSessionResponse::default();
         self.dispatch(TPM_CC::StartAuthSession, req, &mut resp)?;
@@ -209,11 +209,11 @@ impl Tpm2 {
     /// sessionHandle: The handle for the policy session
     pub fn PolicyRestart(
         &mut self,
-        sessionHandle: TPM_HANDLE,
+        sessionHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyRestart_REQUEST {
+        let req = TPM2_PolicyRestart_REQUEST::new(
             sessionHandle,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyRestart, req, &mut resp)?;
@@ -243,19 +243,19 @@ impl Tpm2 {
     ///                      data was produced by the TPM
     pub fn Create(
         &mut self,
-        parentHandle: TPM_HANDLE,
-        inSensitive: TPMS_SENSITIVE_CREATE,
-        inPublic: TPMT_PUBLIC,
-        outsideInfo: Vec<u8>,
-        creationPCR: Vec<TPMS_PCR_SELECTION>,
+        parentHandle: &TPM_HANDLE,
+        inSensitive: &TPMS_SENSITIVE_CREATE,
+        inPublic: &TPMT_PUBLIC,
+        outsideInfo: &Vec<u8>,
+        creationPCR: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<CreateResponse, TpmError> {
-        let req = TPM2_Create_REQUEST {
+        let req = TPM2_Create_REQUEST::new(
             parentHandle,
             inSensitive,
             inPublic,
             outsideInfo,
             creationPCR,
-        };
+        );
 
         let mut resp = CreateResponse::default();
         self.dispatch(TPM_CC::Create, req, &mut resp)?;
@@ -274,15 +274,15 @@ impl Tpm2 {
     ///     name - Name of the loaded object
     pub fn Load(
         &mut self,
-        parentHandle: TPM_HANDLE,
-        inPrivate: TPM2B_PRIVATE,
-        inPublic: TPMT_PUBLIC,
+        parentHandle: &TPM_HANDLE,
+        inPrivate: &TPM2B_PRIVATE,
+        inPublic: &TPMT_PUBLIC,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_Load_REQUEST {
+        let req = TPM2_Load_REQUEST::new(
             parentHandle,
             inPrivate,
             inPublic,
-        };
+        );
 
         let mut resp = LoadResponse::default();
         self.dispatch(TPM_CC::Load, req, &mut resp)?;
@@ -298,15 +298,15 @@ impl Tpm2 {
     ///     name - Name of the loaded object
     pub fn LoadExternal(
         &mut self,
-        inPrivate: TPMT_SENSITIVE,
-        inPublic: TPMT_PUBLIC,
-        hierarchy: TPM_HANDLE,
+        inPrivate: &TPMT_SENSITIVE,
+        inPublic: &TPMT_PUBLIC,
+        hierarchy: &TPM_HANDLE,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_LoadExternal_REQUEST {
+        let req = TPM2_LoadExternal_REQUEST::new(
             inPrivate,
             inPublic,
             hierarchy,
-        };
+        );
 
         let mut resp = LoadExternalResponse::default();
         self.dispatch(TPM_CC::LoadExternal, req, &mut resp)?;
@@ -321,11 +321,11 @@ impl Tpm2 {
     ///     qualifiedName - The Qualified Name of the object
     pub fn ReadPublic(
         &mut self,
-        objectHandle: TPM_HANDLE,
+        objectHandle: &TPM_HANDLE,
     ) -> Result<ReadPublicResponse, TpmError> {
-        let req = TPM2_ReadPublic_REQUEST {
+        let req = TPM2_ReadPublic_REQUEST::new(
             objectHandle,
-        };
+        );
 
         let mut resp = ReadPublicResponse::default();
         self.dispatch(TPM_CC::ReadPublic, req, &mut resp)?;
@@ -347,17 +347,17 @@ impl Tpm2 {
     ///                associated with keyHandle
     pub fn ActivateCredential(
         &mut self,
-        activateHandle: TPM_HANDLE,
-        keyHandle: TPM_HANDLE,
-        credentialBlob: TPMS_ID_OBJECT,
-        secret: Vec<u8>,
+        activateHandle: &TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
+        credentialBlob: &TPMS_ID_OBJECT,
+        secret: &Vec<u8>,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_ActivateCredential_REQUEST {
+        let req = TPM2_ActivateCredential_REQUEST::new(
             activateHandle,
             keyHandle,
             credentialBlob,
             secret,
-        };
+        );
 
         let mut resp = ActivateCredentialResponse::default();
         self.dispatch(TPM_CC::ActivateCredential, req, &mut resp)?;
@@ -374,15 +374,15 @@ impl Tpm2 {
     ///     secret - Handle algorithm-dependent data that wraps the key that encrypts credentialBlob
     pub fn MakeCredential(
         &mut self,
-        handle: TPM_HANDLE,
-        credential: Vec<u8>,
-        objectName: Vec<u8>,
+        handle: &TPM_HANDLE,
+        credential: &Vec<u8>,
+        objectName: &Vec<u8>,
     ) -> Result<MakeCredentialResponse, TpmError> {
-        let req = TPM2_MakeCredential_REQUEST {
+        let req = TPM2_MakeCredential_REQUEST::new(
             handle,
             credential,
             objectName,
-        };
+        );
 
         let mut resp = MakeCredentialResponse::default();
         self.dispatch(TPM_CC::MakeCredential, req, &mut resp)?;
@@ -397,11 +397,11 @@ impl Tpm2 {
     ///               Size of outData is limited to be no more than 128 octets.
     pub fn Unseal(
         &mut self,
-        itemHandle: TPM_HANDLE,
+        itemHandle: &TPM_HANDLE,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_Unseal_REQUEST {
+        let req = TPM2_Unseal_REQUEST::new(
             itemHandle,
-        };
+        );
 
         let mut resp = UnsealResponse::default();
         self.dispatch(TPM_CC::Unseal, req, &mut resp)?;
@@ -418,15 +418,15 @@ impl Tpm2 {
     ///     outPrivate - Private area containing the new authorization value
     pub fn ObjectChangeAuth(
         &mut self,
-        objectHandle: TPM_HANDLE,
-        parentHandle: TPM_HANDLE,
-        newAuth: Vec<u8>,
+        objectHandle: &TPM_HANDLE,
+        parentHandle: &TPM_HANDLE,
+        newAuth: &Vec<u8>,
     ) -> Result<TPM2B_PRIVATE, TpmError> {
-        let req = TPM2_ObjectChangeAuth_REQUEST {
+        let req = TPM2_ObjectChangeAuth_REQUEST::new(
             objectHandle,
             parentHandle,
             newAuth,
-        };
+        );
 
         let mut resp = ObjectChangeAuthResponse::default();
         self.dispatch(TPM_CC::ObjectChangeAuth, req, &mut resp)?;
@@ -450,15 +450,15 @@ impl Tpm2 {
     ///     name - The name of the created object
     pub fn CreateLoaded(
         &mut self,
-        parentHandle: TPM_HANDLE,
-        inSensitive: TPMS_SENSITIVE_CREATE,
-        inPublic: Vec<u8>,
+        parentHandle: &TPM_HANDLE,
+        inSensitive: &TPMS_SENSITIVE_CREATE,
+        inPublic: &Vec<u8>,
     ) -> Result<CreateLoadedResponse, TpmError> {
-        let req = TPM2_CreateLoaded_REQUEST {
+        let req = TPM2_CreateLoaded_REQUEST::new(
             parentHandle,
             inSensitive,
             inPublic,
-        };
+        );
 
         let mut resp = CreateLoadedResponse::default();
         self.dispatch(TPM_CC::CreateLoaded, req, &mut resp)?;
@@ -486,17 +486,17 @@ impl Tpm2 {
     ///     outSymSeed - Seed protected by the asymmetric algorithms of new parent (NP)
     pub fn Duplicate(
         &mut self,
-        objectHandle: TPM_HANDLE,
-        newParentHandle: TPM_HANDLE,
-        encryptionKeyIn: Vec<u8>,
-        symmetricAlg: TPMT_SYM_DEF_OBJECT,
+        objectHandle: &TPM_HANDLE,
+        newParentHandle: &TPM_HANDLE,
+        encryptionKeyIn: &Vec<u8>,
+        symmetricAlg: &TPMT_SYM_DEF_OBJECT,
     ) -> Result<DuplicateResponse, TpmError> {
-        let req = TPM2_Duplicate_REQUEST {
+        let req = TPM2_Duplicate_REQUEST::new(
             objectHandle,
             newParentHandle,
             encryptionKeyIn,
             symmetricAlg,
-        };
+        );
 
         let mut resp = DuplicateResponse::default();
         self.dispatch(TPM_CC::Duplicate, req, &mut resp)?;
@@ -522,19 +522,19 @@ impl Tpm2 {
     ///     outSymSeed - Seed for a symmetric key protected by newParent asymmetric key
     pub fn Rewrap(
         &mut self,
-        oldParent: TPM_HANDLE,
-        newParent: TPM_HANDLE,
-        inDuplicate: TPM2B_PRIVATE,
-        name: Vec<u8>,
-        inSymSeed: Vec<u8>,
+        oldParent: &TPM_HANDLE,
+        newParent: &TPM_HANDLE,
+        inDuplicate: &TPM2B_PRIVATE,
+        name: &Vec<u8>,
+        inSymSeed: &Vec<u8>,
     ) -> Result<RewrapResponse, TpmError> {
-        let req = TPM2_Rewrap_REQUEST {
+        let req = TPM2_Rewrap_REQUEST::new(
             oldParent,
             newParent,
             inDuplicate,
             name,
             inSymSeed,
-        };
+        );
 
         let mut resp = RewrapResponse::default();
         self.dispatch(TPM_CC::Rewrap, req, &mut resp)?;
@@ -564,21 +564,21 @@ impl Tpm2 {
     ///     outPrivate - The sensitive area encrypted with the symmetric key of parentHandle
     pub fn Import(
         &mut self,
-        parentHandle: TPM_HANDLE,
-        encryptionKey: Vec<u8>,
-        objectPublic: TPMT_PUBLIC,
-        duplicate: TPM2B_PRIVATE,
-        inSymSeed: Vec<u8>,
-        symmetricAlg: TPMT_SYM_DEF_OBJECT,
+        parentHandle: &TPM_HANDLE,
+        encryptionKey: &Vec<u8>,
+        objectPublic: &TPMT_PUBLIC,
+        duplicate: &TPM2B_PRIVATE,
+        inSymSeed: &Vec<u8>,
+        symmetricAlg: &TPMT_SYM_DEF_OBJECT,
     ) -> Result<TPM2B_PRIVATE, TpmError> {
-        let req = TPM2_Import_REQUEST {
+        let req = TPM2_Import_REQUEST::new(
             parentHandle,
             encryptionKey,
             objectPublic,
             duplicate,
             inSymSeed,
             symmetricAlg,
-        };
+        );
 
         let mut resp = ImportResponse::default();
         self.dispatch(TPM_CC::Import, req, &mut resp)?;
@@ -606,17 +606,17 @@ impl Tpm2 {
     ///     outData - Encrypted output
     pub fn RSA_Encrypt(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        message: Vec<u8>,
-        inScheme: Option<TPMU_ASYM_SCHEME>,
-        label: Vec<u8>,
+        keyHandle: &TPM_HANDLE,
+        message: &Vec<u8>,
+        inScheme: &Option<TPMU_ASYM_SCHEME>,
+        label: &Vec<u8>,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_RSA_Encrypt_REQUEST {
+        let req = TPM2_RSA_Encrypt_REQUEST::new(
             keyHandle,
             message,
             inScheme,
             label,
-        };
+        );
 
         let mut resp = RSA_EncryptResponse::default();
         self.dispatch(TPM_CC::RSA_Encrypt, req, &mut resp)?;
@@ -639,17 +639,17 @@ impl Tpm2 {
     ///     message - Decrypted output
     pub fn RSA_Decrypt(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        cipherText: Vec<u8>,
-        inScheme: Option<TPMU_ASYM_SCHEME>,
-        label: Vec<u8>,
+        keyHandle: &TPM_HANDLE,
+        cipherText: &Vec<u8>,
+        inScheme: &Option<TPMU_ASYM_SCHEME>,
+        label: &Vec<u8>,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_RSA_Decrypt_REQUEST {
+        let req = TPM2_RSA_Decrypt_REQUEST::new(
             keyHandle,
             cipherText,
             inScheme,
             label,
-        };
+        );
 
         let mut resp = RSA_DecryptResponse::default();
         self.dispatch(TPM_CC::RSA_Decrypt, req, &mut resp)?;
@@ -665,11 +665,11 @@ impl Tpm2 {
     ///     pubPoint - Generated ephemeral public point (Qe)
     pub fn ECDH_KeyGen(
         &mut self,
-        keyHandle: TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
     ) -> Result<ECDH_KeyGenResponse, TpmError> {
-        let req = TPM2_ECDH_KeyGen_REQUEST {
+        let req = TPM2_ECDH_KeyGen_REQUEST::new(
             keyHandle,
-        };
+        );
 
         let mut resp = ECDH_KeyGenResponse::default();
         self.dispatch(TPM_CC::ECDH_KeyGen, req, &mut resp)?;
@@ -687,13 +687,13 @@ impl Tpm2 {
     ///     outPoint - X and Y coordinates of the product of the multiplication Z = (xZ , yZ) [hdS]QB
     pub fn ECDH_ZGen(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        inPoint: TPMS_ECC_POINT,
+        keyHandle: &TPM_HANDLE,
+        inPoint: &TPMS_ECC_POINT,
     ) -> Result<TPMS_ECC_POINT, TpmError> {
-        let req = TPM2_ECDH_ZGen_REQUEST {
+        let req = TPM2_ECDH_ZGen_REQUEST::new(
             keyHandle,
             inPoint,
-        };
+        );
 
         let mut resp = ECDH_ZGenResponse::default();
         self.dispatch(TPM_CC::ECDH_ZGen, req, &mut resp)?;
@@ -707,9 +707,9 @@ impl Tpm2 {
         &mut self,
         curveID: TPM_ECC_CURVE,
     ) -> Result<TPMS_ALGORITHM_DETAIL_ECC, TpmError> {
-        let req = TPM2_ECC_Parameters_REQUEST {
+        let req = TPM2_ECC_Parameters_REQUEST::new(
             curveID,
-        };
+        );
 
         let mut resp = ECC_ParametersResponse::default();
         self.dispatch(TPM_CC::ECC_Parameters, req, &mut resp)?;
@@ -732,19 +732,19 @@ impl Tpm2 {
     ///     outZ2 - X and Y coordinates of the second computed value (scheme dependent)
     pub fn ZGen_2Phase(
         &mut self,
-        keyA: TPM_HANDLE,
-        inQsB: TPMS_ECC_POINT,
-        inQeB: TPMS_ECC_POINT,
+        keyA: &TPM_HANDLE,
+        inQsB: &TPMS_ECC_POINT,
+        inQeB: &TPMS_ECC_POINT,
         inScheme: TPM_ALG_ID,
         counter: u16,
     ) -> Result<ZGen_2PhaseResponse, TpmError> {
-        let req = TPM2_ZGen_2Phase_REQUEST {
+        let req = TPM2_ZGen_2Phase_REQUEST::new(
             keyA,
             inQsB,
             inQeB,
             inScheme,
             counter,
-        };
+        );
 
         let mut resp = ZGen_2PhaseResponse::default();
         self.dispatch(TPM_CC::ZGen_2Phase, req, &mut resp)?;
@@ -763,15 +763,15 @@ impl Tpm2 {
     ///     C3 - The integrity value
     pub fn ECC_Encrypt(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        plainText: Vec<u8>,
-        inScheme: Option<TPMU_KDF_SCHEME>,
+        keyHandle: &TPM_HANDLE,
+        plainText: &Vec<u8>,
+        inScheme: &Option<TPMU_KDF_SCHEME>,
     ) -> Result<ECC_EncryptResponse, TpmError> {
-        let req = TPM2_ECC_Encrypt_REQUEST {
+        let req = TPM2_ECC_Encrypt_REQUEST::new(
             keyHandle,
             plainText,
             inScheme,
-        };
+        );
 
         let mut resp = ECC_EncryptResponse::default();
         self.dispatch(TPM_CC::ECC_Encrypt, req, &mut resp)?;
@@ -791,19 +791,19 @@ impl Tpm2 {
     ///     plainText - Decrypted output
     pub fn ECC_Decrypt(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        C1: TPMS_ECC_POINT,
-        C2: Vec<u8>,
-        C3: Vec<u8>,
-        inScheme: Option<TPMU_KDF_SCHEME>,
+        keyHandle: &TPM_HANDLE,
+        C1: &TPMS_ECC_POINT,
+        C2: &Vec<u8>,
+        C3: &Vec<u8>,
+        inScheme: &Option<TPMU_KDF_SCHEME>,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_ECC_Decrypt_REQUEST {
+        let req = TPM2_ECC_Decrypt_REQUEST::new(
             keyHandle,
             C1,
             C2,
             C3,
             inScheme,
-        };
+        );
 
         let mut resp = ECC_DecryptResponse::default();
         self.dispatch(TPM_CC::ECC_Decrypt, req, &mut resp)?;
@@ -824,19 +824,19 @@ impl Tpm2 {
     ///     ivOut - Chaining value to use for IV in next round
     pub fn EncryptDecrypt(
         &mut self,
-        keyHandle: TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
         decrypt: u8,
         mode: TPM_ALG_ID,
-        ivIn: Vec<u8>,
-        inData: Vec<u8>,
+        ivIn: &Vec<u8>,
+        inData: &Vec<u8>,
     ) -> Result<EncryptDecryptResponse, TpmError> {
-        let req = TPM2_EncryptDecrypt_REQUEST {
+        let req = TPM2_EncryptDecrypt_REQUEST::new(
             keyHandle,
             decrypt,
             mode,
             ivIn,
             inData,
-        };
+        );
 
         let mut resp = EncryptDecryptResponse::default();
         self.dispatch(TPM_CC::EncryptDecrypt, req, &mut resp)?;
@@ -857,19 +857,19 @@ impl Tpm2 {
     ///     ivOut - Chaining value to use for IV in next round
     pub fn EncryptDecrypt2(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        inData: Vec<u8>,
+        keyHandle: &TPM_HANDLE,
+        inData: &Vec<u8>,
         decrypt: u8,
         mode: TPM_ALG_ID,
-        ivIn: Vec<u8>,
+        ivIn: &Vec<u8>,
     ) -> Result<EncryptDecrypt2Response, TpmError> {
-        let req = TPM2_EncryptDecrypt2_REQUEST {
+        let req = TPM2_EncryptDecrypt2_REQUEST::new(
             keyHandle,
             inData,
             decrypt,
             mode,
             ivIn,
-        };
+        );
 
         let mut resp = EncryptDecrypt2Response::default();
         self.dispatch(TPM_CC::EncryptDecrypt2, req, &mut resp)?;
@@ -886,15 +886,15 @@ impl Tpm2 {
     ///                  will be a NULL ticket if the digest may not be signed with a restricted key
     pub fn Hash(
         &mut self,
-        data: Vec<u8>,
+        data: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
-        hierarchy: TPM_HANDLE,
+        hierarchy: &TPM_HANDLE,
     ) -> Result<HashResponse, TpmError> {
-        let req = TPM2_Hash_REQUEST {
+        let req = TPM2_Hash_REQUEST::new(
             data,
             hashAlg,
             hierarchy,
-        };
+        );
 
         let mut resp = HashResponse::default();
         self.dispatch(TPM_CC::Hash, req, &mut resp)?;
@@ -910,15 +910,15 @@ impl Tpm2 {
     ///     outHMAC - The returned HMAC in a sized buffer
     pub fn HMAC(
         &mut self,
-        handle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        handle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_HMAC_REQUEST {
+        let req = TPM2_HMAC_REQUEST::new(
             handle,
             buffer,
             hashAlg,
-        };
+        );
 
         let mut resp = HMACResponse::default();
         self.dispatch(TPM_CC::HMAC, req, &mut resp)?;
@@ -935,15 +935,15 @@ impl Tpm2 {
     ///     outMAC - The returned MAC in a sized buffer
     pub fn MAC(
         &mut self,
-        handle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        handle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
         inScheme: TPM_ALG_ID,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_MAC_REQUEST {
+        let req = TPM2_MAC_REQUEST::new(
             handle,
             buffer,
             inScheme,
-        };
+        );
 
         let mut resp = MACResponse::default();
         self.dispatch(TPM_CC::MAC, req, &mut resp)?;
@@ -957,9 +957,9 @@ impl Tpm2 {
         &mut self,
         bytesRequested: u16,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_GetRandom_REQUEST {
+        let req = TPM2_GetRandom_REQUEST::new(
             bytesRequested,
-        };
+        );
 
         let mut resp = GetRandomResponse::default();
         self.dispatch(TPM_CC::GetRandom, req, &mut resp)?;
@@ -970,11 +970,11 @@ impl Tpm2 {
     /// inData: Additional information
     pub fn StirRandom(
         &mut self,
-        inData: Vec<u8>,
+        inData: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_StirRandom_REQUEST {
+        let req = TPM2_StirRandom_REQUEST::new(
             inData,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::StirRandom, req, &mut resp)?;
@@ -992,15 +992,15 @@ impl Tpm2 {
     ///     handle - A handle to reference the sequence
     pub fn HMAC_Start(
         &mut self,
-        handle: TPM_HANDLE,
-        auth: Vec<u8>,
+        handle: &TPM_HANDLE,
+        auth: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_HMAC_Start_REQUEST {
+        let req = TPM2_HMAC_Start_REQUEST::new(
             handle,
             auth,
             hashAlg,
-        };
+        );
 
         let mut resp = HMAC_StartResponse::default();
         self.dispatch(TPM_CC::HMAC_Start, req, &mut resp)?;
@@ -1018,15 +1018,15 @@ impl Tpm2 {
     ///     handle - A handle to reference the sequence
     pub fn MAC_Start(
         &mut self,
-        handle: TPM_HANDLE,
-        auth: Vec<u8>,
+        handle: &TPM_HANDLE,
+        auth: &Vec<u8>,
         inScheme: TPM_ALG_ID,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_MAC_Start_REQUEST {
+        let req = TPM2_MAC_Start_REQUEST::new(
             handle,
             auth,
             inScheme,
-        };
+        );
 
         let mut resp = MAC_StartResponse::default();
         self.dispatch(TPM_CC::MAC_Start, req, &mut resp)?;
@@ -1043,13 +1043,13 @@ impl Tpm2 {
     ///     handle - A handle to reference the sequence
     pub fn HashSequenceStart(
         &mut self,
-        auth: Vec<u8>,
+        auth: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_HashSequenceStart_REQUEST {
+        let req = TPM2_HashSequenceStart_REQUEST::new(
             auth,
             hashAlg,
-        };
+        );
 
         let mut resp = HashSequenceStartResponse::default();
         self.dispatch(TPM_CC::HashSequenceStart, req, &mut resp)?;
@@ -1064,13 +1064,13 @@ impl Tpm2 {
     /// buffer: Data to be added to hash
     pub fn SequenceUpdate(
         &mut self,
-        sequenceHandle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        sequenceHandle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SequenceUpdate_REQUEST {
+        let req = TPM2_SequenceUpdate_REQUEST::new(
             sequenceHandle,
             buffer,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SequenceUpdate, req, &mut resp)?;
@@ -1089,15 +1089,15 @@ impl Tpm2 {
     ///                  This is a NULL Ticket when the sequence is HMAC.
     pub fn SequenceComplete(
         &mut self,
-        sequenceHandle: TPM_HANDLE,
-        buffer: Vec<u8>,
-        hierarchy: TPM_HANDLE,
+        sequenceHandle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
+        hierarchy: &TPM_HANDLE,
     ) -> Result<SequenceCompleteResponse, TpmError> {
-        let req = TPM2_SequenceComplete_REQUEST {
+        let req = TPM2_SequenceComplete_REQUEST::new(
             sequenceHandle,
             buffer,
             hierarchy,
-        };
+        );
 
         let mut resp = SequenceCompleteResponse::default();
         self.dispatch(TPM_CC::SequenceComplete, req, &mut resp)?;
@@ -1119,15 +1119,15 @@ impl Tpm2 {
     ///     results - List of digests computed for the PCR
     pub fn EventSequenceComplete(
         &mut self,
-        pcrHandle: TPM_HANDLE,
-        sequenceHandle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        pcrHandle: &TPM_HANDLE,
+        sequenceHandle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
     ) -> Result<Vec<TPMT_HA>, TpmError> {
-        let req = TPM2_EventSequenceComplete_REQUEST {
+        let req = TPM2_EventSequenceComplete_REQUEST::new(
             pcrHandle,
             sequenceHandle,
             buffer,
-        };
+        );
 
         let mut resp = EventSequenceCompleteResponse::default();
         self.dispatch(TPM_CC::EventSequenceComplete, req, &mut resp)?;
@@ -1154,17 +1154,17 @@ impl Tpm2 {
     ///     signature - The asymmetric signature over certifyInfo using the key referenced by signHandle
     pub fn Certify(
         &mut self,
-        objectHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        objectHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
     ) -> Result<CertifyResponse, TpmError> {
-        let req = TPM2_Certify_REQUEST {
+        let req = TPM2_Certify_REQUEST::new(
             objectHandle,
             signHandle,
             qualifyingData,
             inScheme,
-        };
+        );
 
         let mut resp = CertifyResponse::default();
         self.dispatch(TPM_CC::Certify, req, &mut resp)?;
@@ -1191,21 +1191,21 @@ impl Tpm2 {
     ///     signature - The signature over certifyInfo
     pub fn CertifyCreation(
         &mut self,
-        signHandle: TPM_HANDLE,
-        objectHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        creationHash: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        creationTicket: TPMT_TK_CREATION,
+        signHandle: &TPM_HANDLE,
+        objectHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        creationHash: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        creationTicket: &TPMT_TK_CREATION,
     ) -> Result<CertifyCreationResponse, TpmError> {
-        let req = TPM2_CertifyCreation_REQUEST {
+        let req = TPM2_CertifyCreation_REQUEST::new(
             signHandle,
             objectHandle,
             qualifyingData,
             creationHash,
             inScheme,
             creationTicket,
-        };
+        );
 
         let mut resp = CertifyCreationResponse::default();
         self.dispatch(TPM_CC::CertifyCreation, req, &mut resp)?;
@@ -1226,17 +1226,17 @@ impl Tpm2 {
     ///     signature - The signature over quoted
     pub fn Quote(
         &mut self,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        PCRselect: Vec<TPMS_PCR_SELECTION>,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        PCRselect: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<QuoteResponse, TpmError> {
-        let req = TPM2_Quote_REQUEST {
+        let req = TPM2_Quote_REQUEST::new(
             signHandle,
             qualifyingData,
             inScheme,
             PCRselect,
-        };
+        );
 
         let mut resp = QuoteResponse::default();
         self.dispatch(TPM_CC::Quote, req, &mut resp)?;
@@ -1261,19 +1261,19 @@ impl Tpm2 {
     ///     signature - The signature over auditInfo
     pub fn GetSessionAuditDigest(
         &mut self,
-        privacyAdminHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        sessionHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        privacyAdminHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        sessionHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
     ) -> Result<GetSessionAuditDigestResponse, TpmError> {
-        let req = TPM2_GetSessionAuditDigest_REQUEST {
+        let req = TPM2_GetSessionAuditDigest_REQUEST::new(
             privacyAdminHandle,
             signHandle,
             sessionHandle,
             qualifyingData,
             inScheme,
-        };
+        );
 
         let mut resp = GetSessionAuditDigestResponse::default();
         self.dispatch(TPM_CC::GetSessionAuditDigest, req, &mut resp)?;
@@ -1298,17 +1298,17 @@ impl Tpm2 {
     ///     signature - The signature over auditInfo
     pub fn GetCommandAuditDigest(
         &mut self,
-        privacyHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        privacyHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
     ) -> Result<GetCommandAuditDigestResponse, TpmError> {
-        let req = TPM2_GetCommandAuditDigest_REQUEST {
+        let req = TPM2_GetCommandAuditDigest_REQUEST::new(
             privacyHandle,
             signHandle,
             qualifyingData,
             inScheme,
-        };
+        );
 
         let mut resp = GetCommandAuditDigestResponse::default();
         self.dispatch(TPM_CC::GetCommandAuditDigest, req, &mut resp)?;
@@ -1331,17 +1331,17 @@ impl Tpm2 {
     ///     signature - The signature over timeInfo
     pub fn GetTime(
         &mut self,
-        privacyAdminHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        privacyAdminHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
     ) -> Result<GetTimeResponse, TpmError> {
-        let req = TPM2_GetTime_REQUEST {
+        let req = TPM2_GetTime_REQUEST::new(
             privacyAdminHandle,
             signHandle,
             qualifyingData,
             inScheme,
-        };
+        );
 
         let mut resp = GetTimeResponse::default();
         self.dispatch(TPM_CC::GetTime, req, &mut resp)?;
@@ -1372,19 +1372,19 @@ impl Tpm2 {
     ///     signature - The signature over tbsDigest
     pub fn CertifyX509(
         &mut self,
-        objectHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        reserved: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        partialCertificate: Vec<u8>,
+        objectHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        reserved: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        partialCertificate: &Vec<u8>,
     ) -> Result<CertifyX509Response, TpmError> {
-        let req = TPM2_CertifyX509_REQUEST {
+        let req = TPM2_CertifyX509_REQUEST::new(
             objectHandle,
             signHandle,
             reserved,
             inScheme,
             partialCertificate,
-        };
+        );
 
         let mut resp = CertifyX509Response::default();
         self.dispatch(TPM_CC::CertifyX509, req, &mut resp)?;
@@ -1407,17 +1407,17 @@ impl Tpm2 {
     ///     counter - Least-significant 16 bits of commitCount
     pub fn Commit(
         &mut self,
-        signHandle: TPM_HANDLE,
-        P1: TPMS_ECC_POINT,
-        s2: Vec<u8>,
-        y2: Vec<u8>,
+        signHandle: &TPM_HANDLE,
+        P1: &TPMS_ECC_POINT,
+        s2: &Vec<u8>,
+        y2: &Vec<u8>,
     ) -> Result<CommitResponse, TpmError> {
-        let req = TPM2_Commit_REQUEST {
+        let req = TPM2_Commit_REQUEST::new(
             signHandle,
             P1,
             s2,
             y2,
-        };
+        );
 
         let mut resp = CommitResponse::default();
         self.dispatch(TPM_CC::Commit, req, &mut resp)?;
@@ -1432,9 +1432,9 @@ impl Tpm2 {
         &mut self,
         curveID: TPM_ECC_CURVE,
     ) -> Result<EC_EphemeralResponse, TpmError> {
-        let req = TPM2_EC_Ephemeral_REQUEST {
+        let req = TPM2_EC_Ephemeral_REQUEST::new(
             curveID,
-        };
+        );
 
         let mut resp = EC_EphemeralResponse::default();
         self.dispatch(TPM_CC::EC_Ephemeral, req, &mut resp)?;
@@ -1456,15 +1456,15 @@ impl Tpm2 {
     ///                  The ticket is computed by
     pub fn VerifySignature(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        digest: Vec<u8>,
-        signature: Option<TPMU_SIGNATURE>,
+        keyHandle: &TPM_HANDLE,
+        digest: &Vec<u8>,
+        signature: &Option<TPMU_SIGNATURE>,
     ) -> Result<TPMT_TK_VERIFIED, TpmError> {
-        let req = TPM2_VerifySignature_REQUEST {
+        let req = TPM2_VerifySignature_REQUEST::new(
             keyHandle,
             digest,
             signature,
-        };
+        );
 
         let mut resp = VerifySignatureResponse::default();
         self.dispatch(TPM_CC::VerifySignature, req, &mut resp)?;
@@ -1487,17 +1487,17 @@ impl Tpm2 {
     ///     signature - The signature
     pub fn Sign(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        digest: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        validation: TPMT_TK_HASHCHECK,
+        keyHandle: &TPM_HANDLE,
+        digest: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        validation: &TPMT_TK_HASHCHECK,
     ) -> Result<Option<TPMU_SIGNATURE>, TpmError> {
-        let req = TPM2_Sign_REQUEST {
+        let req = TPM2_Sign_REQUEST::new(
             keyHandle,
             digest,
             inScheme,
             validation,
-        };
+        );
 
         let mut resp = SignResponse::default();
         self.dispatch(TPM_CC::Sign, req, &mut resp)?;
@@ -1515,17 +1515,17 @@ impl Tpm2 {
     /// clearList: List of commands that will no longer be audited
     pub fn SetCommandCodeAuditStatus(
         &mut self,
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         auditAlg: TPM_ALG_ID,
-        setList: Vec<TPM_CC>,
-        clearList: Vec<TPM_CC>,
+        setList: &Vec<TPM_CC>,
+        clearList: &Vec<TPM_CC>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SetCommandCodeAuditStatus_REQUEST {
+        let req = TPM2_SetCommandCodeAuditStatus_REQUEST::new(
             auth,
             auditAlg,
             setList,
             clearList,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SetCommandCodeAuditStatus, req, &mut resp)?;
@@ -1541,13 +1541,13 @@ impl Tpm2 {
     /// digests: List of tagged digest values to be extended
     pub fn PCR_Extend(
         &mut self,
-        pcrHandle: TPM_HANDLE,
-        digests: Vec<TPMT_HA>,
+        pcrHandle: &TPM_HANDLE,
+        digests: &Vec<TPMT_HA>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_Extend_REQUEST {
+        let req = TPM2_PCR_Extend_REQUEST::new(
             pcrHandle,
             digests,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PCR_Extend, req, &mut resp)?;
@@ -1565,13 +1565,13 @@ impl Tpm2 {
     ///               the digest.
     pub fn PCR_Event(
         &mut self,
-        pcrHandle: TPM_HANDLE,
-        eventData: Vec<u8>,
+        pcrHandle: &TPM_HANDLE,
+        eventData: &Vec<u8>,
     ) -> Result<Vec<TPMT_HA>, TpmError> {
-        let req = TPM2_PCR_Event_REQUEST {
+        let req = TPM2_PCR_Event_REQUEST::new(
             pcrHandle,
             eventData,
-        };
+        );
 
         let mut resp = PCR_EventResponse::default();
         self.dispatch(TPM_CC::PCR_Event, req, &mut resp)?;
@@ -1586,11 +1586,11 @@ impl Tpm2 {
     ///                 tagged digests
     pub fn PCR_Read(
         &mut self,
-        pcrSelectionIn: Vec<TPMS_PCR_SELECTION>,
+        pcrSelectionIn: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<PCR_ReadResponse, TpmError> {
-        let req = TPM2_PCR_Read_REQUEST {
+        let req = TPM2_PCR_Read_REQUEST::new(
             pcrSelectionIn,
-        };
+        );
 
         let mut resp = PCR_ReadResponse::default();
         self.dispatch(TPM_CC::PCR_Read, req, &mut resp)?;
@@ -1609,13 +1609,13 @@ impl Tpm2 {
     ///     sizeAvailable - Number of octets available. Computed before the allocation.
     pub fn PCR_Allocate(
         &mut self,
-        authHandle: TPM_HANDLE,
-        pcrAllocation: Vec<TPMS_PCR_SELECTION>,
+        authHandle: &TPM_HANDLE,
+        pcrAllocation: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<PCR_AllocateResponse, TpmError> {
-        let req = TPM2_PCR_Allocate_REQUEST {
+        let req = TPM2_PCR_Allocate_REQUEST::new(
             authHandle,
             pcrAllocation,
-        };
+        );
 
         let mut resp = PCR_AllocateResponse::default();
         self.dispatch(TPM_CC::PCR_Allocate, req, &mut resp)?;
@@ -1632,17 +1632,17 @@ impl Tpm2 {
     /// pcrNum: The PCR for which the policy is to be set
     pub fn PCR_SetAuthPolicy(
         &mut self,
-        authHandle: TPM_HANDLE,
-        authPolicy: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        authPolicy: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
-        pcrNum: TPM_HANDLE,
+        pcrNum: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_SetAuthPolicy_REQUEST {
+        let req = TPM2_PCR_SetAuthPolicy_REQUEST::new(
             authHandle,
             authPolicy,
             hashAlg,
             pcrNum,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PCR_SetAuthPolicy, req, &mut resp)?;
@@ -1656,13 +1656,13 @@ impl Tpm2 {
     /// auth: The desired authorization value
     pub fn PCR_SetAuthValue(
         &mut self,
-        pcrHandle: TPM_HANDLE,
-        auth: Vec<u8>,
+        pcrHandle: &TPM_HANDLE,
+        auth: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_SetAuthValue_REQUEST {
+        let req = TPM2_PCR_SetAuthValue_REQUEST::new(
             pcrHandle,
             auth,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PCR_SetAuthValue, req, &mut resp)?;
@@ -1677,11 +1677,11 @@ impl Tpm2 {
     ///        Auth Role: USER
     pub fn PCR_Reset(
         &mut self,
-        pcrHandle: TPM_HANDLE,
+        pcrHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_Reset_REQUEST {
+        let req = TPM2_PCR_Reset_REQUEST::new(
             pcrHandle,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PCR_Reset, req, &mut resp)?;
@@ -1717,15 +1717,15 @@ impl Tpm2 {
     ///                    See 23.2.5
     pub fn PolicySigned(
         &mut self,
-        authObject: TPM_HANDLE,
-        policySession: TPM_HANDLE,
-        nonceTPM: Vec<u8>,
-        cpHashA: Vec<u8>,
-        policyRef: Vec<u8>,
+        authObject: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
+        nonceTPM: &Vec<u8>,
+        cpHashA: &Vec<u8>,
+        policyRef: &Vec<u8>,
         expiration: i32,
-        auth: Option<TPMU_SIGNATURE>,
+        auth: &Option<TPMU_SIGNATURE>,
     ) -> Result<PolicySignedResponse, TpmError> {
-        let req = TPM2_PolicySigned_REQUEST {
+        let req = TPM2_PolicySigned_REQUEST::new(
             authObject,
             policySession,
             nonceTPM,
@@ -1733,7 +1733,7 @@ impl Tpm2 {
             policyRef,
             expiration,
             auth,
-        };
+        );
 
         let mut resp = PolicySignedResponse::default();
         self.dispatch(TPM_CC::PolicySigned, req, &mut resp)?;
@@ -1767,21 +1767,21 @@ impl Tpm2 {
     ///                    structure tag
     pub fn PolicySecret(
         &mut self,
-        authHandle: TPM_HANDLE,
-        policySession: TPM_HANDLE,
-        nonceTPM: Vec<u8>,
-        cpHashA: Vec<u8>,
-        policyRef: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
+        nonceTPM: &Vec<u8>,
+        cpHashA: &Vec<u8>,
+        policyRef: &Vec<u8>,
         expiration: i32,
     ) -> Result<PolicySecretResponse, TpmError> {
-        let req = TPM2_PolicySecret_REQUEST {
+        let req = TPM2_PolicySecret_REQUEST::new(
             authHandle,
             policySession,
             nonceTPM,
             cpHashA,
             policyRef,
             expiration,
-        };
+        );
 
         let mut resp = PolicySecretResponse::default();
         self.dispatch(TPM_CC::PolicySecret, req, &mut resp)?;
@@ -1803,21 +1803,21 @@ impl Tpm2 {
     ///        or TPM2_PolicySecret()
     pub fn PolicyTicket(
         &mut self,
-        policySession: TPM_HANDLE,
-        timeout: Vec<u8>,
-        cpHashA: Vec<u8>,
-        policyRef: Vec<u8>,
-        authName: Vec<u8>,
-        ticket: TPMT_TK_AUTH,
+        policySession: &TPM_HANDLE,
+        timeout: &Vec<u8>,
+        cpHashA: &Vec<u8>,
+        policyRef: &Vec<u8>,
+        authName: &Vec<u8>,
+        ticket: &TPMT_TK_AUTH,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyTicket_REQUEST {
+        let req = TPM2_PolicyTicket_REQUEST::new(
             policySession,
             timeout,
             cpHashA,
             policyRef,
             authName,
             ticket,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyTicket, req, &mut resp)?;
@@ -1833,13 +1833,13 @@ impl Tpm2 {
     /// pHashList: The list of hashes to check for a match
     pub fn PolicyOR(
         &mut self,
-        policySession: TPM_HANDLE,
-        pHashList: Vec<TPM2B_DIGEST>,
+        policySession: &TPM_HANDLE,
+        pHashList: &Vec<TPM2B_DIGEST>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyOR_REQUEST {
+        let req = TPM2_PolicyOR_REQUEST::new(
             policySession,
             pHashList,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyOR, req, &mut resp)?;
@@ -1856,15 +1856,15 @@ impl Tpm2 {
     /// pcrs: The PCR to include in the check digest
     pub fn PolicyPCR(
         &mut self,
-        policySession: TPM_HANDLE,
-        pcrDigest: Vec<u8>,
-        pcrs: Vec<TPMS_PCR_SELECTION>,
+        policySession: &TPM_HANDLE,
+        pcrDigest: &Vec<u8>,
+        pcrs: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyPCR_REQUEST {
+        let req = TPM2_PolicyPCR_REQUEST::new(
             policySession,
             pcrDigest,
             pcrs,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyPCR, req, &mut resp)?;
@@ -1877,13 +1877,13 @@ impl Tpm2 {
     /// locality: The allowed localities for the policy
     pub fn PolicyLocality(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         locality: TPMA_LOCALITY,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyLocality_REQUEST {
+        let req = TPM2_PolicyLocality_REQUEST::new(
             policySession,
             locality,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyLocality, req, &mut resp)?;
@@ -1905,21 +1905,21 @@ impl Tpm2 {
     /// operation: The comparison to make
     pub fn PolicyNV(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        policySession: TPM_HANDLE,
-        operandB: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
+        operandB: &Vec<u8>,
         offset: u16,
         operation: TPM_EO,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyNV_REQUEST {
+        let req = TPM2_PolicyNV_REQUEST::new(
             authHandle,
             nvIndex,
             policySession,
             operandB,
             offset,
             operation,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyNV, req, &mut resp)?;
@@ -1935,17 +1935,17 @@ impl Tpm2 {
     /// operation: The comparison to make
     pub fn PolicyCounterTimer(
         &mut self,
-        policySession: TPM_HANDLE,
-        operandB: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        operandB: &Vec<u8>,
         offset: u16,
         operation: TPM_EO,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyCounterTimer_REQUEST {
+        let req = TPM2_PolicyCounterTimer_REQUEST::new(
             policySession,
             operandB,
             offset,
             operation,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyCounterTimer, req, &mut resp)?;
@@ -1958,13 +1958,13 @@ impl Tpm2 {
     /// code: The allowed commandCode
     pub fn PolicyCommandCode(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         code: TPM_CC,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyCommandCode_REQUEST {
+        let req = TPM2_PolicyCommandCode_REQUEST::new(
             policySession,
             code,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyCommandCode, req, &mut resp)?;
@@ -1977,11 +1977,11 @@ impl Tpm2 {
     ///        Auth Index: None
     pub fn PolicyPhysicalPresence(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyPhysicalPresence_REQUEST {
+        let req = TPM2_PolicyPhysicalPresence_REQUEST::new(
             policySession,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyPhysicalPresence, req, &mut resp)?;
@@ -1994,13 +1994,13 @@ impl Tpm2 {
     /// cpHashA: The cpHash added to the policy
     pub fn PolicyCpHash(
         &mut self,
-        policySession: TPM_HANDLE,
-        cpHashA: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        cpHashA: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyCpHash_REQUEST {
+        let req = TPM2_PolicyCpHash_REQUEST::new(
             policySession,
             cpHashA,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyCpHash, req, &mut resp)?;
@@ -2015,13 +2015,13 @@ impl Tpm2 {
     /// nameHash: The digest to be added to the policy
     pub fn PolicyNameHash(
         &mut self,
-        policySession: TPM_HANDLE,
-        nameHash: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        nameHash: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyNameHash_REQUEST {
+        let req = TPM2_PolicyNameHash_REQUEST::new(
             policySession,
             nameHash,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyNameHash, req, &mut resp)?;
@@ -2036,17 +2036,17 @@ impl Tpm2 {
     /// includeObject: If YES, the objectName will be included in the value in policySessionpolicyDigest
     pub fn PolicyDuplicationSelect(
         &mut self,
-        policySession: TPM_HANDLE,
-        objectName: Vec<u8>,
-        newParentName: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        objectName: &Vec<u8>,
+        newParentName: &Vec<u8>,
         includeObject: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyDuplicationSelect_REQUEST {
+        let req = TPM2_PolicyDuplicationSelect_REQUEST::new(
             policySession,
             objectName,
             newParentName,
             includeObject,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyDuplicationSelect, req, &mut resp)?;
@@ -2064,19 +2064,19 @@ impl Tpm2 {
     /// checkTicket: Ticket validating that approvedPolicy and policyRef were signed by keySign
     pub fn PolicyAuthorize(
         &mut self,
-        policySession: TPM_HANDLE,
-        approvedPolicy: Vec<u8>,
-        policyRef: Vec<u8>,
-        keySign: Vec<u8>,
-        checkTicket: TPMT_TK_VERIFIED,
+        policySession: &TPM_HANDLE,
+        approvedPolicy: &Vec<u8>,
+        policyRef: &Vec<u8>,
+        keySign: &Vec<u8>,
+        checkTicket: &TPMT_TK_VERIFIED,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyAuthorize_REQUEST {
+        let req = TPM2_PolicyAuthorize_REQUEST::new(
             policySession,
             approvedPolicy,
             policyRef,
             keySign,
             checkTicket,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyAuthorize, req, &mut resp)?;
@@ -2088,11 +2088,11 @@ impl Tpm2 {
     ///        Auth Index: None
     pub fn PolicyAuthValue(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyAuthValue_REQUEST {
+        let req = TPM2_PolicyAuthValue_REQUEST::new(
             policySession,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyAuthValue, req, &mut resp)?;
@@ -2104,11 +2104,11 @@ impl Tpm2 {
     ///        Auth Index: None
     pub fn PolicyPassword(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyPassword_REQUEST {
+        let req = TPM2_PolicyPassword_REQUEST::new(
             policySession,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyPassword, req, &mut resp)?;
@@ -2122,11 +2122,11 @@ impl Tpm2 {
     ///     policyDigest - The current value of the policySessionpolicyDigest
     pub fn PolicyGetDigest(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_PolicyGetDigest_REQUEST {
+        let req = TPM2_PolicyGetDigest_REQUEST::new(
             policySession,
-        };
+        );
 
         let mut resp = PolicyGetDigestResponse::default();
         self.dispatch(TPM_CC::PolicyGetDigest, req, &mut resp)?;
@@ -2142,13 +2142,13 @@ impl Tpm2 {
     ///        NO if NV Index is required not to have been written
     pub fn PolicyNvWritten(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         writtenSet: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyNvWritten_REQUEST {
+        let req = TPM2_PolicyNvWritten_REQUEST::new(
             policySession,
             writtenSet,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyNvWritten, req, &mut resp)?;
@@ -2163,13 +2163,13 @@ impl Tpm2 {
     /// templateHash: The digest to be added to the policy
     pub fn PolicyTemplate(
         &mut self,
-        policySession: TPM_HANDLE,
-        templateHash: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        templateHash: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyTemplate_REQUEST {
+        let req = TPM2_PolicyTemplate_REQUEST::new(
             policySession,
             templateHash,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyTemplate, req, &mut resp)?;
@@ -2189,15 +2189,15 @@ impl Tpm2 {
     ///        Auth Index: None
     pub fn PolicyAuthorizeNV(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        policySession: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyAuthorizeNV_REQUEST {
+        let req = TPM2_PolicyAuthorizeNV_REQUEST::new(
             authHandle,
             nvIndex,
             policySession,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PolicyAuthorizeNV, req, &mut resp)?;
@@ -2226,19 +2226,19 @@ impl Tpm2 {
     ///     name - The name of the created object
     pub fn CreatePrimary(
         &mut self,
-        primaryHandle: TPM_HANDLE,
-        inSensitive: TPMS_SENSITIVE_CREATE,
-        inPublic: TPMT_PUBLIC,
-        outsideInfo: Vec<u8>,
-        creationPCR: Vec<TPMS_PCR_SELECTION>,
+        primaryHandle: &TPM_HANDLE,
+        inSensitive: &TPMS_SENSITIVE_CREATE,
+        inPublic: &TPMT_PUBLIC,
+        outsideInfo: &Vec<u8>,
+        creationPCR: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<CreatePrimaryResponse, TpmError> {
-        let req = TPM2_CreatePrimary_REQUEST {
+        let req = TPM2_CreatePrimary_REQUEST::new(
             primaryHandle,
             inSensitive,
             inPublic,
             outsideInfo,
             creationPCR,
-        };
+        );
 
         let mut resp = CreatePrimaryResponse::default();
         self.dispatch(TPM_CC::CreatePrimary, req, &mut resp)?;
@@ -2256,15 +2256,15 @@ impl Tpm2 {
     /// state: YES if the enable should be SET, NO if the enable should be CLEAR
     pub fn HierarchyControl(
         &mut self,
-        authHandle: TPM_HANDLE,
-        enable: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        enable: &TPM_HANDLE,
         state: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_HierarchyControl_REQUEST {
+        let req = TPM2_HierarchyControl_REQUEST::new(
             authHandle,
             enable,
             state,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::HierarchyControl, req, &mut resp)?;
@@ -2284,15 +2284,15 @@ impl Tpm2 {
     ///        If the authPolicy is an Empty Buffer, then this field shall be TPM_ALG_NULL.
     pub fn SetPrimaryPolicy(
         &mut self,
-        authHandle: TPM_HANDLE,
-        authPolicy: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        authPolicy: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SetPrimaryPolicy_REQUEST {
+        let req = TPM2_SetPrimaryPolicy_REQUEST::new(
             authHandle,
             authPolicy,
             hashAlg,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SetPrimaryPolicy, req, &mut resp)?;
@@ -2306,11 +2306,11 @@ impl Tpm2 {
     ///        Auth Role: USER
     pub fn ChangePPS(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ChangePPS_REQUEST {
+        let req = TPM2_ChangePPS_REQUEST::new(
             authHandle,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ChangePPS, req, &mut resp)?;
@@ -2327,11 +2327,11 @@ impl Tpm2 {
     ///        Auth Role: USER
     pub fn ChangeEPS(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ChangeEPS_REQUEST {
+        let req = TPM2_ChangeEPS_REQUEST::new(
             authHandle,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ChangeEPS, req, &mut resp)?;
@@ -2344,11 +2344,11 @@ impl Tpm2 {
     ///        Auth Role: USER
     pub fn Clear(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Clear_REQUEST {
+        let req = TPM2_Clear_REQUEST::new(
             authHandle,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::Clear, req, &mut resp)?;
@@ -2362,13 +2362,13 @@ impl Tpm2 {
     /// disable: YES if the disableOwnerClear flag is to be SET, NO if the flag is to be CLEAR.
     pub fn ClearControl(
         &mut self,
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         disable: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ClearControl_REQUEST {
+        let req = TPM2_ClearControl_REQUEST::new(
             auth,
             disable,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ClearControl, req, &mut resp)?;
@@ -2383,13 +2383,13 @@ impl Tpm2 {
     /// newAuth: New authorization value
     pub fn HierarchyChangeAuth(
         &mut self,
-        authHandle: TPM_HANDLE,
-        newAuth: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        newAuth: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_HierarchyChangeAuth_REQUEST {
+        let req = TPM2_HierarchyChangeAuth_REQUEST::new(
             authHandle,
             newAuth,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::HierarchyChangeAuth, req, &mut resp)?;
@@ -2404,11 +2404,11 @@ impl Tpm2 {
     ///        Auth Role: USER
     pub fn DictionaryAttackLockReset(
         &mut self,
-        lockHandle: TPM_HANDLE,
+        lockHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_DictionaryAttackLockReset_REQUEST {
+        let req = TPM2_DictionaryAttackLockReset_REQUEST::new(
             lockHandle,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::DictionaryAttackLockReset, req, &mut resp)?;
@@ -2426,17 +2426,17 @@ impl Tpm2 {
     ///        A value of zero indicates that a reboot is required.
     pub fn DictionaryAttackParameters(
         &mut self,
-        lockHandle: TPM_HANDLE,
+        lockHandle: &TPM_HANDLE,
         newMaxTries: u32,
         newRecoveryTime: u32,
         lockoutRecovery: u32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_DictionaryAttackParameters_REQUEST {
+        let req = TPM2_DictionaryAttackParameters_REQUEST::new(
             lockHandle,
             newMaxTries,
             newRecoveryTime,
             lockoutRecovery,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::DictionaryAttackParameters, req, &mut resp)?;
@@ -2453,15 +2453,15 @@ impl Tpm2 {
     /// clearList: List of commands that will no longer require that Physical Presence be asserted
     pub fn PP_Commands(
         &mut self,
-        auth: TPM_HANDLE,
-        setList: Vec<TPM_CC>,
-        clearList: Vec<TPM_CC>,
+        auth: &TPM_HANDLE,
+        setList: &Vec<TPM_CC>,
+        clearList: &Vec<TPM_CC>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PP_Commands_REQUEST {
+        let req = TPM2_PP_Commands_REQUEST::new(
             auth,
             setList,
             clearList,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::PP_Commands, req, &mut resp)?;
@@ -2476,13 +2476,13 @@ impl Tpm2 {
     /// algorithmSet: A TPM vendor-dependent value indicating the algorithm set selection
     pub fn SetAlgorithmSet(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
         algorithmSet: u32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SetAlgorithmSet_REQUEST {
+        let req = TPM2_SetAlgorithmSet_REQUEST::new(
             authHandle,
             algorithmSet,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::SetAlgorithmSet, req, &mut resp)?;
@@ -2504,17 +2504,17 @@ impl Tpm2 {
     ///        TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
     pub fn FieldUpgradeStart(
         &mut self,
-        authorization: TPM_HANDLE,
-        keyHandle: TPM_HANDLE,
-        fuDigest: Vec<u8>,
-        manifestSignature: Option<TPMU_SIGNATURE>,
+        authorization: &TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
+        fuDigest: &Vec<u8>,
+        manifestSignature: &Option<TPMU_SIGNATURE>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_FieldUpgradeStart_REQUEST {
+        let req = TPM2_FieldUpgradeStart_REQUEST::new(
             authorization,
             keyHandle,
             fuDigest,
             manifestSignature,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::FieldUpgradeStart, req, &mut resp)?;
@@ -2531,11 +2531,11 @@ impl Tpm2 {
     ///     firstDigest - Tagged digest of the first block of the sequence
     pub fn FieldUpgradeData(
         &mut self,
-        fuData: Vec<u8>,
+        fuData: &Vec<u8>,
     ) -> Result<FieldUpgradeDataResponse, TpmError> {
-        let req = TPM2_FieldUpgradeData_REQUEST {
+        let req = TPM2_FieldUpgradeData_REQUEST::new(
             fuData,
-        };
+        );
 
         let mut resp = FieldUpgradeDataResponse::default();
         self.dispatch(TPM_CC::FieldUpgradeData, req, &mut resp)?;
@@ -2550,9 +2550,9 @@ impl Tpm2 {
         &mut self,
         sequenceNumber: u32,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_FirmwareRead_REQUEST {
+        let req = TPM2_FirmwareRead_REQUEST::new(
             sequenceNumber,
-        };
+        );
 
         let mut resp = FirmwareReadResponse::default();
         self.dispatch(TPM_CC::FirmwareRead, req, &mut resp)?;
@@ -2569,11 +2569,11 @@ impl Tpm2 {
     ///               shall not load the context.
     pub fn ContextSave(
         &mut self,
-        saveHandle: TPM_HANDLE,
+        saveHandle: &TPM_HANDLE,
     ) -> Result<TPMS_CONTEXT, TpmError> {
-        let req = TPM2_ContextSave_REQUEST {
+        let req = TPM2_ContextSave_REQUEST::new(
             saveHandle,
-        };
+        );
 
         let mut resp = ContextSaveResponse::default();
         self.dispatch(TPM_CC::ContextSave, req, &mut resp)?;
@@ -2585,11 +2585,11 @@ impl Tpm2 {
     ///     handle - The handle assigned to the resource after it has been successfully loaded
     pub fn ContextLoad(
         &mut self,
-        context: TPMS_CONTEXT,
+        context: &TPMS_CONTEXT,
     ) -> Result<TPM_HANDLE, TpmError> {
-        let req = TPM2_ContextLoad_REQUEST {
+        let req = TPM2_ContextLoad_REQUEST::new(
             context,
-        };
+        );
 
         let mut resp = ContextLoadResponse::default();
         self.dispatch(TPM_CC::ContextLoad, req, &mut resp)?;
@@ -2602,11 +2602,11 @@ impl Tpm2 {
     ///        NOTE This is a use of a handle as a parameter.
     pub fn FlushContext(
         &mut self,
-        flushHandle: TPM_HANDLE,
+        flushHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_FlushContext_REQUEST {
+        let req = TPM2_FlushContext_REQUEST::new(
             flushHandle,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::FlushContext, req, &mut resp)?;
@@ -2626,15 +2626,15 @@ impl Tpm2 {
     ///        persistentHandle
     pub fn EvictControl(
         &mut self,
-        auth: TPM_HANDLE,
-        objectHandle: TPM_HANDLE,
-        persistentHandle: TPM_HANDLE,
+        auth: &TPM_HANDLE,
+        objectHandle: &TPM_HANDLE,
+        persistentHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_EvictControl_REQUEST {
+        let req = TPM2_EvictControl_REQUEST::new(
             auth,
             objectHandle,
             persistentHandle,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::EvictControl, req, &mut resp)?;
@@ -2665,13 +2665,13 @@ impl Tpm2 {
     /// newTime: New Clock setting in milliseconds
     pub fn ClockSet(
         &mut self,
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         newTime: u64,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ClockSet_REQUEST {
+        let req = TPM2_ClockSet_REQUEST::new(
             auth,
             newTime,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ClockSet, req, &mut resp)?;
@@ -2686,13 +2686,13 @@ impl Tpm2 {
     /// rateAdjust: Adjustment to current Clock update rate
     pub fn ClockRateAdjust(
         &mut self,
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         rateAdjust: TPM_CLOCK_ADJUST,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ClockRateAdjust_REQUEST {
+        let req = TPM2_ClockRateAdjust_REQUEST::new(
             auth,
             rateAdjust,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ClockRateAdjust, req, &mut resp)?;
@@ -2711,11 +2711,11 @@ impl Tpm2 {
         property: u32,
         propertyCount: u32,
     ) -> Result<GetCapabilityResponse, TpmError> {
-        let req = TPM2_GetCapability_REQUEST {
+        let req = TPM2_GetCapability_REQUEST::new(
             capability,
             property,
             propertyCount,
-        };
+        );
 
         let mut resp = GetCapabilityResponse::default();
         self.dispatch(TPM_CC::GetCapability, req, &mut resp)?;
@@ -2728,11 +2728,11 @@ impl Tpm2 {
     ///        TPMS_ASYM_PARMS.
     pub fn TestParms(
         &mut self,
-        parameters: Option<TPMU_PUBLIC_PARMS>,
+        parameters: &Option<TPMU_PUBLIC_PARMS>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_TestParms_REQUEST {
+        let req = TPM2_TestParms_REQUEST::new(
             parameters,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::TestParms, req, &mut resp)?;
@@ -2749,15 +2749,15 @@ impl Tpm2 {
     /// publicInfo: The public parameters of the NV area
     pub fn NV_DefineSpace(
         &mut self,
-        authHandle: TPM_HANDLE,
-        auth: Vec<u8>,
-        publicInfo: TPMS_NV_PUBLIC,
+        authHandle: &TPM_HANDLE,
+        auth: &Vec<u8>,
+        publicInfo: &TPMS_NV_PUBLIC,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_DefineSpace_REQUEST {
+        let req = TPM2_NV_DefineSpace_REQUEST::new(
             authHandle,
             auth,
             publicInfo,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_DefineSpace, req, &mut resp)?;
@@ -2772,13 +2772,13 @@ impl Tpm2 {
     ///        Auth Index: None
     pub fn NV_UndefineSpace(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_UndefineSpace_REQUEST {
+        let req = TPM2_NV_UndefineSpace_REQUEST::new(
             authHandle,
             nvIndex,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_UndefineSpace, req, &mut resp)?;
@@ -2794,13 +2794,13 @@ impl Tpm2 {
     ///        Auth Role: USER
     pub fn NV_UndefineSpaceSpecial(
         &mut self,
-        nvIndex: TPM_HANDLE,
-        platform: TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        platform: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_UndefineSpaceSpecial_REQUEST {
+        let req = TPM2_NV_UndefineSpaceSpecial_REQUEST::new(
             nvIndex,
             platform,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_UndefineSpaceSpecial, req, &mut resp)?;
@@ -2815,11 +2815,11 @@ impl Tpm2 {
     ///     nvName - The Name of the nvIndex
     pub fn NV_ReadPublic(
         &mut self,
-        nvIndex: TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<NV_ReadPublicResponse, TpmError> {
-        let req = TPM2_NV_ReadPublic_REQUEST {
+        let req = TPM2_NV_ReadPublic_REQUEST::new(
             nvIndex,
-        };
+        );
 
         let mut resp = NV_ReadPublicResponse::default();
         self.dispatch(TPM_CC::NV_ReadPublic, req, &mut resp)?;
@@ -2837,17 +2837,17 @@ impl Tpm2 {
     /// offset: The octet offset into the NV Area
     pub fn NV_Write(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        data: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        data: &Vec<u8>,
         offset: u16,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Write_REQUEST {
+        let req = TPM2_NV_Write_REQUEST::new(
             authHandle,
             nvIndex,
             data,
             offset,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_Write, req, &mut resp)?;
@@ -2863,13 +2863,13 @@ impl Tpm2 {
     ///        Auth Index: None
     pub fn NV_Increment(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Increment_REQUEST {
+        let req = TPM2_NV_Increment_REQUEST::new(
             authHandle,
             nvIndex,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_Increment, req, &mut resp)?;
@@ -2886,15 +2886,15 @@ impl Tpm2 {
     /// data: The data to extend
     pub fn NV_Extend(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        data: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        data: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Extend_REQUEST {
+        let req = TPM2_NV_Extend_REQUEST::new(
             authHandle,
             nvIndex,
             data,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_Extend, req, &mut resp)?;
@@ -2912,15 +2912,15 @@ impl Tpm2 {
     /// bits: The data to OR with the current contents
     pub fn NV_SetBits(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         bits: u64,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_SetBits_REQUEST {
+        let req = TPM2_NV_SetBits_REQUEST::new(
             authHandle,
             nvIndex,
             bits,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_SetBits, req, &mut resp)?;
@@ -2936,13 +2936,13 @@ impl Tpm2 {
     ///        Auth Index: None
     pub fn NV_WriteLock(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_WriteLock_REQUEST {
+        let req = TPM2_NV_WriteLock_REQUEST::new(
             authHandle,
             nvIndex,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_WriteLock, req, &mut resp)?;
@@ -2956,11 +2956,11 @@ impl Tpm2 {
     ///        Auth Role: USER
     pub fn NV_GlobalWriteLock(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_GlobalWriteLock_REQUEST {
+        let req = TPM2_NV_GlobalWriteLock_REQUEST::new(
             authHandle,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_GlobalWriteLock, req, &mut resp)?;
@@ -2979,17 +2979,17 @@ impl Tpm2 {
     ///     data - The data read
     pub fn NV_Read(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         size: u16,
         offset: u16,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_NV_Read_REQUEST {
+        let req = TPM2_NV_Read_REQUEST::new(
             authHandle,
             nvIndex,
             size,
             offset,
-        };
+        );
 
         let mut resp = NV_ReadResponse::default();
         self.dispatch(TPM_CC::NV_Read, req, &mut resp)?;
@@ -3005,13 +3005,13 @@ impl Tpm2 {
     ///        Auth Index: None
     pub fn NV_ReadLock(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_ReadLock_REQUEST {
+        let req = TPM2_NV_ReadLock_REQUEST::new(
             authHandle,
             nvIndex,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_ReadLock, req, &mut resp)?;
@@ -3025,13 +3025,13 @@ impl Tpm2 {
     /// newAuth: New authorization value
     pub fn NV_ChangeAuth(
         &mut self,
-        nvIndex: TPM_HANDLE,
-        newAuth: Vec<u8>,
+        nvIndex: &TPM_HANDLE,
+        newAuth: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_ChangeAuth_REQUEST {
+        let req = TPM2_NV_ChangeAuth_REQUEST::new(
             nvIndex,
             newAuth,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::NV_ChangeAuth, req, &mut resp)?;
@@ -3059,15 +3059,15 @@ impl Tpm2 {
     ///     signature - The asymmetric signature over certifyInfo using the key referenced by signHandle
     pub fn NV_Certify(
         &mut self,
-        signHandle: TPM_HANDLE,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        signHandle: &TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
         size: u16,
         offset: u16,
     ) -> Result<NV_CertifyResponse, TpmError> {
-        let req = TPM2_NV_Certify_REQUEST {
+        let req = TPM2_NV_Certify_REQUEST::new(
             signHandle,
             authHandle,
             nvIndex,
@@ -3075,7 +3075,7 @@ impl Tpm2 {
             inScheme,
             size,
             offset,
-        };
+        );
 
         let mut resp = NV_CertifyResponse::default();
         self.dispatch(TPM_CC::NV_Certify, req, &mut resp)?;
@@ -3092,15 +3092,15 @@ impl Tpm2 {
     ///     capabilitiesData - List of capabilities
     pub fn AC_GetCapability(
         &mut self,
-        ac: TPM_HANDLE,
+        ac: &TPM_HANDLE,
         capability: TPM_AT,
         count: u32,
     ) -> Result<AC_GetCapabilityResponse, TpmError> {
-        let req = TPM2_AC_GetCapability_REQUEST {
+        let req = TPM2_AC_GetCapability_REQUEST::new(
             ac,
             capability,
             count,
-        };
+        );
 
         let mut resp = AC_GetCapabilityResponse::default();
         self.dispatch(TPM_CC::AC_GetCapability, req, &mut resp)?;
@@ -3120,17 +3120,17 @@ impl Tpm2 {
     ///     acDataOut - May include AC specific data or information about an error.
     pub fn AC_Send(
         &mut self,
-        sendObject: TPM_HANDLE,
-        authHandle: TPM_HANDLE,
-        ac: TPM_HANDLE,
-        acDataIn: Vec<u8>,
+        sendObject: &TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        ac: &TPM_HANDLE,
+        acDataIn: &Vec<u8>,
     ) -> Result<TPMS_AC_OUTPUT, TpmError> {
-        let req = TPM2_AC_Send_REQUEST {
+        let req = TPM2_AC_Send_REQUEST::new(
             sendObject,
             authHandle,
             ac,
             acDataIn,
-        };
+        );
 
         let mut resp = AC_SendResponse::default();
         self.dispatch(TPM_CC::AC_Send, req, &mut resp)?;
@@ -3148,19 +3148,19 @@ impl Tpm2 {
     /// includeObject: If SET, objectName will be included in the value in policySessionpolicyDigest
     pub fn Policy_AC_SendSelect(
         &mut self,
-        policySession: TPM_HANDLE,
-        objectName: Vec<u8>,
-        authHandleName: Vec<u8>,
-        acName: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        objectName: &Vec<u8>,
+        authHandleName: &Vec<u8>,
+        acName: &Vec<u8>,
         includeObject: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Policy_AC_SendSelect_REQUEST {
+        let req = TPM2_Policy_AC_SendSelect_REQUEST::new(
             policySession,
             objectName,
             authHandleName,
             acName,
             includeObject,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::Policy_AC_SendSelect, req, &mut resp)?;
@@ -3175,13 +3175,13 @@ impl Tpm2 {
     /// startTimeout: The start timeout value for the ACT in seconds
     pub fn ACT_SetTimeout(
         &mut self,
-        actHandle: TPM_HANDLE,
+        actHandle: &TPM_HANDLE,
         startTimeout: u32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ACT_SetTimeout_REQUEST {
+        let req = TPM2_ACT_SetTimeout_REQUEST::new(
             actHandle,
             startTimeout,
-        };
+        );
 
         let mut resp = EmptyTpmResponse::default();
         self.dispatch(TPM_CC::ACT_SetTimeout, req, &mut resp)?;
@@ -3193,11 +3193,11 @@ impl Tpm2 {
     ///     outputData - Dummy data
     pub fn Vendor_TCG_Test(
         &mut self,
-        inputData: Vec<u8>,
+        inputData: &Vec<u8>,
     ) -> Result<Vec<u8>, TpmError> {
-        let req = TPM2_Vendor_TCG_Test_REQUEST {
+        let req = TPM2_Vendor_TCG_Test_REQUEST::new(
             inputData,
-        };
+        );
 
         let mut resp = Vendor_TCG_TestResponse::default();
         self.dispatch(TPM_CC::Vendor_TCG_Test, req, &mut resp)?;
@@ -3222,9 +3222,9 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         startupType: TPM_SU,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Startup_REQUEST {
+        let req = TPM2_Startup_REQUEST::new(
             startupType,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Startup, &req)?;
         Ok(())
@@ -3237,9 +3237,9 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         shutdownType: TPM_SU,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Shutdown_REQUEST {
+        let req = TPM2_Shutdown_REQUEST::new(
             shutdownType,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Shutdown, &req)?;
         Ok(())
@@ -3254,9 +3254,9 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         fullTest: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SelfTest_REQUEST {
+        let req = TPM2_SelfTest_REQUEST::new(
             fullTest,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::SelfTest, &req)?;
         Ok(())
@@ -3267,11 +3267,11 @@ impl<'a> AsyncMethods<'a> {
     ///     toDoList - List of algorithms that need testing
     pub fn IncrementalSelfTest_async(
         &mut self,
-        toTest: Vec<TPM_ALG_ID>,
+        toTest: &Vec<TPM_ALG_ID>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_IncrementalSelfTest_REQUEST {
+        let req = TPM2_IncrementalSelfTest_REQUEST::new(
             toTest,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::IncrementalSelfTest, &req)?;
         Ok(())
@@ -3313,15 +3313,15 @@ impl<'a> AsyncMethods<'a> {
     ///     nonceTPM - The initial nonce from the TPM, used in the computation of the sessionKey
     pub fn StartAuthSession_async(
         &mut self,
-        tpmKey: TPM_HANDLE,
-        bind: TPM_HANDLE,
-        nonceCaller: Vec<u8>,
-        encryptedSalt: Vec<u8>,
+        tpmKey: &TPM_HANDLE,
+        bind: &TPM_HANDLE,
+        nonceCaller: &Vec<u8>,
+        encryptedSalt: &Vec<u8>,
         sessionType: TPM_SE,
-        symmetric: TPMT_SYM_DEF,
+        symmetric: &TPMT_SYM_DEF,
         authHash: TPM_ALG_ID,
     ) -> Result<(), TpmError> {
-        let req = TPM2_StartAuthSession_REQUEST {
+        let req = TPM2_StartAuthSession_REQUEST::new(
             tpmKey,
             bind,
             nonceCaller,
@@ -3329,7 +3329,7 @@ impl<'a> AsyncMethods<'a> {
             sessionType,
             symmetric,
             authHash,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::StartAuthSession, &req)?;
         Ok(())
@@ -3344,11 +3344,11 @@ impl<'a> AsyncMethods<'a> {
     /// sessionHandle: The handle for the policy session
     pub fn PolicyRestart_async(
         &mut self,
-        sessionHandle: TPM_HANDLE,
+        sessionHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyRestart_REQUEST {
+        let req = TPM2_PolicyRestart_REQUEST::new(
             sessionHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyRestart, &req)?;
         Ok(())
@@ -3377,19 +3377,19 @@ impl<'a> AsyncMethods<'a> {
     ///                      data was produced by the TPM
     pub fn Create_async(
         &mut self,
-        parentHandle: TPM_HANDLE,
-        inSensitive: TPMS_SENSITIVE_CREATE,
-        inPublic: TPMT_PUBLIC,
-        outsideInfo: Vec<u8>,
-        creationPCR: Vec<TPMS_PCR_SELECTION>,
+        parentHandle: &TPM_HANDLE,
+        inSensitive: &TPMS_SENSITIVE_CREATE,
+        inPublic: &TPMT_PUBLIC,
+        outsideInfo: &Vec<u8>,
+        creationPCR: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Create_REQUEST {
+        let req = TPM2_Create_REQUEST::new(
             parentHandle,
             inSensitive,
             inPublic,
             outsideInfo,
             creationPCR,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Create, &req)?;
         Ok(())
@@ -3407,15 +3407,15 @@ impl<'a> AsyncMethods<'a> {
     ///     name - Name of the loaded object
     pub fn Load_async(
         &mut self,
-        parentHandle: TPM_HANDLE,
-        inPrivate: TPM2B_PRIVATE,
-        inPublic: TPMT_PUBLIC,
+        parentHandle: &TPM_HANDLE,
+        inPrivate: &TPM2B_PRIVATE,
+        inPublic: &TPMT_PUBLIC,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Load_REQUEST {
+        let req = TPM2_Load_REQUEST::new(
             parentHandle,
             inPrivate,
             inPublic,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Load, &req)?;
         Ok(())
@@ -3430,15 +3430,15 @@ impl<'a> AsyncMethods<'a> {
     ///     name - Name of the loaded object
     pub fn LoadExternal_async(
         &mut self,
-        inPrivate: TPMT_SENSITIVE,
-        inPublic: TPMT_PUBLIC,
-        hierarchy: TPM_HANDLE,
+        inPrivate: &TPMT_SENSITIVE,
+        inPublic: &TPMT_PUBLIC,
+        hierarchy: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_LoadExternal_REQUEST {
+        let req = TPM2_LoadExternal_REQUEST::new(
             inPrivate,
             inPublic,
             hierarchy,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::LoadExternal, &req)?;
         Ok(())
@@ -3452,11 +3452,11 @@ impl<'a> AsyncMethods<'a> {
     ///     qualifiedName - The Qualified Name of the object
     pub fn ReadPublic_async(
         &mut self,
-        objectHandle: TPM_HANDLE,
+        objectHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ReadPublic_REQUEST {
+        let req = TPM2_ReadPublic_REQUEST::new(
             objectHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ReadPublic, &req)?;
         Ok(())
@@ -3477,17 +3477,17 @@ impl<'a> AsyncMethods<'a> {
     ///                associated with keyHandle
     pub fn ActivateCredential_async(
         &mut self,
-        activateHandle: TPM_HANDLE,
-        keyHandle: TPM_HANDLE,
-        credentialBlob: TPMS_ID_OBJECT,
-        secret: Vec<u8>,
+        activateHandle: &TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
+        credentialBlob: &TPMS_ID_OBJECT,
+        secret: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ActivateCredential_REQUEST {
+        let req = TPM2_ActivateCredential_REQUEST::new(
             activateHandle,
             keyHandle,
             credentialBlob,
             secret,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ActivateCredential, &req)?;
         Ok(())
@@ -3503,15 +3503,15 @@ impl<'a> AsyncMethods<'a> {
     ///     secret - Handle algorithm-dependent data that wraps the key that encrypts credentialBlob
     pub fn MakeCredential_async(
         &mut self,
-        handle: TPM_HANDLE,
-        credential: Vec<u8>,
-        objectName: Vec<u8>,
+        handle: &TPM_HANDLE,
+        credential: &Vec<u8>,
+        objectName: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_MakeCredential_REQUEST {
+        let req = TPM2_MakeCredential_REQUEST::new(
             handle,
             credential,
             objectName,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::MakeCredential, &req)?;
         Ok(())
@@ -3525,11 +3525,11 @@ impl<'a> AsyncMethods<'a> {
     ///               Size of outData is limited to be no more than 128 octets.
     pub fn Unseal_async(
         &mut self,
-        itemHandle: TPM_HANDLE,
+        itemHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Unseal_REQUEST {
+        let req = TPM2_Unseal_REQUEST::new(
             itemHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Unseal, &req)?;
         Ok(())
@@ -3545,15 +3545,15 @@ impl<'a> AsyncMethods<'a> {
     ///     outPrivate - Private area containing the new authorization value
     pub fn ObjectChangeAuth_async(
         &mut self,
-        objectHandle: TPM_HANDLE,
-        parentHandle: TPM_HANDLE,
-        newAuth: Vec<u8>,
+        objectHandle: &TPM_HANDLE,
+        parentHandle: &TPM_HANDLE,
+        newAuth: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ObjectChangeAuth_REQUEST {
+        let req = TPM2_ObjectChangeAuth_REQUEST::new(
             objectHandle,
             parentHandle,
             newAuth,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ObjectChangeAuth, &req)?;
         Ok(())
@@ -3576,15 +3576,15 @@ impl<'a> AsyncMethods<'a> {
     ///     name - The name of the created object
     pub fn CreateLoaded_async(
         &mut self,
-        parentHandle: TPM_HANDLE,
-        inSensitive: TPMS_SENSITIVE_CREATE,
-        inPublic: Vec<u8>,
+        parentHandle: &TPM_HANDLE,
+        inSensitive: &TPMS_SENSITIVE_CREATE,
+        inPublic: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_CreateLoaded_REQUEST {
+        let req = TPM2_CreateLoaded_REQUEST::new(
             parentHandle,
             inSensitive,
             inPublic,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::CreateLoaded, &req)?;
         Ok(())
@@ -3611,17 +3611,17 @@ impl<'a> AsyncMethods<'a> {
     ///     outSymSeed - Seed protected by the asymmetric algorithms of new parent (NP)
     pub fn Duplicate_async(
         &mut self,
-        objectHandle: TPM_HANDLE,
-        newParentHandle: TPM_HANDLE,
-        encryptionKeyIn: Vec<u8>,
-        symmetricAlg: TPMT_SYM_DEF_OBJECT,
+        objectHandle: &TPM_HANDLE,
+        newParentHandle: &TPM_HANDLE,
+        encryptionKeyIn: &Vec<u8>,
+        symmetricAlg: &TPMT_SYM_DEF_OBJECT,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Duplicate_REQUEST {
+        let req = TPM2_Duplicate_REQUEST::new(
             objectHandle,
             newParentHandle,
             encryptionKeyIn,
             symmetricAlg,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Duplicate, &req)?;
         Ok(())
@@ -3646,19 +3646,19 @@ impl<'a> AsyncMethods<'a> {
     ///     outSymSeed - Seed for a symmetric key protected by newParent asymmetric key
     pub fn Rewrap_async(
         &mut self,
-        oldParent: TPM_HANDLE,
-        newParent: TPM_HANDLE,
-        inDuplicate: TPM2B_PRIVATE,
-        name: Vec<u8>,
-        inSymSeed: Vec<u8>,
+        oldParent: &TPM_HANDLE,
+        newParent: &TPM_HANDLE,
+        inDuplicate: &TPM2B_PRIVATE,
+        name: &Vec<u8>,
+        inSymSeed: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Rewrap_REQUEST {
+        let req = TPM2_Rewrap_REQUEST::new(
             oldParent,
             newParent,
             inDuplicate,
             name,
             inSymSeed,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Rewrap, &req)?;
         Ok(())
@@ -3687,21 +3687,21 @@ impl<'a> AsyncMethods<'a> {
     ///     outPrivate - The sensitive area encrypted with the symmetric key of parentHandle
     pub fn Import_async(
         &mut self,
-        parentHandle: TPM_HANDLE,
-        encryptionKey: Vec<u8>,
-        objectPublic: TPMT_PUBLIC,
-        duplicate: TPM2B_PRIVATE,
-        inSymSeed: Vec<u8>,
-        symmetricAlg: TPMT_SYM_DEF_OBJECT,
+        parentHandle: &TPM_HANDLE,
+        encryptionKey: &Vec<u8>,
+        objectPublic: &TPMT_PUBLIC,
+        duplicate: &TPM2B_PRIVATE,
+        inSymSeed: &Vec<u8>,
+        symmetricAlg: &TPMT_SYM_DEF_OBJECT,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Import_REQUEST {
+        let req = TPM2_Import_REQUEST::new(
             parentHandle,
             encryptionKey,
             objectPublic,
             duplicate,
             inSymSeed,
             symmetricAlg,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Import, &req)?;
         Ok(())
@@ -3728,17 +3728,17 @@ impl<'a> AsyncMethods<'a> {
     ///     outData - Encrypted output
     pub fn RSA_Encrypt_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        message: Vec<u8>,
-        inScheme: Option<TPMU_ASYM_SCHEME>,
-        label: Vec<u8>,
+        keyHandle: &TPM_HANDLE,
+        message: &Vec<u8>,
+        inScheme: &Option<TPMU_ASYM_SCHEME>,
+        label: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_RSA_Encrypt_REQUEST {
+        let req = TPM2_RSA_Encrypt_REQUEST::new(
             keyHandle,
             message,
             inScheme,
             label,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::RSA_Encrypt, &req)?;
         Ok(())
@@ -3760,17 +3760,17 @@ impl<'a> AsyncMethods<'a> {
     ///     message - Decrypted output
     pub fn RSA_Decrypt_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        cipherText: Vec<u8>,
-        inScheme: Option<TPMU_ASYM_SCHEME>,
-        label: Vec<u8>,
+        keyHandle: &TPM_HANDLE,
+        cipherText: &Vec<u8>,
+        inScheme: &Option<TPMU_ASYM_SCHEME>,
+        label: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_RSA_Decrypt_REQUEST {
+        let req = TPM2_RSA_Decrypt_REQUEST::new(
             keyHandle,
             cipherText,
             inScheme,
             label,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::RSA_Decrypt, &req)?;
         Ok(())
@@ -3785,11 +3785,11 @@ impl<'a> AsyncMethods<'a> {
     ///     pubPoint - Generated ephemeral public point (Qe)
     pub fn ECDH_KeyGen_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ECDH_KeyGen_REQUEST {
+        let req = TPM2_ECDH_KeyGen_REQUEST::new(
             keyHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ECDH_KeyGen, &req)?;
         Ok(())
@@ -3806,13 +3806,13 @@ impl<'a> AsyncMethods<'a> {
     ///     outPoint - X and Y coordinates of the product of the multiplication Z = (xZ , yZ) [hdS]QB
     pub fn ECDH_ZGen_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        inPoint: TPMS_ECC_POINT,
+        keyHandle: &TPM_HANDLE,
+        inPoint: &TPMS_ECC_POINT,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ECDH_ZGen_REQUEST {
+        let req = TPM2_ECDH_ZGen_REQUEST::new(
             keyHandle,
             inPoint,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ECDH_ZGen, &req)?;
         Ok(())
@@ -3825,9 +3825,9 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         curveID: TPM_ECC_CURVE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ECC_Parameters_REQUEST {
+        let req = TPM2_ECC_Parameters_REQUEST::new(
             curveID,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ECC_Parameters, &req)?;
         Ok(())
@@ -3849,19 +3849,19 @@ impl<'a> AsyncMethods<'a> {
     ///     outZ2 - X and Y coordinates of the second computed value (scheme dependent)
     pub fn ZGen_2Phase_async(
         &mut self,
-        keyA: TPM_HANDLE,
-        inQsB: TPMS_ECC_POINT,
-        inQeB: TPMS_ECC_POINT,
+        keyA: &TPM_HANDLE,
+        inQsB: &TPMS_ECC_POINT,
+        inQeB: &TPMS_ECC_POINT,
         inScheme: TPM_ALG_ID,
         counter: u16,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ZGen_2Phase_REQUEST {
+        let req = TPM2_ZGen_2Phase_REQUEST::new(
             keyA,
             inQsB,
             inQeB,
             inScheme,
             counter,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ZGen_2Phase, &req)?;
         Ok(())
@@ -3879,15 +3879,15 @@ impl<'a> AsyncMethods<'a> {
     ///     C3 - The integrity value
     pub fn ECC_Encrypt_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        plainText: Vec<u8>,
-        inScheme: Option<TPMU_KDF_SCHEME>,
+        keyHandle: &TPM_HANDLE,
+        plainText: &Vec<u8>,
+        inScheme: &Option<TPMU_KDF_SCHEME>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ECC_Encrypt_REQUEST {
+        let req = TPM2_ECC_Encrypt_REQUEST::new(
             keyHandle,
             plainText,
             inScheme,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ECC_Encrypt, &req)?;
         Ok(())
@@ -3906,19 +3906,19 @@ impl<'a> AsyncMethods<'a> {
     ///     plainText - Decrypted output
     pub fn ECC_Decrypt_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        C1: TPMS_ECC_POINT,
-        C2: Vec<u8>,
-        C3: Vec<u8>,
-        inScheme: Option<TPMU_KDF_SCHEME>,
+        keyHandle: &TPM_HANDLE,
+        C1: &TPMS_ECC_POINT,
+        C2: &Vec<u8>,
+        C3: &Vec<u8>,
+        inScheme: &Option<TPMU_KDF_SCHEME>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ECC_Decrypt_REQUEST {
+        let req = TPM2_ECC_Decrypt_REQUEST::new(
             keyHandle,
             C1,
             C2,
             C3,
             inScheme,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ECC_Decrypt, &req)?;
         Ok(())
@@ -3938,19 +3938,19 @@ impl<'a> AsyncMethods<'a> {
     ///     ivOut - Chaining value to use for IV in next round
     pub fn EncryptDecrypt_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
         decrypt: u8,
         mode: TPM_ALG_ID,
-        ivIn: Vec<u8>,
-        inData: Vec<u8>,
+        ivIn: &Vec<u8>,
+        inData: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_EncryptDecrypt_REQUEST {
+        let req = TPM2_EncryptDecrypt_REQUEST::new(
             keyHandle,
             decrypt,
             mode,
             ivIn,
             inData,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::EncryptDecrypt, &req)?;
         Ok(())
@@ -3970,19 +3970,19 @@ impl<'a> AsyncMethods<'a> {
     ///     ivOut - Chaining value to use for IV in next round
     pub fn EncryptDecrypt2_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        inData: Vec<u8>,
+        keyHandle: &TPM_HANDLE,
+        inData: &Vec<u8>,
         decrypt: u8,
         mode: TPM_ALG_ID,
-        ivIn: Vec<u8>,
+        ivIn: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_EncryptDecrypt2_REQUEST {
+        let req = TPM2_EncryptDecrypt2_REQUEST::new(
             keyHandle,
             inData,
             decrypt,
             mode,
             ivIn,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::EncryptDecrypt2, &req)?;
         Ok(())
@@ -3998,15 +3998,15 @@ impl<'a> AsyncMethods<'a> {
     ///                  will be a NULL ticket if the digest may not be signed with a restricted key
     pub fn Hash_async(
         &mut self,
-        data: Vec<u8>,
+        data: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
-        hierarchy: TPM_HANDLE,
+        hierarchy: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Hash_REQUEST {
+        let req = TPM2_Hash_REQUEST::new(
             data,
             hashAlg,
             hierarchy,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Hash, &req)?;
         Ok(())
@@ -4021,15 +4021,15 @@ impl<'a> AsyncMethods<'a> {
     ///     outHMAC - The returned HMAC in a sized buffer
     pub fn HMAC_async(
         &mut self,
-        handle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        handle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
     ) -> Result<(), TpmError> {
-        let req = TPM2_HMAC_REQUEST {
+        let req = TPM2_HMAC_REQUEST::new(
             handle,
             buffer,
             hashAlg,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::HMAC, &req)?;
         Ok(())
@@ -4045,15 +4045,15 @@ impl<'a> AsyncMethods<'a> {
     ///     outMAC - The returned MAC in a sized buffer
     pub fn MAC_async(
         &mut self,
-        handle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        handle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
         inScheme: TPM_ALG_ID,
     ) -> Result<(), TpmError> {
-        let req = TPM2_MAC_REQUEST {
+        let req = TPM2_MAC_REQUEST::new(
             handle,
             buffer,
             inScheme,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::MAC, &req)?;
         Ok(())
@@ -4066,9 +4066,9 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         bytesRequested: u16,
     ) -> Result<(), TpmError> {
-        let req = TPM2_GetRandom_REQUEST {
+        let req = TPM2_GetRandom_REQUEST::new(
             bytesRequested,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::GetRandom, &req)?;
         Ok(())
@@ -4078,11 +4078,11 @@ impl<'a> AsyncMethods<'a> {
     /// inData: Additional information
     pub fn StirRandom_async(
         &mut self,
-        inData: Vec<u8>,
+        inData: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_StirRandom_REQUEST {
+        let req = TPM2_StirRandom_REQUEST::new(
             inData,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::StirRandom, &req)?;
         Ok(())
@@ -4099,15 +4099,15 @@ impl<'a> AsyncMethods<'a> {
     ///     handle - A handle to reference the sequence
     pub fn HMAC_Start_async(
         &mut self,
-        handle: TPM_HANDLE,
-        auth: Vec<u8>,
+        handle: &TPM_HANDLE,
+        auth: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
     ) -> Result<(), TpmError> {
-        let req = TPM2_HMAC_Start_REQUEST {
+        let req = TPM2_HMAC_Start_REQUEST::new(
             handle,
             auth,
             hashAlg,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::HMAC_Start, &req)?;
         Ok(())
@@ -4124,15 +4124,15 @@ impl<'a> AsyncMethods<'a> {
     ///     handle - A handle to reference the sequence
     pub fn MAC_Start_async(
         &mut self,
-        handle: TPM_HANDLE,
-        auth: Vec<u8>,
+        handle: &TPM_HANDLE,
+        auth: &Vec<u8>,
         inScheme: TPM_ALG_ID,
     ) -> Result<(), TpmError> {
-        let req = TPM2_MAC_Start_REQUEST {
+        let req = TPM2_MAC_Start_REQUEST::new(
             handle,
             auth,
             inScheme,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::MAC_Start, &req)?;
         Ok(())
@@ -4148,13 +4148,13 @@ impl<'a> AsyncMethods<'a> {
     ///     handle - A handle to reference the sequence
     pub fn HashSequenceStart_async(
         &mut self,
-        auth: Vec<u8>,
+        auth: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
     ) -> Result<(), TpmError> {
-        let req = TPM2_HashSequenceStart_REQUEST {
+        let req = TPM2_HashSequenceStart_REQUEST::new(
             auth,
             hashAlg,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::HashSequenceStart, &req)?;
         Ok(())
@@ -4168,13 +4168,13 @@ impl<'a> AsyncMethods<'a> {
     /// buffer: Data to be added to hash
     pub fn SequenceUpdate_async(
         &mut self,
-        sequenceHandle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        sequenceHandle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SequenceUpdate_REQUEST {
+        let req = TPM2_SequenceUpdate_REQUEST::new(
             sequenceHandle,
             buffer,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::SequenceUpdate, &req)?;
         Ok(())
@@ -4192,15 +4192,15 @@ impl<'a> AsyncMethods<'a> {
     ///                  This is a NULL Ticket when the sequence is HMAC.
     pub fn SequenceComplete_async(
         &mut self,
-        sequenceHandle: TPM_HANDLE,
-        buffer: Vec<u8>,
-        hierarchy: TPM_HANDLE,
+        sequenceHandle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
+        hierarchy: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SequenceComplete_REQUEST {
+        let req = TPM2_SequenceComplete_REQUEST::new(
             sequenceHandle,
             buffer,
             hierarchy,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::SequenceComplete, &req)?;
         Ok(())
@@ -4221,15 +4221,15 @@ impl<'a> AsyncMethods<'a> {
     ///     results - List of digests computed for the PCR
     pub fn EventSequenceComplete_async(
         &mut self,
-        pcrHandle: TPM_HANDLE,
-        sequenceHandle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        pcrHandle: &TPM_HANDLE,
+        sequenceHandle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_EventSequenceComplete_REQUEST {
+        let req = TPM2_EventSequenceComplete_REQUEST::new(
             pcrHandle,
             sequenceHandle,
             buffer,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::EventSequenceComplete, &req)?;
         Ok(())
@@ -4255,17 +4255,17 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The asymmetric signature over certifyInfo using the key referenced by signHandle
     pub fn Certify_async(
         &mut self,
-        objectHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        objectHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Certify_REQUEST {
+        let req = TPM2_Certify_REQUEST::new(
             objectHandle,
             signHandle,
             qualifyingData,
             inScheme,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Certify, &req)?;
         Ok(())
@@ -4291,21 +4291,21 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The signature over certifyInfo
     pub fn CertifyCreation_async(
         &mut self,
-        signHandle: TPM_HANDLE,
-        objectHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        creationHash: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        creationTicket: TPMT_TK_CREATION,
+        signHandle: &TPM_HANDLE,
+        objectHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        creationHash: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        creationTicket: &TPMT_TK_CREATION,
     ) -> Result<(), TpmError> {
-        let req = TPM2_CertifyCreation_REQUEST {
+        let req = TPM2_CertifyCreation_REQUEST::new(
             signHandle,
             objectHandle,
             qualifyingData,
             creationHash,
             inScheme,
             creationTicket,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::CertifyCreation, &req)?;
         Ok(())
@@ -4325,17 +4325,17 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The signature over quoted
     pub fn Quote_async(
         &mut self,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        PCRselect: Vec<TPMS_PCR_SELECTION>,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        PCRselect: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Quote_REQUEST {
+        let req = TPM2_Quote_REQUEST::new(
             signHandle,
             qualifyingData,
             inScheme,
             PCRselect,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Quote, &req)?;
         Ok(())
@@ -4359,19 +4359,19 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The signature over auditInfo
     pub fn GetSessionAuditDigest_async(
         &mut self,
-        privacyAdminHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        sessionHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        privacyAdminHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        sessionHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_GetSessionAuditDigest_REQUEST {
+        let req = TPM2_GetSessionAuditDigest_REQUEST::new(
             privacyAdminHandle,
             signHandle,
             sessionHandle,
             qualifyingData,
             inScheme,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::GetSessionAuditDigest, &req)?;
         Ok(())
@@ -4395,17 +4395,17 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The signature over auditInfo
     pub fn GetCommandAuditDigest_async(
         &mut self,
-        privacyHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        privacyHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_GetCommandAuditDigest_REQUEST {
+        let req = TPM2_GetCommandAuditDigest_REQUEST::new(
             privacyHandle,
             signHandle,
             qualifyingData,
             inScheme,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::GetCommandAuditDigest, &req)?;
         Ok(())
@@ -4427,17 +4427,17 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The signature over timeInfo
     pub fn GetTime_async(
         &mut self,
-        privacyAdminHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        privacyAdminHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_GetTime_REQUEST {
+        let req = TPM2_GetTime_REQUEST::new(
             privacyAdminHandle,
             signHandle,
             qualifyingData,
             inScheme,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::GetTime, &req)?;
         Ok(())
@@ -4467,19 +4467,19 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The signature over tbsDigest
     pub fn CertifyX509_async(
         &mut self,
-        objectHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        reserved: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        partialCertificate: Vec<u8>,
+        objectHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        reserved: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        partialCertificate: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_CertifyX509_REQUEST {
+        let req = TPM2_CertifyX509_REQUEST::new(
             objectHandle,
             signHandle,
             reserved,
             inScheme,
             partialCertificate,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::CertifyX509, &req)?;
         Ok(())
@@ -4501,17 +4501,17 @@ impl<'a> AsyncMethods<'a> {
     ///     counter - Least-significant 16 bits of commitCount
     pub fn Commit_async(
         &mut self,
-        signHandle: TPM_HANDLE,
-        P1: TPMS_ECC_POINT,
-        s2: Vec<u8>,
-        y2: Vec<u8>,
+        signHandle: &TPM_HANDLE,
+        P1: &TPMS_ECC_POINT,
+        s2: &Vec<u8>,
+        y2: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Commit_REQUEST {
+        let req = TPM2_Commit_REQUEST::new(
             signHandle,
             P1,
             s2,
             y2,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Commit, &req)?;
         Ok(())
@@ -4525,9 +4525,9 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         curveID: TPM_ECC_CURVE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_EC_Ephemeral_REQUEST {
+        let req = TPM2_EC_Ephemeral_REQUEST::new(
             curveID,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::EC_Ephemeral, &req)?;
         Ok(())
@@ -4548,15 +4548,15 @@ impl<'a> AsyncMethods<'a> {
     ///                  The ticket is computed by
     pub fn VerifySignature_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        digest: Vec<u8>,
-        signature: Option<TPMU_SIGNATURE>,
+        keyHandle: &TPM_HANDLE,
+        digest: &Vec<u8>,
+        signature: &Option<TPMU_SIGNATURE>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_VerifySignature_REQUEST {
+        let req = TPM2_VerifySignature_REQUEST::new(
             keyHandle,
             digest,
             signature,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::VerifySignature, &req)?;
         Ok(())
@@ -4578,17 +4578,17 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The signature
     pub fn Sign_async(
         &mut self,
-        keyHandle: TPM_HANDLE,
-        digest: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        validation: TPMT_TK_HASHCHECK,
+        keyHandle: &TPM_HANDLE,
+        digest: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        validation: &TPMT_TK_HASHCHECK,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Sign_REQUEST {
+        let req = TPM2_Sign_REQUEST::new(
             keyHandle,
             digest,
             inScheme,
             validation,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Sign, &req)?;
         Ok(())
@@ -4605,17 +4605,17 @@ impl<'a> AsyncMethods<'a> {
     /// clearList: List of commands that will no longer be audited
     pub fn SetCommandCodeAuditStatus_async(
         &mut self,
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         auditAlg: TPM_ALG_ID,
-        setList: Vec<TPM_CC>,
-        clearList: Vec<TPM_CC>,
+        setList: &Vec<TPM_CC>,
+        clearList: &Vec<TPM_CC>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SetCommandCodeAuditStatus_REQUEST {
+        let req = TPM2_SetCommandCodeAuditStatus_REQUEST::new(
             auth,
             auditAlg,
             setList,
             clearList,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::SetCommandCodeAuditStatus, &req)?;
         Ok(())
@@ -4630,13 +4630,13 @@ impl<'a> AsyncMethods<'a> {
     /// digests: List of tagged digest values to be extended
     pub fn PCR_Extend_async(
         &mut self,
-        pcrHandle: TPM_HANDLE,
-        digests: Vec<TPMT_HA>,
+        pcrHandle: &TPM_HANDLE,
+        digests: &Vec<TPMT_HA>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_Extend_REQUEST {
+        let req = TPM2_PCR_Extend_REQUEST::new(
             pcrHandle,
             digests,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PCR_Extend, &req)?;
         Ok(())
@@ -4653,13 +4653,13 @@ impl<'a> AsyncMethods<'a> {
     ///               the digest.
     pub fn PCR_Event_async(
         &mut self,
-        pcrHandle: TPM_HANDLE,
-        eventData: Vec<u8>,
+        pcrHandle: &TPM_HANDLE,
+        eventData: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_Event_REQUEST {
+        let req = TPM2_PCR_Event_REQUEST::new(
             pcrHandle,
             eventData,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PCR_Event, &req)?;
         Ok(())
@@ -4673,11 +4673,11 @@ impl<'a> AsyncMethods<'a> {
     ///                 tagged digests
     pub fn PCR_Read_async(
         &mut self,
-        pcrSelectionIn: Vec<TPMS_PCR_SELECTION>,
+        pcrSelectionIn: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_Read_REQUEST {
+        let req = TPM2_PCR_Read_REQUEST::new(
             pcrSelectionIn,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PCR_Read, &req)?;
         Ok(())
@@ -4695,13 +4695,13 @@ impl<'a> AsyncMethods<'a> {
     ///     sizeAvailable - Number of octets available. Computed before the allocation.
     pub fn PCR_Allocate_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        pcrAllocation: Vec<TPMS_PCR_SELECTION>,
+        authHandle: &TPM_HANDLE,
+        pcrAllocation: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_Allocate_REQUEST {
+        let req = TPM2_PCR_Allocate_REQUEST::new(
             authHandle,
             pcrAllocation,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PCR_Allocate, &req)?;
         Ok(())
@@ -4717,17 +4717,17 @@ impl<'a> AsyncMethods<'a> {
     /// pcrNum: The PCR for which the policy is to be set
     pub fn PCR_SetAuthPolicy_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        authPolicy: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        authPolicy: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
-        pcrNum: TPM_HANDLE,
+        pcrNum: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_SetAuthPolicy_REQUEST {
+        let req = TPM2_PCR_SetAuthPolicy_REQUEST::new(
             authHandle,
             authPolicy,
             hashAlg,
             pcrNum,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PCR_SetAuthPolicy, &req)?;
         Ok(())
@@ -4740,13 +4740,13 @@ impl<'a> AsyncMethods<'a> {
     /// auth: The desired authorization value
     pub fn PCR_SetAuthValue_async(
         &mut self,
-        pcrHandle: TPM_HANDLE,
-        auth: Vec<u8>,
+        pcrHandle: &TPM_HANDLE,
+        auth: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_SetAuthValue_REQUEST {
+        let req = TPM2_PCR_SetAuthValue_REQUEST::new(
             pcrHandle,
             auth,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PCR_SetAuthValue, &req)?;
         Ok(())
@@ -4760,11 +4760,11 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Role: USER
     pub fn PCR_Reset_async(
         &mut self,
-        pcrHandle: TPM_HANDLE,
+        pcrHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PCR_Reset_REQUEST {
+        let req = TPM2_PCR_Reset_REQUEST::new(
             pcrHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PCR_Reset, &req)?;
         Ok(())
@@ -4799,15 +4799,15 @@ impl<'a> AsyncMethods<'a> {
     ///                    See 23.2.5
     pub fn PolicySigned_async(
         &mut self,
-        authObject: TPM_HANDLE,
-        policySession: TPM_HANDLE,
-        nonceTPM: Vec<u8>,
-        cpHashA: Vec<u8>,
-        policyRef: Vec<u8>,
+        authObject: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
+        nonceTPM: &Vec<u8>,
+        cpHashA: &Vec<u8>,
+        policyRef: &Vec<u8>,
         expiration: i32,
-        auth: Option<TPMU_SIGNATURE>,
+        auth: &Option<TPMU_SIGNATURE>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicySigned_REQUEST {
+        let req = TPM2_PolicySigned_REQUEST::new(
             authObject,
             policySession,
             nonceTPM,
@@ -4815,7 +4815,7 @@ impl<'a> AsyncMethods<'a> {
             policyRef,
             expiration,
             auth,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicySigned, &req)?;
         Ok(())
@@ -4848,21 +4848,21 @@ impl<'a> AsyncMethods<'a> {
     ///                    structure tag
     pub fn PolicySecret_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        policySession: TPM_HANDLE,
-        nonceTPM: Vec<u8>,
-        cpHashA: Vec<u8>,
-        policyRef: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
+        nonceTPM: &Vec<u8>,
+        cpHashA: &Vec<u8>,
+        policyRef: &Vec<u8>,
         expiration: i32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicySecret_REQUEST {
+        let req = TPM2_PolicySecret_REQUEST::new(
             authHandle,
             policySession,
             nonceTPM,
             cpHashA,
             policyRef,
             expiration,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicySecret, &req)?;
         Ok(())
@@ -4883,21 +4883,21 @@ impl<'a> AsyncMethods<'a> {
     ///        or TPM2_PolicySecret()
     pub fn PolicyTicket_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        timeout: Vec<u8>,
-        cpHashA: Vec<u8>,
-        policyRef: Vec<u8>,
-        authName: Vec<u8>,
-        ticket: TPMT_TK_AUTH,
+        policySession: &TPM_HANDLE,
+        timeout: &Vec<u8>,
+        cpHashA: &Vec<u8>,
+        policyRef: &Vec<u8>,
+        authName: &Vec<u8>,
+        ticket: &TPMT_TK_AUTH,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyTicket_REQUEST {
+        let req = TPM2_PolicyTicket_REQUEST::new(
             policySession,
             timeout,
             cpHashA,
             policyRef,
             authName,
             ticket,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyTicket, &req)?;
         Ok(())
@@ -4912,13 +4912,13 @@ impl<'a> AsyncMethods<'a> {
     /// pHashList: The list of hashes to check for a match
     pub fn PolicyOR_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        pHashList: Vec<TPM2B_DIGEST>,
+        policySession: &TPM_HANDLE,
+        pHashList: &Vec<TPM2B_DIGEST>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyOR_REQUEST {
+        let req = TPM2_PolicyOR_REQUEST::new(
             policySession,
             pHashList,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyOR, &req)?;
         Ok(())
@@ -4934,15 +4934,15 @@ impl<'a> AsyncMethods<'a> {
     /// pcrs: The PCR to include in the check digest
     pub fn PolicyPCR_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        pcrDigest: Vec<u8>,
-        pcrs: Vec<TPMS_PCR_SELECTION>,
+        policySession: &TPM_HANDLE,
+        pcrDigest: &Vec<u8>,
+        pcrs: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyPCR_REQUEST {
+        let req = TPM2_PolicyPCR_REQUEST::new(
             policySession,
             pcrDigest,
             pcrs,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyPCR, &req)?;
         Ok(())
@@ -4954,13 +4954,13 @@ impl<'a> AsyncMethods<'a> {
     /// locality: The allowed localities for the policy
     pub fn PolicyLocality_async(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         locality: TPMA_LOCALITY,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyLocality_REQUEST {
+        let req = TPM2_PolicyLocality_REQUEST::new(
             policySession,
             locality,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyLocality, &req)?;
         Ok(())
@@ -4981,21 +4981,21 @@ impl<'a> AsyncMethods<'a> {
     /// operation: The comparison to make
     pub fn PolicyNV_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        policySession: TPM_HANDLE,
-        operandB: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
+        operandB: &Vec<u8>,
         offset: u16,
         operation: TPM_EO,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyNV_REQUEST {
+        let req = TPM2_PolicyNV_REQUEST::new(
             authHandle,
             nvIndex,
             policySession,
             operandB,
             offset,
             operation,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyNV, &req)?;
         Ok(())
@@ -5010,17 +5010,17 @@ impl<'a> AsyncMethods<'a> {
     /// operation: The comparison to make
     pub fn PolicyCounterTimer_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        operandB: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        operandB: &Vec<u8>,
         offset: u16,
         operation: TPM_EO,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyCounterTimer_REQUEST {
+        let req = TPM2_PolicyCounterTimer_REQUEST::new(
             policySession,
             operandB,
             offset,
             operation,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyCounterTimer, &req)?;
         Ok(())
@@ -5032,13 +5032,13 @@ impl<'a> AsyncMethods<'a> {
     /// code: The allowed commandCode
     pub fn PolicyCommandCode_async(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         code: TPM_CC,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyCommandCode_REQUEST {
+        let req = TPM2_PolicyCommandCode_REQUEST::new(
             policySession,
             code,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyCommandCode, &req)?;
         Ok(())
@@ -5050,11 +5050,11 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Index: None
     pub fn PolicyPhysicalPresence_async(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyPhysicalPresence_REQUEST {
+        let req = TPM2_PolicyPhysicalPresence_REQUEST::new(
             policySession,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyPhysicalPresence, &req)?;
         Ok(())
@@ -5066,13 +5066,13 @@ impl<'a> AsyncMethods<'a> {
     /// cpHashA: The cpHash added to the policy
     pub fn PolicyCpHash_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        cpHashA: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        cpHashA: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyCpHash_REQUEST {
+        let req = TPM2_PolicyCpHash_REQUEST::new(
             policySession,
             cpHashA,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyCpHash, &req)?;
         Ok(())
@@ -5086,13 +5086,13 @@ impl<'a> AsyncMethods<'a> {
     /// nameHash: The digest to be added to the policy
     pub fn PolicyNameHash_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        nameHash: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        nameHash: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyNameHash_REQUEST {
+        let req = TPM2_PolicyNameHash_REQUEST::new(
             policySession,
             nameHash,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyNameHash, &req)?;
         Ok(())
@@ -5106,17 +5106,17 @@ impl<'a> AsyncMethods<'a> {
     /// includeObject: If YES, the objectName will be included in the value in policySessionpolicyDigest
     pub fn PolicyDuplicationSelect_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        objectName: Vec<u8>,
-        newParentName: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        objectName: &Vec<u8>,
+        newParentName: &Vec<u8>,
         includeObject: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyDuplicationSelect_REQUEST {
+        let req = TPM2_PolicyDuplicationSelect_REQUEST::new(
             policySession,
             objectName,
             newParentName,
             includeObject,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyDuplicationSelect, &req)?;
         Ok(())
@@ -5133,19 +5133,19 @@ impl<'a> AsyncMethods<'a> {
     /// checkTicket: Ticket validating that approvedPolicy and policyRef were signed by keySign
     pub fn PolicyAuthorize_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        approvedPolicy: Vec<u8>,
-        policyRef: Vec<u8>,
-        keySign: Vec<u8>,
-        checkTicket: TPMT_TK_VERIFIED,
+        policySession: &TPM_HANDLE,
+        approvedPolicy: &Vec<u8>,
+        policyRef: &Vec<u8>,
+        keySign: &Vec<u8>,
+        checkTicket: &TPMT_TK_VERIFIED,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyAuthorize_REQUEST {
+        let req = TPM2_PolicyAuthorize_REQUEST::new(
             policySession,
             approvedPolicy,
             policyRef,
             keySign,
             checkTicket,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyAuthorize, &req)?;
         Ok(())
@@ -5156,11 +5156,11 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Index: None
     pub fn PolicyAuthValue_async(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyAuthValue_REQUEST {
+        let req = TPM2_PolicyAuthValue_REQUEST::new(
             policySession,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyAuthValue, &req)?;
         Ok(())
@@ -5171,11 +5171,11 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Index: None
     pub fn PolicyPassword_async(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyPassword_REQUEST {
+        let req = TPM2_PolicyPassword_REQUEST::new(
             policySession,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyPassword, &req)?;
         Ok(())
@@ -5188,11 +5188,11 @@ impl<'a> AsyncMethods<'a> {
     ///     policyDigest - The current value of the policySessionpolicyDigest
     pub fn PolicyGetDigest_async(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyGetDigest_REQUEST {
+        let req = TPM2_PolicyGetDigest_REQUEST::new(
             policySession,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyGetDigest, &req)?;
         Ok(())
@@ -5207,13 +5207,13 @@ impl<'a> AsyncMethods<'a> {
     ///        NO if NV Index is required not to have been written
     pub fn PolicyNvWritten_async(
         &mut self,
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         writtenSet: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyNvWritten_REQUEST {
+        let req = TPM2_PolicyNvWritten_REQUEST::new(
             policySession,
             writtenSet,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyNvWritten, &req)?;
         Ok(())
@@ -5227,13 +5227,13 @@ impl<'a> AsyncMethods<'a> {
     /// templateHash: The digest to be added to the policy
     pub fn PolicyTemplate_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        templateHash: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        templateHash: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyTemplate_REQUEST {
+        let req = TPM2_PolicyTemplate_REQUEST::new(
             policySession,
             templateHash,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyTemplate, &req)?;
         Ok(())
@@ -5252,15 +5252,15 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Index: None
     pub fn PolicyAuthorizeNV_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        policySession: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PolicyAuthorizeNV_REQUEST {
+        let req = TPM2_PolicyAuthorizeNV_REQUEST::new(
             authHandle,
             nvIndex,
             policySession,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PolicyAuthorizeNV, &req)?;
         Ok(())
@@ -5288,19 +5288,19 @@ impl<'a> AsyncMethods<'a> {
     ///     name - The name of the created object
     pub fn CreatePrimary_async(
         &mut self,
-        primaryHandle: TPM_HANDLE,
-        inSensitive: TPMS_SENSITIVE_CREATE,
-        inPublic: TPMT_PUBLIC,
-        outsideInfo: Vec<u8>,
-        creationPCR: Vec<TPMS_PCR_SELECTION>,
+        primaryHandle: &TPM_HANDLE,
+        inSensitive: &TPMS_SENSITIVE_CREATE,
+        inPublic: &TPMT_PUBLIC,
+        outsideInfo: &Vec<u8>,
+        creationPCR: &Vec<TPMS_PCR_SELECTION>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_CreatePrimary_REQUEST {
+        let req = TPM2_CreatePrimary_REQUEST::new(
             primaryHandle,
             inSensitive,
             inPublic,
             outsideInfo,
             creationPCR,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::CreatePrimary, &req)?;
         Ok(())
@@ -5317,15 +5317,15 @@ impl<'a> AsyncMethods<'a> {
     /// state: YES if the enable should be SET, NO if the enable should be CLEAR
     pub fn HierarchyControl_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        enable: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        enable: &TPM_HANDLE,
         state: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_HierarchyControl_REQUEST {
+        let req = TPM2_HierarchyControl_REQUEST::new(
             authHandle,
             enable,
             state,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::HierarchyControl, &req)?;
         Ok(())
@@ -5344,15 +5344,15 @@ impl<'a> AsyncMethods<'a> {
     ///        If the authPolicy is an Empty Buffer, then this field shall be TPM_ALG_NULL.
     pub fn SetPrimaryPolicy_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        authPolicy: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        authPolicy: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SetPrimaryPolicy_REQUEST {
+        let req = TPM2_SetPrimaryPolicy_REQUEST::new(
             authHandle,
             authPolicy,
             hashAlg,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::SetPrimaryPolicy, &req)?;
         Ok(())
@@ -5365,11 +5365,11 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Role: USER
     pub fn ChangePPS_async(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ChangePPS_REQUEST {
+        let req = TPM2_ChangePPS_REQUEST::new(
             authHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ChangePPS, &req)?;
         Ok(())
@@ -5385,11 +5385,11 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Role: USER
     pub fn ChangeEPS_async(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ChangeEPS_REQUEST {
+        let req = TPM2_ChangeEPS_REQUEST::new(
             authHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ChangeEPS, &req)?;
         Ok(())
@@ -5401,11 +5401,11 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Role: USER
     pub fn Clear_async(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Clear_REQUEST {
+        let req = TPM2_Clear_REQUEST::new(
             authHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Clear, &req)?;
         Ok(())
@@ -5418,13 +5418,13 @@ impl<'a> AsyncMethods<'a> {
     /// disable: YES if the disableOwnerClear flag is to be SET, NO if the flag is to be CLEAR.
     pub fn ClearControl_async(
         &mut self,
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         disable: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ClearControl_REQUEST {
+        let req = TPM2_ClearControl_REQUEST::new(
             auth,
             disable,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ClearControl, &req)?;
         Ok(())
@@ -5438,13 +5438,13 @@ impl<'a> AsyncMethods<'a> {
     /// newAuth: New authorization value
     pub fn HierarchyChangeAuth_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        newAuth: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        newAuth: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_HierarchyChangeAuth_REQUEST {
+        let req = TPM2_HierarchyChangeAuth_REQUEST::new(
             authHandle,
             newAuth,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::HierarchyChangeAuth, &req)?;
         Ok(())
@@ -5458,11 +5458,11 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Role: USER
     pub fn DictionaryAttackLockReset_async(
         &mut self,
-        lockHandle: TPM_HANDLE,
+        lockHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_DictionaryAttackLockReset_REQUEST {
+        let req = TPM2_DictionaryAttackLockReset_REQUEST::new(
             lockHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::DictionaryAttackLockReset, &req)?;
         Ok(())
@@ -5479,17 +5479,17 @@ impl<'a> AsyncMethods<'a> {
     ///        A value of zero indicates that a reboot is required.
     pub fn DictionaryAttackParameters_async(
         &mut self,
-        lockHandle: TPM_HANDLE,
+        lockHandle: &TPM_HANDLE,
         newMaxTries: u32,
         newRecoveryTime: u32,
         lockoutRecovery: u32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_DictionaryAttackParameters_REQUEST {
+        let req = TPM2_DictionaryAttackParameters_REQUEST::new(
             lockHandle,
             newMaxTries,
             newRecoveryTime,
             lockoutRecovery,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::DictionaryAttackParameters, &req)?;
         Ok(())
@@ -5505,15 +5505,15 @@ impl<'a> AsyncMethods<'a> {
     /// clearList: List of commands that will no longer require that Physical Presence be asserted
     pub fn PP_Commands_async(
         &mut self,
-        auth: TPM_HANDLE,
-        setList: Vec<TPM_CC>,
-        clearList: Vec<TPM_CC>,
+        auth: &TPM_HANDLE,
+        setList: &Vec<TPM_CC>,
+        clearList: &Vec<TPM_CC>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_PP_Commands_REQUEST {
+        let req = TPM2_PP_Commands_REQUEST::new(
             auth,
             setList,
             clearList,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::PP_Commands, &req)?;
         Ok(())
@@ -5527,13 +5527,13 @@ impl<'a> AsyncMethods<'a> {
     /// algorithmSet: A TPM vendor-dependent value indicating the algorithm set selection
     pub fn SetAlgorithmSet_async(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
         algorithmSet: u32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_SetAlgorithmSet_REQUEST {
+        let req = TPM2_SetAlgorithmSet_REQUEST::new(
             authHandle,
             algorithmSet,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::SetAlgorithmSet, &req)?;
         Ok(())
@@ -5554,17 +5554,17 @@ impl<'a> AsyncMethods<'a> {
     ///        TPMS_SCHEME_HASH, TPMS_NULL_SIGNATURE.
     pub fn FieldUpgradeStart_async(
         &mut self,
-        authorization: TPM_HANDLE,
-        keyHandle: TPM_HANDLE,
-        fuDigest: Vec<u8>,
-        manifestSignature: Option<TPMU_SIGNATURE>,
+        authorization: &TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
+        fuDigest: &Vec<u8>,
+        manifestSignature: &Option<TPMU_SIGNATURE>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_FieldUpgradeStart_REQUEST {
+        let req = TPM2_FieldUpgradeStart_REQUEST::new(
             authorization,
             keyHandle,
             fuDigest,
             manifestSignature,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::FieldUpgradeStart, &req)?;
         Ok(())
@@ -5580,11 +5580,11 @@ impl<'a> AsyncMethods<'a> {
     ///     firstDigest - Tagged digest of the first block of the sequence
     pub fn FieldUpgradeData_async(
         &mut self,
-        fuData: Vec<u8>,
+        fuData: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_FieldUpgradeData_REQUEST {
+        let req = TPM2_FieldUpgradeData_REQUEST::new(
             fuData,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::FieldUpgradeData, &req)?;
         Ok(())
@@ -5598,9 +5598,9 @@ impl<'a> AsyncMethods<'a> {
         &mut self,
         sequenceNumber: u32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_FirmwareRead_REQUEST {
+        let req = TPM2_FirmwareRead_REQUEST::new(
             sequenceNumber,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::FirmwareRead, &req)?;
         Ok(())
@@ -5616,11 +5616,11 @@ impl<'a> AsyncMethods<'a> {
     ///               shall not load the context.
     pub fn ContextSave_async(
         &mut self,
-        saveHandle: TPM_HANDLE,
+        saveHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ContextSave_REQUEST {
+        let req = TPM2_ContextSave_REQUEST::new(
             saveHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ContextSave, &req)?;
         Ok(())
@@ -5631,11 +5631,11 @@ impl<'a> AsyncMethods<'a> {
     ///     handle - The handle assigned to the resource after it has been successfully loaded
     pub fn ContextLoad_async(
         &mut self,
-        context: TPMS_CONTEXT,
+        context: &TPMS_CONTEXT,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ContextLoad_REQUEST {
+        let req = TPM2_ContextLoad_REQUEST::new(
             context,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ContextLoad, &req)?;
         Ok(())
@@ -5647,11 +5647,11 @@ impl<'a> AsyncMethods<'a> {
     ///        NOTE This is a use of a handle as a parameter.
     pub fn FlushContext_async(
         &mut self,
-        flushHandle: TPM_HANDLE,
+        flushHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_FlushContext_REQUEST {
+        let req = TPM2_FlushContext_REQUEST::new(
             flushHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::FlushContext, &req)?;
         Ok(())
@@ -5670,15 +5670,15 @@ impl<'a> AsyncMethods<'a> {
     ///        persistentHandle
     pub fn EvictControl_async(
         &mut self,
-        auth: TPM_HANDLE,
-        objectHandle: TPM_HANDLE,
-        persistentHandle: TPM_HANDLE,
+        auth: &TPM_HANDLE,
+        objectHandle: &TPM_HANDLE,
+        persistentHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_EvictControl_REQUEST {
+        let req = TPM2_EvictControl_REQUEST::new(
             auth,
             objectHandle,
             persistentHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::EvictControl, &req)?;
         Ok(())
@@ -5707,13 +5707,13 @@ impl<'a> AsyncMethods<'a> {
     /// newTime: New Clock setting in milliseconds
     pub fn ClockSet_async(
         &mut self,
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         newTime: u64,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ClockSet_REQUEST {
+        let req = TPM2_ClockSet_REQUEST::new(
             auth,
             newTime,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ClockSet, &req)?;
         Ok(())
@@ -5727,13 +5727,13 @@ impl<'a> AsyncMethods<'a> {
     /// rateAdjust: Adjustment to current Clock update rate
     pub fn ClockRateAdjust_async(
         &mut self,
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         rateAdjust: TPM_CLOCK_ADJUST,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ClockRateAdjust_REQUEST {
+        let req = TPM2_ClockRateAdjust_REQUEST::new(
             auth,
             rateAdjust,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ClockRateAdjust, &req)?;
         Ok(())
@@ -5751,11 +5751,11 @@ impl<'a> AsyncMethods<'a> {
         property: u32,
         propertyCount: u32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_GetCapability_REQUEST {
+        let req = TPM2_GetCapability_REQUEST::new(
             capability,
             property,
             propertyCount,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::GetCapability, &req)?;
         Ok(())
@@ -5767,11 +5767,11 @@ impl<'a> AsyncMethods<'a> {
     ///        TPMS_ASYM_PARMS.
     pub fn TestParms_async(
         &mut self,
-        parameters: Option<TPMU_PUBLIC_PARMS>,
+        parameters: &Option<TPMU_PUBLIC_PARMS>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_TestParms_REQUEST {
+        let req = TPM2_TestParms_REQUEST::new(
             parameters,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::TestParms, &req)?;
         Ok(())
@@ -5787,15 +5787,15 @@ impl<'a> AsyncMethods<'a> {
     /// publicInfo: The public parameters of the NV area
     pub fn NV_DefineSpace_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        auth: Vec<u8>,
-        publicInfo: TPMS_NV_PUBLIC,
+        authHandle: &TPM_HANDLE,
+        auth: &Vec<u8>,
+        publicInfo: &TPMS_NV_PUBLIC,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_DefineSpace_REQUEST {
+        let req = TPM2_NV_DefineSpace_REQUEST::new(
             authHandle,
             auth,
             publicInfo,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_DefineSpace, &req)?;
         Ok(())
@@ -5809,13 +5809,13 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Index: None
     pub fn NV_UndefineSpace_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_UndefineSpace_REQUEST {
+        let req = TPM2_NV_UndefineSpace_REQUEST::new(
             authHandle,
             nvIndex,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_UndefineSpace, &req)?;
         Ok(())
@@ -5830,13 +5830,13 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Role: USER
     pub fn NV_UndefineSpaceSpecial_async(
         &mut self,
-        nvIndex: TPM_HANDLE,
-        platform: TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        platform: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_UndefineSpaceSpecial_REQUEST {
+        let req = TPM2_NV_UndefineSpaceSpecial_REQUEST::new(
             nvIndex,
             platform,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_UndefineSpaceSpecial, &req)?;
         Ok(())
@@ -5850,11 +5850,11 @@ impl<'a> AsyncMethods<'a> {
     ///     nvName - The Name of the nvIndex
     pub fn NV_ReadPublic_async(
         &mut self,
-        nvIndex: TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_ReadPublic_REQUEST {
+        let req = TPM2_NV_ReadPublic_REQUEST::new(
             nvIndex,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_ReadPublic, &req)?;
         Ok(())
@@ -5871,17 +5871,17 @@ impl<'a> AsyncMethods<'a> {
     /// offset: The octet offset into the NV Area
     pub fn NV_Write_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        data: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        data: &Vec<u8>,
         offset: u16,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Write_REQUEST {
+        let req = TPM2_NV_Write_REQUEST::new(
             authHandle,
             nvIndex,
             data,
             offset,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_Write, &req)?;
         Ok(())
@@ -5896,13 +5896,13 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Index: None
     pub fn NV_Increment_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Increment_REQUEST {
+        let req = TPM2_NV_Increment_REQUEST::new(
             authHandle,
             nvIndex,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_Increment, &req)?;
         Ok(())
@@ -5918,15 +5918,15 @@ impl<'a> AsyncMethods<'a> {
     /// data: The data to extend
     pub fn NV_Extend_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        data: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        data: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Extend_REQUEST {
+        let req = TPM2_NV_Extend_REQUEST::new(
             authHandle,
             nvIndex,
             data,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_Extend, &req)?;
         Ok(())
@@ -5943,15 +5943,15 @@ impl<'a> AsyncMethods<'a> {
     /// bits: The data to OR with the current contents
     pub fn NV_SetBits_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         bits: u64,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_SetBits_REQUEST {
+        let req = TPM2_NV_SetBits_REQUEST::new(
             authHandle,
             nvIndex,
             bits,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_SetBits, &req)?;
         Ok(())
@@ -5966,13 +5966,13 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Index: None
     pub fn NV_WriteLock_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_WriteLock_REQUEST {
+        let req = TPM2_NV_WriteLock_REQUEST::new(
             authHandle,
             nvIndex,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_WriteLock, &req)?;
         Ok(())
@@ -5985,11 +5985,11 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Role: USER
     pub fn NV_GlobalWriteLock_async(
         &mut self,
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_GlobalWriteLock_REQUEST {
+        let req = TPM2_NV_GlobalWriteLock_REQUEST::new(
             authHandle,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_GlobalWriteLock, &req)?;
         Ok(())
@@ -6007,17 +6007,17 @@ impl<'a> AsyncMethods<'a> {
     ///     data - The data read
     pub fn NV_Read_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         size: u16,
         offset: u16,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Read_REQUEST {
+        let req = TPM2_NV_Read_REQUEST::new(
             authHandle,
             nvIndex,
             size,
             offset,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_Read, &req)?;
         Ok(())
@@ -6032,13 +6032,13 @@ impl<'a> AsyncMethods<'a> {
     ///        Auth Index: None
     pub fn NV_ReadLock_async(
         &mut self,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_ReadLock_REQUEST {
+        let req = TPM2_NV_ReadLock_REQUEST::new(
             authHandle,
             nvIndex,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_ReadLock, &req)?;
         Ok(())
@@ -6051,13 +6051,13 @@ impl<'a> AsyncMethods<'a> {
     /// newAuth: New authorization value
     pub fn NV_ChangeAuth_async(
         &mut self,
-        nvIndex: TPM_HANDLE,
-        newAuth: Vec<u8>,
+        nvIndex: &TPM_HANDLE,
+        newAuth: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_ChangeAuth_REQUEST {
+        let req = TPM2_NV_ChangeAuth_REQUEST::new(
             nvIndex,
             newAuth,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_ChangeAuth, &req)?;
         Ok(())
@@ -6084,15 +6084,15 @@ impl<'a> AsyncMethods<'a> {
     ///     signature - The asymmetric signature over certifyInfo using the key referenced by signHandle
     pub fn NV_Certify_async(
         &mut self,
-        signHandle: TPM_HANDLE,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        signHandle: &TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
         size: u16,
         offset: u16,
     ) -> Result<(), TpmError> {
-        let req = TPM2_NV_Certify_REQUEST {
+        let req = TPM2_NV_Certify_REQUEST::new(
             signHandle,
             authHandle,
             nvIndex,
@@ -6100,7 +6100,7 @@ impl<'a> AsyncMethods<'a> {
             inScheme,
             size,
             offset,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::NV_Certify, &req)?;
         Ok(())
@@ -6116,15 +6116,15 @@ impl<'a> AsyncMethods<'a> {
     ///     capabilitiesData - List of capabilities
     pub fn AC_GetCapability_async(
         &mut self,
-        ac: TPM_HANDLE,
+        ac: &TPM_HANDLE,
         capability: TPM_AT,
         count: u32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_AC_GetCapability_REQUEST {
+        let req = TPM2_AC_GetCapability_REQUEST::new(
             ac,
             capability,
             count,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::AC_GetCapability, &req)?;
         Ok(())
@@ -6143,17 +6143,17 @@ impl<'a> AsyncMethods<'a> {
     ///     acDataOut - May include AC specific data or information about an error.
     pub fn AC_Send_async(
         &mut self,
-        sendObject: TPM_HANDLE,
-        authHandle: TPM_HANDLE,
-        ac: TPM_HANDLE,
-        acDataIn: Vec<u8>,
+        sendObject: &TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        ac: &TPM_HANDLE,
+        acDataIn: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_AC_Send_REQUEST {
+        let req = TPM2_AC_Send_REQUEST::new(
             sendObject,
             authHandle,
             ac,
             acDataIn,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::AC_Send, &req)?;
         Ok(())
@@ -6170,19 +6170,19 @@ impl<'a> AsyncMethods<'a> {
     /// includeObject: If SET, objectName will be included in the value in policySessionpolicyDigest
     pub fn Policy_AC_SendSelect_async(
         &mut self,
-        policySession: TPM_HANDLE,
-        objectName: Vec<u8>,
-        authHandleName: Vec<u8>,
-        acName: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        objectName: &Vec<u8>,
+        authHandleName: &Vec<u8>,
+        acName: &Vec<u8>,
         includeObject: u8,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Policy_AC_SendSelect_REQUEST {
+        let req = TPM2_Policy_AC_SendSelect_REQUEST::new(
             policySession,
             objectName,
             authHandleName,
             acName,
             includeObject,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Policy_AC_SendSelect, &req)?;
         Ok(())
@@ -6196,13 +6196,13 @@ impl<'a> AsyncMethods<'a> {
     /// startTimeout: The start timeout value for the ACT in seconds
     pub fn ACT_SetTimeout_async(
         &mut self,
-        actHandle: TPM_HANDLE,
+        actHandle: &TPM_HANDLE,
         startTimeout: u32,
     ) -> Result<(), TpmError> {
-        let req = TPM2_ACT_SetTimeout_REQUEST {
+        let req = TPM2_ACT_SetTimeout_REQUEST::new(
             actHandle,
             startTimeout,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::ACT_SetTimeout, &req)?;
         Ok(())
@@ -6213,11 +6213,11 @@ impl<'a> AsyncMethods<'a> {
     ///     outputData - Dummy data
     pub fn Vendor_TCG_Test_async(
         &mut self,
-        inputData: Vec<u8>,
+        inputData: &Vec<u8>,
     ) -> Result<(), TpmError> {
-        let req = TPM2_Vendor_TCG_Test_REQUEST {
+        let req = TPM2_Vendor_TCG_Test_REQUEST::new(
             inputData,
-        };
+        );
 
         self.tpm.dispatch_command(TPM_CC::Vendor_TCG_Test, &req)?;
         Ok(())

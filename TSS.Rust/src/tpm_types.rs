@@ -7830,84 +7830,11 @@ impl TPM_HANDLE {
         handle: u32,
         ) -> Self {
         Self {
-            handle,
+            handle: handle.clone(),
             ..Default::default()
         }
     }
 
-    /// Creates a handle for a persistent object
-    pub fn persistent(handle_offset: u32) -> Self {
-        Self::new(((TPM_HT::PERSISTENT.get_value() as u32) << 24) + handle_offset)
-    }
-
-    /// Creates a handle for a PCR
-    pub fn pcr(pcr_index: u32) -> Self {
-        Self::new(pcr_index)
-    }
-
-    /// Creates a handle for an NV slot
-    pub fn nv(nv_index: u32) -> Self {
-        Self::new(((TPM_HT::NV_INDEX.get_value() as u32) << 24) + nv_index)
-    }
-
-    /// Set the authorization value for this TPM_HANDLE.  The default auth-value is NULL
-    pub fn set_auth(&mut self, auth_val: &[u8] ) {
-        self.auth_value = auth_val.to_vec();
-    }
-
-    /// Returns this handle's type
-    pub fn get_type(&self) -> TPM_HT {
-        // The handle type is the top byte of the handle value
-        unsafe { std::mem::transmute((self.handle >> 24) as u8) }
-    }
-
-    pub fn set_name(&mut self, name: &[u8]) -> Result<(), TpmError> {
-        let handle_type = self.get_type();
-
-        if (handle_type == TPM_HT::NV_INDEX ||
-            handle_type == TPM_HT::TRANSIENT || 
-            handle_type == TPM_HT::PERSISTENT ||
-            handle_type == TPM_HT::PERSISTENT)
-        {
-            self.name = name.to_vec();
-            return Ok(());
-        }
-        
-        if (name != self.get_name()?)
-        {
-            return Err(TpmError::GenericError(format!("Setting an invalid name of an entity with the name defined by the handle value, handle type: {}", handle_type)));
-        }
-
-        Ok(())
-    }
-
-    /// Get the TPM name of this handle
-    pub fn get_name(&self) -> Result<Vec<u8>, TpmError> {
-        let handle_type = self.get_type();
-        
-        // Per spec: handles of these types have their handle value as their name
-        if handle_type == TPM_HT::PCR || handle_type == TPM_HT::HMAC_SESSION || 
-            handle_type == TPM_HT::POLICY_SESSION || handle_type == TPM_HT::PERMANENT {
-            let mut name = Vec::with_capacity(4);
-            name.extend_from_slice(&self.handle.to_be_bytes());
-            return Ok(name);
-        }
-
-        if handle_type == TPM_HT::NV_INDEX || handle_type == TPM_HT::TRANSIENT ||
-            handle_type == TPM_HT::PERSISTENT {
-            if (self.name.is_empty()) {
-                return Err(TpmError::GenericError(format!("Name is not set for handle, handle type: {}", handle_type)));
-            }
-            return Ok(self.name.clone());
-        }
-        
-        Err(TpmError::GenericError(format!("Unknown handle type, handle type: {}", handle_type)))
-    }
-
-    /// Get a string representation of this handle
-    pub fn to_string(&self) -> String {
-        format!("{}:0x{:x}", self.get_type(), self.handle)
-    }
 }
 
 impl TpmStructure for TPM_HANDLE {
@@ -8071,8 +7998,8 @@ impl TPMS_ALGORITHM_DESCRIPTION {
         attributes: TPMA_ALGORITHM,
         ) -> Self {
         Self {
-            alg,
-            attributes,
+            alg: alg.clone(),
+            attributes: attributes.clone(),
             ..Default::default()
         }
     }
@@ -8141,11 +8068,11 @@ impl TPMT_HA {
     /// Creates a new instance with the specified values
     pub fn new(
         hashAlg: TPM_ALG_ID,
-        digest: Vec<u8>,
+        digest: &Vec<u8>,
         ) -> Self {
         Self {
-            hashAlg,
-            digest,
+            hashAlg: hashAlg.clone(),
+            digest: digest.clone(),
             ..Default::default()
         }
     }
@@ -8208,10 +8135,10 @@ pub struct TPM2B_DIGEST {
 impl TPM2B_DIGEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -8271,10 +8198,10 @@ pub struct TPM2B_DATA {
 impl TPM2B_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -8347,10 +8274,10 @@ pub struct TPM2B_EVENT {
 impl TPM2B_EVENT {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -8408,10 +8335,10 @@ pub struct TPM2B_MAX_BUFFER {
 impl TPM2B_MAX_BUFFER {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -8470,10 +8397,10 @@ pub struct TPM2B_MAX_NV_BUFFER {
 impl TPM2B_MAX_NV_BUFFER {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -8531,10 +8458,10 @@ pub struct TPM2B_TIMEOUT {
 impl TPM2B_TIMEOUT {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -8593,10 +8520,10 @@ pub struct TPM2B_IV {
 impl TPM2B_IV {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -8653,10 +8580,10 @@ pub struct TPM2B_NAME {
 impl TPM2B_NAME {
     /// Creates a new instance with the specified values
     pub fn new(
-        name: Vec<u8>,
+        name: &Vec<u8>,
         ) -> Self {
         Self {
-            name,
+            name: name.clone(),
             ..Default::default()
         }
     }
@@ -8713,10 +8640,10 @@ pub struct TPMS_PCR_SELECT {
 impl TPMS_PCR_SELECT {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrSelect: Vec<u8>,
+        pcrSelect: &Vec<u8>,
         ) -> Self {
         Self {
-            pcrSelect,
+            pcrSelect: pcrSelect.clone(),
             ..Default::default()
         }
     }
@@ -8778,11 +8705,11 @@ impl TPMS_PCR_SELECTION {
     /// Creates a new instance with the specified values
     pub fn new(
         hash: TPM_ALG_ID,
-        pcrSelect: Vec<u8>,
+        pcrSelect: &Vec<u8>,
         ) -> Self {
         Self {
-            hash,
-            pcrSelect,
+            hash: hash.clone(),
+            pcrSelect: pcrSelect.clone(),
             ..Default::default()
         }
     }
@@ -8846,12 +8773,12 @@ pub struct TPMT_TK_CREATION {
 impl TPMT_TK_CREATION {
     /// Creates a new instance with the specified values
     pub fn new(
-        hierarchy: TPM_HANDLE,
-        digest: Vec<u8>,
+        hierarchy: &TPM_HANDLE,
+        digest: &Vec<u8>,
         ) -> Self {
         Self {
-            hierarchy,
-            digest,
+            hierarchy: hierarchy.clone(),
+            digest: digest.clone(),
             ..Default::default()
         }
     }
@@ -8918,12 +8845,12 @@ pub struct TPMT_TK_VERIFIED {
 impl TPMT_TK_VERIFIED {
     /// Creates a new instance with the specified values
     pub fn new(
-        hierarchy: TPM_HANDLE,
-        digest: Vec<u8>,
+        hierarchy: &TPM_HANDLE,
+        digest: &Vec<u8>,
         ) -> Self {
         Self {
-            hierarchy,
-            digest,
+            hierarchy: hierarchy.clone(),
+            digest: digest.clone(),
             ..Default::default()
         }
     }
@@ -8994,13 +8921,13 @@ impl TPMT_TK_AUTH {
     /// Creates a new instance with the specified values
     pub fn new(
         tag: TPM_ST,
-        hierarchy: TPM_HANDLE,
-        digest: Vec<u8>,
+        hierarchy: &TPM_HANDLE,
+        digest: &Vec<u8>,
         ) -> Self {
         Self {
-            tag,
-            hierarchy,
-            digest,
+            tag: tag.clone(),
+            hierarchy: hierarchy.clone(),
+            digest: digest.clone(),
             ..Default::default()
         }
     }
@@ -9066,12 +8993,12 @@ pub struct TPMT_TK_HASHCHECK {
 impl TPMT_TK_HASHCHECK {
     /// Creates a new instance with the specified values
     pub fn new(
-        hierarchy: TPM_HANDLE,
-        digest: Vec<u8>,
+        hierarchy: &TPM_HANDLE,
+        digest: &Vec<u8>,
         ) -> Self {
         Self {
-            hierarchy,
-            digest,
+            hierarchy: hierarchy.clone(),
+            digest: digest.clone(),
             ..Default::default()
         }
     }
@@ -9141,8 +9068,8 @@ impl TPMS_ALG_PROPERTY {
         algProperties: TPMA_ALGORITHM,
         ) -> Self {
         Self {
-            alg,
-            algProperties,
+            alg: alg.clone(),
+            algProperties: algProperties.clone(),
             ..Default::default()
         }
     }
@@ -9209,8 +9136,8 @@ impl TPMS_TAGGED_PROPERTY {
         value: u32,
         ) -> Self {
         Self {
-            property,
-            value,
+            property: property.clone(),
+            value: value.clone(),
             ..Default::default()
         }
     }
@@ -9273,11 +9200,11 @@ impl TPMS_TAGGED_PCR_SELECT {
     /// Creates a new instance with the specified values
     pub fn new(
         tag: TPM_PT_PCR,
-        pcrSelect: Vec<u8>,
+        pcrSelect: &Vec<u8>,
         ) -> Self {
         Self {
-            tag,
-            pcrSelect,
+            tag: tag.clone(),
+            pcrSelect: pcrSelect.clone(),
             ..Default::default()
         }
     }
@@ -9341,12 +9268,12 @@ pub struct TPMS_TAGGED_POLICY {
 impl TPMS_TAGGED_POLICY {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: TPM_HANDLE,
-        policyHash: TPMT_HA,
+        handle: &TPM_HANDLE,
+        policyHash: &TPMT_HA,
         ) -> Self {
         Self {
-            handle,
-            policyHash,
+            handle: handle.clone(),
+            policyHash: policyHash.clone(),
             ..Default::default()
         }
     }
@@ -9412,14 +9339,14 @@ pub struct TPMS_ACT_DATA {
 impl TPMS_ACT_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: TPM_HANDLE,
+        handle: &TPM_HANDLE,
         timeout: u32,
         attributes: TPMA_ACT,
         ) -> Self {
         Self {
-            handle,
-            timeout,
-            attributes,
+            handle: handle.clone(),
+            timeout: timeout.clone(),
+            attributes: attributes.clone(),
             ..Default::default()
         }
     }
@@ -9483,10 +9410,10 @@ pub struct TPML_CC {
 impl TPML_CC {
     /// Creates a new instance with the specified values
     pub fn new(
-        commandCodes: Vec<TPM_CC>,
+        commandCodes: &Vec<TPM_CC>,
         ) -> Self {
         Self {
-            commandCodes,
+            commandCodes: commandCodes.clone(),
             ..Default::default()
         }
     }
@@ -9546,10 +9473,10 @@ pub struct TPML_CCA {
 impl TPML_CCA {
     /// Creates a new instance with the specified values
     pub fn new(
-        commandAttributes: Vec<TPMA_CC>,
+        commandAttributes: &Vec<TPMA_CC>,
         ) -> Self {
         Self {
-            commandAttributes,
+            commandAttributes: commandAttributes.clone(),
             ..Default::default()
         }
     }
@@ -9611,10 +9538,10 @@ pub struct TPML_ALG {
 impl TPML_ALG {
     /// Creates a new instance with the specified values
     pub fn new(
-        algorithms: Vec<TPM_ALG_ID>,
+        algorithms: &Vec<TPM_ALG_ID>,
         ) -> Self {
         Self {
-            algorithms,
+            algorithms: algorithms.clone(),
             ..Default::default()
         }
     }
@@ -9672,10 +9599,10 @@ pub struct TPML_HANDLE {
 impl TPML_HANDLE {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: Vec<TPM_HANDLE>,
+        handle: &Vec<TPM_HANDLE>,
         ) -> Self {
         Self {
-            handle,
+            handle: handle.clone(),
             ..Default::default()
         }
     }
@@ -9739,10 +9666,10 @@ pub struct TPML_DIGEST {
 impl TPML_DIGEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        digests: Vec<TPM2B_DIGEST>,
+        digests: &Vec<TPM2B_DIGEST>,
         ) -> Self {
         Self {
-            digests,
+            digests: digests.clone(),
             ..Default::default()
         }
     }
@@ -9800,10 +9727,10 @@ pub struct TPML_DIGEST_VALUES {
 impl TPML_DIGEST_VALUES {
     /// Creates a new instance with the specified values
     pub fn new(
-        digests: Vec<TPMT_HA>,
+        digests: &Vec<TPMT_HA>,
         ) -> Self {
         Self {
-            digests,
+            digests: digests.clone(),
             ..Default::default()
         }
     }
@@ -9861,10 +9788,10 @@ pub struct TPML_PCR_SELECTION {
 impl TPML_PCR_SELECTION {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrSelections: Vec<TPMS_PCR_SELECTION>,
+        pcrSelections: &Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            pcrSelections,
+            pcrSelections: pcrSelections.clone(),
             ..Default::default()
         }
     }
@@ -9925,10 +9852,10 @@ pub struct TPML_ALG_PROPERTY {
 impl TPML_ALG_PROPERTY {
     /// Creates a new instance with the specified values
     pub fn new(
-        algProperties: Vec<TPMS_ALG_PROPERTY>,
+        algProperties: &Vec<TPMS_ALG_PROPERTY>,
         ) -> Self {
         Self {
-            algProperties,
+            algProperties: algProperties.clone(),
             ..Default::default()
         }
     }
@@ -9989,10 +9916,10 @@ pub struct TPML_TAGGED_TPM_PROPERTY {
 impl TPML_TAGGED_TPM_PROPERTY {
     /// Creates a new instance with the specified values
     pub fn new(
-        tpmProperty: Vec<TPMS_TAGGED_PROPERTY>,
+        tpmProperty: &Vec<TPMS_TAGGED_PROPERTY>,
         ) -> Self {
         Self {
-            tpmProperty,
+            tpmProperty: tpmProperty.clone(),
             ..Default::default()
         }
     }
@@ -10053,10 +9980,10 @@ pub struct TPML_TAGGED_PCR_PROPERTY {
 impl TPML_TAGGED_PCR_PROPERTY {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrProperty: Vec<TPMS_TAGGED_PCR_SELECT>,
+        pcrProperty: &Vec<TPMS_TAGGED_PCR_SELECT>,
         ) -> Self {
         Self {
-            pcrProperty,
+            pcrProperty: pcrProperty.clone(),
             ..Default::default()
         }
     }
@@ -10117,10 +10044,10 @@ pub struct TPML_ECC_CURVE {
 impl TPML_ECC_CURVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        eccCurves: Vec<TPM_ECC_CURVE>,
+        eccCurves: &Vec<TPM_ECC_CURVE>,
         ) -> Self {
         Self {
-            eccCurves,
+            eccCurves: eccCurves.clone(),
             ..Default::default()
         }
     }
@@ -10182,10 +10109,10 @@ pub struct TPML_TAGGED_POLICY {
 impl TPML_TAGGED_POLICY {
     /// Creates a new instance with the specified values
     pub fn new(
-        policies: Vec<TPMS_TAGGED_POLICY>,
+        policies: &Vec<TPMS_TAGGED_POLICY>,
         ) -> Self {
         Self {
-            policies,
+            policies: policies.clone(),
             ..Default::default()
         }
     }
@@ -10246,10 +10173,10 @@ pub struct TPML_ACT_DATA {
 impl TPML_ACT_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        actData: Vec<TPMS_ACT_DATA>,
+        actData: &Vec<TPMS_ACT_DATA>,
         ) -> Self {
         Self {
-            actData,
+            actData: actData.clone(),
             ..Default::default()
         }
     }
@@ -10314,10 +10241,10 @@ pub struct TPMS_CAPABILITY_DATA {
 impl TPMS_CAPABILITY_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        data: Option<TPMU_CAPABILITIES>,
+        data: &Option<TPMU_CAPABILITIES>,
         ) -> Self {
         Self {
-            data,
+            data: data.clone(),
             ..Default::default()
         }
     }
@@ -10400,10 +10327,10 @@ impl TPMS_CLOCK_INFO {
         safe: u8,
         ) -> Self {
         Self {
-            clock,
-            resetCount,
-            restartCount,
-            safe,
+            clock: clock.clone(),
+            resetCount: resetCount.clone(),
+            restartCount: restartCount.clone(),
+            safe: safe.clone(),
             ..Default::default()
         }
     }
@@ -10471,11 +10398,11 @@ impl TPMS_TIME_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
         time: u64,
-        clockInfo: TPMS_CLOCK_INFO,
+        clockInfo: &TPMS_CLOCK_INFO,
         ) -> Self {
         Self {
-            time,
-            clockInfo,
+            time: time.clone(),
+            clockInfo: clockInfo.clone(),
             ..Default::default()
         }
     }
@@ -10537,12 +10464,12 @@ pub struct TPMS_TIME_ATTEST_INFO {
 impl TPMS_TIME_ATTEST_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        time: TPMS_TIME_INFO,
+        time: &TPMS_TIME_INFO,
         firmwareVersion: u64,
         ) -> Self {
         Self {
-            time,
-            firmwareVersion,
+            time: time.clone(),
+            firmwareVersion: firmwareVersion.clone(),
             ..Default::default()
         }
     }
@@ -10607,12 +10534,12 @@ pub struct TPMS_CERTIFY_INFO {
 impl TPMS_CERTIFY_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        name: Vec<u8>,
-        qualifiedName: Vec<u8>,
+        name: &Vec<u8>,
+        qualifiedName: &Vec<u8>,
         ) -> Self {
         Self {
-            name,
-            qualifiedName,
+            name: name.clone(),
+            qualifiedName: qualifiedName.clone(),
             ..Default::default()
         }
     }
@@ -10677,12 +10604,12 @@ pub struct TPMS_QUOTE_INFO {
 impl TPMS_QUOTE_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrSelect: Vec<TPMS_PCR_SELECTION>,
-        pcrDigest: Vec<u8>,
+        pcrSelect: &Vec<TPMS_PCR_SELECTION>,
+        pcrDigest: &Vec<u8>,
         ) -> Self {
         Self {
-            pcrSelect,
-            pcrDigest,
+            pcrSelect: pcrSelect.clone(),
+            pcrDigest: pcrDigest.clone(),
             ..Default::default()
         }
     }
@@ -10756,14 +10683,14 @@ impl TPMS_COMMAND_AUDIT_INFO {
     pub fn new(
         auditCounter: u64,
         digestAlg: TPM_ALG_ID,
-        auditDigest: Vec<u8>,
-        commandDigest: Vec<u8>,
+        auditDigest: &Vec<u8>,
+        commandDigest: &Vec<u8>,
         ) -> Self {
         Self {
-            auditCounter,
-            digestAlg,
-            auditDigest,
-            commandDigest,
+            auditCounter: auditCounter.clone(),
+            digestAlg: digestAlg.clone(),
+            auditDigest: auditDigest.clone(),
+            commandDigest: commandDigest.clone(),
             ..Default::default()
         }
     }
@@ -10835,11 +10762,11 @@ impl TPMS_SESSION_AUDIT_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
         exclusiveSession: u8,
-        sessionDigest: Vec<u8>,
+        sessionDigest: &Vec<u8>,
         ) -> Self {
         Self {
-            exclusiveSession,
-            sessionDigest,
+            exclusiveSession: exclusiveSession.clone(),
+            sessionDigest: sessionDigest.clone(),
             ..Default::default()
         }
     }
@@ -10904,12 +10831,12 @@ pub struct TPMS_CREATION_INFO {
 impl TPMS_CREATION_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        objectName: Vec<u8>,
-        creationHash: Vec<u8>,
+        objectName: &Vec<u8>,
+        creationHash: &Vec<u8>,
         ) -> Self {
         Self {
-            objectName,
-            creationHash,
+            objectName: objectName.clone(),
+            creationHash: creationHash.clone(),
             ..Default::default()
         }
     }
@@ -10978,14 +10905,14 @@ pub struct TPMS_NV_CERTIFY_INFO {
 impl TPMS_NV_CERTIFY_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        indexName: Vec<u8>,
+        indexName: &Vec<u8>,
         offset: u16,
-        nvContents: Vec<u8>,
+        nvContents: &Vec<u8>,
         ) -> Self {
         Self {
-            indexName,
-            offset,
-            nvContents,
+            indexName: indexName.clone(),
+            offset: offset.clone(),
+            nvContents: nvContents.clone(),
             ..Default::default()
         }
     }
@@ -11053,12 +10980,12 @@ pub struct TPMS_NV_DIGEST_CERTIFY_INFO {
 impl TPMS_NV_DIGEST_CERTIFY_INFO {
     /// Creates a new instance with the specified values
     pub fn new(
-        indexName: Vec<u8>,
-        nvDigest: Vec<u8>,
+        indexName: &Vec<u8>,
+        nvDigest: &Vec<u8>,
         ) -> Self {
         Self {
-            indexName,
-            nvDigest,
+            indexName: indexName.clone(),
+            nvDigest: nvDigest.clone(),
             ..Default::default()
         }
     }
@@ -11145,19 +11072,19 @@ impl TPMS_ATTEST {
     /// Creates a new instance with the specified values
     pub fn new(
         magic: TPM_GENERATED,
-        qualifiedSigner: Vec<u8>,
-        extraData: Vec<u8>,
-        clockInfo: TPMS_CLOCK_INFO,
+        qualifiedSigner: &Vec<u8>,
+        extraData: &Vec<u8>,
+        clockInfo: &TPMS_CLOCK_INFO,
         firmwareVersion: u64,
-        attested: Option<TPMU_ATTEST>,
+        attested: &Option<TPMU_ATTEST>,
         ) -> Self {
         Self {
-            magic,
-            qualifiedSigner,
-            extraData,
-            clockInfo,
-            firmwareVersion,
-            attested,
+            magic: magic.clone(),
+            qualifiedSigner: qualifiedSigner.clone(),
+            extraData: extraData.clone(),
+            clockInfo: clockInfo.clone(),
+            firmwareVersion: firmwareVersion.clone(),
+            attested: attested.clone(),
             ..Default::default()
         }
     }
@@ -11228,10 +11155,10 @@ pub struct TPM2B_ATTEST {
 impl TPM2B_ATTEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        attestationData: TPMS_ATTEST,
+        attestationData: &TPMS_ATTEST,
         ) -> Self {
         Self {
-            attestationData,
+            attestationData: attestationData.clone(),
             ..Default::default()
         }
     }
@@ -11298,16 +11225,16 @@ pub struct TPMS_AUTH_COMMAND {
 impl TPMS_AUTH_COMMAND {
     /// Creates a new instance with the specified values
     pub fn new(
-        sessionHandle: TPM_HANDLE,
-        nonce: Vec<u8>,
+        sessionHandle: &TPM_HANDLE,
+        nonce: &Vec<u8>,
         sessionAttributes: TPMA_SESSION,
-        hmac: Vec<u8>,
+        hmac: &Vec<u8>,
         ) -> Self {
         Self {
-            sessionHandle,
-            nonce,
-            sessionAttributes,
-            hmac,
+            sessionHandle: sessionHandle.clone(),
+            nonce: nonce.clone(),
+            sessionAttributes: sessionAttributes.clone(),
+            hmac: hmac.clone(),
             ..Default::default()
         }
     }
@@ -11378,14 +11305,14 @@ pub struct TPMS_AUTH_RESPONSE {
 impl TPMS_AUTH_RESPONSE {
     /// Creates a new instance with the specified values
     pub fn new(
-        nonce: Vec<u8>,
+        nonce: &Vec<u8>,
         sessionAttributes: TPMA_SESSION,
-        hmac: Vec<u8>,
+        hmac: &Vec<u8>,
         ) -> Self {
         Self {
-            nonce,
-            sessionAttributes,
-            hmac,
+            nonce: nonce.clone(),
+            sessionAttributes: sessionAttributes.clone(),
+            hmac: hmac.clone(),
             ..Default::default()
         }
     }
@@ -11810,9 +11737,9 @@ impl TPMT_SYM_DEF {
         mode: TPM_ALG_ID,
         ) -> Self {
         Self {
-            algorithm,
-            keyBits,
-            mode,
+            algorithm: algorithm.clone(),
+            keyBits: keyBits.clone(),
+            mode: mode.clone(),
             ..Default::default()
         }
     }
@@ -11893,9 +11820,9 @@ impl TPMT_SYM_DEF_OBJECT {
         mode: TPM_ALG_ID,
         ) -> Self {
         Self {
-            algorithm,
-            keyBits,
-            mode,
+            algorithm: algorithm.clone(),
+            keyBits: keyBits.clone(),
+            mode: mode.clone(),
             ..Default::default()
         }
     }
@@ -11958,10 +11885,10 @@ pub struct TPM2B_SYM_KEY {
 impl TPM2B_SYM_KEY {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -12021,10 +11948,10 @@ pub struct TPMS_SYMCIPHER_PARMS {
 impl TPMS_SYMCIPHER_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        sym: TPMT_SYM_DEF_OBJECT,
+        sym: &TPMT_SYM_DEF_OBJECT,
         ) -> Self {
         Self {
-            sym,
+            sym: sym.clone(),
             ..Default::default()
         }
     }
@@ -12086,10 +12013,10 @@ pub struct TPM2B_LABEL {
 impl TPM2B_LABEL {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -12148,12 +12075,12 @@ pub struct TPMS_DERIVE {
 impl TPMS_DERIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        label: Vec<u8>,
-        context: Vec<u8>,
+        label: &Vec<u8>,
+        context: &Vec<u8>,
         ) -> Self {
         Self {
-            label,
-            context,
+            label: label.clone(),
+            context: context.clone(),
             ..Default::default()
         }
     }
@@ -12215,10 +12142,10 @@ pub struct TPM2B_DERIVE {
 impl TPM2B_DERIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: TPMS_DERIVE,
+        buffer: &TPMS_DERIVE,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -12275,10 +12202,10 @@ pub struct TPM2B_SENSITIVE_DATA {
 impl TPM2B_SENSITIVE_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -12342,12 +12269,12 @@ pub struct TPMS_SENSITIVE_CREATE {
 impl TPMS_SENSITIVE_CREATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        userAuth: Vec<u8>,
-        data: Vec<u8>,
+        userAuth: &Vec<u8>,
+        data: &Vec<u8>,
         ) -> Self {
         Self {
-            userAuth,
-            data,
+            userAuth: userAuth.clone(),
+            data: data.clone(),
             ..Default::default()
         }
     }
@@ -12408,10 +12335,10 @@ pub struct TPM2B_SENSITIVE_CREATE {
 impl TPM2B_SENSITIVE_CREATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        sensitive: TPMS_SENSITIVE_CREATE,
+        sensitive: &TPMS_SENSITIVE_CREATE,
         ) -> Self {
         Self {
-            sensitive,
+            sensitive: sensitive.clone(),
             ..Default::default()
         }
     }
@@ -12473,7 +12400,7 @@ impl TPMS_SCHEME_HASH {
         hashAlg: TPM_ALG_ID,
         ) -> Self {
         Self {
-            hashAlg,
+            hashAlg: hashAlg.clone(),
             ..Default::default()
         }
     }
@@ -12541,8 +12468,8 @@ impl TPMS_SCHEME_ECDAA {
         count: u16,
         ) -> Self {
         Self {
-            hashAlg,
-            count,
+            hashAlg: hashAlg.clone(),
+            count: count.clone(),
             ..Default::default()
         }
     }
@@ -12667,8 +12594,8 @@ impl TPMS_SCHEME_XOR {
         kdf: TPM_ALG_ID,
         ) -> Self {
         Self {
-            hashAlg,
-            kdf,
+            hashAlg: hashAlg.clone(),
+            kdf: kdf.clone(),
             ..Default::default()
         }
     }
@@ -12783,10 +12710,10 @@ pub struct TPMT_KEYEDHASH_SCHEME {
 impl TPMT_KEYEDHASH_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_SCHEME_KEYEDHASH>,
+        details: &Option<TPMU_SCHEME_KEYEDHASH>,
         ) -> Self {
         Self {
-            details,
+            details: details.clone(),
             ..Default::default()
         }
     }
@@ -13239,10 +13166,10 @@ pub struct TPMT_SIG_SCHEME {
 impl TPMT_SIG_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_SIG_SCHEME>,
+        details: &Option<TPMU_SIG_SCHEME>,
         ) -> Self {
         Self {
-            details,
+            details: details.clone(),
             ..Default::default()
         }
     }
@@ -13792,10 +13719,10 @@ pub struct TPMT_KDF_SCHEME {
 impl TPMT_KDF_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_KDF_SCHEME>,
+        details: &Option<TPMU_KDF_SCHEME>,
         ) -> Self {
         Self {
-            details,
+            details: details.clone(),
             ..Default::default()
         }
     }
@@ -13914,10 +13841,10 @@ pub struct TPMT_ASYM_SCHEME {
 impl TPMT_ASYM_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_ASYM_SCHEME>,
+        details: &Option<TPMU_ASYM_SCHEME>,
         ) -> Self {
         Self {
-            details,
+            details: details.clone(),
             ..Default::default()
         }
     }
@@ -13984,10 +13911,10 @@ pub struct TPMT_RSA_SCHEME {
 impl TPMT_RSA_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_ASYM_SCHEME>,
+        details: &Option<TPMU_ASYM_SCHEME>,
         ) -> Self {
         Self {
-            details,
+            details: details.clone(),
             ..Default::default()
         }
     }
@@ -14054,10 +13981,10 @@ pub struct TPMT_RSA_DECRYPT {
 impl TPMT_RSA_DECRYPT {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_ASYM_SCHEME>,
+        details: &Option<TPMU_ASYM_SCHEME>,
         ) -> Self {
         Self {
-            details,
+            details: details.clone(),
             ..Default::default()
         }
     }
@@ -14118,10 +14045,10 @@ pub struct TPM2B_PUBLIC_KEY_RSA {
 impl TPM2B_PUBLIC_KEY_RSA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -14180,10 +14107,10 @@ pub struct TPM2B_PRIVATE_KEY_RSA {
 impl TPM2B_PRIVATE_KEY_RSA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -14243,10 +14170,10 @@ pub struct TPM2B_ECC_PARAMETER {
 impl TPM2B_ECC_PARAMETER {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -14309,12 +14236,12 @@ pub struct TPMS_ECC_POINT {
 impl TPMS_ECC_POINT {
     /// Creates a new instance with the specified values
     pub fn new(
-        x: Vec<u8>,
-        y: Vec<u8>,
+        x: &Vec<u8>,
+        y: &Vec<u8>,
         ) -> Self {
         Self {
-            x,
-            y,
+            x: x.clone(),
+            y: y.clone(),
             ..Default::default()
         }
     }
@@ -14377,10 +14304,10 @@ pub struct TPM2B_ECC_POINT {
 impl TPM2B_ECC_POINT {
     /// Creates a new instance with the specified values
     pub fn new(
-        point: TPMS_ECC_POINT,
+        point: &TPMS_ECC_POINT,
         ) -> Self {
         Self {
-            point,
+            point: point.clone(),
             ..Default::default()
         }
     }
@@ -14443,10 +14370,10 @@ pub struct TPMT_ECC_SCHEME {
 impl TPMT_ECC_SCHEME {
     /// Creates a new instance with the specified values
     pub fn new(
-        details: Option<TPMU_ASYM_SCHEME>,
+        details: &Option<TPMU_ASYM_SCHEME>,
         ) -> Self {
         Self {
-            details,
+            details: details.clone(),
             ..Default::default()
         }
     }
@@ -14551,28 +14478,28 @@ impl TPMS_ALGORITHM_DETAIL_ECC {
     pub fn new(
         curveID: TPM_ECC_CURVE,
         keySize: u16,
-        kdf: Option<TPMU_KDF_SCHEME>,
-        sign: Option<TPMU_ASYM_SCHEME>,
-        p: Vec<u8>,
-        a: Vec<u8>,
-        b: Vec<u8>,
-        gX: Vec<u8>,
-        gY: Vec<u8>,
-        n: Vec<u8>,
-        h: Vec<u8>,
+        kdf: &Option<TPMU_KDF_SCHEME>,
+        sign: &Option<TPMU_ASYM_SCHEME>,
+        p: &Vec<u8>,
+        a: &Vec<u8>,
+        b: &Vec<u8>,
+        gX: &Vec<u8>,
+        gY: &Vec<u8>,
+        n: &Vec<u8>,
+        h: &Vec<u8>,
         ) -> Self {
         Self {
-            curveID,
-            keySize,
-            kdf,
-            sign,
-            p,
-            a,
-            b,
-            gX,
-            gY,
-            n,
-            h,
+            curveID: curveID.clone(),
+            keySize: keySize.clone(),
+            kdf: kdf.clone(),
+            sign: sign.clone(),
+            p: p.clone(),
+            a: a.clone(),
+            b: b.clone(),
+            gX: gX.clone(),
+            gY: gY.clone(),
+            n: n.clone(),
+            h: h.clone(),
             ..Default::default()
         }
     }
@@ -14661,11 +14588,11 @@ impl TPMS_SIGNATURE_RSA {
     /// Creates a new instance with the specified values
     pub fn new(
         hash: TPM_ALG_ID,
-        sig: Vec<u8>,
+        sig: &Vec<u8>,
         ) -> Self {
         Self {
-            hash,
-            sig,
+            hash: hash.clone(),
+            sig: sig.clone(),
             ..Default::default()
         }
     }
@@ -14852,13 +14779,13 @@ impl TPMS_SIGNATURE_ECC {
     /// Creates a new instance with the specified values
     pub fn new(
         hash: TPM_ALG_ID,
-        signatureR: Vec<u8>,
-        signatureS: Vec<u8>,
+        signatureR: &Vec<u8>,
+        signatureS: &Vec<u8>,
         ) -> Self {
         Self {
-            hash,
-            signatureR,
-            signatureS,
+            hash: hash.clone(),
+            signatureR: signatureR.clone(),
+            signatureS: signatureS.clone(),
             ..Default::default()
         }
     }
@@ -15225,10 +15152,10 @@ pub struct TPMT_SIGNATURE {
 impl TPMT_SIGNATURE {
     /// Creates a new instance with the specified values
     pub fn new(
-        signature: Option<TPMU_SIGNATURE>,
+        signature: &Option<TPMU_SIGNATURE>,
         ) -> Self {
         Self {
-            signature,
+            signature: signature.clone(),
             ..Default::default()
         }
     }
@@ -15289,10 +15216,10 @@ pub struct TPM2B_ENCRYPTED_SECRET {
 impl TPM2B_ENCRYPTED_SECRET {
     /// Creates a new instance with the specified values
     pub fn new(
-        secret: Vec<u8>,
+        secret: &Vec<u8>,
         ) -> Self {
         Self {
-            secret,
+            secret: secret.clone(),
             ..Default::default()
         }
     }
@@ -15355,10 +15282,10 @@ pub struct TPMS_KEYEDHASH_PARMS {
 impl TPMS_KEYEDHASH_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        scheme: Option<TPMU_SCHEME_KEYEDHASH>,
+        scheme: &Option<TPMU_SCHEME_KEYEDHASH>,
         ) -> Self {
         Self {
-            scheme,
+            scheme: scheme.clone(),
             ..Default::default()
         }
     }
@@ -15438,12 +15365,12 @@ pub struct TPMS_ASYM_PARMS {
 impl TPMS_ASYM_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        symmetric: TPMT_SYM_DEF_OBJECT,
-        scheme: Option<TPMU_ASYM_SCHEME>,
+        symmetric: &TPMT_SYM_DEF_OBJECT,
+        scheme: &Option<TPMU_ASYM_SCHEME>,
         ) -> Self {
         Self {
-            symmetric,
-            scheme,
+            symmetric: symmetric.clone(),
+            scheme: scheme.clone(),
             ..Default::default()
         }
     }
@@ -15537,16 +15464,16 @@ pub struct TPMS_RSA_PARMS {
 impl TPMS_RSA_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        symmetric: TPMT_SYM_DEF_OBJECT,
-        scheme: Option<TPMU_ASYM_SCHEME>,
+        symmetric: &TPMT_SYM_DEF_OBJECT,
+        scheme: &Option<TPMU_ASYM_SCHEME>,
         keyBits: u16,
         exponent: u32,
         ) -> Self {
         Self {
-            symmetric,
-            scheme,
-            keyBits,
-            exponent,
+            symmetric: symmetric.clone(),
+            scheme: scheme.clone(),
+            keyBits: keyBits.clone(),
+            exponent: exponent.clone(),
             ..Default::default()
         }
     }
@@ -15645,16 +15572,16 @@ pub struct TPMS_ECC_PARMS {
 impl TPMS_ECC_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        symmetric: TPMT_SYM_DEF_OBJECT,
-        scheme: Option<TPMU_ASYM_SCHEME>,
+        symmetric: &TPMT_SYM_DEF_OBJECT,
+        scheme: &Option<TPMU_ASYM_SCHEME>,
         curveID: TPM_ECC_CURVE,
-        kdf: Option<TPMU_KDF_SCHEME>,
+        kdf: &Option<TPMU_KDF_SCHEME>,
         ) -> Self {
         Self {
-            symmetric,
-            scheme,
-            curveID,
-            kdf,
+            symmetric: symmetric.clone(),
+            scheme: scheme.clone(),
+            curveID: curveID.clone(),
+            kdf: kdf.clone(),
             ..Default::default()
         }
     }
@@ -15731,10 +15658,10 @@ pub struct TPMT_PUBLIC_PARMS {
 impl TPMT_PUBLIC_PARMS {
     /// Creates a new instance with the specified values
     pub fn new(
-        parameters: Option<TPMU_PUBLIC_PARMS>,
+        parameters: &Option<TPMU_PUBLIC_PARMS>,
         ) -> Self {
         Self {
-            parameters,
+            parameters: parameters.clone(),
             ..Default::default()
         }
     }
@@ -15822,16 +15749,16 @@ impl TPMT_PUBLIC {
     pub fn new(
         nameAlg: TPM_ALG_ID,
         objectAttributes: TPMA_OBJECT,
-        authPolicy: Vec<u8>,
-        parameters: Option<TPMU_PUBLIC_PARMS>,
-        unique: Option<TPMU_PUBLIC_ID>,
+        authPolicy: &Vec<u8>,
+        parameters: &Option<TPMU_PUBLIC_PARMS>,
+        unique: &Option<TPMU_PUBLIC_ID>,
         ) -> Self {
         Self {
-            nameAlg,
-            objectAttributes,
-            authPolicy,
-            parameters,
-            unique,
+            nameAlg: nameAlg.clone(),
+            objectAttributes: objectAttributes.clone(),
+            authPolicy: authPolicy.clone(),
+            parameters: parameters.clone(),
+            unique: unique.clone(),
             ..Default::default()
         }
     }
@@ -15904,10 +15831,10 @@ pub struct TPM2B_PUBLIC {
 impl TPM2B_PUBLIC {
     /// Creates a new instance with the specified values
     pub fn new(
-        publicArea: TPMT_PUBLIC,
+        publicArea: &TPMT_PUBLIC,
         ) -> Self {
         Self {
-            publicArea,
+            publicArea: publicArea.clone(),
             ..Default::default()
         }
     }
@@ -15964,10 +15891,10 @@ pub struct TPM2B_TEMPLATE {
 impl TPM2B_TEMPLATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -16028,10 +15955,10 @@ pub struct TPM2B_PRIVATE_VENDOR_SPECIFIC {
 impl TPM2B_PRIVATE_VENDOR_SPECIFIC {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -16104,14 +16031,14 @@ pub struct TPMT_SENSITIVE {
 impl TPMT_SENSITIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        authValue: Vec<u8>,
-        seedValue: Vec<u8>,
-        sensitive: Option<TPMU_SENSITIVE_COMPOSITE>,
+        authValue: &Vec<u8>,
+        seedValue: &Vec<u8>,
+        sensitive: &Option<TPMU_SENSITIVE_COMPOSITE>,
         ) -> Self {
         Self {
-            authValue,
-            seedValue,
-            sensitive,
+            authValue: authValue.clone(),
+            seedValue: seedValue.clone(),
+            sensitive: sensitive.clone(),
             ..Default::default()
         }
     }
@@ -16177,10 +16104,10 @@ pub struct TPM2B_SENSITIVE {
 impl TPM2B_SENSITIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        sensitiveArea: TPMT_SENSITIVE,
+        sensitiveArea: &TPMT_SENSITIVE,
         ) -> Self {
         Self {
-            sensitiveArea,
+            sensitiveArea: sensitiveArea.clone(),
             ..Default::default()
         }
     }
@@ -16243,14 +16170,14 @@ pub struct _PRIVATE {
 impl _PRIVATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        integrityOuter: Vec<u8>,
-        integrityInner: Vec<u8>,
-        sensitive: TPMT_SENSITIVE,
+        integrityOuter: &Vec<u8>,
+        integrityInner: &Vec<u8>,
+        sensitive: &TPMT_SENSITIVE,
         ) -> Self {
         Self {
-            integrityOuter,
-            integrityInner,
-            sensitive,
+            integrityOuter: integrityOuter.clone(),
+            integrityInner: integrityInner.clone(),
+            sensitive: sensitive.clone(),
             ..Default::default()
         }
     }
@@ -16312,10 +16239,10 @@ pub struct TPM2B_PRIVATE {
 impl TPM2B_PRIVATE {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -16379,12 +16306,12 @@ pub struct TPMS_ID_OBJECT {
 impl TPMS_ID_OBJECT {
     /// Creates a new instance with the specified values
     pub fn new(
-        integrityHMAC: Vec<u8>,
-        encIdentity: Vec<u8>,
+        integrityHMAC: &Vec<u8>,
+        encIdentity: &Vec<u8>,
         ) -> Self {
         Self {
-            integrityHMAC,
-            encIdentity,
+            integrityHMAC: integrityHMAC.clone(),
+            encIdentity: encIdentity.clone(),
             ..Default::default()
         }
     }
@@ -16444,10 +16371,10 @@ pub struct TPM2B_ID_OBJECT {
 impl TPM2B_ID_OBJECT {
     /// Creates a new instance with the specified values
     pub fn new(
-        credential: TPMS_ID_OBJECT,
+        credential: &TPMS_ID_OBJECT,
         ) -> Self {
         Self {
-            credential,
+            credential: credential.clone(),
             ..Default::default()
         }
     }
@@ -16516,8 +16443,8 @@ impl TPMS_NV_PIN_COUNTER_PARAMETERS {
         pinLimit: u32,
         ) -> Self {
         Self {
-            pinCount,
-            pinLimit,
+            pinCount: pinCount.clone(),
+            pinLimit: pinLimit.clone(),
             ..Default::default()
         }
     }
@@ -16594,18 +16521,18 @@ pub struct TPMS_NV_PUBLIC {
 impl TPMS_NV_PUBLIC {
     /// Creates a new instance with the specified values
     pub fn new(
-        nvIndex: TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         nameAlg: TPM_ALG_ID,
         attributes: TPMA_NV,
-        authPolicy: Vec<u8>,
+        authPolicy: &Vec<u8>,
         dataSize: u16,
         ) -> Self {
         Self {
-            nvIndex,
-            nameAlg,
-            attributes,
-            authPolicy,
-            dataSize,
+            nvIndex: nvIndex.clone(),
+            nameAlg: nameAlg.clone(),
+            attributes: attributes.clone(),
+            authPolicy: authPolicy.clone(),
+            dataSize: dataSize.clone(),
             ..Default::default()
         }
     }
@@ -16670,10 +16597,10 @@ pub struct TPM2B_NV_PUBLIC {
 impl TPM2B_NV_PUBLIC {
     /// Creates a new instance with the specified values
     pub fn new(
-        nvPublic: TPMS_NV_PUBLIC,
+        nvPublic: &TPMS_NV_PUBLIC,
         ) -> Self {
         Self {
-            nvPublic,
+            nvPublic: nvPublic.clone(),
             ..Default::default()
         }
     }
@@ -16731,10 +16658,10 @@ pub struct TPM2B_CONTEXT_SENSITIVE {
 impl TPM2B_CONTEXT_SENSITIVE {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: Vec<u8>,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -16794,12 +16721,12 @@ pub struct TPMS_CONTEXT_DATA {
 impl TPMS_CONTEXT_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        integrity: Vec<u8>,
-        encrypted: Vec<u8>,
+        integrity: &Vec<u8>,
+        encrypted: &Vec<u8>,
         ) -> Self {
         Self {
-            integrity,
-            encrypted,
+            integrity: integrity.clone(),
+            encrypted: encrypted.clone(),
             ..Default::default()
         }
     }
@@ -16857,10 +16784,10 @@ pub struct TPM2B_CONTEXT_DATA {
 impl TPM2B_CONTEXT_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        buffer: TPMS_CONTEXT_DATA,
+        buffer: &TPMS_CONTEXT_DATA,
         ) -> Self {
         Self {
-            buffer,
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -16933,15 +16860,15 @@ impl TPMS_CONTEXT {
     /// Creates a new instance with the specified values
     pub fn new(
         sequence: u64,
-        savedHandle: TPM_HANDLE,
-        hierarchy: TPM_HANDLE,
-        contextBlob: TPMS_CONTEXT_DATA,
+        savedHandle: &TPM_HANDLE,
+        hierarchy: &TPM_HANDLE,
+        contextBlob: &TPMS_CONTEXT_DATA,
         ) -> Self {
         Self {
-            sequence,
-            savedHandle,
-            hierarchy,
-            contextBlob,
+            sequence: sequence.clone(),
+            savedHandle: savedHandle.clone(),
+            hierarchy: hierarchy.clone(),
+            contextBlob: contextBlob.clone(),
             ..Default::default()
         }
     }
@@ -17033,22 +16960,22 @@ pub struct TPMS_CREATION_DATA {
 impl TPMS_CREATION_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrSelect: Vec<TPMS_PCR_SELECTION>,
-        pcrDigest: Vec<u8>,
+        pcrSelect: &Vec<TPMS_PCR_SELECTION>,
+        pcrDigest: &Vec<u8>,
         locality: TPMA_LOCALITY,
         parentNameAlg: TPM_ALG_ID,
-        parentName: Vec<u8>,
-        parentQualifiedName: Vec<u8>,
-        outsideInfo: Vec<u8>,
+        parentName: &Vec<u8>,
+        parentQualifiedName: &Vec<u8>,
+        outsideInfo: &Vec<u8>,
         ) -> Self {
         Self {
-            pcrSelect,
-            pcrDigest,
-            locality,
-            parentNameAlg,
-            parentName,
-            parentQualifiedName,
-            outsideInfo,
+            pcrSelect: pcrSelect.clone(),
+            pcrDigest: pcrDigest.clone(),
+            locality: locality.clone(),
+            parentNameAlg: parentNameAlg.clone(),
+            parentName: parentName.clone(),
+            parentQualifiedName: parentQualifiedName.clone(),
+            outsideInfo: outsideInfo.clone(),
             ..Default::default()
         }
     }
@@ -17117,10 +17044,10 @@ pub struct TPM2B_CREATION_DATA {
 impl TPM2B_CREATION_DATA {
     /// Creates a new instance with the specified values
     pub fn new(
-        creationData: TPMS_CREATION_DATA,
+        creationData: &TPMS_CREATION_DATA,
         ) -> Self {
         Self {
-            creationData,
+            creationData: creationData.clone(),
             ..Default::default()
         }
     }
@@ -17185,8 +17112,8 @@ impl TPMS_AC_OUTPUT {
         data: u32,
         ) -> Self {
         Self {
-            tag,
-            data,
+            tag: tag.clone(),
+            data: data.clone(),
             ..Default::default()
         }
     }
@@ -17245,10 +17172,10 @@ pub struct TPML_AC_CAPABILITIES {
 impl TPML_AC_CAPABILITIES {
     /// Creates a new instance with the specified values
     pub fn new(
-        acCapabilities: Vec<TPMS_AC_OUTPUT>,
+        acCapabilities: &Vec<TPMS_AC_OUTPUT>,
         ) -> Self {
         Self {
-            acCapabilities,
+            acCapabilities: acCapabilities.clone(),
             ..Default::default()
         }
     }
@@ -17313,7 +17240,7 @@ impl TPM2_Startup_REQUEST {
         startupType: TPM_SU,
         ) -> Self {
         Self {
-            startupType,
+            startupType: startupType.clone(),
             ..Default::default()
         }
     }
@@ -17385,7 +17312,7 @@ impl TPM2_Shutdown_REQUEST {
         shutdownType: TPM_SU,
         ) -> Self {
         Self {
-            shutdownType,
+            shutdownType: shutdownType.clone(),
             ..Default::default()
         }
     }
@@ -17459,7 +17386,7 @@ impl TPM2_SelfTest_REQUEST {
         fullTest: u8,
         ) -> Self {
         Self {
-            fullTest,
+            fullTest: fullTest.clone(),
             ..Default::default()
         }
     }
@@ -17527,10 +17454,10 @@ pub struct TPM2_IncrementalSelfTest_REQUEST {
 impl TPM2_IncrementalSelfTest_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        toTest: Vec<TPM_ALG_ID>,
+        toTest: &Vec<TPM_ALG_ID>,
         ) -> Self {
         Self {
-            toTest,
+            toTest: toTest.clone(),
             ..Default::default()
         }
     }
@@ -17817,22 +17744,22 @@ pub struct TPM2_StartAuthSession_REQUEST {
 impl TPM2_StartAuthSession_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        tpmKey: TPM_HANDLE,
-        bind: TPM_HANDLE,
-        nonceCaller: Vec<u8>,
-        encryptedSalt: Vec<u8>,
+        tpmKey: &TPM_HANDLE,
+        bind: &TPM_HANDLE,
+        nonceCaller: &Vec<u8>,
+        encryptedSalt: &Vec<u8>,
         sessionType: TPM_SE,
-        symmetric: TPMT_SYM_DEF,
+        symmetric: &TPMT_SYM_DEF,
         authHash: TPM_ALG_ID,
         ) -> Self {
         Self {
-            tpmKey,
-            bind,
-            nonceCaller,
-            encryptedSalt,
-            sessionType,
-            symmetric,
-            authHash,
+            tpmKey: tpmKey.clone(),
+            bind: bind.clone(),
+            nonceCaller: nonceCaller.clone(),
+            encryptedSalt: encryptedSalt.clone(),
+            sessionType: sessionType.clone(),
+            symmetric: symmetric.clone(),
+            authHash: authHash.clone(),
             ..Default::default()
         }
     }
@@ -17983,10 +17910,10 @@ pub struct TPM2_PolicyRestart_REQUEST {
 impl TPM2_PolicyRestart_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sessionHandle: TPM_HANDLE,
+        sessionHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            sessionHandle,
+            sessionHandle: sessionHandle.clone(),
             ..Default::default()
         }
     }
@@ -18074,18 +18001,18 @@ pub struct TPM2_Create_REQUEST {
 impl TPM2_Create_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parentHandle: TPM_HANDLE,
-        inSensitive: TPMS_SENSITIVE_CREATE,
-        inPublic: TPMT_PUBLIC,
-        outsideInfo: Vec<u8>,
-        creationPCR: Vec<TPMS_PCR_SELECTION>,
+        parentHandle: &TPM_HANDLE,
+        inSensitive: &TPMS_SENSITIVE_CREATE,
+        inPublic: &TPMT_PUBLIC,
+        outsideInfo: &Vec<u8>,
+        creationPCR: &Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            parentHandle,
-            inSensitive,
-            inPublic,
-            outsideInfo,
-            creationPCR,
+            parentHandle: parentHandle.clone(),
+            inSensitive: inSensitive.clone(),
+            inPublic: inPublic.clone(),
+            outsideInfo: outsideInfo.clone(),
+            creationPCR: creationPCR.clone(),
             ..Default::default()
         }
     }
@@ -18259,14 +18186,14 @@ pub struct TPM2_Load_REQUEST {
 impl TPM2_Load_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parentHandle: TPM_HANDLE,
-        inPrivate: TPM2B_PRIVATE,
-        inPublic: TPMT_PUBLIC,
+        parentHandle: &TPM_HANDLE,
+        inPrivate: &TPM2B_PRIVATE,
+        inPublic: &TPMT_PUBLIC,
         ) -> Self {
         Self {
-            parentHandle,
-            inPrivate,
-            inPublic,
+            parentHandle: parentHandle.clone(),
+            inPrivate: inPrivate.clone(),
+            inPublic: inPublic.clone(),
             ..Default::default()
         }
     }
@@ -18412,14 +18339,14 @@ pub struct TPM2_LoadExternal_REQUEST {
 impl TPM2_LoadExternal_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        inPrivate: TPMT_SENSITIVE,
-        inPublic: TPMT_PUBLIC,
-        hierarchy: TPM_HANDLE,
+        inPrivate: &TPMT_SENSITIVE,
+        inPublic: &TPMT_PUBLIC,
+        hierarchy: &TPM_HANDLE,
         ) -> Self {
         Self {
-            inPrivate,
-            inPublic,
-            hierarchy,
+            inPrivate: inPrivate.clone(),
+            inPublic: inPublic.clone(),
+            hierarchy: hierarchy.clone(),
             ..Default::default()
         }
     }
@@ -18561,10 +18488,10 @@ pub struct TPM2_ReadPublic_REQUEST {
 impl TPM2_ReadPublic_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        objectHandle: TPM_HANDLE,
+        objectHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            objectHandle,
+            objectHandle: objectHandle.clone(),
             ..Default::default()
         }
     }
@@ -18718,16 +18645,16 @@ pub struct TPM2_ActivateCredential_REQUEST {
 impl TPM2_ActivateCredential_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        activateHandle: TPM_HANDLE,
-        keyHandle: TPM_HANDLE,
-        credentialBlob: TPMS_ID_OBJECT,
-        secret: Vec<u8>,
+        activateHandle: &TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
+        credentialBlob: &TPMS_ID_OBJECT,
+        secret: &Vec<u8>,
         ) -> Self {
         Self {
-            activateHandle,
-            keyHandle,
-            credentialBlob,
-            secret,
+            activateHandle: activateHandle.clone(),
+            keyHandle: keyHandle.clone(),
+            credentialBlob: credentialBlob.clone(),
+            secret: secret.clone(),
             ..Default::default()
         }
     }
@@ -18872,14 +18799,14 @@ pub struct TPM2_MakeCredential_REQUEST {
 impl TPM2_MakeCredential_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: TPM_HANDLE,
-        credential: Vec<u8>,
-        objectName: Vec<u8>,
+        handle: &TPM_HANDLE,
+        credential: &Vec<u8>,
+        objectName: &Vec<u8>,
         ) -> Self {
         Self {
-            handle,
-            credential,
-            objectName,
+            handle: handle.clone(),
+            credential: credential.clone(),
+            objectName: objectName.clone(),
             ..Default::default()
         }
     }
@@ -19021,10 +18948,10 @@ pub struct TPM2_Unseal_REQUEST {
 impl TPM2_Unseal_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        itemHandle: TPM_HANDLE,
+        itemHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            itemHandle,
+            itemHandle: itemHandle.clone(),
             ..Default::default()
         }
     }
@@ -19164,14 +19091,14 @@ pub struct TPM2_ObjectChangeAuth_REQUEST {
 impl TPM2_ObjectChangeAuth_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        objectHandle: TPM_HANDLE,
-        parentHandle: TPM_HANDLE,
-        newAuth: Vec<u8>,
+        objectHandle: &TPM_HANDLE,
+        parentHandle: &TPM_HANDLE,
+        newAuth: &Vec<u8>,
         ) -> Self {
         Self {
-            objectHandle,
-            parentHandle,
-            newAuth,
+            objectHandle: objectHandle.clone(),
+            parentHandle: parentHandle.clone(),
+            newAuth: newAuth.clone(),
             ..Default::default()
         }
     }
@@ -19315,14 +19242,14 @@ pub struct TPM2_CreateLoaded_REQUEST {
 impl TPM2_CreateLoaded_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parentHandle: TPM_HANDLE,
-        inSensitive: TPMS_SENSITIVE_CREATE,
-        inPublic: Vec<u8>,
+        parentHandle: &TPM_HANDLE,
+        inSensitive: &TPMS_SENSITIVE_CREATE,
+        inPublic: &Vec<u8>,
         ) -> Self {
         Self {
-            parentHandle,
-            inSensitive,
-            inPublic,
+            parentHandle: parentHandle.clone(),
+            inSensitive: inSensitive.clone(),
+            inPublic: inPublic.clone(),
             ..Default::default()
         }
     }
@@ -19491,16 +19418,16 @@ pub struct TPM2_Duplicate_REQUEST {
 impl TPM2_Duplicate_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        objectHandle: TPM_HANDLE,
-        newParentHandle: TPM_HANDLE,
-        encryptionKeyIn: Vec<u8>,
-        symmetricAlg: TPMT_SYM_DEF_OBJECT,
+        objectHandle: &TPM_HANDLE,
+        newParentHandle: &TPM_HANDLE,
+        encryptionKeyIn: &Vec<u8>,
+        symmetricAlg: &TPMT_SYM_DEF_OBJECT,
         ) -> Self {
         Self {
-            objectHandle,
-            newParentHandle,
-            encryptionKeyIn,
-            symmetricAlg,
+            objectHandle: objectHandle.clone(),
+            newParentHandle: newParentHandle.clone(),
+            encryptionKeyIn: encryptionKeyIn.clone(),
+            symmetricAlg: symmetricAlg.clone(),
             ..Default::default()
         }
     }
@@ -19670,18 +19597,18 @@ pub struct TPM2_Rewrap_REQUEST {
 impl TPM2_Rewrap_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        oldParent: TPM_HANDLE,
-        newParent: TPM_HANDLE,
-        inDuplicate: TPM2B_PRIVATE,
-        name: Vec<u8>,
-        inSymSeed: Vec<u8>,
+        oldParent: &TPM_HANDLE,
+        newParent: &TPM_HANDLE,
+        inDuplicate: &TPM2B_PRIVATE,
+        name: &Vec<u8>,
+        inSymSeed: &Vec<u8>,
         ) -> Self {
         Self {
-            oldParent,
-            newParent,
-            inDuplicate,
-            name,
-            inSymSeed,
+            oldParent: oldParent.clone(),
+            newParent: newParent.clone(),
+            inDuplicate: inDuplicate.clone(),
+            name: name.clone(),
+            inSymSeed: inSymSeed.clone(),
             ..Default::default()
         }
     }
@@ -19853,20 +19780,20 @@ pub struct TPM2_Import_REQUEST {
 impl TPM2_Import_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parentHandle: TPM_HANDLE,
-        encryptionKey: Vec<u8>,
-        objectPublic: TPMT_PUBLIC,
-        duplicate: TPM2B_PRIVATE,
-        inSymSeed: Vec<u8>,
-        symmetricAlg: TPMT_SYM_DEF_OBJECT,
+        parentHandle: &TPM_HANDLE,
+        encryptionKey: &Vec<u8>,
+        objectPublic: &TPMT_PUBLIC,
+        duplicate: &TPM2B_PRIVATE,
+        inSymSeed: &Vec<u8>,
+        symmetricAlg: &TPMT_SYM_DEF_OBJECT,
         ) -> Self {
         Self {
-            parentHandle,
-            encryptionKey,
-            objectPublic,
-            duplicate,
-            inSymSeed,
-            symmetricAlg,
+            parentHandle: parentHandle.clone(),
+            encryptionKey: encryptionKey.clone(),
+            objectPublic: objectPublic.clone(),
+            duplicate: duplicate.clone(),
+            inSymSeed: inSymSeed.clone(),
+            symmetricAlg: symmetricAlg.clone(),
             ..Default::default()
         }
     }
@@ -20032,16 +19959,16 @@ pub struct TPM2_RSA_Encrypt_REQUEST {
 impl TPM2_RSA_Encrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
-        message: Vec<u8>,
-        inScheme: Option<TPMU_ASYM_SCHEME>,
-        label: Vec<u8>,
+        keyHandle: &TPM_HANDLE,
+        message: &Vec<u8>,
+        inScheme: &Option<TPMU_ASYM_SCHEME>,
+        label: &Vec<u8>,
         ) -> Self {
         Self {
-            keyHandle,
-            message,
-            inScheme,
-            label,
+            keyHandle: keyHandle.clone(),
+            message: message.clone(),
+            inScheme: inScheme.clone(),
+            label: label.clone(),
             ..Default::default()
         }
     }
@@ -20202,16 +20129,16 @@ pub struct TPM2_RSA_Decrypt_REQUEST {
 impl TPM2_RSA_Decrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
-        cipherText: Vec<u8>,
-        inScheme: Option<TPMU_ASYM_SCHEME>,
-        label: Vec<u8>,
+        keyHandle: &TPM_HANDLE,
+        cipherText: &Vec<u8>,
+        inScheme: &Option<TPMU_ASYM_SCHEME>,
+        label: &Vec<u8>,
         ) -> Self {
         Self {
-            keyHandle,
-            cipherText,
-            inScheme,
-            label,
+            keyHandle: keyHandle.clone(),
+            cipherText: cipherText.clone(),
+            inScheme: inScheme.clone(),
+            label: label.clone(),
             ..Default::default()
         }
     }
@@ -20354,10 +20281,10 @@ pub struct TPM2_ECDH_KeyGen_REQUEST {
 impl TPM2_ECDH_KeyGen_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            keyHandle,
+            keyHandle: keyHandle.clone(),
             ..Default::default()
         }
     }
@@ -20501,12 +20428,12 @@ pub struct TPM2_ECDH_ZGen_REQUEST {
 impl TPM2_ECDH_ZGen_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
-        inPoint: TPMS_ECC_POINT,
+        keyHandle: &TPM_HANDLE,
+        inPoint: &TPMS_ECC_POINT,
         ) -> Self {
         Self {
-            keyHandle,
-            inPoint,
+            keyHandle: keyHandle.clone(),
+            inPoint: inPoint.clone(),
             ..Default::default()
         }
     }
@@ -20643,7 +20570,7 @@ impl TPM2_ECC_Parameters_REQUEST {
         curveID: TPM_ECC_CURVE,
         ) -> Self {
         Self {
-            curveID,
+            curveID: curveID.clone(),
             ..Default::default()
         }
     }
@@ -20792,18 +20719,18 @@ pub struct TPM2_ZGen_2Phase_REQUEST {
 impl TPM2_ZGen_2Phase_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyA: TPM_HANDLE,
-        inQsB: TPMS_ECC_POINT,
-        inQeB: TPMS_ECC_POINT,
+        keyA: &TPM_HANDLE,
+        inQsB: &TPMS_ECC_POINT,
+        inQeB: &TPMS_ECC_POINT,
         inScheme: TPM_ALG_ID,
         counter: u16,
         ) -> Self {
         Self {
-            keyA,
-            inQsB,
-            inQeB,
-            inScheme,
-            counter,
+            keyA: keyA.clone(),
+            inQsB: inQsB.clone(),
+            inQeB: inQeB.clone(),
+            inScheme: inScheme.clone(),
+            counter: counter.clone(),
             ..Default::default()
         }
     }
@@ -20960,14 +20887,14 @@ pub struct TPM2_ECC_Encrypt_REQUEST {
 impl TPM2_ECC_Encrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
-        plainText: Vec<u8>,
-        inScheme: Option<TPMU_KDF_SCHEME>,
+        keyHandle: &TPM_HANDLE,
+        plainText: &Vec<u8>,
+        inScheme: &Option<TPMU_KDF_SCHEME>,
         ) -> Self {
         Self {
-            keyHandle,
-            plainText,
-            inScheme,
+            keyHandle: keyHandle.clone(),
+            plainText: plainText.clone(),
+            inScheme: inScheme.clone(),
             ..Default::default()
         }
     }
@@ -21132,18 +21059,18 @@ pub struct TPM2_ECC_Decrypt_REQUEST {
 impl TPM2_ECC_Decrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
-        C1: TPMS_ECC_POINT,
-        C2: Vec<u8>,
-        C3: Vec<u8>,
-        inScheme: Option<TPMU_KDF_SCHEME>,
+        keyHandle: &TPM_HANDLE,
+        C1: &TPMS_ECC_POINT,
+        C2: &Vec<u8>,
+        C3: &Vec<u8>,
+        inScheme: &Option<TPMU_KDF_SCHEME>,
         ) -> Self {
         Self {
-            keyHandle,
-            C1,
-            C2,
-            C3,
-            inScheme,
+            keyHandle: keyHandle.clone(),
+            C1: C1.clone(),
+            C2: C2.clone(),
+            C3: C3.clone(),
+            inScheme: inScheme.clone(),
             ..Default::default()
         }
     }
@@ -21301,18 +21228,18 @@ pub struct TPM2_EncryptDecrypt_REQUEST {
 impl TPM2_EncryptDecrypt_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
         decrypt: u8,
         mode: TPM_ALG_ID,
-        ivIn: Vec<u8>,
-        inData: Vec<u8>,
+        ivIn: &Vec<u8>,
+        inData: &Vec<u8>,
         ) -> Self {
         Self {
-            keyHandle,
-            decrypt,
-            mode,
-            ivIn,
-            inData,
+            keyHandle: keyHandle.clone(),
+            decrypt: decrypt.clone(),
+            mode: mode.clone(),
+            ivIn: ivIn.clone(),
+            inData: inData.clone(),
             ..Default::default()
         }
     }
@@ -21472,18 +21399,18 @@ pub struct TPM2_EncryptDecrypt2_REQUEST {
 impl TPM2_EncryptDecrypt2_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
-        inData: Vec<u8>,
+        keyHandle: &TPM_HANDLE,
+        inData: &Vec<u8>,
         decrypt: u8,
         mode: TPM_ALG_ID,
-        ivIn: Vec<u8>,
+        ivIn: &Vec<u8>,
         ) -> Self {
         Self {
-            keyHandle,
-            inData,
-            decrypt,
-            mode,
-            ivIn,
+            keyHandle: keyHandle.clone(),
+            inData: inData.clone(),
+            decrypt: decrypt.clone(),
+            mode: mode.clone(),
+            ivIn: ivIn.clone(),
             ..Default::default()
         }
     }
@@ -21634,14 +21561,14 @@ pub struct TPM2_Hash_REQUEST {
 impl TPM2_Hash_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        data: Vec<u8>,
+        data: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
-        hierarchy: TPM_HANDLE,
+        hierarchy: &TPM_HANDLE,
         ) -> Self {
         Self {
-            data,
-            hashAlg,
-            hierarchy,
+            data: data.clone(),
+            hashAlg: hashAlg.clone(),
+            hierarchy: hierarchy.clone(),
             ..Default::default()
         }
     }
@@ -21793,14 +21720,14 @@ pub struct TPM2_HMAC_REQUEST {
 impl TPM2_HMAC_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        handle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
         ) -> Self {
         Self {
-            handle,
-            buffer,
-            hashAlg,
+            handle: handle.clone(),
+            buffer: buffer.clone(),
+            hashAlg: hashAlg.clone(),
             ..Default::default()
         }
     }
@@ -21944,14 +21871,14 @@ pub struct TPM2_MAC_REQUEST {
 impl TPM2_MAC_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        handle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
         inScheme: TPM_ALG_ID,
         ) -> Self {
         Self {
-            handle,
-            buffer,
-            inScheme,
+            handle: handle.clone(),
+            buffer: buffer.clone(),
+            inScheme: inScheme.clone(),
             ..Default::default()
         }
     }
@@ -22088,7 +22015,7 @@ impl TPM2_GetRandom_REQUEST {
         bytesRequested: u16,
         ) -> Self {
         Self {
-            bytesRequested,
+            bytesRequested: bytesRequested.clone(),
             ..Default::default()
         }
     }
@@ -22218,10 +22145,10 @@ pub struct TPM2_StirRandom_REQUEST {
 impl TPM2_StirRandom_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        inData: Vec<u8>,
+        inData: &Vec<u8>,
         ) -> Self {
         Self {
-            inData,
+            inData: inData.clone(),
             ..Default::default()
         }
     }
@@ -22302,14 +22229,14 @@ pub struct TPM2_HMAC_Start_REQUEST {
 impl TPM2_HMAC_Start_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: TPM_HANDLE,
-        auth: Vec<u8>,
+        handle: &TPM_HANDLE,
+        auth: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
         ) -> Self {
         Self {
-            handle,
-            auth,
-            hashAlg,
+            handle: handle.clone(),
+            auth: auth.clone(),
+            hashAlg: hashAlg.clone(),
             ..Default::default()
         }
     }
@@ -22454,14 +22381,14 @@ pub struct TPM2_MAC_Start_REQUEST {
 impl TPM2_MAC_Start_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: TPM_HANDLE,
-        auth: Vec<u8>,
+        handle: &TPM_HANDLE,
+        auth: &Vec<u8>,
         inScheme: TPM_ALG_ID,
         ) -> Self {
         Self {
-            handle,
-            auth,
-            inScheme,
+            handle: handle.clone(),
+            auth: auth.clone(),
+            inScheme: inScheme.clone(),
             ..Default::default()
         }
     }
@@ -22602,12 +22529,12 @@ pub struct TPM2_HashSequenceStart_REQUEST {
 impl TPM2_HashSequenceStart_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: Vec<u8>,
+        auth: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
         ) -> Self {
         Self {
-            auth,
-            hashAlg,
+            auth: auth.clone(),
+            hashAlg: hashAlg.clone(),
             ..Default::default()
         }
     }
@@ -22748,12 +22675,12 @@ pub struct TPM2_SequenceUpdate_REQUEST {
 impl TPM2_SequenceUpdate_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sequenceHandle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        sequenceHandle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            sequenceHandle,
-            buffer,
+            sequenceHandle: sequenceHandle.clone(),
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -22833,14 +22760,14 @@ pub struct TPM2_SequenceComplete_REQUEST {
 impl TPM2_SequenceComplete_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sequenceHandle: TPM_HANDLE,
-        buffer: Vec<u8>,
-        hierarchy: TPM_HANDLE,
+        sequenceHandle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
+        hierarchy: &TPM_HANDLE,
         ) -> Self {
         Self {
-            sequenceHandle,
-            buffer,
-            hierarchy,
+            sequenceHandle: sequenceHandle.clone(),
+            buffer: buffer.clone(),
+            hierarchy: hierarchy.clone(),
             ..Default::default()
         }
     }
@@ -22997,14 +22924,14 @@ pub struct TPM2_EventSequenceComplete_REQUEST {
 impl TPM2_EventSequenceComplete_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrHandle: TPM_HANDLE,
-        sequenceHandle: TPM_HANDLE,
-        buffer: Vec<u8>,
+        pcrHandle: &TPM_HANDLE,
+        sequenceHandle: &TPM_HANDLE,
+        buffer: &Vec<u8>,
         ) -> Self {
         Self {
-            pcrHandle,
-            sequenceHandle,
-            buffer,
+            pcrHandle: pcrHandle.clone(),
+            sequenceHandle: sequenceHandle.clone(),
+            buffer: buffer.clone(),
             ..Default::default()
         }
     }
@@ -23163,16 +23090,16 @@ pub struct TPM2_Certify_REQUEST {
 impl TPM2_Certify_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        objectHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        objectHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
         ) -> Self {
         Self {
-            objectHandle,
-            signHandle,
-            qualifyingData,
-            inScheme,
+            objectHandle: objectHandle.clone(),
+            signHandle: signHandle.clone(),
+            qualifyingData: qualifyingData.clone(),
+            inScheme: inScheme.clone(),
             ..Default::default()
         }
     }
@@ -23353,20 +23280,20 @@ pub struct TPM2_CertifyCreation_REQUEST {
 impl TPM2_CertifyCreation_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        signHandle: TPM_HANDLE,
-        objectHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        creationHash: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        creationTicket: TPMT_TK_CREATION,
+        signHandle: &TPM_HANDLE,
+        objectHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        creationHash: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        creationTicket: &TPMT_TK_CREATION,
         ) -> Self {
         Self {
-            signHandle,
-            objectHandle,
-            qualifyingData,
-            creationHash,
-            inScheme,
-            creationTicket,
+            signHandle: signHandle.clone(),
+            objectHandle: objectHandle.clone(),
+            qualifyingData: qualifyingData.clone(),
+            creationHash: creationHash.clone(),
+            inScheme: inScheme.clone(),
+            creationTicket: creationTicket.clone(),
             ..Default::default()
         }
     }
@@ -23539,16 +23466,16 @@ pub struct TPM2_Quote_REQUEST {
 impl TPM2_Quote_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        PCRselect: Vec<TPMS_PCR_SELECTION>,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        PCRselect: &Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            signHandle,
-            qualifyingData,
-            inScheme,
-            PCRselect,
+            signHandle: signHandle.clone(),
+            qualifyingData: qualifyingData.clone(),
+            inScheme: inScheme.clone(),
+            PCRselect: PCRselect.clone(),
             ..Default::default()
         }
     }
@@ -23724,18 +23651,18 @@ pub struct TPM2_GetSessionAuditDigest_REQUEST {
 impl TPM2_GetSessionAuditDigest_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        privacyAdminHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        sessionHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        privacyAdminHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        sessionHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
         ) -> Self {
         Self {
-            privacyAdminHandle,
-            signHandle,
-            sessionHandle,
-            qualifyingData,
-            inScheme,
+            privacyAdminHandle: privacyAdminHandle.clone(),
+            signHandle: signHandle.clone(),
+            sessionHandle: sessionHandle.clone(),
+            qualifyingData: qualifyingData.clone(),
+            inScheme: inScheme.clone(),
             ..Default::default()
         }
     }
@@ -23906,16 +23833,16 @@ pub struct TPM2_GetCommandAuditDigest_REQUEST {
 impl TPM2_GetCommandAuditDigest_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        privacyHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        privacyHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
         ) -> Self {
         Self {
-            privacyHandle,
-            signHandle,
-            qualifyingData,
-            inScheme,
+            privacyHandle: privacyHandle.clone(),
+            signHandle: signHandle.clone(),
+            qualifyingData: qualifyingData.clone(),
+            inScheme: inScheme.clone(),
             ..Default::default()
         }
     }
@@ -24086,16 +24013,16 @@ pub struct TPM2_GetTime_REQUEST {
 impl TPM2_GetTime_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        privacyAdminHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        privacyAdminHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
         ) -> Self {
         Self {
-            privacyAdminHandle,
-            signHandle,
-            qualifyingData,
-            inScheme,
+            privacyAdminHandle: privacyAdminHandle.clone(),
+            signHandle: signHandle.clone(),
+            qualifyingData: qualifyingData.clone(),
+            inScheme: inScheme.clone(),
             ..Default::default()
         }
     }
@@ -24272,18 +24199,18 @@ pub struct TPM2_CertifyX509_REQUEST {
 impl TPM2_CertifyX509_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        objectHandle: TPM_HANDLE,
-        signHandle: TPM_HANDLE,
-        reserved: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        partialCertificate: Vec<u8>,
+        objectHandle: &TPM_HANDLE,
+        signHandle: &TPM_HANDLE,
+        reserved: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        partialCertificate: &Vec<u8>,
         ) -> Self {
         Self {
-            objectHandle,
-            signHandle,
-            reserved,
-            inScheme,
-            partialCertificate,
+            objectHandle: objectHandle.clone(),
+            signHandle: signHandle.clone(),
+            reserved: reserved.clone(),
+            inScheme: inScheme.clone(),
+            partialCertificate: partialCertificate.clone(),
             ..Default::default()
         }
     }
@@ -24460,16 +24387,16 @@ pub struct TPM2_Commit_REQUEST {
 impl TPM2_Commit_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        signHandle: TPM_HANDLE,
-        P1: TPMS_ECC_POINT,
-        s2: Vec<u8>,
-        y2: Vec<u8>,
+        signHandle: &TPM_HANDLE,
+        P1: &TPMS_ECC_POINT,
+        s2: &Vec<u8>,
+        y2: &Vec<u8>,
         ) -> Self {
         Self {
-            signHandle,
-            P1,
-            s2,
-            y2,
+            signHandle: signHandle.clone(),
+            P1: P1.clone(),
+            s2: s2.clone(),
+            y2: y2.clone(),
             ..Default::default()
         }
     }
@@ -24625,7 +24552,7 @@ impl TPM2_EC_Ephemeral_REQUEST {
         curveID: TPM_ECC_CURVE,
         ) -> Self {
         Self {
-            curveID,
+            curveID: curveID.clone(),
             ..Default::default()
         }
     }
@@ -24774,14 +24701,14 @@ pub struct TPM2_VerifySignature_REQUEST {
 impl TPM2_VerifySignature_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
-        digest: Vec<u8>,
-        signature: Option<TPMU_SIGNATURE>,
+        keyHandle: &TPM_HANDLE,
+        digest: &Vec<u8>,
+        signature: &Option<TPMU_SIGNATURE>,
         ) -> Self {
         Self {
-            keyHandle,
-            digest,
-            signature,
+            keyHandle: keyHandle.clone(),
+            digest: digest.clone(),
+            signature: signature.clone(),
             ..Default::default()
         }
     }
@@ -24936,16 +24863,16 @@ pub struct TPM2_Sign_REQUEST {
 impl TPM2_Sign_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        keyHandle: TPM_HANDLE,
-        digest: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
-        validation: TPMT_TK_HASHCHECK,
+        keyHandle: &TPM_HANDLE,
+        digest: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
+        validation: &TPMT_TK_HASHCHECK,
         ) -> Self {
         Self {
-            keyHandle,
-            digest,
-            inScheme,
-            validation,
+            keyHandle: keyHandle.clone(),
+            digest: digest.clone(),
+            inScheme: inScheme.clone(),
+            validation: validation.clone(),
             ..Default::default()
         }
     }
@@ -25107,16 +25034,16 @@ pub struct TPM2_SetCommandCodeAuditStatus_REQUEST {
 impl TPM2_SetCommandCodeAuditStatus_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         auditAlg: TPM_ALG_ID,
-        setList: Vec<TPM_CC>,
-        clearList: Vec<TPM_CC>,
+        setList: &Vec<TPM_CC>,
+        clearList: &Vec<TPM_CC>,
         ) -> Self {
         Self {
-            auth,
-            auditAlg,
-            setList,
-            clearList,
+            auth: auth.clone(),
+            auditAlg: auditAlg.clone(),
+            setList: setList.clone(),
+            clearList: clearList.clone(),
             ..Default::default()
         }
     }
@@ -25197,12 +25124,12 @@ pub struct TPM2_PCR_Extend_REQUEST {
 impl TPM2_PCR_Extend_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrHandle: TPM_HANDLE,
-        digests: Vec<TPMT_HA>,
+        pcrHandle: &TPM_HANDLE,
+        digests: &Vec<TPMT_HA>,
         ) -> Self {
         Self {
-            pcrHandle,
-            digests,
+            pcrHandle: pcrHandle.clone(),
+            digests: digests.clone(),
             ..Default::default()
         }
     }
@@ -25277,12 +25204,12 @@ pub struct TPM2_PCR_Event_REQUEST {
 impl TPM2_PCR_Event_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrHandle: TPM_HANDLE,
-        eventData: Vec<u8>,
+        pcrHandle: &TPM_HANDLE,
+        eventData: &Vec<u8>,
         ) -> Self {
         Self {
-            pcrHandle,
-            eventData,
+            pcrHandle: pcrHandle.clone(),
+            eventData: eventData.clone(),
             ..Default::default()
         }
     }
@@ -25412,10 +25339,10 @@ pub struct TPM2_PCR_Read_REQUEST {
 impl TPM2_PCR_Read_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrSelectionIn: Vec<TPMS_PCR_SELECTION>,
+        pcrSelectionIn: &Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            pcrSelectionIn,
+            pcrSelectionIn: pcrSelectionIn.clone(),
             ..Default::default()
         }
     }
@@ -25562,12 +25489,12 @@ pub struct TPM2_PCR_Allocate_REQUEST {
 impl TPM2_PCR_Allocate_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        pcrAllocation: Vec<TPMS_PCR_SELECTION>,
+        authHandle: &TPM_HANDLE,
+        pcrAllocation: &Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            authHandle,
-            pcrAllocation,
+            authHandle: authHandle.clone(),
+            pcrAllocation: pcrAllocation.clone(),
             ..Default::default()
         }
     }
@@ -25728,16 +25655,16 @@ pub struct TPM2_PCR_SetAuthPolicy_REQUEST {
 impl TPM2_PCR_SetAuthPolicy_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        authPolicy: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        authPolicy: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
-        pcrNum: TPM_HANDLE,
+        pcrNum: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
-            authPolicy,
-            hashAlg,
-            pcrNum,
+            authHandle: authHandle.clone(),
+            authPolicy: authPolicy.clone(),
+            hashAlg: hashAlg.clone(),
+            pcrNum: pcrNum.clone(),
             ..Default::default()
         }
     }
@@ -25816,12 +25743,12 @@ pub struct TPM2_PCR_SetAuthValue_REQUEST {
 impl TPM2_PCR_SetAuthValue_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrHandle: TPM_HANDLE,
-        auth: Vec<u8>,
+        pcrHandle: &TPM_HANDLE,
+        auth: &Vec<u8>,
         ) -> Self {
         Self {
-            pcrHandle,
-            auth,
+            pcrHandle: pcrHandle.clone(),
+            auth: auth.clone(),
             ..Default::default()
         }
     }
@@ -25895,10 +25822,10 @@ pub struct TPM2_PCR_Reset_REQUEST {
 impl TPM2_PCR_Reset_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        pcrHandle: TPM_HANDLE,
+        pcrHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            pcrHandle,
+            pcrHandle: pcrHandle.clone(),
             ..Default::default()
         }
     }
@@ -25998,22 +25925,22 @@ pub struct TPM2_PolicySigned_REQUEST {
 impl TPM2_PolicySigned_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authObject: TPM_HANDLE,
-        policySession: TPM_HANDLE,
-        nonceTPM: Vec<u8>,
-        cpHashA: Vec<u8>,
-        policyRef: Vec<u8>,
+        authObject: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
+        nonceTPM: &Vec<u8>,
+        cpHashA: &Vec<u8>,
+        policyRef: &Vec<u8>,
         expiration: i32,
-        auth: Option<TPMU_SIGNATURE>,
+        auth: &Option<TPMU_SIGNATURE>,
         ) -> Self {
         Self {
-            authObject,
-            policySession,
-            nonceTPM,
-            cpHashA,
-            policyRef,
-            expiration,
-            auth,
+            authObject: authObject.clone(),
+            policySession: policySession.clone(),
+            nonceTPM: nonceTPM.clone(),
+            cpHashA: cpHashA.clone(),
+            policyRef: policyRef.clone(),
+            expiration: expiration.clone(),
+            auth: auth.clone(),
             ..Default::default()
         }
     }
@@ -26192,20 +26119,20 @@ pub struct TPM2_PolicySecret_REQUEST {
 impl TPM2_PolicySecret_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        policySession: TPM_HANDLE,
-        nonceTPM: Vec<u8>,
-        cpHashA: Vec<u8>,
-        policyRef: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
+        nonceTPM: &Vec<u8>,
+        cpHashA: &Vec<u8>,
+        policyRef: &Vec<u8>,
         expiration: i32,
         ) -> Self {
         Self {
-            authHandle,
-            policySession,
-            nonceTPM,
-            cpHashA,
-            policyRef,
-            expiration,
+            authHandle: authHandle.clone(),
+            policySession: policySession.clone(),
+            nonceTPM: nonceTPM.clone(),
+            cpHashA: cpHashA.clone(),
+            policyRef: policyRef.clone(),
+            expiration: expiration.clone(),
             ..Default::default()
         }
     }
@@ -26373,20 +26300,20 @@ pub struct TPM2_PolicyTicket_REQUEST {
 impl TPM2_PolicyTicket_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        timeout: Vec<u8>,
-        cpHashA: Vec<u8>,
-        policyRef: Vec<u8>,
-        authName: Vec<u8>,
-        ticket: TPMT_TK_AUTH,
+        policySession: &TPM_HANDLE,
+        timeout: &Vec<u8>,
+        cpHashA: &Vec<u8>,
+        policyRef: &Vec<u8>,
+        authName: &Vec<u8>,
+        ticket: &TPMT_TK_AUTH,
         ) -> Self {
         Self {
-            policySession,
-            timeout,
-            cpHashA,
-            policyRef,
-            authName,
-            ticket,
+            policySession: policySession.clone(),
+            timeout: timeout.clone(),
+            cpHashA: cpHashA.clone(),
+            policyRef: policyRef.clone(),
+            authName: authName.clone(),
+            ticket: ticket.clone(),
             ..Default::default()
         }
     }
@@ -26471,12 +26398,12 @@ pub struct TPM2_PolicyOR_REQUEST {
 impl TPM2_PolicyOR_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        pHashList: Vec<TPM2B_DIGEST>,
+        policySession: &TPM_HANDLE,
+        pHashList: &Vec<TPM2B_DIGEST>,
         ) -> Self {
         Self {
-            policySession,
-            pHashList,
+            policySession: policySession.clone(),
+            pHashList: pHashList.clone(),
             ..Default::default()
         }
     }
@@ -26557,14 +26484,14 @@ pub struct TPM2_PolicyPCR_REQUEST {
 impl TPM2_PolicyPCR_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        pcrDigest: Vec<u8>,
-        pcrs: Vec<TPMS_PCR_SELECTION>,
+        policySession: &TPM_HANDLE,
+        pcrDigest: &Vec<u8>,
+        pcrs: &Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            policySession,
-            pcrDigest,
-            pcrs,
+            policySession: policySession.clone(),
+            pcrDigest: pcrDigest.clone(),
+            pcrs: pcrs.clone(),
             ..Default::default()
         }
     }
@@ -26640,12 +26567,12 @@ pub struct TPM2_PolicyLocality_REQUEST {
 impl TPM2_PolicyLocality_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         locality: TPMA_LOCALITY,
         ) -> Self {
         Self {
-            policySession,
-            locality,
+            policySession: policySession.clone(),
+            locality: locality.clone(),
             ..Default::default()
         }
     }
@@ -26737,20 +26664,20 @@ pub struct TPM2_PolicyNV_REQUEST {
 impl TPM2_PolicyNV_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        policySession: TPM_HANDLE,
-        operandB: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
+        operandB: &Vec<u8>,
         offset: u16,
         operation: TPM_EO,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
-            policySession,
-            operandB,
-            offset,
-            operation,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
+            policySession: policySession.clone(),
+            operandB: operandB.clone(),
+            offset: offset.clone(),
+            operation: operation.clone(),
             ..Default::default()
         }
     }
@@ -26835,16 +26762,16 @@ pub struct TPM2_PolicyCounterTimer_REQUEST {
 impl TPM2_PolicyCounterTimer_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        operandB: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        operandB: &Vec<u8>,
         offset: u16,
         operation: TPM_EO,
         ) -> Self {
         Self {
-            policySession,
-            operandB,
-            offset,
-            operation,
+            policySession: policySession.clone(),
+            operandB: operandB.clone(),
+            offset: offset.clone(),
+            operation: operation.clone(),
             ..Default::default()
         }
     }
@@ -26922,12 +26849,12 @@ pub struct TPM2_PolicyCommandCode_REQUEST {
 impl TPM2_PolicyCommandCode_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         code: TPM_CC,
         ) -> Self {
         Self {
-            policySession,
-            code,
+            policySession: policySession.clone(),
+            code: code.clone(),
             ..Default::default()
         }
     }
@@ -26998,10 +26925,10 @@ pub struct TPM2_PolicyPhysicalPresence_REQUEST {
 impl TPM2_PolicyPhysicalPresence_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         ) -> Self {
         Self {
-            policySession,
+            policySession: policySession.clone(),
             ..Default::default()
         }
     }
@@ -27072,12 +26999,12 @@ pub struct TPM2_PolicyCpHash_REQUEST {
 impl TPM2_PolicyCpHash_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        cpHashA: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        cpHashA: &Vec<u8>,
         ) -> Self {
         Self {
-            policySession,
-            cpHashA,
+            policySession: policySession.clone(),
+            cpHashA: cpHashA.clone(),
             ..Default::default()
         }
     }
@@ -27153,12 +27080,12 @@ pub struct TPM2_PolicyNameHash_REQUEST {
 impl TPM2_PolicyNameHash_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        nameHash: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        nameHash: &Vec<u8>,
         ) -> Self {
         Self {
-            policySession,
-            nameHash,
+            policySession: policySession.clone(),
+            nameHash: nameHash.clone(),
             ..Default::default()
         }
     }
@@ -27239,16 +27166,16 @@ pub struct TPM2_PolicyDuplicationSelect_REQUEST {
 impl TPM2_PolicyDuplicationSelect_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        objectName: Vec<u8>,
-        newParentName: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        objectName: &Vec<u8>,
+        newParentName: &Vec<u8>,
         includeObject: u8,
         ) -> Self {
         Self {
-            policySession,
-            objectName,
-            newParentName,
-            includeObject,
+            policySession: policySession.clone(),
+            objectName: objectName.clone(),
+            newParentName: newParentName.clone(),
+            includeObject: includeObject.clone(),
             ..Default::default()
         }
     }
@@ -27337,18 +27264,18 @@ pub struct TPM2_PolicyAuthorize_REQUEST {
 impl TPM2_PolicyAuthorize_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        approvedPolicy: Vec<u8>,
-        policyRef: Vec<u8>,
-        keySign: Vec<u8>,
-        checkTicket: TPMT_TK_VERIFIED,
+        policySession: &TPM_HANDLE,
+        approvedPolicy: &Vec<u8>,
+        policyRef: &Vec<u8>,
+        keySign: &Vec<u8>,
+        checkTicket: &TPMT_TK_VERIFIED,
         ) -> Self {
         Self {
-            policySession,
-            approvedPolicy,
-            policyRef,
-            keySign,
-            checkTicket,
+            policySession: policySession.clone(),
+            approvedPolicy: approvedPolicy.clone(),
+            policyRef: policyRef.clone(),
+            keySign: keySign.clone(),
+            checkTicket: checkTicket.clone(),
             ..Default::default()
         }
     }
@@ -27425,10 +27352,10 @@ pub struct TPM2_PolicyAuthValue_REQUEST {
 impl TPM2_PolicyAuthValue_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         ) -> Self {
         Self {
-            policySession,
+            policySession: policySession.clone(),
             ..Default::default()
         }
     }
@@ -27496,10 +27423,10 @@ pub struct TPM2_PolicyPassword_REQUEST {
 impl TPM2_PolicyPassword_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         ) -> Self {
         Self {
-            policySession,
+            policySession: policySession.clone(),
             ..Default::default()
         }
     }
@@ -27568,10 +27495,10 @@ pub struct TPM2_PolicyGetDigest_REQUEST {
 impl TPM2_PolicyGetDigest_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         ) -> Self {
         Self {
-            policySession,
+            policySession: policySession.clone(),
             ..Default::default()
         }
     }
@@ -27708,12 +27635,12 @@ pub struct TPM2_PolicyNvWritten_REQUEST {
 impl TPM2_PolicyNvWritten_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         writtenSet: u8,
         ) -> Self {
         Self {
-            policySession,
-            writtenSet,
+            policySession: policySession.clone(),
+            writtenSet: writtenSet.clone(),
             ..Default::default()
         }
     }
@@ -27788,12 +27715,12 @@ pub struct TPM2_PolicyTemplate_REQUEST {
 impl TPM2_PolicyTemplate_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        templateHash: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        templateHash: &Vec<u8>,
         ) -> Self {
         Self {
-            policySession,
-            templateHash,
+            policySession: policySession.clone(),
+            templateHash: templateHash.clone(),
             ..Default::default()
         }
     }
@@ -27878,14 +27805,14 @@ pub struct TPM2_PolicyAuthorizeNV_REQUEST {
 impl TPM2_PolicyAuthorizeNV_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        policySession: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        policySession: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
-            policySession,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
+            policySession: policySession.clone(),
             ..Default::default()
         }
     }
@@ -27971,18 +27898,18 @@ pub struct TPM2_CreatePrimary_REQUEST {
 impl TPM2_CreatePrimary_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        primaryHandle: TPM_HANDLE,
-        inSensitive: TPMS_SENSITIVE_CREATE,
-        inPublic: TPMT_PUBLIC,
-        outsideInfo: Vec<u8>,
-        creationPCR: Vec<TPMS_PCR_SELECTION>,
+        primaryHandle: &TPM_HANDLE,
+        inSensitive: &TPMS_SENSITIVE_CREATE,
+        inPublic: &TPMT_PUBLIC,
+        outsideInfo: &Vec<u8>,
+        creationPCR: &Vec<TPMS_PCR_SELECTION>,
         ) -> Self {
         Self {
-            primaryHandle,
-            inSensitive,
-            inPublic,
-            outsideInfo,
-            creationPCR,
+            primaryHandle: primaryHandle.clone(),
+            inSensitive: inSensitive.clone(),
+            inPublic: inPublic.clone(),
+            outsideInfo: outsideInfo.clone(),
+            creationPCR: creationPCR.clone(),
             ..Default::default()
         }
     }
@@ -28161,14 +28088,14 @@ pub struct TPM2_HierarchyControl_REQUEST {
 impl TPM2_HierarchyControl_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        enable: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        enable: &TPM_HANDLE,
         state: u8,
         ) -> Self {
         Self {
-            authHandle,
-            enable,
-            state,
+            authHandle: authHandle.clone(),
+            enable: enable.clone(),
+            state: state.clone(),
             ..Default::default()
         }
     }
@@ -28254,14 +28181,14 @@ pub struct TPM2_SetPrimaryPolicy_REQUEST {
 impl TPM2_SetPrimaryPolicy_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        authPolicy: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        authPolicy: &Vec<u8>,
         hashAlg: TPM_ALG_ID,
         ) -> Self {
         Self {
-            authHandle,
-            authPolicy,
-            hashAlg,
+            authHandle: authHandle.clone(),
+            authPolicy: authPolicy.clone(),
+            hashAlg: hashAlg.clone(),
             ..Default::default()
         }
     }
@@ -28336,10 +28263,10 @@ pub struct TPM2_ChangePPS_REQUEST {
 impl TPM2_ChangePPS_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
+            authHandle: authHandle.clone(),
             ..Default::default()
         }
     }
@@ -28413,10 +28340,10 @@ pub struct TPM2_ChangeEPS_REQUEST {
 impl TPM2_ChangeEPS_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
+            authHandle: authHandle.clone(),
             ..Default::default()
         }
     }
@@ -28485,10 +28412,10 @@ pub struct TPM2_Clear_REQUEST {
 impl TPM2_Clear_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
+            authHandle: authHandle.clone(),
             ..Default::default()
         }
     }
@@ -28560,12 +28487,12 @@ pub struct TPM2_ClearControl_REQUEST {
 impl TPM2_ClearControl_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         disable: u8,
         ) -> Self {
         Self {
-            auth,
-            disable,
+            auth: auth.clone(),
+            disable: disable.clone(),
             ..Default::default()
         }
     }
@@ -28640,12 +28567,12 @@ pub struct TPM2_HierarchyChangeAuth_REQUEST {
 impl TPM2_HierarchyChangeAuth_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        newAuth: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        newAuth: &Vec<u8>,
         ) -> Self {
         Self {
-            authHandle,
-            newAuth,
+            authHandle: authHandle.clone(),
+            newAuth: newAuth.clone(),
             ..Default::default()
         }
     }
@@ -28719,10 +28646,10 @@ pub struct TPM2_DictionaryAttackLockReset_REQUEST {
 impl TPM2_DictionaryAttackLockReset_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        lockHandle: TPM_HANDLE,
+        lockHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            lockHandle,
+            lockHandle: lockHandle.clone(),
             ..Default::default()
         }
     }
@@ -28802,16 +28729,16 @@ pub struct TPM2_DictionaryAttackParameters_REQUEST {
 impl TPM2_DictionaryAttackParameters_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        lockHandle: TPM_HANDLE,
+        lockHandle: &TPM_HANDLE,
         newMaxTries: u32,
         newRecoveryTime: u32,
         lockoutRecovery: u32,
         ) -> Self {
         Self {
-            lockHandle,
-            newMaxTries,
-            newRecoveryTime,
-            lockoutRecovery,
+            lockHandle: lockHandle.clone(),
+            newMaxTries: newMaxTries.clone(),
+            newRecoveryTime: newRecoveryTime.clone(),
+            lockoutRecovery: lockoutRecovery.clone(),
             ..Default::default()
         }
     }
@@ -28893,14 +28820,14 @@ pub struct TPM2_PP_Commands_REQUEST {
 impl TPM2_PP_Commands_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: TPM_HANDLE,
-        setList: Vec<TPM_CC>,
-        clearList: Vec<TPM_CC>,
+        auth: &TPM_HANDLE,
+        setList: &Vec<TPM_CC>,
+        clearList: &Vec<TPM_CC>,
         ) -> Self {
         Self {
-            auth,
-            setList,
-            clearList,
+            auth: auth.clone(),
+            setList: setList.clone(),
+            clearList: clearList.clone(),
             ..Default::default()
         }
     }
@@ -28978,12 +28905,12 @@ pub struct TPM2_SetAlgorithmSet_REQUEST {
 impl TPM2_SetAlgorithmSet_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
         algorithmSet: u32,
         ) -> Self {
         Self {
-            authHandle,
-            algorithmSet,
+            authHandle: authHandle.clone(),
+            algorithmSet: algorithmSet.clone(),
             ..Default::default()
         }
     }
@@ -29072,16 +28999,16 @@ pub struct TPM2_FieldUpgradeStart_REQUEST {
 impl TPM2_FieldUpgradeStart_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authorization: TPM_HANDLE,
-        keyHandle: TPM_HANDLE,
-        fuDigest: Vec<u8>,
-        manifestSignature: Option<TPMU_SIGNATURE>,
+        authorization: &TPM_HANDLE,
+        keyHandle: &TPM_HANDLE,
+        fuDigest: &Vec<u8>,
+        manifestSignature: &Option<TPMU_SIGNATURE>,
         ) -> Self {
         Self {
-            authorization,
-            keyHandle,
-            fuDigest,
-            manifestSignature,
+            authorization: authorization.clone(),
+            keyHandle: keyHandle.clone(),
+            fuDigest: fuDigest.clone(),
+            manifestSignature: manifestSignature.clone(),
             ..Default::default()
         }
     }
@@ -29158,10 +29085,10 @@ pub struct TPM2_FieldUpgradeData_REQUEST {
 impl TPM2_FieldUpgradeData_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        fuData: Vec<u8>,
+        fuData: &Vec<u8>,
         ) -> Self {
         Self {
-            fuData,
+            fuData: fuData.clone(),
             ..Default::default()
         }
     }
@@ -29304,7 +29231,7 @@ impl TPM2_FirmwareRead_REQUEST {
         sequenceNumber: u32,
         ) -> Self {
         Self {
-            sequenceNumber,
+            sequenceNumber: sequenceNumber.clone(),
             ..Default::default()
         }
     }
@@ -29437,10 +29364,10 @@ pub struct TPM2_ContextSave_REQUEST {
 impl TPM2_ContextSave_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        saveHandle: TPM_HANDLE,
+        saveHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            saveHandle,
+            saveHandle: saveHandle.clone(),
             ..Default::default()
         }
     }
@@ -29567,10 +29494,10 @@ pub struct TPM2_ContextLoad_REQUEST {
 impl TPM2_ContextLoad_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        context: TPMS_CONTEXT,
+        context: &TPMS_CONTEXT,
         ) -> Self {
         Self {
-            context,
+            context: context.clone(),
             ..Default::default()
         }
     }
@@ -29701,10 +29628,10 @@ pub struct TPM2_FlushContext_REQUEST {
 impl TPM2_FlushContext_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        flushHandle: TPM_HANDLE,
+        flushHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            flushHandle,
+            flushHandle: flushHandle.clone(),
             ..Default::default()
         }
     }
@@ -29788,14 +29715,14 @@ pub struct TPM2_EvictControl_REQUEST {
 impl TPM2_EvictControl_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: TPM_HANDLE,
-        objectHandle: TPM_HANDLE,
-        persistentHandle: TPM_HANDLE,
+        auth: &TPM_HANDLE,
+        objectHandle: &TPM_HANDLE,
+        persistentHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            auth,
-            objectHandle,
-            persistentHandle,
+            auth: auth.clone(),
+            objectHandle: objectHandle.clone(),
+            persistentHandle: persistentHandle.clone(),
             ..Default::default()
         }
     }
@@ -29991,12 +29918,12 @@ pub struct TPM2_ClockSet_REQUEST {
 impl TPM2_ClockSet_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         newTime: u64,
         ) -> Self {
         Self {
-            auth,
-            newTime,
+            auth: auth.clone(),
+            newTime: newTime.clone(),
             ..Default::default()
         }
     }
@@ -30071,12 +29998,12 @@ pub struct TPM2_ClockRateAdjust_REQUEST {
 impl TPM2_ClockRateAdjust_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        auth: TPM_HANDLE,
+        auth: &TPM_HANDLE,
         rateAdjust: TPM_CLOCK_ADJUST,
         ) -> Self {
         Self {
-            auth,
-            rateAdjust,
+            auth: auth.clone(),
+            rateAdjust: rateAdjust.clone(),
             ..Default::default()
         }
     }
@@ -30155,9 +30082,9 @@ impl TPM2_GetCapability_REQUEST {
         propertyCount: u32,
         ) -> Self {
         Self {
-            capability,
-            property,
-            propertyCount,
+            capability: capability.clone(),
+            property: property.clone(),
+            propertyCount: propertyCount.clone(),
             ..Default::default()
         }
     }
@@ -30308,10 +30235,10 @@ pub struct TPM2_TestParms_REQUEST {
 impl TPM2_TestParms_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        parameters: Option<TPMU_PUBLIC_PARMS>,
+        parameters: &Option<TPMU_PUBLIC_PARMS>,
         ) -> Self {
         Self {
-            parameters,
+            parameters: parameters.clone(),
             ..Default::default()
         }
     }
@@ -30394,14 +30321,14 @@ pub struct TPM2_NV_DefineSpace_REQUEST {
 impl TPM2_NV_DefineSpace_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        auth: Vec<u8>,
-        publicInfo: TPMS_NV_PUBLIC,
+        authHandle: &TPM_HANDLE,
+        auth: &Vec<u8>,
+        publicInfo: &TPMS_NV_PUBLIC,
         ) -> Self {
         Self {
-            authHandle,
-            auth,
-            publicInfo,
+            authHandle: authHandle.clone(),
+            auth: auth.clone(),
+            publicInfo: publicInfo.clone(),
             ..Default::default()
         }
     }
@@ -30480,12 +30407,12 @@ pub struct TPM2_NV_UndefineSpace_REQUEST {
 impl TPM2_NV_UndefineSpace_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
             ..Default::default()
         }
     }
@@ -30561,12 +30488,12 @@ pub struct TPM2_NV_UndefineSpaceSpecial_REQUEST {
 impl TPM2_NV_UndefineSpaceSpecial_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        nvIndex: TPM_HANDLE,
-        platform: TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        platform: &TPM_HANDLE,
         ) -> Self {
         Self {
-            nvIndex,
-            platform,
+            nvIndex: nvIndex.clone(),
+            platform: platform.clone(),
             ..Default::default()
         }
     }
@@ -30635,10 +30562,10 @@ pub struct TPM2_NV_ReadPublic_REQUEST {
 impl TPM2_NV_ReadPublic_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        nvIndex: TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         ) -> Self {
         Self {
-            nvIndex,
+            nvIndex: nvIndex.clone(),
             ..Default::default()
         }
     }
@@ -30787,16 +30714,16 @@ pub struct TPM2_NV_Write_REQUEST {
 impl TPM2_NV_Write_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        data: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        data: &Vec<u8>,
         offset: u16,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
-            data,
-            offset,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
+            data: data.clone(),
+            offset: offset.clone(),
             ..Default::default()
         }
     }
@@ -30876,12 +30803,12 @@ pub struct TPM2_NV_Increment_REQUEST {
 impl TPM2_NV_Increment_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
             ..Default::default()
         }
     }
@@ -30959,14 +30886,14 @@ pub struct TPM2_NV_Extend_REQUEST {
 impl TPM2_NV_Extend_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        data: Vec<u8>,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        data: &Vec<u8>,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
-            data,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
+            data: data.clone(),
             ..Default::default()
         }
     }
@@ -31048,14 +30975,14 @@ pub struct TPM2_NV_SetBits_REQUEST {
 impl TPM2_NV_SetBits_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         bits: u64,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
-            bits,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
+            bits: bits.clone(),
             ..Default::default()
         }
     }
@@ -31132,12 +31059,12 @@ pub struct TPM2_NV_WriteLock_REQUEST {
 impl TPM2_NV_WriteLock_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
             ..Default::default()
         }
     }
@@ -31207,10 +31134,10 @@ pub struct TPM2_NV_GlobalWriteLock_REQUEST {
 impl TPM2_NV_GlobalWriteLock_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
+            authHandle: authHandle.clone(),
             ..Default::default()
         }
     }
@@ -31291,16 +31218,16 @@ pub struct TPM2_NV_Read_REQUEST {
 impl TPM2_NV_Read_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         size: u16,
         offset: u16,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
-            size,
-            offset,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
+            size: size.clone(),
+            offset: offset.clone(),
             ..Default::default()
         }
     }
@@ -31441,12 +31368,12 @@ pub struct TPM2_NV_ReadLock_REQUEST {
 impl TPM2_NV_ReadLock_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
         ) -> Self {
         Self {
-            authHandle,
-            nvIndex,
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
             ..Default::default()
         }
     }
@@ -31518,12 +31445,12 @@ pub struct TPM2_NV_ChangeAuth_REQUEST {
 impl TPM2_NV_ChangeAuth_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        nvIndex: TPM_HANDLE,
-        newAuth: Vec<u8>,
+        nvIndex: &TPM_HANDLE,
+        newAuth: &Vec<u8>,
         ) -> Self {
         Self {
-            nvIndex,
-            newAuth,
+            nvIndex: nvIndex.clone(),
+            newAuth: newAuth.clone(),
             ..Default::default()
         }
     }
@@ -31625,22 +31552,22 @@ pub struct TPM2_NV_Certify_REQUEST {
 impl TPM2_NV_Certify_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        signHandle: TPM_HANDLE,
-        authHandle: TPM_HANDLE,
-        nvIndex: TPM_HANDLE,
-        qualifyingData: Vec<u8>,
-        inScheme: Option<TPMU_SIG_SCHEME>,
+        signHandle: &TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        nvIndex: &TPM_HANDLE,
+        qualifyingData: &Vec<u8>,
+        inScheme: &Option<TPMU_SIG_SCHEME>,
         size: u16,
         offset: u16,
         ) -> Self {
         Self {
-            signHandle,
-            authHandle,
-            nvIndex,
-            qualifyingData,
-            inScheme,
-            size,
-            offset,
+            signHandle: signHandle.clone(),
+            authHandle: authHandle.clone(),
+            nvIndex: nvIndex.clone(),
+            qualifyingData: qualifyingData.clone(),
+            inScheme: inScheme.clone(),
+            size: size.clone(),
+            offset: offset.clone(),
             ..Default::default()
         }
     }
@@ -31803,14 +31730,14 @@ pub struct TPM2_AC_GetCapability_REQUEST {
 impl TPM2_AC_GetCapability_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        ac: TPM_HANDLE,
+        ac: &TPM_HANDLE,
         capability: TPM_AT,
         count: u32,
         ) -> Self {
         Self {
-            ac,
-            capability,
-            count,
+            ac: ac.clone(),
+            capability: capability.clone(),
+            count: count.clone(),
             ..Default::default()
         }
     }
@@ -31965,16 +31892,16 @@ pub struct TPM2_AC_Send_REQUEST {
 impl TPM2_AC_Send_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        sendObject: TPM_HANDLE,
-        authHandle: TPM_HANDLE,
-        ac: TPM_HANDLE,
-        acDataIn: Vec<u8>,
+        sendObject: &TPM_HANDLE,
+        authHandle: &TPM_HANDLE,
+        ac: &TPM_HANDLE,
+        acDataIn: &Vec<u8>,
         ) -> Self {
         Self {
-            sendObject,
-            authHandle,
-            ac,
-            acDataIn,
+            sendObject: sendObject.clone(),
+            authHandle: authHandle.clone(),
+            ac: ac.clone(),
+            acDataIn: acDataIn.clone(),
             ..Default::default()
         }
     }
@@ -32122,18 +32049,18 @@ pub struct TPM2_Policy_AC_SendSelect_REQUEST {
 impl TPM2_Policy_AC_SendSelect_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        policySession: TPM_HANDLE,
-        objectName: Vec<u8>,
-        authHandleName: Vec<u8>,
-        acName: Vec<u8>,
+        policySession: &TPM_HANDLE,
+        objectName: &Vec<u8>,
+        authHandleName: &Vec<u8>,
+        acName: &Vec<u8>,
         includeObject: u8,
         ) -> Self {
         Self {
-            policySession,
-            objectName,
-            authHandleName,
-            acName,
-            includeObject,
+            policySession: policySession.clone(),
+            objectName: objectName.clone(),
+            authHandleName: authHandleName.clone(),
+            acName: acName.clone(),
+            includeObject: includeObject.clone(),
             ..Default::default()
         }
     }
@@ -32215,12 +32142,12 @@ pub struct TPM2_ACT_SetTimeout_REQUEST {
 impl TPM2_ACT_SetTimeout_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        actHandle: TPM_HANDLE,
+        actHandle: &TPM_HANDLE,
         startTimeout: u32,
         ) -> Self {
         Self {
-            actHandle,
-            startTimeout,
+            actHandle: actHandle.clone(),
+            startTimeout: startTimeout.clone(),
             ..Default::default()
         }
     }
@@ -32288,10 +32215,10 @@ pub struct TPM2_Vendor_TCG_Test_REQUEST {
 impl TPM2_Vendor_TCG_Test_REQUEST {
     /// Creates a new instance with the specified values
     pub fn new(
-        inputData: Vec<u8>,
+        inputData: &Vec<u8>,
         ) -> Self {
         Self {
-            inputData,
+            inputData: inputData.clone(),
             ..Default::default()
         }
     }
@@ -32482,14 +32409,14 @@ pub struct TssObject {
 impl TssObject {
     /// Creates a new instance with the specified values
     pub fn new(
-        Public: TPMT_PUBLIC,
-        Sensitive: TPMT_SENSITIVE,
-        Private: TPM2B_PRIVATE,
+        Public: &TPMT_PUBLIC,
+        Sensitive: &TPMT_SENSITIVE,
+        Private: &TPM2B_PRIVATE,
         ) -> Self {
         Self {
-            Public,
-            Sensitive,
-            Private,
+            Public: Public.clone(),
+            Sensitive: Sensitive.clone(),
+            Private: Private.clone(),
             ..Default::default()
         }
     }
@@ -32554,11 +32481,11 @@ impl PcrValue {
     /// Creates a new instance with the specified values
     pub fn new(
         index: u32,
-        value: TPMT_HA,
+        value: &TPMT_HA,
         ) -> Self {
         Self {
-            index,
-            value,
+            index: index.clone(),
+            value: value.clone(),
             ..Default::default()
         }
     }
@@ -32627,16 +32554,16 @@ pub struct SessionIn {
 impl SessionIn {
     /// Creates a new instance with the specified values
     pub fn new(
-        handle: TPM_HANDLE,
-        nonceCaller: Vec<u8>,
+        handle: &TPM_HANDLE,
+        nonceCaller: &Vec<u8>,
         attributes: TPMA_SESSION,
-        auth: Vec<u8>,
+        auth: &Vec<u8>,
         ) -> Self {
         Self {
-            handle,
-            nonceCaller,
-            attributes,
-            auth,
+            handle: handle.clone(),
+            nonceCaller: nonceCaller.clone(),
+            attributes: attributes.clone(),
+            auth: auth.clone(),
             ..Default::default()
         }
     }
@@ -32705,14 +32632,14 @@ pub struct SessionOut {
 impl SessionOut {
     /// Creates a new instance with the specified values
     pub fn new(
-        nonceTpm: Vec<u8>,
+        nonceTpm: &Vec<u8>,
         attributes: TPMA_SESSION,
-        auth: Vec<u8>,
+        auth: &Vec<u8>,
         ) -> Self {
         Self {
-            nonceTpm,
-            attributes,
-            auth,
+            nonceTpm: nonceTpm.clone(),
+            attributes: attributes.clone(),
+            auth: auth.clone(),
             ..Default::default()
         }
     }
@@ -32784,9 +32711,9 @@ impl CommandHeader {
         CommandCode: TPM_CC,
         ) -> Self {
         Self {
-            Tag,
-            CommandSize,
-            CommandCode,
+            Tag: Tag.clone(),
+            CommandSize: CommandSize.clone(),
+            CommandCode: CommandCode.clone(),
             ..Default::default()
         }
     }
@@ -32850,12 +32777,12 @@ pub struct TSS_KEY {
 impl TSS_KEY {
     /// Creates a new instance with the specified values
     pub fn new(
-        publicPart: TPMT_PUBLIC,
-        privatePart: Vec<u8>,
+        publicPart: &TPMT_PUBLIC,
+        privatePart: &Vec<u8>,
         ) -> Self {
         Self {
-            publicPart,
-            privatePart,
+            publicPart: publicPart.clone(),
+            privatePart: privatePart.clone(),
             ..Default::default()
         }
     }

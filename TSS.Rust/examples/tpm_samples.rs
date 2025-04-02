@@ -128,25 +128,25 @@ fn make_storage_primary(tpm: &mut Tpm2) -> Result<TPM_HANDLE, TpmError> {
     
     let Aes128Cfb = TPMT_SYM_DEF_OBJECT::new(TPM_ALG_ID::AES, 128, TPM_ALG_ID::CFB);
 
-    let parameters = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(Aes128Cfb.clone(), Some(TPMU_ASYM_SCHEME::null(TPMS_NULL_ASYM_SCHEME::default())), 2048, 65537));
+    let parameters = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(&Aes128Cfb, &Some(TPMU_ASYM_SCHEME::null(TPMS_NULL_ASYM_SCHEME::default())), 2048, 65537));
 
     let unique = TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default());
 
 
     let storage_primary_template = TPMT_PUBLIC::new(TPM_ALG_ID::SHA1,
                     object_attributes,
-                    Vec::new(),           // No policy
-                    Some(parameters),
-                    Some(unique));
+                    &Vec::new(),           // No policy
+                    &Some(parameters),
+                    &Some(unique));
     // Create the key
     // if (auth_session)
     //     tpm[*auth_session];
 
-    let create_primary_response = tpm.CreatePrimary(TPM_HANDLE::new(TPM_RH::OWNER.get_value()),
-    TPMS_SENSITIVE_CREATE::default(),
-    storage_primary_template,
-       Default::default(),
-       Default::default())?;
+    let create_primary_response = tpm.CreatePrimary(&TPM_HANDLE::new(TPM_RH::OWNER.get_value()),
+    &TPMS_SENSITIVE_CREATE::default(),
+    &storage_primary_template,
+       &Default::default(),
+       &Default::default())?;
 
     Ok(create_primary_response.handle)
 }
@@ -158,16 +158,16 @@ fn make_child_signing_key(tpm: &mut Tpm2, parent: &TPM_HANDLE, restricted: bool)
     let object_attributes = TPMA_OBJECT::sign | TPMA_OBJECT::fixedParent | TPMA_OBJECT::fixedTPM
                 | TPMA_OBJECT::sensitiveDataOrigin | TPMA_OBJECT::userWithAuth | restricted_attribute;
 
-    let parameters = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(Default::default(), 
-        Some(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA { hashAlg: TPM_ALG_ID::SHA1 })), 2048, 65537)); // PKCS1.5
+    let parameters = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(&Default::default(), 
+        &Some(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA { hashAlg: TPM_ALG_ID::SHA1 })), 2048, 65537)); // PKCS1.5
 
     let unique = TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default());
 
-    let templ = TPMT_PUBLIC::new(TPM_ALG_ID::SHA1, object_attributes, Default::default(), Some(parameters), Some(unique));
+    let templ = TPMT_PUBLIC::new(TPM_ALG_ID::SHA1, object_attributes, &Default::default(), &Some(parameters), &Some(unique));
 
-    let new_signing_key = tpm.Create(parent.clone(), Default::default(), templ, Default::default(), Default::default())?;
+    let new_signing_key = tpm.Create(&parent, &Default::default(), &templ, &Default::default(), &Default::default())?;
 
-    tpm.Load(parent.clone(), new_signing_key.outPrivate.clone(), new_signing_key.outPublic.clone())
+    tpm.Load(&parent, &new_signing_key.outPrivate, &new_signing_key.outPublic)
 }
 
 
@@ -187,18 +187,17 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     println!("Created and loaded signing key with handle: {:?}", sig_key);
     
     // Set up PCR selection for the quote
-    let pcrs_to_quote = vec![
-        TPMS_PCR_SELECTION::new( TPM_ALG_ID::SHA1, vec![1,1,1] )
-    ];
+    let pcrs_to_quote = TPMS_PCR_SELECTION::get_selection_array(
+        TPM_ALG_ID::SHA1, 7 );
 
     // Do an event to make sure the value is non-zero
-    tpm.PCR_Event(TPM_HANDLE::pcr(7), vec![0x80, 0, 0])?;
+    tpm.PCR_Event(&TPM_HANDLE::pcr(7), &vec![1, 2, 3])?;
 
     // Then read the value so that we can validate the signature later
-    let pcr_vals = tpm.PCR_Read(pcrs_to_quote.clone())?;
+    let pcr_vals = tpm.PCR_Read(&pcrs_to_quote)?;
 
     // Do the quote.  Note that we provide a nonce.
-    let quote = tpm.Quote(sig_key.clone(), nonce, TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?, pcrs_to_quote)?;
+    let quote = tpm.Quote(&sig_key, &nonce, &TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?, &pcrs_to_quote)?;
     
     // Need to cast to the proper attestation type to validate
     let attested = quote.quoted.attested;
@@ -215,7 +214,7 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     let time_nonce: Vec<u8> = vec![1, 6, 8, 2, 1];
     println!(">> Time Quoting, using nonce {:?}", time_nonce);
 
-    let time_quote = tpm.GetTime(TPM_HANDLE::new(TPM_RH::ENDORSEMENT.get_value()), sig_key.clone(), time_nonce, TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?)?;
+    let time_quote = tpm.GetTime(&TPM_HANDLE::new(TPM_RH::ENDORSEMENT.get_value()), &sig_key, &time_nonce, &TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?)?;
 
     if let Some(TPMU_ATTEST::time(time_attest)) = time_quote.timeInfo.attested {
         println!("Time Quote obtained successfully");
@@ -235,7 +234,7 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     let key_nonce: Vec<u8> = vec![0, 9, 1, 1, 2, 3];
     println!(">> Key Quoting, using nonce {:?}", key_nonce);
 
-    let key_quote = tpm.Certify(sig_key.clone(), sig_key.clone(), key_nonce.clone(), TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?)?;
+    let key_quote = tpm.Certify(&sig_key, &sig_key, &key_nonce, &TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?)?;
 
     if let Some(TPMU_ATTEST::certify(certify_attest)) = &key_quote.certifyInfo.attested {
         println!("Key certification obtained successfully");
@@ -248,7 +247,7 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
         return Err(TpmError::InvalidParameter);
     } ;
 
-    let pub_key = tpm.ReadPublic(sig_key)?;
+    let pub_key = tpm.ReadPublic(&sig_key)?;
 
     if (pub_key.outPublic.validate_certify(&pub_key.outPublic, &key_nonce, &key_quote)?) {
         println!("Key certification signature verification SUCCESSFUL! ✅");

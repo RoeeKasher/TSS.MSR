@@ -43,11 +43,15 @@ namespace CodeGen
             return s.DerivedFrom != null && s.ContainingUnions.Count == 0;
         }
 
-        static string CtorParamTypeFor(StructField f)
-        {
+        static string ParamForField(StructField f) {
             if (f.IsArray() || !f.IsValueType())
-                return $"&{ToSnakeCase(f.TypeName)}";
-            return ToSnakeCase(f.TypeName);
+            {
+                return $"&{TransType(f)}";
+            }
+            else
+            {
+                return TransType(f);
+            }
         }
 
         static string TransType(StructField f)
@@ -482,8 +486,6 @@ namespace CodeGen
 
             GenGetUnionSelector(s);
 
-            InsertSnip(s.Name + "_impl");
-
             TabOut("}");
 
             GenTpmStructureImplementation(s);
@@ -507,7 +509,8 @@ namespace CodeGen
                 if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
                     continue;
 
-                Write($"{ToSnakeCase(f.Name)},");
+                var fieldName = ToSnakeCase(f.Name);
+                Write($"{fieldName}: {fieldName}.clone(),");
             }
         }
 
@@ -522,7 +525,7 @@ namespace CodeGen
                 if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
                     continue;
 
-                Write($"{ToSnakeCase(f.Name)}: {TransType(f)},");
+                Write($"{ToSnakeCase(f.Name)}: {ParamForField(f)},");
             }
         }
 
@@ -555,7 +558,7 @@ namespace CodeGen
                 Write($"pub {ToSnakeCase(f.Name)}: {TransType(f)},");
             }
 
-            InsertSnip(s.Name + "_fields");
+            InsertSnip(s.Name);
         }
 
         void GenTpmStructureImplementation(TpmStruct s)
@@ -700,10 +703,8 @@ namespace CodeGen
         void GenCommand(TpmStruct req, CommandFlavor gen)
         {
             var resp = GetRespStruct(req);
-            var respFields = resp.NonTagFields;
 
             string cmdName = ToSnakeCase(GetCommandName(req));
-            string cmdCode = "TPM_CC::" + cmdName;
 
             if (gen == CommandFlavor.AsyncCommand)
                 cmdName += "_async";
@@ -734,7 +735,7 @@ namespace CodeGen
                     if (f.MarshalType == MarshalType.ConstantValue)
                         continue;
 
-                    Write($"{ToSnakeCase(f.Name)}: {TransType(f)},");
+                    Write($"{ToSnakeCase(f.Name)}: {ParamForField(f)},");
                 }
             }
 
@@ -750,7 +751,7 @@ namespace CodeGen
             // Create request structure
             if (reqFields.Length > 0)
             {
-                Write($"let req = {req.Name} {{");
+                Write($"let req = {req.Name}::new(");
                 TabIn();
                 foreach (var f in reqFields)
                 {
@@ -759,7 +760,7 @@ namespace CodeGen
 
                     Write($"{ToSnakeCase(f.Name)},");
                 }
-                TabOut("};");
+                TabOut(");");
                 Write("");
             }
             else if (gen != CommandFlavor.AsyncResponse)
