@@ -14,11 +14,15 @@ crate-type = ["cdylib", "lib"]
 derivative = "2.2.0"
 hmac = "0.12.1"
 lazy_static = "1.5.0"
-rsa = "0.9.8"
+rsa = { version = "0.9.8" }
 sm3 = "0.4.2"
 windows = "0.61.1"
 sha1 = { version = "0.10.6", features = ["oid"] }
 sha2 = { version = "0.10.8", features = ["oid"] }
+rand = "0.8"
+aes = "0.8"
+cipher = { version = "0.4", features = ["block-padding"] }
+zeroize = "1.8"
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.61.1", features = ["Win32_Foundation", "Win32_Security", "Win32_System_TpmBaseServices", "Win32_Networking", "Win32_Networking_WinSock"] }

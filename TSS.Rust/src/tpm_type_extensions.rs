@@ -6,6 +6,13 @@ use crate::tpm_structure::TpmEnum;
 use crate::tpm_types::CertifyResponse;
 use crate::tpm_types::*;
 
+/// Activation data returned from create_activation
+#[derive(Debug)]
+pub struct ActivationData {
+    pub credential_blob: TPMS_ID_OBJECT,
+    pub secret: Vec<u8>, // Encrypted seed (ENCRYPTED_SECRET)
+}
+
 impl TPMT_PUBLIC {
     pub fn get_name(&self) -> Result<Vec<u8>, TpmError> {
         let mut buffer = TpmBuffer::new(None);
@@ -74,6 +81,146 @@ impl TPMT_PUBLIC {
         let signed_blob_hash = Crypto::hash(hash_alg, &signed_blob)?;
 
         Crypto::validate_signature(self, signed_blob_hash, &certify_response.signature)
+    }
+
+    /// Implements the TPM2_MakeCredential command functionality:
+    /// 1. Generate random seed
+    /// 2. RSA-OAEP encrypt seed with label "IDENTITY"
+    /// 3. Derive symmetric key via KDFa
+    /// 4. Encrypt credential + create integrity HMAC
+    pub fn create_activation(
+        &self,
+        credential: &[u8],
+        activated_name: &[u8],
+    ) -> Result<ActivationData, TpmError> {
+        // Verify we have an RSA key with correct parameters
+        let rsa_params = if let Some(TPMU_PUBLIC_PARMS::rsaDetail(params)) = &self.parameters {
+            params
+        } else {
+            return Err(TpmError::NotSupported("Only RSA activation supported".to_string()));
+        };
+
+        // Check symmetric definition
+        let sym_def = &rsa_params.symmetric;
+        if sym_def.algorithm != TPM_ALG_ID::AES 
+            || sym_def.keyBits != 128 
+            || sym_def.mode != TPM_ALG_ID::CFB {
+            return Err(TpmError::NotSupported("Unsupported wrapping scheme".to_string()));
+        }
+
+        // Generate random 16-byte seed
+        let mut seed = Crypto::get_random(16);
+
+        // Encrypt seed with label "IDENTITY"
+        let identity_label = "IDENTITY\0";
+        let secret = rsa_public_key
+            .encrypt(
+                &mut OsRng,
+                PaddingScheme::new_oaep_with_label::<sha1::Sha1, _>(identity_label.as_bytes()),
+                &seed
+            )
+            .map_err(|_| TpmError::CryptoError("Failed to encrypt seed".to_string()))?;
+
+        // Make the credential blob:
+
+        // 1. Create the symmetric key via KDFa
+        let sym_key = Crypto::kdfa(
+            self.name_alg,
+            &seed,
+            "STORAGE",
+            activated_name,
+            &[],
+            128, // 128-bit AES key
+        )?;
+
+        // 2. Take credential and prepend size
+        let mut credential_with_size = Vec::with_capacity(2 + credential.len());
+        credential_with_size.extend_from_slice(&(credential.len() as u16).to_be_bytes());
+        credential_with_size.extend_from_slice(credential);
+
+        // 3. Encrypt the credential 
+        let enc_credential = Crypto::cfb_xcrypt(
+            true,
+            &sym_key,
+            &vec![0u8; 16], // Zero IV
+            &credential_with_size
+        )?;
+
+        // 4. Generate the integrity HMAC key
+        let hmac_key = Crypto::kdfa(
+            self.name_alg,
+            &seed,
+            "INTEGRITY",
+            &[],
+            &[],
+            Crypto::digestSize(self.name_alg) * 8,
+        )?;
+
+        // 5. Calculate outer HMAC
+        let mut to_hmac = Vec::new();
+        to_hmac.extend_from_slice(&enc_credential);
+        to_hmac.extend_from_slice(activated_name);
+        
+        let integrity_hmac = Crypto::hmac(
+            self.name_alg,
+            &hmac_key,
+            &to_hmac
+        )?;
+
+        // Cleanup sensitive data
+        seed.zeroize();
+        hmac_key.zeroize();
+        sym_key.zeroize();
+
+        Ok(ActivationData {
+            credential_blob: TPMS_ID_OBJECT::new(&integrity_hmac, &enc_credential),
+            secret,
+        })
+    }
+
+    // Performs RSA encryption of the given data using the public key
+    pub fn encrypt(
+        &self,
+        data: &[u8],
+    ) -> Result<Vec<u8>, TpmError> {
+        // Verify we have an RSA key with correct parameters
+        let rsa_params = if let Some(TPMU_PUBLIC_PARMS::rsaDetail(params)) = &self.parameters {
+            params
+        } else {
+            return Err(TpmError::NotSupported("Only RSA encryption supported".to_string()));
+        };
+
+        // Check symmetric definition
+        let sym_def = &rsa_params.symmetric;
+        if sym_def.algorithm != TPM_ALG_ID::AES 
+            || sym_def.keyBits != 128 
+            || sym_def.mode != TPM_ALG_ID::CFB {
+            return Err(TpmError::NotSupported("Unsupported wrapping scheme".to_string()));
+        }
+
+        // Get RSA public key components
+        let rsa_pub_n = if let Some(TPMU_PUBLIC_ID::rsa(unique)) = &self.unique {
+            &unique.buffer
+        } else {
+            return Err(TpmError::NotSupported("Invalid RSA public key".to_string()));
+        };
+
+        // Create RSA public key (usually e = 65537)
+        let rsa_public_key = RsaPublicKey::new(
+            BigUint::from_bytes_be(rsa_pub_n),
+            BigUint::from_bytes_be(&[1, 0, 1]) // e = 65537
+        ).map_err(|_| TpmError::InvalidArraySize("Invalid RSA parameters".to_string()))?;
+
+        // Encrypt the data using OAEP padding with SHA-1 hash function
+        let encrypted_data = rsa_public_key
+            .encrypt(
+                &mut OsRng,
+                PaddingScheme::new_oaep_with_label::<sha1::Sha1, _>(b"IDENTITY"),
+                data,
+            )
+            .map_err(|_| TpmError::CryptoError("Failed to encrypt data".to_string()))?;
+
+        Ok(encrypted_data)
     }
 }
 

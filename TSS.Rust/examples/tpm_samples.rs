@@ -3,6 +3,10 @@ use tss_rust::{
     device::{TpmDevice, TpmTbsDevice}, error::TpmError, tpm2_impl::*, tpm_structure::{TpmEnum}, tpm_types::*, tpm_type_extensions::*
 };
 
+lazy_static::lazy_static! {
+    pub static ref Aes128Cfb: TPMT_SYM_DEF_OBJECT = TPMT_SYM_DEF_OBJECT::new(TPM_ALG_ID::AES, 128, TPM_ALG_ID::CFB);
+}
+
 fn set_color(color: u8) {
     // This function simulates setting text color. In a real application, you can use libraries like `termcolor` or `colored`.
     // This is just a placeholder since color setting is typically platform-dependent (like ANSI codes on Linux/macOS).
@@ -121,13 +125,10 @@ fn get_capabilities(tpm: &mut Tpm2) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn make_storage_primary(tpm: &mut Tpm2) -> Result<TPM_HANDLE, TpmError> {
-
     let object_attributes = TPMA_OBJECT::decrypt | TPMA_OBJECT::restricted
         | TPMA_OBJECT::fixedParent | TPMA_OBJECT::fixedTPM
         | TPMA_OBJECT::sensitiveDataOrigin | TPMA_OBJECT::userWithAuth;
     
-    let Aes128Cfb = TPMT_SYM_DEF_OBJECT::new(TPM_ALG_ID::AES, 128, TPM_ALG_ID::CFB);
-
     let parameters = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(&Aes128Cfb, &Some(TPMU_ASYM_SCHEME::null(TPMS_NULL_ASYM_SCHEME::default())), 2048, 65537));
 
     let unique = TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default());
@@ -163,13 +164,38 @@ fn make_child_signing_key(tpm: &mut Tpm2, parent: &TPM_HANDLE, restricted: bool)
 
     let unique = TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default());
 
-    let templ = TPMT_PUBLIC::new(TPM_ALG_ID::SHA1, object_attributes, &Default::default(), &Some(parameters), &Some(unique));
+    let template = TPMT_PUBLIC::new(TPM_ALG_ID::SHA1, object_attributes, &Default::default(), &Some(parameters), &Some(unique));
 
-    let new_signing_key = tpm.Create(&parent, &Default::default(), &templ, &Default::default(), &Default::default())?;
+    let new_signing_key = tpm.Create(&parent, &Default::default(), &template, &Default::default(), &Default::default())?;
 
     tpm.Load(&parent, &new_signing_key.outPrivate, &new_signing_key.outPublic)
 }
 
+fn make_endorsement_key(tpm: &mut Tpm2) -> Result<TPM_HANDLE, TpmError> {
+    let object_attributes = TPMA_OBJECT::decrypt | TPMA_OBJECT::restricted
+    | TPMA_OBJECT::fixedParent | TPMA_OBJECT::fixedTPM
+    | TPMA_OBJECT::sensitiveDataOrigin | TPMA_OBJECT::userWithAuth;
+
+let parameters = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(&Aes128Cfb, &Some(TPMU_ASYM_SCHEME::null(TPMS_NULL_ASYM_SCHEME::default())), 2048, 65537));
+
+let unique = TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default());
+
+
+let template = TPMT_PUBLIC::new(TPM_ALG_ID::SHA1,
+                object_attributes,
+                &Vec::new(),           // No policy
+                &Some(parameters),
+                &Some(unique));
+
+                // Create the key
+                let create_primary_response = tpm.CreatePrimary(&TPM_HANDLE::new(TPM_RH::ENDORSEMENT.get_value()),
+                &TPMS_SENSITIVE_CREATE::default(),
+                &template,
+                   &Default::default(),
+                   &Default::default())?;
+            
+                Ok(create_primary_response.handle)
+}
 
 fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     announce("Attestation Sample");
@@ -256,13 +282,53 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
     }
 
     // // Clean up - flush keys from TPM
-    // tpm.FlushContext(signing_key_handle)?;
-    // tpm.FlushContext(sk_handle)?;
-    // tpm.FlushContext(ek_handle)?;
+    tpm.FlushContext(&sig_key)?;
     println!("Cleaned up keys from TPM");
 
     Ok(())
 }
+
+
+fn activate_credentials(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("Activate Credentials");
+
+    // Make a new EK and get the public key
+    let ek_handle = make_endorsement_key(tpm)?;
+    let ek_pub_response = tpm.ReadPublic(&ek_handle)?;
+    let ek_pub = ek_pub_response.outPublic;
+
+    // Make another key that we will "activate"
+    let srk = make_storage_primary(tpm)?;
+    let key_to_activate = make_child_signing_key(tpm, &srk, true)?;
+    tpm.FlushContext(&srk)?;
+
+    // Make a secret using the TSS.Rust RNG
+    let mut secret = Crypto::get_random(20);
+    let name_of_key_to_activate = key_to_activate.get_name()?;
+
+    // Use TSS.Rust to get an activation blob
+    let cred = ek_pub.create_activation(secret, &name_of_key_to_activate)?;
+    let mut recovered_secret = tpm.ActivateCredential(&key_to_activate, &ek_handle, 
+                                                     &cred.credential_blob, &cred.secret)?;
+
+    println!("Secret:                         {}", secret);
+    println!("Secret recovered from Activate: {}"  recoveredSecret);
+
+    assert!(secret == recoveredSecret, "Secret mismatch when using TSS.Rust to create an activation credential");
+
+    // You can also use the TPM to make the activation credential
+    let tpm_activator = tpm.MakeCredential(&ek_handle, secret, &name_of_key_to_activate)?;
+
+    recovered_secret = tpm.ActivateCredential(keyToActivate, ekHandle,
+                                             &tpm_activator.credentialBlob, &tpm_activator.secret);
+
+    println!("TPM-created activation blob: Secret recovered from Activate: {}", recoveredSecret);
+    
+    assert!(secret == recoveredSecret, "Secret mismatch when using the TPM to create an activation credential");
+
+    tpm.FlushContext(ekHandle);
+    tpm.FlushContext(keyToActivate);
+} // Activate()
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Example usage of the TSS.Rust library
