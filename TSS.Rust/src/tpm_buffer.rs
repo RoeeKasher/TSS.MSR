@@ -129,7 +129,7 @@ impl TpmBuffer {
         self.pos += 1;
     }
 
-    fn read_num(&mut self, len: usize) -> u64 {
+    pub fn read_num(&mut self, len: usize) -> u64 {
         if !self.check_len(len) {
             return 0;
         }

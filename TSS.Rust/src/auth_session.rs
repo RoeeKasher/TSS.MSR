@@ -209,11 +209,56 @@ impl Session {
         Crypto::hmac(self.hash_alg, &hmac_key, &buf_to_hmac)
     }
 
-    /// Process parameter encryption/decryption using KDFa-derived XOR mask or AES-CFB.
-    pub fn param_xcrypt(&self, data: &[u8], _is_encrypt: bool) -> Vec<u8> {
-        // TODO: Implement proper AES-CFB parameter encryption
-        // For now, pass data through unchanged (works for unencrypted sessions)
-        data.to_vec()
+    /// Process parameter encryption/decryption using AES-CFB.
+    /// Key derivation: KDFa(hashAlg, sessionKey, "CFB", nonceNewer, nonceOlder, 256)
+    /// First keyBits/8 bytes = AES key, next 16 bytes = IV
+    pub fn param_xcrypt(&self, data: &[u8], is_command: bool) -> Result<Vec<u8>, TpmError> {
+        if data.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        // Only AES-128/256 CFB is supported
+        if self.symmetric.algorithm != TPM_ALG_ID::AES || self.symmetric.mode != TPM_ALG_ID::CFB {
+            return Err(TpmError::GenericError(
+                "Only AES in CFB mode is supported for parameter encryption".to_string(),
+            ));
+        }
+
+        let key_bits = self.symmetric.keyBits as usize;
+        if key_bits != 128 && key_bits != 256 {
+            return Err(TpmError::GenericError(
+                format!("Unsupported AES key size: {} bits", key_bits),
+            ));
+        }
+
+        let key_size = key_bits / 8;
+
+        // Determine nonce order: for requests, nonceNewer=nonceCaller, nonceOlder=nonceTPM
+        // For responses, nonceNewer=nonceTPM, nonceOlder=nonceCaller
+        let (nonce_newer, nonce_older) = if is_command {
+            (&self.sess_in.nonce, &self.sess_out.nonce)
+        } else {
+            (&self.sess_out.nonce, &self.sess_in.nonce)
+        };
+
+        // Derive key material: KDFa(hashAlg, sessionKey, "CFB", nonceNewer, nonceOlder, 256)
+        // Produces key_size + 16 bytes (key + IV)
+        let num_bits = (key_size + 16) * 8;
+        let key_info = Crypto::kdfa(
+            self.hash_alg,
+            &self.session_key,
+            "CFB",
+            nonce_newer,
+            nonce_older,
+            num_bits,
+        )?;
+
+        let aes_key = &key_info[..key_size];
+        let iv = &key_info[key_size..key_size + 16];
+
+        // For requests: encrypt (TPM will decrypt)
+        // For responses: decrypt (TPM encrypted it)
+        Crypto::cfb_xcrypt(is_command, aes_key, iv, data)
     }
 }
 

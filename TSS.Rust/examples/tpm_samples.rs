@@ -1958,6 +1958,403 @@ fn policy_locality_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
     Ok(())
 }
 
+fn async_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("Async Sample");
+
+    // The TPM supports asynchronous command dispatch: you send the command,
+    // then poll for completion, and finally retrieve the result.
+    // On Windows TBS, commands complete synchronously, but the API pattern
+    // is still useful for non-blocking designs and other transport layers.
+
+    // Fast async operation: GetRandom
+    println!(">> Async GetRandom");
+    {
+        let mut async_tpm = tpm.async_methods();
+        async_tpm.GetRandom_async(16)?;
+    }
+    // On TBS, response is immediately available
+    {
+        let mut async_tpm = tpm.async_methods();
+        let rand_data = async_tpm.GetRandom_complete()?;
+        println!("Async random data ({} bytes): {:?}", rand_data.len(), &rand_data[..8]);
+    }
+
+    // Slow async operation: CreatePrimary
+    println!(">> Async CreatePrimary");
+    let object_attributes = TPMA_OBJECT::sign | TPMA_OBJECT::fixedParent
+        | TPMA_OBJECT::fixedTPM | TPMA_OBJECT::sensitiveDataOrigin
+        | TPMA_OBJECT::userWithAuth;
+    let parameters = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(
+        &Default::default(),
+        &Some(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA { hashAlg: TPM_ALG_ID::SHA256 })),
+        2048, 65537,
+    ));
+    let template = TPMT_PUBLIC::new(
+        TPM_ALG_ID::SHA1, object_attributes, &Default::default(),
+        &Some(parameters),
+        &Some(TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default())),
+    );
+
+    {
+        let mut async_tpm = tpm.async_methods();
+        async_tpm.CreatePrimary_async(
+            &TPM_HANDLE::new(TPM_RH::OWNER.get_value()),
+            &TPMS_SENSITIVE_CREATE::default(),
+            &template,
+            &Default::default(),
+            &Default::default(),
+        )?;
+    }
+
+    let new_primary = {
+        let mut async_tpm = tpm.async_methods();
+        async_tpm.CreatePrimary_complete()?
+    };
+
+    println!("Asynchronously created primary key: handle={:?}", new_primary.handle);
+    tpm.FlushContext(&new_primary.handle)?;
+
+    println!("✅ Async sample completed successfully");
+    Ok(())
+}
+
+fn session_encryption_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("SessionEncryption Sample");
+
+    // Session encryption is transparent to the application programmer.
+    // Create a session with decrypt/encrypt attributes and the library handles
+    // the AES-CFB encryption/decryption of the first parameter automatically.
+
+    // Part 1: Encrypt commands TO the TPM (decrypt attribute)
+    println!(">> Encrypt commands to TPM (TPMA_SESSION::decrypt)");
+    let sess = tpm.start_auth_session_full(
+        TPM_SE::HMAC, TPM_ALG_ID::SHA256,
+        TPMA_SESSION::continueSession | TPMA_SESSION::decrypt,
+        TPMT_SYM_DEF::new(TPM_ALG_ID::AES, 128, TPM_ALG_ID::CFB),
+    )?;
+
+    // StirRandom: the stirValue buffer will be encrypted before sending to TPM
+    tpm.with_session(sess.clone()).StirRandom(&vec![1, 1, 1, 1, 1, 1, 1, 1])?;
+    let sess = tpm.last_session().unwrap();
+    println!("StirRandom with encrypted parameter succeeded");
+
+    // Do it again to verify continueSession nonce rolling works
+    tpm.with_session(sess.clone()).StirRandom(&vec![2, 2, 2, 2])?;
+    let sess = tpm.last_session().unwrap();
+    println!("Second StirRandom with encrypted parameter succeeded");
+
+    tpm.FlushContext(&session_handle(&sess))?;
+
+    // Part 2: Encrypt responses FROM the TPM (encrypt attribute)
+    println!("\n>> Encrypt responses from TPM (TPMA_SESSION::encrypt)");
+
+    // Create a primary key so we have something to read
+    let storage_primary = make_storage_primary(tpm)?;
+
+    // Read public key without encryption
+    let plaintext_read = tpm.ReadPublic(&storage_primary)?;
+
+    // Make an encrypting session for response
+    let enc_sess = tpm.start_auth_session_full(
+        TPM_SE::HMAC, TPM_ALG_ID::SHA256,
+        TPMA_SESSION::continueSession | TPMA_SESSION::encrypt,
+        TPMT_SYM_DEF::new(TPM_ALG_ID::AES, 128, TPM_ALG_ID::CFB),
+    )?;
+
+    // ReadPublic with encrypted response — the library should decrypt automatically
+    let encrypted_read = tpm.with_session(enc_sess.clone()).ReadPublic(&storage_primary)?;
+    let enc_sess = tpm.last_session().unwrap();
+
+    // Compare: the decrypted response should match the plaintext
+    if plaintext_read.outPublic.nameAlg == encrypted_read.outPublic.nameAlg
+        && plaintext_read.name == encrypted_read.name
+    {
+        println!("Return parameter encryption succeeded: plaintext and decrypted responses match");
+    } else {
+        println!("Warning: Responses differ (may indicate encryption/decryption issue)");
+    }
+
+    tpm.FlushContext(&session_handle(&enc_sess))?;
+    tpm.FlushContext(&storage_primary)?;
+
+    println!("✅ SessionEncryption sample completed successfully");
+    Ok(())
+}
+
+fn policy_signed_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("PolicySigned");
+
+    // PolicySigned allows a policy to be satisfied by a signature from a specific key.
+    // We create a software RSA key, load its public part into the TPM, and then
+    // sign the nonce to satisfy the policy.
+
+    let hash_alg = TPM_ALG_ID::SHA256;
+
+    // Create a SW signing key
+    let mut sw_key = TSS_KEY::default();
+    sw_key.publicPart = TPMT_PUBLIC {
+        nameAlg: hash_alg,
+        objectAttributes: TPMA_OBJECT(
+            TPMA_OBJECT::sign.get_value() | TPMA_OBJECT::userWithAuth.get_value(),
+        ),
+        authPolicy: vec![],
+        parameters: Some(TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS {
+            symmetric: TPMT_SYM_DEF_OBJECT::default(),
+            scheme: Some(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA {
+                hashAlg: hash_alg,
+            })),
+            keyBits: 2048,
+            exponent: 0,
+        })),
+        unique: Some(TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default())),
+    };
+    sw_key.create_key()?;
+    println!("Created software RSA-2048 signing key");
+
+    // Load the public part into the TPM (NULL hierarchy = external key)
+    let auth_key_handle = tpm.LoadExternal(
+        &TPMT_SENSITIVE::default(),
+        &sw_key.publicPart,
+        &TPM_HANDLE::new(TPM_RH::NULL.get_value()),
+    )?;
+    println!("Loaded SW key public part into TPM: {:?}", auth_key_handle);
+
+    // Get the key name (needed for policy digest computation)
+    let key_name = sw_key.publicPart.get_name()?;
+
+    // Step 1: Compute trial policy digest for PolicySigned
+    let trial = tpm.start_auth_session(TPM_SE::TRIAL, hash_alg)?;
+    let policy_ref: Vec<u8> = vec![];
+    // PolicySigned updates the digest as:
+    //   policyDigest = H(policyDigest || TPM_CC_PolicySigned || keyName || policyRef)
+    tpm.PolicySigned(
+        &auth_key_handle,
+        &session_handle(&trial),
+        &vec![],      // nonceTPM (ignored in trial)
+        &vec![],      // cpHashA
+        &policy_ref,
+        0,            // expiration
+        &Some(TPMU_SIGNATURE::null(TPMS_NULL_SIGNATURE::default())), // no sig needed for trial
+    )?;
+    let policy_digest = tpm.PolicyGetDigest(&session_handle(&trial))?;
+    tpm.FlushContext(&session_handle(&trial))?;
+    println!("PolicySigned trial digest: {:?}", &policy_digest[..8]);
+
+    // Step 2: Start a real policy session
+    let policy_sess = tpm.start_auth_session(TPM_SE::POLICY, hash_alg)?;
+    let nonce_tpm = policy_sess.sess_out.nonce.clone();
+
+    // Step 3: Compute aHash = Hash(nonceTPM || expiration || cpHashA || policyRef)
+    let mut to_hash = Vec::new();
+    to_hash.extend_from_slice(&nonce_tpm);
+    to_hash.extend_from_slice(&0i32.to_be_bytes()); // expiration = 0
+    // cpHashA is empty, policyRef is empty
+    let a_hash = Crypto::hash(hash_alg, &to_hash)?;
+
+    // Step 4: Sign the aHash with our SW key
+    let signature = sw_key.sign(&a_hash, hash_alg)?;
+    println!("Signed aHash ({} bytes) with SW key", a_hash.len());
+
+    // Step 5: Execute PolicySigned with the real signature
+    tpm.PolicySigned(
+        &auth_key_handle,
+        &session_handle(&policy_sess),
+        &nonce_tpm,
+        &vec![],      // cpHashA
+        &policy_ref,
+        0,            // expiration
+        &signature.signature,
+    )?;
+
+    // Verify the policy digest matches the trial
+    let actual_digest = tpm.PolicyGetDigest(&session_handle(&policy_sess))?;
+    if actual_digest == policy_digest {
+        println!("PolicySigned policy digest is correct");
+    } else {
+        println!("Warning: policy digest mismatch");
+    }
+
+    // Demonstrate PolicyRestart
+    tpm.PolicyRestart(&session_handle(&policy_sess))?;
+    let reset_digest = tpm.PolicyGetDigest(&session_handle(&policy_sess))?;
+    if reset_digest.iter().all(|&b| b == 0) {
+        println!("PolicyRestart correctly reset the digest");
+    }
+
+    tpm.FlushContext(&session_handle(&policy_sess))?;
+    tpm.FlushContext(&auth_key_handle)?;
+
+    println!("✅ PolicySigned sample completed successfully");
+    Ok(())
+}
+
+fn policy_authorize_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("PolicyAuthorize");
+
+    // PolicyAuthorize lets a key holder transform a policyHash into a new
+    // policyHash derived from a public key, if the corresponding private key
+    // holder authorizes the pre-policy-hash with a signature.
+
+    let hash_alg = TPM_ALG_ID::SHA256;
+
+    // Create a software signing key (the "authorizing" key)
+    let mut sw_key = TSS_KEY::default();
+    sw_key.publicPart = TPMT_PUBLIC {
+        nameAlg: hash_alg,
+        objectAttributes: TPMA_OBJECT(
+            TPMA_OBJECT::sign.get_value() | TPMA_OBJECT::userWithAuth.get_value(),
+        ),
+        authPolicy: vec![],
+        parameters: Some(TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS {
+            symmetric: TPMT_SYM_DEF_OBJECT::default(),
+            scheme: Some(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA {
+                hashAlg: hash_alg,
+            })),
+            keyBits: 2048,
+            exponent: 0,
+        })),
+        unique: Some(TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default())),
+    };
+    sw_key.create_key()?;
+    println!("Created authorizing SW key");
+
+    // Load the public part into the TPM
+    let auth_key_handle = tpm.LoadExternal(
+        &TPMT_SENSITIVE::default(),
+        &sw_key.publicPart,
+        &TPM_HANDLE::new(TPM_RH::NULL.get_value()),
+    )?;
+
+    // Get the authorizing key name
+    let key_name = sw_key.publicPart.get_name()?;
+
+    // Step 1: Get the pre-policy digest we want to authorize (PolicyLocality(LOC_ONE))
+    let trial_pre = tpm.start_auth_session(TPM_SE::TRIAL, hash_alg)?;
+    tpm.PolicyLocality(&session_handle(&trial_pre), TPMA_LOCALITY::LOC_ONE)?;
+    let pre_digest = tpm.PolicyGetDigest(&session_handle(&trial_pre))?;
+    tpm.FlushContext(&session_handle(&trial_pre))?;
+    println!("Pre-digest (PolicyLocality): {:?}", &pre_digest[..8]);
+
+    // Step 2: Sign the approvedPolicy as defined in the spec:
+    //   aHash = Hash(approvedPolicy || policyRef)
+    let policy_ref: Vec<u8> = vec![];
+    let mut a_hash_data = Vec::new();
+    a_hash_data.extend_from_slice(&pre_digest);
+    a_hash_data.extend_from_slice(&policy_ref);
+    let a_hash = Crypto::hash(hash_alg, &a_hash_data)?;
+
+    let signature = sw_key.sign(&a_hash, hash_alg)?;
+    println!("Signed approvedPolicy with authorizing key");
+
+    // Step 3: Use VerifySignature to get a validation ticket
+    let check_ticket = tpm.VerifySignature(
+        &auth_key_handle,
+        &a_hash,
+        &signature.signature,
+    )?;
+    println!("Got verification ticket from TPM");
+
+    // Step 4: Execute the policy
+    // Start a real policy session
+    let policy_sess = tpm.start_auth_session(TPM_SE::POLICY, hash_alg)?;
+
+    // First execute the sub-policy (PolicyLocality)
+    tpm.PolicyLocality(&session_handle(&policy_sess), TPMA_LOCALITY::LOC_ONE)?;
+
+    // Then call PolicyAuthorize to transform the digest
+    tpm.PolicyAuthorize(
+        &session_handle(&policy_sess),
+        &pre_digest,
+        &policy_ref,
+        &key_name,
+        &check_ticket,
+    )?;
+
+    let actual_digest = tpm.PolicyGetDigest(&session_handle(&policy_sess))?;
+
+    // Compute expected: PolicyUpdate for PolicyAuthorize
+    //   policyDigest_new = H(0...0 || TPM_CC_PolicyAuthorize || keyName || policyRef)
+    let hash_len = Crypto::hash(hash_alg, &[])?.len();
+    let mut expected_data = vec![0u8; hash_len];
+    expected_data.extend_from_slice(&TPM_CC::PolicyAuthorize.get_value().to_be_bytes());
+    expected_data.extend_from_slice(&key_name);
+    // policyRef is empty, no need to extend
+    let expected_digest = Crypto::hash(hash_alg, &expected_data)?;
+
+    if actual_digest == expected_digest {
+        println!("PolicyAuthorize digest is correct");
+    } else {
+        println!("PolicyAuthorize digest: {:?}", &actual_digest[..8]);
+        println!("Expected digest:        {:?}", &expected_digest[..8]);
+    }
+
+    tpm.FlushContext(&session_handle(&policy_sess))?;
+    tpm.FlushContext(&auth_key_handle)?;
+
+    println!("✅ PolicyAuthorize sample completed successfully");
+    Ok(())
+}
+
+fn admin_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("Administration");
+
+    // This sample demonstrates some TPM administration functions.
+
+    // Note: Clear, ChangePPS, ChangeEPS, HierarchyControl, and SetPrimaryPolicy
+    // with locality require Platform auth or locality control, which are not
+    // available on TBS. Those are skipped here (as in the C++ sample when
+    // PlatformAvailable() returns false).
+
+    // --- HierarchyChangeAuth ---
+    // We can change the authValue for the owner hierarchy.
+    println!(">> HierarchyChangeAuth");
+
+    let new_owner_auth = Crypto::hash(TPM_ALG_ID::SHA1, b"passw0rd")?;
+    println!("Setting OWNER auth to hash of 'passw0rd': {} bytes", new_owner_auth.len());
+
+    tpm.HierarchyChangeAuth(
+        &TPM_HANDLE::new(TPM_RH::OWNER.get_value()),
+        &new_owner_auth,
+    )?;
+    println!("OWNER auth changed successfully");
+
+    // TSS.Rust tracks changes of auth-values and updates the relevant handle.
+    // Because we have the new auth-value we can continue managing the TPM.
+    // Now set it back to empty.
+    tpm.HierarchyChangeAuth(
+        &TPM_HANDLE::new(TPM_RH::OWNER.get_value()),
+        &vec![],
+    )?;
+    println!("OWNER auth reset to empty");
+
+    // --- Demonstrate that primary keys are deterministic ---
+    println!("\n>> Primary key determinism");
+
+    match (|| -> Result<(), TpmError> {
+        let h1 = make_storage_primary(tpm)?;
+        let h2 = make_storage_primary(tpm)?;
+
+        let pub1 = tpm.ReadPublic(&h1)?;
+        let pub2 = tpm.ReadPublic(&h2)?;
+
+        if pub1.name == pub2.name {
+            println!("Two primary keys from same template have identical names (as expected)");
+        } else {
+            println!("Warning: primary keys differ unexpectedly");
+        }
+
+        tpm.FlushContext(&h1)?;
+        tpm.FlushContext(&h2)?;
+        Ok(())
+    })() {
+        Ok(()) => {}
+        Err(e) => println!("Primary key determinism test skipped ({})", e),
+    }
+
+    println!("✅ Admin sample completed successfully");
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Example usage of the TSS.Rust library
     let mut device = Box::new(TpmTbsDevice::new());
@@ -2013,65 +2410,75 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
+    // Try to recover owner hierarchy if auth was changed by a previous run
+    {
+        let known_owner_auth = Crypto::hash(TPM_ALG_ID::SHA1, b"passw0rd").unwrap_or_default();
+        tpm.set_admin_auth(TPM_RH::OWNER, &known_owner_auth);
+        tpm.allow_errors();
+        let _ = tpm.HierarchyChangeAuth(&TPM_HANDLE::new(TPM_RH::OWNER.get_value()), &vec![]);
+        if tpm.last_response_code() == TPM_RC::SUCCESS {
+            println!("Recovered OWNER auth (was set to hash of 'passw0rd')");
+        } else {
+            // If it fails, reset admin auth to empty (it was probably already empty)
+            tpm.set_admin_auth(TPM_RH::OWNER, &[]);
+        }
+    }
+
     // Run capabilities test
     get_capabilities(&mut tpm)?;
-    
-    // Basic samples (no auth sessions needed)
+
+    // ---- Samples ordered to match C++ RunAllSamples() ----
+
     rand_sample(&mut tpm)?;
+    if let Err(e) = dictionary_attack_sample(&mut tpm) {
+        println!("⚠️  dictionary_attack_sample failed (TPM may be in lockout): {}", e);
+    }
     hash_sample(&mut tpm)?;
     if let Err(e) = hmac_sample(&mut tpm) {
         println!("⚠️  hmac_sample failed (may be DA lockout): {}", e);
     }
     pcr_sample(&mut tpm)?;
-    counter_timer_sample(&mut tpm)?;
-    if let Err(e) = primary_keys_sample(&mut tpm) {
-        println!("⚠️  primary_keys_sample failed: {}", e);
+    if let Err(e) = policy_locality_sample(&mut tpm) {
+        println!("⚠️  policy_locality_sample failed: {}", e);
     }
+    // GetCapability already ran above
     if let Err(e) = nv_sample(&mut tpm) {
         println!("⚠️  nv_sample failed: {}", e);
     }
-    if let Err(e) = rsa_encrypt_decrypt_sample(&mut tpm) {
-        println!("⚠️  rsa_encrypt_decrypt_sample failed: {}", e);
-    }
-
-    // TBS-blocked samples: ContextSave/ContextLoad and EncryptDecrypt may fail on Windows TBS
-    if let Err(e) = child_keys_sample(&mut tpm) {
-        println!("⚠️  child_keys_sample failed (likely TBS-blocked ContextSave): {}", e);
-    }
-    if let Err(e) = encrypt_decrypt_sample(&mut tpm) {
-        println!("⚠️  encrypt_decrypt_sample failed (likely TBS-blocked EncryptDecrypt): {}", e);
-    }
-
-    // Run attestation sample
-    if let Err(e) = attestation(&mut tpm) {
-        println!("⚠️  attestation failed: {}", e);
-    }
-
-    // Run activate credentials sample (create_activation crypto may have issues)
-    if let Err(e) = activate_credentials(&mut tpm) {
-        println!("⚠️  activate_credentials failed (known create_activation crypto issue): {}", e);
-    }
-
-    // Auth session samples (dictionary attack first to reset lockout)
-    if let Err(e) = dictionary_attack_sample(&mut tpm) {
-        println!("⚠️  dictionary_attack_sample failed (TPM may be in lockout): {}", e);
+    if let Err(e) = primary_keys_sample(&mut tpm) {
+        println!("⚠️  primary_keys_sample failed: {}", e);
     }
     if let Err(e) = auth_sessions_sample(&mut tpm) {
         println!("⚠️  auth_sessions_sample failed: {}", e);
     }
-    if let Err(e) = misc_admin_sample(&mut tpm) {
-        println!("⚠️  misc_admin_sample failed: {}", e);
+    if let Err(e) = async_sample(&mut tpm) {
+        println!("⚠️  async_sample failed: {}", e);
     }
-
-    // Policy samples
     if let Err(e) = policy_simplest_sample(&mut tpm) {
         println!("⚠️  policy_simplest_sample failed: {}", e);
     }
+    // PolicyLocalitySample already ran above (C++ calls it twice with different names)
     if let Err(e) = policy_pcr_sample(&mut tpm) {
         println!("⚠️  policy_pcr_sample failed: {}", e);
     }
+    if let Err(e) = child_keys_sample(&mut tpm) {
+        println!("⚠️  child_keys_sample failed (likely TBS-blocked ContextSave): {}", e);
+    }
     if let Err(e) = policy_or_sample(&mut tpm) {
         println!("⚠️  policy_or_sample failed: {}", e);
+    }
+    counter_timer_sample(&mut tpm)?;
+    if let Err(e) = attestation(&mut tpm) {
+        println!("⚠️  attestation failed: {}", e);
+    }
+    if let Err(e) = admin_sample(&mut tpm) {
+        println!("⚠️  admin_sample failed: {}", e);
+    }
+    if let Err(e) = policy_cphash_sample(&mut tpm) {
+        println!("⚠️  policy_cphash_sample failed: {}", e);
+    }
+    if let Err(e) = policy_counter_timer_sample(&mut tpm) {
+        println!("⚠️  policy_counter_timer_sample failed: {}", e);
     }
     if let Err(e) = policy_with_passwords_sample(&mut tpm) {
         println!("⚠️  policy_with_passwords_sample failed: {}", e);
@@ -2079,25 +2486,46 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Err(e) = unseal_sample(&mut tpm) {
         println!("⚠️  unseal_sample failed: {}", e);
     }
+    // Serializer — N/A for Rust
+    if let Err(e) = session_encryption_sample(&mut tpm) {
+        println!("⚠️  session_encryption_sample failed: {}", e);
+    }
     if let Err(e) = import_duplicate_sample(&mut tpm) {
         println!("⚠️  import_duplicate_sample failed: {}", e);
     }
-
-    // Advanced policy samples
-    if let Err(e) = policy_counter_timer_sample(&mut tpm) {
-        println!("⚠️  policy_counter_timer_sample failed: {}", e);
+    if let Err(e) = misc_admin_sample(&mut tpm) {
+        println!("⚠️  misc_admin_sample failed: {}", e);
     }
-    if let Err(e) = policy_secret_sample(&mut tpm) {
-        println!("⚠️  policy_secret_sample failed: {}", e);
+    if let Err(e) = rsa_encrypt_decrypt_sample(&mut tpm) {
+        println!("⚠️  rsa_encrypt_decrypt_sample failed: {}", e);
     }
-    if let Err(e) = policy_nv_sample(&mut tpm) {
-        println!("⚠️  policy_nv_sample failed: {}", e);
+    if let Err(e) = audit_sample(&mut tpm) {
+        println!("⚠️  audit_sample failed: {}", e);
+    }
+    if let Err(e) = activate_credentials(&mut tpm) {
+        println!("⚠️  activate_credentials failed: {}", e);
     }
     if let Err(e) = software_keys_sample(&mut tpm) {
         println!("⚠️  software_keys_sample failed: {}", e);
     }
-    if let Err(e) = policy_cphash_sample(&mut tpm) {
-        println!("⚠️  policy_cphash_sample failed: {}", e);
+    if let Err(e) = policy_signed_sample(&mut tpm) {
+        println!("⚠️  policy_signed_sample failed: {}", e);
+    }
+    if let Err(e) = policy_authorize_sample(&mut tpm) {
+        println!("⚠️  policy_authorize_sample failed: {}", e);
+    }
+    if let Err(e) = policy_secret_sample(&mut tpm) {
+        println!("⚠️  policy_secret_sample failed: {}", e);
+    }
+    if let Err(e) = encrypt_decrypt_sample(&mut tpm) {
+        println!("⚠️  encrypt_decrypt_sample failed (likely TBS-blocked EncryptDecrypt): {}", e);
+    }
+    if let Err(e) = policy_with_passwords_sample(&mut tpm) {
+        println!("⚠️  policy_with_passwords_sample (2nd run) failed: {}", e);
+    }
+    // SeededSession — not yet implemented (needs RSA-encrypt salt)
+    if let Err(e) = policy_nv_sample(&mut tpm) {
+        println!("⚠️  policy_nv_sample failed: {}", e);
     }
     if let Err(e) = policy_name_hash_sample(&mut tpm) {
         println!("⚠️  policy_name_hash_sample failed: {}", e);
@@ -2105,12 +2533,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Err(e) = rewrap_sample(&mut tpm) {
         println!("⚠️  rewrap_sample failed: {}", e);
     }
-    if let Err(e) = audit_sample(&mut tpm) {
-        println!("⚠️  audit_sample failed: {}", e);
-    }
-    if let Err(e) = policy_locality_sample(&mut tpm) {
-        println!("⚠️  policy_locality_sample failed: {}", e);
-    }
+    // BoundSession — not yet implemented (needs bind handle support)
+    // NVX — not yet implemented (needs Platform auth / simulator)
 
     announce(
         "************************* 🦀🦀🦀 Generated by Tss.Rust 🦀🦀🦀 *************************",

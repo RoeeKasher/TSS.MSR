@@ -220,6 +220,10 @@ impl Crypto {
         iv: &[u8],
         data: &[u8]
     ) -> Result<Vec<u8>, TpmError> {
+        if data.is_empty() {
+            return Ok(Vec::new());
+        }
+
         if key.len() != 16 && key.len() != 24 && key.len() != 32 {
             return Err(TpmError::InvalidArraySize("Invalid AES key length".to_string()));
         }
@@ -233,26 +237,28 @@ impl Crypto {
         let mut feedback = GenericArray::from_slice(iv).clone();
 
         for chunk in data.chunks(16) {
-            let mut block = Block::default();
-            if chunk.len() == 16 {
-                block.copy_from_slice(chunk);
-            } else {
-                block[..chunk.len()].copy_from_slice(chunk);
-            }
+            // Encrypt the feedback (IV or previous ciphertext)
+            let mut encrypted_feedback = feedback.clone();
+            cipher.encrypt_block(&mut encrypted_feedback);
 
             if encrypt {
-                cipher.encrypt_block(&mut feedback);
+                // CFB encrypt: ciphertext = plaintext XOR encrypt(feedback)
+                // Next feedback = ciphertext
+                let mut ct_block = [0u8; 16];
                 for (i, &b) in chunk.iter().enumerate() {
-                    result.push(b ^ feedback[i]);
+                    ct_block[i] = b ^ encrypted_feedback[i];
+                    result.push(ct_block[i]);
                 }
-                feedback.copy_from_slice(&block);
+                feedback.copy_from_slice(&ct_block);
             } else {
-                let mut temp = feedback.clone();
-                cipher.encrypt_block(&mut temp);
-                feedback.copy_from_slice(&block);
+                // CFB decrypt: plaintext = ciphertext XOR encrypt(feedback)
+                // Next feedback = ciphertext (input)
+                let mut ct_block = [0u8; 16];
+                ct_block[..chunk.len()].copy_from_slice(chunk);
                 for (i, &b) in chunk.iter().enumerate() {
-                    result.push(b ^ temp[i]);
+                    result.push(b ^ encrypted_feedback[i]);
                 }
+                feedback.copy_from_slice(&ct_block);
             }
         }
 

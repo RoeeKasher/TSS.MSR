@@ -5,7 +5,8 @@ use crate::tpm_buffer::*;
 use crate::tpm_structure::TpmEnum;
 use crate::tpm_types::CertifyResponse;
 use crate::tpm_types::*;
-use rsa::{BigUint, RsaPublicKey, Oaep};
+use rsa::{BigUint, RsaPublicKey, RsaPrivateKey, Oaep, Pkcs1v15Sign};
+use rsa::traits::{PublicKeyParts, PrivateKeyParts};
 use rand::rngs::OsRng;
 use zeroize::Zeroize;
 
@@ -353,5 +354,74 @@ impl TPM_HANDLE {
     /// Get a string representation of this handle
     pub fn to_string(&self) -> String {
         format!("{}:0x{:x}", self.get_type(), self.handle)
+    }
+}
+
+impl TSS_KEY {
+    /// Generate an RSA key pair in software.
+    /// Populates publicPart.unique with the modulus and privatePart with the first prime (p).
+    pub fn create_key(&mut self) -> Result<(), TpmError> {
+        let rsa_params = if let Some(TPMU_PUBLIC_PARMS::rsaDetail(ref params)) = self.publicPart.parameters {
+            params.clone()
+        } else {
+            return Err(TpmError::GenericError("Only RSA key creation is supported".to_string()));
+        };
+
+        let key_bits = rsa_params.keyBits as usize;
+        let priv_key = RsaPrivateKey::new(&mut OsRng, key_bits)
+            .map_err(|e| TpmError::GenericError(format!("RSA key generation failed: {}", e)))?;
+
+        // Store modulus (n) in publicPart.unique
+        let n_bytes = priv_key.n().to_bytes_be();
+        self.publicPart.unique = Some(TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA { buffer: n_bytes }));
+
+        // Store first prime (p) as privatePart
+        let primes = priv_key.primes();
+        self.privatePart = primes[0].to_bytes_be();
+
+        Ok(())
+    }
+
+    /// Sign a digest using the software key (RSASSA-PKCS1-v1_5).
+    /// `digest` should be the hash of the data to sign.
+    /// Returns a TPMT_SIGNATURE with RSASSA scheme.
+    pub fn sign(&self, digest: &[u8], hash_alg: TPM_ALG_ID) -> Result<TPMT_SIGNATURE, TpmError> {
+        let rsa_params = if let Some(TPMU_PUBLIC_PARMS::rsaDetail(ref params)) = self.publicPart.parameters {
+            params.clone()
+        } else {
+            return Err(TpmError::GenericError("Only RSA signing is supported".to_string()));
+        };
+
+        let n_bytes = if let Some(TPMU_PUBLIC_ID::rsa(ref pub_key)) = self.publicPart.unique {
+            pub_key.buffer.clone()
+        } else {
+            return Err(TpmError::GenericError("No public key available".to_string()));
+        };
+
+        // Reconstruct RSA private key from modulus + prime p
+        let n = BigUint::from_bytes_be(&n_bytes);
+        let p = BigUint::from_bytes_be(&self.privatePart);
+        let q = &n / &p;
+        let e = BigUint::from(65537u32);
+
+        let priv_key = RsaPrivateKey::from_p_q(p, q, e)
+            .map_err(|e| TpmError::GenericError(format!("Failed to reconstruct RSA key: {}", e)))?;
+
+        // Sign with PKCS#1 v1.5
+        let scheme = match hash_alg {
+            TPM_ALG_ID::SHA1 => Pkcs1v15Sign::new::<sha1::Sha1>(),
+            TPM_ALG_ID::SHA256 => Pkcs1v15Sign::new::<sha2::Sha256>(),
+            _ => return Err(TpmError::GenericError(format!("Unsupported hash algorithm for signing: {:?}", hash_alg))),
+        };
+
+        let sig_bytes = priv_key.sign(scheme, digest)
+            .map_err(|e| TpmError::GenericError(format!("RSA signing failed: {}", e)))?;
+
+        Ok(TPMT_SIGNATURE {
+            signature: Some(TPMU_SIGNATURE::rsassa(TPMS_SIGNATURE_RSASSA {
+                hash: hash_alg,
+                sig: sig_bytes,
+            })),
+        })
     }
 }

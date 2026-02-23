@@ -8,7 +8,7 @@ use crate::crypto::Crypto;
 use crate::device::TpmDevice;
 use crate::error::TpmError;
 use crate::tpm_buffer::{TpmBuffer, TpmMarshaller};
-use crate::tpm_structure::{ReqStructure, RespStructure, TpmEnum, TpmStructure};
+use crate::tpm_structure::{CmdStructure, ReqStructure, RespStructure, TpmEnum, TpmStructure};
 use crate::tpm_types::{
     TPMA_SESSION, TPMS_AUTH_COMMAND, TPMS_AUTH_RESPONSE, TPMT_HA, TPMT_SYM_DEF, TPM_ALG_ID,
     TPM_CC, TPM_HANDLE, TPM_HT, TPM_RC, TPM_RH, TPM_SE, TPM_ST,
@@ -317,10 +317,15 @@ impl Tpm2 {
                     &param_buf.buffer(),
                 )?;
             } else {
-                // Create all password sessions
+                // Create all password sessions with auth from the corresponding handles
                 let mut new_sessions = Vec::with_capacity(num_auth_handles as usize);
-                for _ in 0..num_auth_handles {
-                    new_sessions.push(Session::pw(None));
+                for i in 0..num_auth_handles as usize {
+                    let auth = if i < self.in_handles.len() {
+                        Some(self.in_handles[i].auth_value.clone())
+                    } else {
+                        None
+                    };
+                    new_sessions.push(Session::pw(auth));
                 }
 
                 // Marshal sessions to command buffer
@@ -508,6 +513,28 @@ impl Tpm2 {
             resp_params_size = resp_buf.size() - resp_params_pos;
         }
 
+        // Update enc_session/dec_session nonces from the processed sessions
+        if let Some(ref sessions) = self.sessions {
+            if let Some(ref mut enc) = self.enc_session {
+                for s in sessions.iter() {
+                    if s.sess_in.sessionHandle.handle == enc.sess_in.sessionHandle.handle {
+                        enc.sess_out.nonce = s.sess_out.nonce.clone();
+                        enc.sess_in.nonce = s.sess_in.nonce.clone();
+                        break;
+                    }
+                }
+            }
+            if let Some(ref mut dec) = self.dec_session {
+                for s in sessions.iter() {
+                    if s.sess_in.sessionHandle.handle == dec.sess_in.sessionHandle.handle {
+                        dec.sess_out.nonce = s.sess_out.nonce.clone();
+                        dec.sess_in.nonce = s.sess_in.nonce.clone();
+                        break;
+                    }
+                }
+            }
+        }
+
         // Handle audit processing
         if audit_command {
             let rp_hash = self.get_rp_hash(
@@ -547,6 +574,13 @@ impl Tpm2 {
 
         // Update response handle with name and auth value
         if let Err(e) = self.update_resp_handle(cmd_code, resp_struct) {
+            self.clear_invocation_state();
+            self.sessions = None;
+            return Err(e);
+        }
+
+        // Complete post-command handle updates (e.g., HierarchyChangeAuth auth tracking)
+        if let Err(e) = self.complete_update_request_handles(cmd_code) {
             self.clear_invocation_state();
             self.sessions = None;
             return Err(e);
@@ -732,6 +766,22 @@ impl Tpm2 {
         Self::set_rh_auth_value_static(h, &self.admin_owner, &self.admin_endorsement, &self.admin_platform, &self.admin_lockout);
     }
 
+    /// Set the auth value for an admin hierarchy handle.
+    /// Use this when the TPM's hierarchy auth was set externally (e.g., recovering from a
+    /// previous run that changed auth but failed to reset it).
+    pub fn set_admin_auth(&mut self, hierarchy: TPM_RH, auth: &[u8]) {
+        let val = hierarchy.get_value();
+        if val == TPM_RH::OWNER.get_value() {
+            self.admin_owner.set_auth(auth);
+        } else if val == TPM_RH::ENDORSEMENT.get_value() {
+            self.admin_endorsement.set_auth(auth);
+        } else if val == TPM_RH::PLATFORM.get_value() {
+            self.admin_platform.set_auth(auth);
+        } else if val == TPM_RH::LOCKOUT.get_value() {
+            self.admin_lockout.set_auth(auth);
+        }
+    }
+
     /// Set auth values for well-known admin handles (avoids borrow issues)
     fn set_rh_auth_value_static(h: &mut TPM_HANDLE, admin_owner: &TPM_HANDLE, admin_endorsement: &TPM_HANDLE, admin_platform: &TPM_HANDLE, admin_lockout: &TPM_HANDLE) {
         match h.handle {
@@ -907,7 +957,7 @@ impl Tpm2 {
     }
 
     /// Process parameter encryption/decryption
-    fn do_param_encryption<T: TpmStructure>(
+    fn do_param_encryption<T: CmdStructure>(
         &self,
         cmd: &T,
         param_buf: &mut TpmBuffer,
@@ -926,8 +976,35 @@ impl Tpm2 {
             self.enc_session.as_ref()
         };
 
-        // In a real implementation, this would handle parameter encryption/decryption
-        // based on the session encryption scheme. This is a placeholder.
+        let sess = xcrypt_sess.unwrap();
+        let sei = cmd.sess_enc_info();
+        if sei.size_len == 0 || sei.val_len == 0 {
+            return Ok(());
+        }
+
+        let orig_cur_pos = param_buf.current_pos();
+        param_buf.set_current_pos(start_pos);
+
+        // Read the size of the first parameter (TPM2B prefix)
+        let arr_size = param_buf.read_num(sei.size_len as usize) as usize;
+        let arr_pos = param_buf.current_pos();
+
+        if arr_size == 0 {
+            param_buf.set_current_pos(orig_cur_pos);
+            return Ok(());
+        }
+
+        // Read the data to encrypt/decrypt
+        let to_xcrypt = param_buf.readByteBuf(arr_size * sei.val_len as usize);
+
+        // Perform encryption/decryption
+        let result = sess.param_xcrypt(&to_xcrypt, is_request)?;
+
+        // Write the result back into the buffer
+        param_buf.set_current_pos(arr_pos);
+        param_buf.writeByteBuf(&result);
+
+        param_buf.set_current_pos(orig_cur_pos);
 
         Ok(())
     }
@@ -970,6 +1047,11 @@ impl Tpm2 {
         let mut rp_ready = false;
         resp_buf.set_current_pos(resp_params_pos + resp_params_size);
 
+        // Pre-compute values needed for HMAC verification to avoid borrow conflicts
+        let nonce_tpm_dec = self.nonce_tpm_dec.clone();
+        let nonce_tpm_enc = self.nonce_tpm_enc.clone();
+        let in_handles = self.in_handles.clone();
+
         if let Some(ref mut sessions) = self.sessions {
             for (j, session) in sessions.iter_mut().enumerate() {
                 let mut auth_response = TPMS_AUTH_RESPONSE::default();
@@ -986,8 +1068,8 @@ impl Tpm2 {
                 }
 
                 // Non-PWAP session handling
-                let associated_handle = if j < self.in_handles.len() {
-                    Some(&self.in_handles[j])
+                let associated_handle = if j < in_handles.len() {
+                    Some(&in_handles[j])
                 } else {
                     None
                 };
@@ -996,32 +1078,41 @@ impl Tpm2 {
                 session.sess_out.nonce = auth_response.nonce;
                 session.sess_out.sessionAttributes = auth_response.sessionAttributes;
 
-                if session.session_type == TPM_SE::HMAC {
-                    // Verify HMAC on responses
+                if session.session_type == TPM_SE::HMAC
+                    || (session.session_type == TPM_SE::POLICY && session.needs_hmac)
+                {
+                    // Compute rpHash inline to avoid borrow conflict with self
+                    let rp_hash = {
+                        let rp_header_size = 8;
+                        let rp_hash_data_pos = resp_params_pos - rp_header_size;
 
-                    // TODO: Fix this
+                        if !rp_ready {
+                            let orig_cur_pos = resp_buf.current_pos();
+                            resp_buf.set_current_pos(rp_hash_data_pos);
+                            resp_buf.writeInt(TPM_RC::SUCCESS.get_value());
+                            resp_buf.writeInt(cmd_code.get_value());
+                            resp_buf.set_current_pos(orig_cur_pos);
+                        }
 
-                    // let rp_hash = self.get_rp_hash(
-                    //     session.get_hash_alg(),
-                    //     resp_buf,
-                    //     cmd_code,
-                    //     resp_params_pos,
-                    //     resp_params_size,
-                    //     rp_ready
-                    // );
+                        let data_to_hash = &resp_buf.buffer()
+                            [rp_hash_data_pos..(rp_hash_data_pos + rp_header_size + resp_params_size)];
+                        Crypto::hash(session.get_hash_alg(), data_to_hash)?
+                    };
+                    rp_ready = true;
 
-                    // rp_ready = true;
-                    // let expected_hmac = session.get_auth_hmac(
-                    //     rp_hash,
-                    //     false,
-                    //     &self.nonce_tpm_dec,
-                    //     &self.nonce_tpm_enc,
-                    //     associated_handle
-                    // );
+                    let expected_hmac = session.get_auth_hmac(
+                        rp_hash,
+                        false,
+                        &nonce_tpm_dec,
+                        &nonce_tpm_enc,
+                        associated_handle,
+                    )?;
 
-                    // if expected_hmac != auth_response.hmac {
-                    //     return Err(TpmError::GenericError("Invalid TPM response HMAC".to_string()));
-                    // }
+                    if expected_hmac != auth_response.hmac {
+                        return Err(TpmError::GenericError(
+                            format!("Invalid TPM response HMAC (session {})", j),
+                        ));
+                    }
                 }
             }
         }
