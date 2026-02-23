@@ -18318,6 +18318,8 @@ impl RespStructure for LoadResponse {
     fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
     fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
+
+    fn get_resp_name(&self) -> Vec<u8> { self.name.clone() }
 }
 
 /// This command is used to load an object that is not a Protected Object into the TPM.
@@ -18473,6 +18475,8 @@ impl RespStructure for LoadExternalResponse {
     fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
     fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
+
+    fn get_resp_name(&self) -> Vec<u8> { self.name.clone() }
 }
 
 /// This command allows access to the public area of a loaded object.
@@ -18616,6 +18620,8 @@ impl RespStructure for ReadPublicResponse {
     fn get_handle(&self) -> TPM_HANDLE { TPM_HANDLE::default() }
 
     fn set_handle(&mut self, _handle: &TPM_HANDLE) { }
+
+    fn get_resp_name(&self) -> Vec<u8> { self.name.clone() }
 }
 
 /// This command enables the association of a credential with an object in a way that
@@ -19386,6 +19392,8 @@ impl RespStructure for CreateLoadedResponse {
     fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
     fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
+
+    fn get_resp_name(&self) -> Vec<u8> { self.name.clone() }
 }
 
 /// This command duplicates a loaded object so that it may be used in a different
@@ -28062,6 +28070,8 @@ impl RespStructure for CreatePrimaryResponse {
     fn get_handle(&self) -> TPM_HANDLE { self.handle.clone() }
 
     fn set_handle(&mut self, handle: &TPM_HANDLE) { self.handle = handle.clone(); }
+
+    fn get_resp_name(&self) -> Vec<u8> { self.name.clone() }
 }
 
 /// This command enables and disables use of a hierarchy and its associated NV storage.

@@ -5,6 +5,9 @@ use crate::tpm_buffer::*;
 use crate::tpm_structure::TpmEnum;
 use crate::tpm_types::CertifyResponse;
 use crate::tpm_types::*;
+use rsa::{BigUint, RsaPublicKey, Oaep};
+use rand::rngs::OsRng;
+use zeroize::Zeroize;
 
 /// Activation data returned from create_activation
 #[derive(Debug)]
@@ -111,21 +114,29 @@ impl TPMT_PUBLIC {
         // Generate random 16-byte seed
         let mut seed = Crypto::get_random(16);
 
-        // Encrypt seed with label "IDENTITY"
-        let identity_label = "IDENTITY\0";
+        // Get RSA public key components for encrypting the seed
+        let rsa_pub_n = if let Some(TPMU_PUBLIC_ID::rsa(unique)) = &self.unique {
+            &unique.buffer
+        } else {
+            return Err(TpmError::NotSupported("Invalid RSA public key".to_string()));
+        };
+
+        let rsa_public_key = RsaPublicKey::new(
+            BigUint::from_bytes_be(rsa_pub_n),
+            BigUint::from_bytes_be(&[1, 0, 1]) // e = 65537
+        ).map_err(|_| TpmError::GenericError("Invalid RSA parameters".to_string()))?;
+
+        // Encrypt seed with label "IDENTITY" using OAEP-SHA1
+        let padding = Oaep::new_with_label::<sha1::Sha1, _>("IDENTITY\0");
         let secret = rsa_public_key
-            .encrypt(
-                &mut OsRng,
-                PaddingScheme::new_oaep_with_label::<sha1::Sha1, _>(identity_label.as_bytes()),
-                &seed
-            )
-            .map_err(|_| TpmError::CryptoError("Failed to encrypt seed".to_string()))?;
+            .encrypt(&mut OsRng, padding, &seed)
+            .map_err(|_| TpmError::GenericError("Failed to encrypt seed".to_string()))?;
 
         // Make the credential blob:
 
         // 1. Create the symmetric key via KDFa
-        let sym_key = Crypto::kdfa(
-            self.name_alg,
+        let mut sym_key = Crypto::kdfa(
+            self.nameAlg,
             &seed,
             "STORAGE",
             activated_name,
@@ -147,13 +158,13 @@ impl TPMT_PUBLIC {
         )?;
 
         // 4. Generate the integrity HMAC key
-        let hmac_key = Crypto::kdfa(
-            self.name_alg,
+        let mut hmac_key = Crypto::kdfa(
+            self.nameAlg,
             &seed,
             "INTEGRITY",
             &[],
             &[],
-            Crypto::digestSize(self.name_alg) * 8,
+            Crypto::digestSize(self.nameAlg) * 8,
         )?;
 
         // 5. Calculate outer HMAC
@@ -162,7 +173,7 @@ impl TPMT_PUBLIC {
         to_hmac.extend_from_slice(activated_name);
         
         let integrity_hmac = Crypto::hmac(
-            self.name_alg,
+            self.nameAlg,
             &hmac_key,
             &to_hmac
         )?;
@@ -212,13 +223,10 @@ impl TPMT_PUBLIC {
         ).map_err(|_| TpmError::InvalidArraySize("Invalid RSA parameters".to_string()))?;
 
         // Encrypt the data using OAEP padding with SHA-1 hash function
+        let padding = Oaep::new_with_label::<sha1::Sha1, _>("IDENTITY\0");
         let encrypted_data = rsa_public_key
-            .encrypt(
-                &mut OsRng,
-                PaddingScheme::new_oaep_with_label::<sha1::Sha1, _>(b"IDENTITY"),
-                data,
-            )
-            .map_err(|_| TpmError::CryptoError("Failed to encrypt data".to_string()))?;
+            .encrypt(&mut OsRng, padding, data)
+            .map_err(|_| TpmError::GenericError("Failed to encrypt data".to_string()))?;
 
         Ok(encrypted_data)
     }

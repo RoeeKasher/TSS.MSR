@@ -99,6 +99,9 @@ pub trait RespStructure: CmdStructure {
     /// <summary> Sets this structure's handle field (TPM_HANDLE) if it is present </summary>
     fn set_handle(&mut self, _handle: &TPM_HANDLE) {}
 
+    /// <summary> Returns the name field from the response, if present </summary>
+    fn get_resp_name(&self) -> Vec<u8> { Vec::new() }
+
     /// <summary> Serializable method </summary>
     fn type_name(&self) -> String {
         "RespStructure".to_string()

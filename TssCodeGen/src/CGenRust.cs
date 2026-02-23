@@ -649,6 +649,14 @@ namespace CodeGen
                 Write($"fn set_handle(&mut self, handle: &TPM_HANDLE) {{ self.{s.Fields[0].Name} = handle.clone(); }}");
             }
 
+            // If the response struct has a "name" field, override get_resp_name()
+            var nameField = s.NonTagFields.FirstOrDefault(f => f.Name == "name");
+            if (nameField != null)
+            {
+                Write("");
+                Write($"fn get_resp_name(&self) -> Vec<u8> {{ self.name.clone() }}");
+            }
+
             TabOut("}");
         }
 

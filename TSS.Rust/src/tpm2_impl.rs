@@ -10,8 +10,8 @@ use crate::error::TpmError;
 use crate::tpm_buffer::{TpmBuffer, TpmMarshaller};
 use crate::tpm_structure::{ReqStructure, RespStructure, TpmEnum, TpmStructure};
 use crate::tpm_types::{
-    TPMA_SESSION, TPMS_AUTH_COMMAND, TPMS_AUTH_RESPONSE, TPMT_HA, TPM_ALG_ID, TPM_CC, TPM_HANDLE,
-    TPM_HT, TPM_RC, TPM_RH, TPM_SE, TPM_ST,
+    TPMA_SESSION, TPMS_AUTH_COMMAND, TPMS_AUTH_RESPONSE, TPMT_HA, TPMT_SYM_DEF, TPM_ALG_ID,
+    TPM_CC, TPM_HANDLE, TPM_HT, TPM_RC, TPM_RH, TPM_SE, TPM_ST,
 };
 
 /// A TPM error with associated command and context information
@@ -111,6 +111,12 @@ pub struct Tpm2 {
 
     /// Command buffer for last command
     last_command_buf: Vec<u8>,
+
+    /// Last command's serialized parameters (before handles)
+    last_cmd_params: Vec<u8>,
+
+    /// Sessions updated after the last command (preserved for continueSession)
+    completed_sessions: Option<Vec<Session>>,
 }
 
 impl Tpm2 {
@@ -142,6 +148,8 @@ impl Tpm2 {
             nonce_tpm_dec: Vec::new(),
             nonce_tpm_enc: Vec::new(),
             last_command_buf: Vec::new(),
+            last_cmd_params: Vec::new(),
+            completed_sessions: None,
         }
     }
 
@@ -258,6 +266,10 @@ impl Tpm2 {
 
         // Marshal handles
         self.in_handles = req.get_handles();
+        // Set auth values for well-known admin handles (OWNER, LOCKOUT, ENDORSEMENT, PLATFORM)
+        for h in self.in_handles.iter_mut() {
+            Self::set_rh_auth_value_static(h, &self.admin_owner, &self.admin_endorsement, &self.admin_platform, &self.admin_lockout);
+        }
         for handle in self.in_handles.iter() {
             handle.toTpm(&mut cmd_buf)?;
         }
@@ -266,6 +278,7 @@ impl Tpm2 {
         let mut param_buf = TpmBuffer::new(None);
         req.toTpm(&mut param_buf)?;
         param_buf.trim();
+        self.last_cmd_params = param_buf.buffer().clone();
 
         // Process authorization sessions if present
         let mut cp_hash_data = Vec::new();
@@ -539,8 +552,8 @@ impl Tpm2 {
             return Err(e);
         }
 
-        // Clear sessions and return success
-        self.sessions = None;
+        // Preserve sessions with continueSession for reuse, otherwise clear
+        self.completed_sessions = self.sessions.take();
         self.clear_invocation_state();
 
         Ok(true)
@@ -548,42 +561,147 @@ impl Tpm2 {
 }
 
 impl Tpm2 {
-    fn last_response_code(&self) -> TPM_RC {
+    pub fn last_response_code(&self) -> TPM_RC {
         self.last_response_code
     }
 
-    fn last_error(&self) -> Option<TpmCommandError> {
+    pub fn last_error(&self) -> Option<TpmCommandError> {
         self.last_error.clone()
     }
 
-    fn allow_errors(&mut self) -> &mut Self {
+    pub fn allow_errors(&mut self) -> &mut Self {
         self.errors_allowed = true;
         self
     }
 
-    fn enable_exceptions(&mut self, enable: bool) {
+    pub fn enable_exceptions(&mut self, enable: bool) {
         self.exceptions_enabled = enable;
         self.errors_allowed = !enable;
     }
 
-    fn with_session(&mut self, session: Session) -> &mut Self {
+    pub fn with_session(&mut self, session: Session) -> &mut Self {
         self.sessions = Some(vec![session]);
         self
     }
 
-    fn with_sessions(&mut self, sessions: Vec<Session>) -> &mut Self {
+    pub fn with_sessions(&mut self, sessions: Vec<Session>) -> &mut Self {
         self.sessions = Some(sessions);
         self
     }
 
-    fn connect(&mut self) -> Result<(), TpmError> {
+    /// Get the updated session after the last command completed.
+    /// This is needed when reusing HMAC/policy sessions across commands,
+    /// since the TPM updates nonces after each command.
+    pub fn last_sessions(&self) -> Option<&Vec<Session>> {
+        self.completed_sessions.as_ref()
+    }
+
+    /// Get the first updated session from the last completed command.
+    /// Convenience method for the common single-session case.
+    pub fn last_session(&self) -> Option<Session> {
+        self.completed_sessions.as_ref()
+            .and_then(|s| s.first().cloned())
+    }
+
+    pub fn connect(&mut self) -> Result<(), TpmError> {
         self.device.connect()?;
         self.last_response_code = TPM_RC::SUCCESS;
         Ok(())
     }
 
-    fn close(&mut self) {
+    pub fn close(&mut self) {
         self.device.close();
+    }
+}
+
+/// High-level convenience methods for session management and common patterns.
+impl Tpm2 {
+    /// Start a simple HMAC or policy auth session (no salt, no binding).
+    /// This is the most common form matching C++ `tpm.StartAuthSession(TPM_SE, TPM_ALG_ID)`.
+    pub fn start_auth_session(
+        &mut self,
+        session_type: TPM_SE,
+        auth_hash: TPM_ALG_ID,
+    ) -> Result<Session, TpmError> {
+        self.start_auth_session_full(
+            session_type,
+            auth_hash,
+            TPMA_SESSION::continueSession,
+            TPMT_SYM_DEF::default(),
+        )
+    }
+
+    /// Start an auth session with explicit attributes and symmetric definition.
+    /// Matches C++ `tpm.StartAuthSession(TPM_SE, TPM_ALG_ID, TPMA_SESSION, TPMT_SYM_DEF)`.
+    pub fn start_auth_session_full(
+        &mut self,
+        session_type: TPM_SE,
+        auth_hash: TPM_ALG_ID,
+        attributes: TPMA_SESSION,
+        symmetric: TPMT_SYM_DEF,
+    ) -> Result<Session, TpmError> {
+        let null_handle = TPM_HANDLE::new(TPM_RH::NULL.get_value());
+
+        self.start_auth_session_ex(
+            &null_handle,    // tpmKey (no salt)
+            &null_handle,    // bind (no binding)
+            session_type,
+            auth_hash,
+            attributes,
+            symmetric,
+            &[],             // no salt
+        )
+    }
+
+    /// Start an auth session with full control (salt key, bind object, etc.).
+    /// Matches the full C++ overload.
+    pub fn start_auth_session_ex(
+        &mut self,
+        tpm_key: &TPM_HANDLE,
+        bind: &TPM_HANDLE,
+        session_type: TPM_SE,
+        auth_hash: TPM_ALG_ID,
+        attributes: TPMA_SESSION,
+        symmetric: TPMT_SYM_DEF,
+        salt: &[u8],
+    ) -> Result<Session, TpmError> {
+        let nonce_size = Crypto::digestSize(auth_hash);
+        let nonce_caller = Crypto::get_random(nonce_size);
+
+        // For salted sessions, encrypt the salt to the tpmKey
+        let encrypted_salt = if !salt.is_empty() {
+            // TODO: Implement salt encryption using tpmKey's public area
+            Vec::new()
+        } else {
+            Vec::new()
+        };
+
+        let resp = self.StartAuthSession(
+            tpm_key,
+            bind,
+            &nonce_caller,
+            &encrypted_salt,
+            session_type,
+            &symmetric,
+            auth_hash,
+        )?;
+
+        Session::from_tpm_response(
+            resp.handle,
+            session_type,
+            auth_hash,
+            nonce_caller,
+            resp.nonceTPM,
+            attributes,
+            symmetric,
+            salt,
+            bind,
+        )
+    }
+
+    /// Set a session on this Tpm2 for the next command.
+    pub fn set_sessions(&mut self, sessions: Vec<Session>) {
+        self.sessions = Some(sessions);
     }
 }
 
@@ -595,10 +713,8 @@ impl Tpm2 {
         if let Some(ref mut sessions) = self.sessions {
             for session in sessions.iter_mut() {
                 if !session.is_pwap() {
-                    // Generate random nonce for the caller
-                    // In a real implementation, use proper random number generation
                     let nonce_size = session.sess_out.nonce.len();
-                    session.sess_in.nonce = vec![0; nonce_size]; // Replace with real random data
+                    session.sess_in.nonce = Crypto::get_random(nonce_size.max(16));
                 }
             }
         }
@@ -613,15 +729,20 @@ impl Tpm2 {
 
     /// Set RH (resource handle) auth value for admin handles
     fn set_rh_auth_value(&self, h: &mut TPM_HANDLE) {
+        Self::set_rh_auth_value_static(h, &self.admin_owner, &self.admin_endorsement, &self.admin_platform, &self.admin_lockout);
+    }
+
+    /// Set auth values for well-known admin handles (avoids borrow issues)
+    fn set_rh_auth_value_static(h: &mut TPM_HANDLE, admin_owner: &TPM_HANDLE, admin_endorsement: &TPM_HANDLE, admin_platform: &TPM_HANDLE, admin_lockout: &TPM_HANDLE) {
         match h.handle {
-            val if val == TPM_RH::OWNER.get_value() => h.set_auth(&self.admin_owner.auth_value),
+            val if val == TPM_RH::OWNER.get_value() => h.set_auth(&admin_owner.auth_value),
             val if val == TPM_RH::ENDORSEMENT.get_value() => {
-                h.set_auth(&self.admin_endorsement.auth_value)
+                h.set_auth(&admin_endorsement.auth_value)
             }
             val if val == TPM_RH::PLATFORM.get_value() => {
-                h.set_auth(&self.admin_platform.auth_value)
+                h.set_auth(&admin_platform.auth_value)
             }
-            val if val == TPM_RH::LOCKOUT.get_value() => h.set_auth(&self.admin_lockout.auth_value),
+            val if val == TPM_RH::LOCKOUT.get_value() => h.set_auth(&admin_lockout.auth_value),
             _ => {} // No auth value change needed
         }
     }
@@ -926,9 +1047,13 @@ impl Tpm2 {
         // This function handles updates to handles based on specific commands
         match cmd_code {
             TPM_CC::HierarchyChangeAuth => {
-                // Store auth value for later use
-                // In a real implementation, extract the new auth value from the request
-                self.object_in_auth = vec![]; // Extract from req
+                // Extract newAuth from the serialized parameters (TPM2B: 2-byte size + data)
+                if self.last_cmd_params.len() >= 2 {
+                    let size = u16::from_be_bytes([self.last_cmd_params[0], self.last_cmd_params[1]]) as usize;
+                    if self.last_cmd_params.len() >= 2 + size {
+                        self.object_in_auth = self.last_cmd_params[2..2 + size].to_vec();
+                    }
+                }
                 Ok(())
             }
             TPM_CC::LoadExternal => {
@@ -944,15 +1069,23 @@ impl Tpm2 {
                 Ok(())
             }
             TPM_CC::NV_ChangeAuth => {
-                // Store auth value for later use
-                // In a real implementation, extract the new auth value from the request
-                self.object_in_auth = vec![]; // Extract from req
+                // Extract newAuth from the serialized parameters (TPM2B: 2-byte size + data)
+                if self.last_cmd_params.len() >= 2 {
+                    let size = u16::from_be_bytes([self.last_cmd_params[0], self.last_cmd_params[1]]) as usize;
+                    if self.last_cmd_params.len() >= 2 + size {
+                        self.object_in_auth = self.last_cmd_params[2..2 + size].to_vec();
+                    }
+                }
                 Ok(())
             }
             TPM_CC::ObjectChangeAuth => {
-                // Store auth value for later use
-                // In a real implementation, extract the new auth value from the request
-                self.object_in_auth = vec![]; // Extract from req
+                // Extract newAuth from the serialized parameters (TPM2B: 2-byte size + data)
+                if self.last_cmd_params.len() >= 2 {
+                    let size = u16::from_be_bytes([self.last_cmd_params[0], self.last_cmd_params[1]]) as usize;
+                    if self.last_cmd_params.len() >= 2 + size {
+                        self.object_in_auth = self.last_cmd_params[2..2 + size].to_vec();
+                    }
+                }
                 Ok(())
             }
             TPM_CC::PCR_SetAuthValue => {
@@ -981,9 +1114,13 @@ impl Tpm2 {
                 Ok(())
             }
             TPM_CC::HashSequenceStart => {
-                // Store auth value for later use
-                // In a real implementation, extract the auth value from the request
-                self.object_in_auth = vec![]; // Extract from req
+                // Extract auth from the serialized parameters (TPM2B: 2-byte size + data)
+                if self.last_cmd_params.len() >= 2 {
+                    let size = u16::from_be_bytes([self.last_cmd_params[0], self.last_cmd_params[1]]) as usize;
+                    if self.last_cmd_params.len() >= 2 + size {
+                        self.object_in_auth = self.last_cmd_params[2..2 + size].to_vec();
+                    }
+                }
                 Ok(())
             }
             _ => Ok(()),
@@ -1056,24 +1193,16 @@ impl Tpm2 {
         resp: &mut T,
     ) -> Result<(), TpmError> {
         match cmd_code {
-            TPM_CC::Load => {
-                // In a real implementation, set the name from the response
-                // resp.handle.set_name(resp.name);
+            TPM_CC::Load | TPM_CC::CreatePrimary | TPM_CC::LoadExternal | TPM_CC::CreateLoaded => {
+                let name = resp.get_resp_name();
+                if !name.is_empty() {
+                    let mut handle = resp.get_handle();
+                    handle.set_name(&name)?;
+                    resp.set_handle(&handle);
+                }
                 Ok(())
             }
-            TPM_CC::CreatePrimary => {
-                // In a real implementation, set the name from the response
-                // resp.handle.set_name(resp.name);
-                Ok(())
-            }
-            TPM_CC::LoadExternal => {
-                // In a real implementation, set the name from the response
-                // resp.handle.set_name(resp.name);
-                Ok(())
-            }
-            TPM_CC::HashSequenceStart => {
-                // In a real implementation, set the auth value on the returned handle
-                // resp.handle.set_auth(self.object_in_auth.clone());
+            TPM_CC::HashSequenceStart | TPM_CC::HMAC_Start => {
                 Ok(())
             }
             _ => Ok(()),

@@ -3,8 +3,6 @@
 use std::error::Error;
 use std::fmt;
 
-use crate::tpm_types::TPM_HANDLE;
-
 /// TPM Error types
 #[derive(Debug)]
 pub enum TpmError {
