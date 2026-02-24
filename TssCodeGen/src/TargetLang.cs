@@ -31,9 +31,15 @@ namespace CodeGen
     /// the current target language: Curent, DotNet, Cpp, Java, Node, Py. </remarks>
     public static partial class TargetLang
     {
-        /// <summary> Lists code generators corresponding to the supported target languages 
-        /// from the Lang enum (listed in the same order) </summary>
-        static Type[] CodeGenerators = { typeof(CGenCpp), typeof(CGenJava), typeof(CGenNode), typeof(CGenPy), typeof(CGenRust) };
+        /// <summary> Maps each target language to its code generator class </summary>
+        static Dictionary<Lang, Type> CodeGenerators = new Dictionary<Lang, Type>
+        {
+            { Lang.CPP,  typeof(CGenCpp) },
+            { Lang.Java, typeof(CGenJava) },
+            { Lang.JS,   typeof(CGenNode) },
+            { Lang.Py,   typeof(CGenPy) },
+            { Lang.Rust, typeof(CGenRust) }
+        };
         
         static Lang _curLang = Lang.None;
 
@@ -120,8 +126,6 @@ namespace CodeGen
 
         public static string DigestSize(string hashAlgField) => $"{_digestSize}({_thisQual}{hashAlgField})";
 
-        public static string Cast(string value, string type) => Rust ? $"{value} as {type}" : $"({type})value";
-
         public static string GetUnionValue(int sizeInBytes) => Rust ? GetEnumValue("", $"u{sizeInBytes}") : "";
 
         public static string GetEnumValue(string enumValue, string enumTypename, int valueSizeInBytes = 4) {
@@ -158,15 +162,15 @@ namespace CodeGen
         }
 
         public static CodeGenBase NewCodeGen (Lang lang, string rootDir)
-            => (CodeGenBase)Activator.CreateInstance(CodeGenerators[(int)lang - 2], rootDir);
+            => (CodeGenBase)Activator.CreateInstance(CodeGenerators[lang], rootDir);
 
         /// <summary> This method is called before code generation for the given target
         /// language begins </summary>
         public static void SetTargetLang(Lang lang)
         {
             // This assertion will fail if a new target language is added to the Lang enum
-            // without also adding the corresponding 
-            Debug.Assert(Enum.GetValues(typeof(Lang)).Length == CodeGenerators.Length + 2);
+            // without also adding the corresponding code generator to CodeGenerators
+            Debug.Assert(Enum.GetValues(typeof(Lang)).Length == CodeGenerators.Count + 2);
 
             _curLang = lang;
             _thisQual = DotNet || Cpp || Java ? "" : This + ".";

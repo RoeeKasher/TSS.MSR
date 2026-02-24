@@ -61,7 +61,7 @@ namespace CodeGen
             // Handle union object types
             if (f.MarshalType == MarshalType.UnionObject)
             {
-                return $"Option<{ToSnakeCase(typeName)}>";
+                return $"Option<{ToRustName(typeName)}>";
             }
 
             // Handle types with generics (containers like Vec, Option, etc.)
@@ -73,11 +73,11 @@ namespace CodeGen
                 string baseType = typeName.Substring(0, openBracketIndex);
                 string genericParams = typeName.Substring(openBracketIndex + 1, closeBracketIndex - openBracketIndex - 1);
 
-                return $"{baseType}<{ToSnakeCase(genericParams)}>";
+                return $"{baseType}<{ToRustName(genericParams)}>";
             }
 
             // Standard type conversion
-            return ToSnakeCase(typeName);
+            return ToRustName(typeName);
         }
 
         string GetCommandReturnType(CommandFlavor gen, TpmStruct resp, string methodName,
@@ -295,11 +295,11 @@ namespace CodeGen
             {
                 if (m.Type.IsElementary())
                 {
-                    Write($"{ToRustEnumMemberName(m.Name)},");
+                    Write($"{ToRustEnumName(m.Name)},");
                 }
                 else
                 {
-                    Write($"{ToRustEnumMemberName(m.Name)}({m.Type.Name}),");
+                    Write($"{ToRustEnumName(m.Name)}({m.Type.Name}),");
                 }
             }
 
@@ -312,7 +312,7 @@ namespace CodeGen
             TabIn("match self {");
             foreach (var m in u.Members)
             {
-                string memberName = ToRustEnumMemberName(m.Name);
+                string memberName = ToRustEnumName(m.Name);
                 if (m.Type.IsElementary())
                 {
                     Write($"Self::{memberName} => {m.SelectorValue.QualifiedName}, ");
@@ -329,7 +329,7 @@ namespace CodeGen
             TabIn("match selector {");
             foreach (var m in u.Members)
             {
-                string memberName = ToRustEnumMemberName(m.Name);
+                string memberName = ToRustEnumName(m.Name);
                 if (m.Type.IsElementary())
                 {
                     Write($"{m.SelectorValue.QualifiedName} => Ok(None),");
@@ -353,7 +353,7 @@ namespace CodeGen
             TabIn("match self {");
             foreach (var m in u.Members)
             {
-                string memberName = ToRustEnumMemberName(m.Name);
+                string memberName = ToRustEnumName(m.Name);
                 if (m.Type.IsElementary())
                 {
                     Write($"Self::{memberName} => write!(f, \"{u.Name}::{memberName}\"),");
@@ -376,7 +376,7 @@ namespace CodeGen
                 TabIn("match self {");
                 foreach (var m in u.Members)
                 {
-                    string memberName = ToRustEnumMemberName(m.Name);
+                    string memberName = ToRustEnumName(m.Name);
                     if (m.Type.IsElementary())
                     {
                         Write($"Self::{memberName} => Ok(()),");
@@ -404,7 +404,7 @@ namespace CodeGen
                 TabIn("match self {");
                 foreach (var m in u.Members)
                 {
-                    string memberName = ToRustEnumMemberName(m.Name);
+                    string memberName = ToRustEnumName(m.Name);
                     if (m.Type.IsElementary())
                     {
                         Write($"Self::{memberName} => Ok(()),");
@@ -509,7 +509,7 @@ namespace CodeGen
                 if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
                     continue;
 
-                var fieldName = ToSnakeCase(f.Name);
+                var fieldName = ToRustName(f.Name);
                 Write($"{fieldName}: {fieldName}.clone(),");
             }
         }
@@ -525,7 +525,7 @@ namespace CodeGen
                 if (f.MarshalType == MarshalType.ConstantValue || f.MarshalType == MarshalType.UnionSelector)
                     continue;
 
-                Write($"{ToSnakeCase(f.Name)}: {ParamForField(f)},");
+                Write($"{ToRustName(f.Name)}: {ParamForField(f)},");
             }
         }
 
@@ -555,7 +555,7 @@ namespace CodeGen
                 {
                     Write($"#[derivative(Default(value=\"{f.GetInitVal()}\"))]");
                 }
-                Write($"pub {ToSnakeCase(f.Name)}: {TransType(f)},");
+                Write($"pub {ToRustName(f.Name)}: {TransType(f)},");
             }
 
             InsertSnip(s.Name);
@@ -644,6 +644,8 @@ namespace CodeGen
             }
             else
             {
+                // Per TPM spec, handles are always the first fields in a command/response struct,
+                // and Fields is guaranteed non-empty when NumHandles > 0.
                 Write($"fn get_handle(&self) -> TPM_HANDLE {{ self.{s.Fields[0].Name}.clone() }}");
                 Write("");
                 Write($"fn set_handle(&mut self, handle: &TPM_HANDLE) {{ self.{s.Fields[0].Name} = handle.clone(); }}");
@@ -712,7 +714,7 @@ namespace CodeGen
         {
             var resp = GetRespStruct(req);
 
-            string cmdName = ToSnakeCase(GetCommandName(req));
+            string cmdName = ToRustName(GetCommandName(req));
 
             if (gen == CommandFlavor.AsyncCommand)
                 cmdName += "_async";
@@ -743,7 +745,7 @@ namespace CodeGen
                     if (f.MarshalType == MarshalType.ConstantValue)
                         continue;
 
-                    Write($"{ToSnakeCase(f.Name)}: {ParamForField(f)},");
+                    Write($"{ToRustName(f.Name)}: {ParamForField(f)},");
                 }
             }
 
@@ -766,7 +768,7 @@ namespace CodeGen
                     if (f.MarshalType == MarshalType.ConstantValue)
                         continue;
 
-                    Write($"{ToSnakeCase(f.Name)},");
+                    Write($"{ToRustName(f.Name)},");
                 }
                 TabOut(");");
                 Write("");
@@ -792,7 +794,7 @@ namespace CodeGen
             }
 
             // Call dispatch method
-            var cmdCode = "TPM_CC::" + ToSnakeCase(GetCommandName(req));
+            var cmdCode = "TPM_CC::" + ToRustName(GetCommandName(req));
             if (gen == CommandFlavor.AsyncCommand)
             {
                 Write($"self.tpm.dispatch_command({cmdCode}, &req)?;");
@@ -814,7 +816,7 @@ namespace CodeGen
             {
                 if (returnFieldName != null)
                 {
-                    Write($"Ok(resp.{ToSnakeCase(returnFieldName)})");
+                    Write($"Ok(resp.{ToRustName(returnFieldName)})");
                 }
                 else if (respFields.Length > 0)
                 {
@@ -837,12 +839,12 @@ namespace CodeGen
             foreach (var e in EnumMap)
             {
                 var mutable = e.Value.Count > 0 ? "mut" : "";
-                Write($"let {mutable} {ToSnakeCase(e.Key)}_map: HashMap<u64, &'static str> = HashMap::new();");
+                Write($"let {mutable} {ToRustName(e.Key)}_map: HashMap<u64, &'static str> = HashMap::new();");
                 foreach (var v in e.Value)
                 {
-                    Write($"{ToSnakeCase(e.Key)}_map.insert({v.Value}, \"{v.Key}\");");
+                    Write($"{ToRustName(e.Key)}_map.insert({v.Value}, \"{v.Key}\");");
                 }
-                Write($"map.insert(std::any::TypeId::of::<{e.Key}>(), {ToSnakeCase(e.Key)}_map);");
+                Write($"map.insert(std::any::TypeId::of::<{e.Key}>(), {ToRustName(e.Key)}_map);");
                 Write("");
             }
 
@@ -857,12 +859,12 @@ namespace CodeGen
             foreach (var e in EnumMap)
             {
                 var mutable = e.Value.Count > 0 ? "mut" : "";
-                Write($"let {mutable} {ToSnakeCase(e.Key)}_map: HashMap<&'static str, u64> = HashMap::new();");
+                Write($"let {mutable} {ToRustName(e.Key)}_map: HashMap<&'static str, u64> = HashMap::new();");
                 foreach (var v in e.Value)
                 {
-                    Write($"{ToSnakeCase(e.Key)}_map.insert(\"{v.Key}\", {v.Value});");
+                    Write($"{ToRustName(e.Key)}_map.insert(\"{v.Key}\", {v.Value});");
                 }
-                Write($"map.insert(std::any::TypeId::of::<{e.Key}>(), {ToSnakeCase(e.Key)}_map);");
+                Write($"map.insert(std::any::TypeId::of::<{e.Key}>(), {ToRustName(e.Key)}_map);");
                 Write("");
             }
 
@@ -917,71 +919,16 @@ namespace CodeGen
 
         // Helper methods for Rust-specific formatting
 
-        static string ToSnakeCase(string name)
-        {
-            return name;
+        // Returns name as-is to keep TPM spec naming conventions consistent across all language bindings.
+        static string ToRustName(string name) => name;
 
-            // if (string.IsNullOrEmpty(name))
-            //     return name;
-
-            // // Special case for single letter followed by uppercase
-            // if (name.Length >= 2 && char.IsUpper(name[1]))
-            //     return name;
-
-            // // Insert underscores before uppercase letters
-            // var result = Regex.Replace(name, "(?<=[a-z0-9])([A-Z])", "_$1");
-
-            // // Handle acronyms (sequences of uppercase letters)
-            // result = Regex.Replace(result, "([A-Z])([A-Z]+)", "$1$2");
-
-            // return result;
-        }
-
-        /// <summary>
-        /// Converts TPM enum values to Rust-compatible format, ensuring hexadecimal values
-        /// are properly formatted according to Rust conventions.
-        /// </summary>
-        /// <returns>A properly formatted Rust-compatible value string</returns>
         static long ToRustEnumValue(TpmNamedConstant element, int bits, bool signed)
         {
-            // If no numeric value was caluclated, return the original value
-            // if (element.NumericValue == null)
-            // {
-            //     return element.Value;
-            // }
-
             return Convert.ToInt64(CastToNumberWithBitsAndSign(element.NumericValue, bits, signed));
         }
 
-        static string ToRustEnumMemberName(string name)
-        {
-            return name;
-            // // For enum members, we want PascalCase format
-            // if (string.IsNullOrEmpty(name))
-            //     return name;
-
-            // // First convert to snake_case if needed
-            // if (name.contains("_"))
-            // {
-            //     // Split by underscore and capitalize each segment
-            //     string[] parts = name.Split('_');
-            //     for (int i = 0; i < parts.Length; i++)
-            //     {
-            //         if (!string.IsNullOrEmpty(parts[i]))
-            //         {
-            //             parts[i] = char.ToUpperInvariant(parts[i][0]) + 
-            //                       (parts[i].Length > 1 ? parts[i].Substring(1).ToLowerInvariant() : "");
-            //         }
-            //     }
-            //     return string.Join("", parts);
-            // }
-            // else
-            // {
-            //     // Just capitalize the first letter
-            //     return char.ToUpperInvariant(name[0]) + 
-            //           (name.Length > 1 ? name.Substring(1) : "");
-            // }
-        }
+        // Returns name as-is to keep TPM spec naming conventions consistent across all language bindings.
+        static string ToRustEnumName(string name) => name;
 
 
         string ConvertToRustInitVal(string cppInitVal)

@@ -16,6 +16,8 @@ namespace CodeGen
     {
     }
 
+    // Uses long (64-bit) to correctly handle unsigned 32-bit TPM constants (e.g. 0x80000000)
+    // that would overflow a signed int.
     class Operand : Token
     {
         string  _Value;
