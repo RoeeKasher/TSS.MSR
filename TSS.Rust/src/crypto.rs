@@ -5,7 +5,7 @@ use sha1::Sha1;
 use sha2::{Digest as Sha2Digest, Sha256, Sha384, Sha512};
 use sm3::Sm3;
 use rand::{rngs::OsRng, RngCore};
-use aes::{Aes128, Block};
+use aes::Aes128;
 use cipher::{BlockEncrypt, KeyInit};
 use cipher::generic_array::GenericArray;
 
@@ -130,9 +130,7 @@ impl Crypto {
         signed_blob_hash: Vec<u8>,
         signature: &Option<TPMU_SIGNATURE>,
     ) -> Result<bool, TpmError> {
-        let rsa_params = if let Some(TPMU_PUBLIC_PARMS::rsaDetail(rsa_params)) = &public_key.parameters {
-            rsa_params
-        } else {
+        if !matches!(&public_key.parameters, Some(TPMU_PUBLIC_PARMS::rsaDetail(_))) {
             return Err(TpmError::NotSupported(
                 "ValidateSignature: Only RSA is supported".to_string(),
             ));

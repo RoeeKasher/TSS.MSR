@@ -8,7 +8,7 @@ use crate::crypto::Crypto;
 use crate::device::TpmDevice;
 use crate::error::TpmError;
 use crate::tpm_buffer::{TpmBuffer, TpmMarshaller};
-use crate::tpm_structure::{CmdStructure, ReqStructure, RespStructure, TpmEnum, TpmStructure};
+use crate::tpm_structure::{CmdStructure, ReqStructure, RespStructure, TpmEnum};
 use crate::tpm_types::{
     TPMA_SESSION, TPMS_AUTH_COMMAND, TPMS_AUTH_RESPONSE, TPMT_HA, TPMT_SYM_DEF, TPM_ALG_ID,
     TPM_CC, TPM_HANDLE, TPM_HT, TPM_RC, TPM_RH, TPM_SE, TPM_ST,
@@ -174,40 +174,6 @@ impl Tpm2 {
         TPM_RC { 0: (raw_response_u32 & mask) }
     }
 
-    /// Generates an error response buffer
-    fn generate_error_response(&self, rc: TPM_RC) -> TpmBuffer {
-        let mut resp_buf = TpmBuffer::new(None);
-        resp_buf.writeShort(TPM_ST::NO_SESSIONS.get_value() as u16);
-        resp_buf.writeInt(10);
-        resp_buf.writeInt(rc.get_value());
-        resp_buf
-    }
-
-    /// Generates an error based on the response code
-    fn generate_error(
-        &mut self,
-        resp_code: TPM_RC,
-        err_msg: &str,
-        errors_allowed: bool,
-    ) -> Result<(), TpmCommandError> {
-        let cmd_code = self.current_cmd_code.unwrap_or(TPM_CC::FIRST);
-        let error = TpmCommandError {
-            response_code: resp_code,
-            command_code: cmd_code,
-            message: err_msg.to_string(),
-        };
-
-        println!("Generating error: {:?}", error);
-
-        self.last_error = Some(error.clone());
-
-        if self.exceptions_enabled && !errors_allowed {
-            Err(error)
-        } else {
-            Ok(())
-        }
-    }
-
     /// Send a TPM command to the underlying TPM device.
     pub fn dispatch<R: ReqStructure, S: RespStructure>(
         &mut self,
@@ -216,9 +182,23 @@ impl Tpm2 {
         resp: &mut S,
     ) -> Result<(), TpmError> {
         loop {
-            let process_phase_two: bool = self.dispatch_command(cmd_code, &req)?;
-            if (!process_phase_two || self.process_response(cmd_code, resp)?) {
-                break;
+            let process_phase_two = match self.dispatch_command(cmd_code, &req) {
+                Ok(v) => v,
+                Err(e) => {
+                    self.current_cmd_code = None;
+                    return Err(e);
+                }
+            };
+            match self.process_response(cmd_code, resp) {
+                Ok(done) => {
+                    if !process_phase_two || done {
+                        break;
+                    }
+                }
+                Err(e) => {
+                    self.current_cmd_code = None;
+                    return Err(e);
+                }
             }
             std::thread::sleep(std::time::Duration::from_millis(1000));
         }
@@ -376,7 +356,7 @@ impl Tpm2 {
         self.device.dispatch_command(&self.last_command_buf)?;
 
         // Update request handles based on command
-        self.update_request_handles(cmd_code, req)?;
+        self.update_request_handles(cmd_code)?;
 
         // Set pending command
         self.pending_command = Some(cmd_code);
@@ -483,8 +463,8 @@ impl Tpm2 {
             resp_struct.set_handle(&TPM_HANDLE::new(handle_val));
         }
 
-        let mut resp_params_pos = 0;
-        let mut resp_params_size = 0;
+        let resp_params_pos: usize;
+        let resp_params_size: usize;
         let mut rp_ready = false;
 
         // If there are no sessions then response parameters take up the remaining part
@@ -544,11 +524,17 @@ impl Tpm2 {
                 resp_params_pos,
                 resp_params_size,
                 rp_ready,
-            );
+            )?;
 
-            // TODO: Implement this
-            // Equivalent of CommandAuditHash.Extend(Helpers::Concatenate(AuditCpHash, rpHash))
-            // In a real implementation, this would properly extend the audit digest with both hash values
+            // Extend audit digest: CommandAuditHash = H(CommandAuditHash || cpHash || rpHash)
+            let hash_alg = self.command_audit_hash.hashAlg;
+            let mut extend_data = Vec::new();
+            extend_data.extend_from_slice(&self.command_audit_hash.digest);
+            extend_data.extend_from_slice(&self.audit_cp_hash.digest);
+            extend_data.extend_from_slice(&rp_hash);
+            if let Ok(new_digest) = Crypto::hash(hash_alg, &extend_data) {
+                self.command_audit_hash.digest = new_digest;
+            }
         }
 
         // Parameter decryption (if necessary)
@@ -702,10 +688,10 @@ impl Tpm2 {
         let nonce_size = Crypto::digestSize(auth_hash);
         let nonce_caller = Crypto::get_random(nonce_size);
 
-        // For salted sessions, encrypt the salt to the tpmKey
+        // For salted sessions, encrypt the salt to the tpmKey's public area
         let encrypted_salt = if !salt.is_empty() {
-            // TODO: Implement salt encryption using tpmKey's public area
-            Vec::new()
+            let pub_info = self.ReadPublic(tpm_key)?;
+            pub_info.outPublic.encrypt_session_salt(salt)?
         } else {
             Vec::new()
         };
@@ -759,11 +745,6 @@ impl Tpm2 {
         self.current_cmd_code = None;
         self.current_session_tag = None;
         // Clear other command-specific state
-    }
-
-    /// Set RH (resource handle) auth value for admin handles
-    fn set_rh_auth_value(&self, h: &mut TPM_HANDLE) {
-        Self::set_rh_auth_value_static(h, &self.admin_owner, &self.admin_endorsement, &self.admin_platform, &self.admin_lockout);
     }
 
     /// Set the auth value for an admin hierarchy handle.
@@ -1127,10 +1108,9 @@ impl Tpm2 {
     }
 
     /// Update request handles based on command
-    fn update_request_handles<T: ReqStructure>(
+    fn update_request_handles(
         &mut self,
         cmd_code: TPM_CC,
-        req: &T,
     ) -> Result<(), TpmError> {
         // Reset state
         self.object_in_name.clear();
@@ -1262,7 +1242,7 @@ impl Tpm2 {
                 if self.in_handles.len() >= 2 && self.in_handles[1].get_type() != TPM_HT::PERSISTENT
                 {
                     self.in_handles[1].set_auth(&self.object_in_auth);
-                    self.in_handles[1].set_name(&self.object_in_name.clone());
+                    let _ = self.in_handles[1].set_name(&self.object_in_name.clone());
                 }
                 Ok(())
             }

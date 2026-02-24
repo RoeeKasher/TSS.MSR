@@ -231,6 +231,31 @@ impl TPMT_PUBLIC {
 
         Ok(encrypted_data)
     }
+
+    /// Encrypt a session salt for use with salted auth sessions.
+    /// Uses RSA-OAEP with the nameAlg hash and label "SECRET\0".
+    pub fn encrypt_session_salt(&self, salt: &[u8]) -> Result<Vec<u8>, TpmError> {
+        let rsa_pub_n = if let Some(TPMU_PUBLIC_ID::rsa(unique)) = &self.unique {
+            &unique.buffer
+        } else {
+            return Err(TpmError::NotSupported("Only RSA keys can encrypt session salt".to_string()));
+        };
+
+        let rsa_public_key = RsaPublicKey::new(
+            BigUint::from_bytes_be(rsa_pub_n),
+            BigUint::from_bytes_be(&[1, 0, 1]),
+        ).map_err(|_| TpmError::InvalidArraySize("Invalid RSA parameters".to_string()))?;
+
+        let padding = match self.nameAlg {
+            TPM_ALG_ID::SHA1 => Oaep::new_with_label::<sha1::Sha1, _>("SECRET\0"),
+            TPM_ALG_ID::SHA256 => Oaep::new_with_label::<sha2::Sha256, _>("SECRET\0"),
+            _ => return Err(TpmError::NotSupported(format!("Unsupported nameAlg for session salt: {:?}", self.nameAlg))),
+        };
+
+        rsa_public_key
+            .encrypt(&mut OsRng, padding, salt)
+            .map_err(|e| TpmError::GenericError(format!("Failed to encrypt session salt: {}", e)))
+    }
 }
 
 impl TPMS_PCR_SELECTION {
@@ -386,11 +411,9 @@ impl TSS_KEY {
     /// `digest` should be the hash of the data to sign.
     /// Returns a TPMT_SIGNATURE with RSASSA scheme.
     pub fn sign(&self, digest: &[u8], hash_alg: TPM_ALG_ID) -> Result<TPMT_SIGNATURE, TpmError> {
-        let rsa_params = if let Some(TPMU_PUBLIC_PARMS::rsaDetail(ref params)) = self.publicPart.parameters {
-            params.clone()
-        } else {
+        if !matches!(&self.publicPart.parameters, Some(TPMU_PUBLIC_PARMS::rsaDetail(_))) {
             return Err(TpmError::GenericError("Only RSA signing is supported".to_string()));
-        };
+        }
 
         let n_bytes = if let Some(TPMU_PUBLIC_ID::rsa(ref pub_key)) = self.publicPart.unique {
             pub_key.buffer.clone()

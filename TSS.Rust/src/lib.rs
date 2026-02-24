@@ -9,3 +9,4 @@ pub mod tpm_buffer;
 pub mod tpm_structure;
 pub mod tpm_types;
 pub mod tpm_type_extensions;
+pub mod policy;

@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See the LICENSE file in the project root for full license information.
  */
 
-use crate::{tpm_buffer::TpmBuffer, tpm_structure::TpmEnum, tpm_types::ENUM_TO_STR_MAP};
-use std::collections::HashMap;
+use crate::{tpm_buffer::TpmBuffer, tpm_types::ENUM_TO_STR_MAP};
 
 /// Convert a numeric enum value to its string representation
 ///

@@ -19,6 +19,9 @@ pub struct Session {
 
     /// Symmetric algorithm for parameter encryption
     pub symmetric: TPMT_SYM_DEF,
+
+    /// Handle of the entity this session is bound to (NULL if unbound)
+    pub bind_handle: u32,
 }
 
 impl Session {
@@ -46,6 +49,7 @@ impl Session {
             needs_password: false,
             session_key: Vec::new(),
             symmetric: TPMT_SYM_DEF::default(),
+            bind_handle: TPM_RH::NULL.get_value(),
         }
     }
 
@@ -61,6 +65,7 @@ impl Session {
         s.session_type = TPM_SE::HMAC;
         s.needs_hmac = false;
         s.needs_password = true;
+        s.bind_handle = TPM_RH::NULL.get_value();
 
         s
     }
@@ -96,6 +101,7 @@ impl Session {
             needs_password: false,
             session_key: Vec::new(),
             symmetric,
+            bind_handle: bind_object.handle,
         };
 
         sess.calc_session_key(salt, bind_object)?;
@@ -186,8 +192,15 @@ impl Session {
         // Get auth value from the associated handle
         let mut auth = Vec::new();
         if let Some(handle) = associated_handle {
-            // For HMAC sessions or policy sessions that need HMAC
-            if self.session_type != TPM_SE::POLICY || self.needs_hmac {
+            // For bound sessions: if the handle IS the bound entity, skip auth
+            // (it's already incorporated in the session key via KDFa).
+            let is_bound = self.bind_handle != TPM_RH::NULL.get_value()
+                && self.bind_handle != 0
+                && handle.handle == self.bind_handle;
+
+            if is_bound {
+                // Bound to same entity: auth already in session key, don't add again
+            } else if self.session_type != TPM_SE::POLICY || self.needs_hmac {
                 auth = trim_trailing_zeros(&handle.auth_value);
             }
         }

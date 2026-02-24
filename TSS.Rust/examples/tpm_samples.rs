@@ -2,7 +2,9 @@ use std::io::{self, Write};
 use tss_rust::{
     auth_session::Session,
     crypto::Crypto,
-    device::{TpmDevice, TpmTbsDevice}, error::TpmError, tpm2_impl::*, tpm_structure::{TpmEnum}, tpm_types::*, tpm_type_extensions::*
+    device::{TpmDevice, TpmTbsDevice}, error::TpmError,
+    policy::{self, PolicyTree, PolicyCommandCode, PolicyLocality, PolicyOr, PolicyPassword},
+    tpm2_impl::*, tpm_structure::{TpmEnum}, tpm_types::*
 };
 
 lazy_static::lazy_static! {
@@ -217,6 +219,7 @@ fn attestation(tpm: &mut Tpm2) -> Result<(), TpmError> {
 
     // Then read the value so that we can validate the signature later
     let pcr_vals = tpm.PCR_Read(&pcrs_to_quote)?;
+    println!("Read {} PCR values for quoting", pcr_vals.pcrValues.len());
 
     // Do the quote.  Note that we provide a nonce.
     let quote = tpm.Quote(&sig_key, &nonce, &TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?, &pcrs_to_quote)?;
@@ -573,6 +576,7 @@ fn child_keys_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
         &TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?,
         &TPMT_TK_HASHCHECK::default(),
     )?;
+    assert!(signature.is_some(), "Signature should not be empty");
     println!("Signed data with child key");
 
     // Context save and load
@@ -588,12 +592,13 @@ fn child_keys_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
     println!("Restored signing key from saved context: {:?}", restored_key);
 
     // Sign again with restored key to verify it works
-    let _signature2 = tpm.Sign(
+    let signature2 = tpm.Sign(
         &restored_key,
         &data_to_sign,
         &TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?,
         &TPMT_TK_HASHCHECK::default(),
     )?;
+    assert!(signature2.is_some(), "Restored key signature should not be empty");
     println!("Signed data with restored key");
 
     tpm.FlushContext(&restored_key)?;
@@ -922,11 +927,12 @@ fn auth_sessions_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
 
     // Sign data with the loaded key using the session
     let data_to_sign = Crypto::hash(TPM_ALG_ID::SHA1, &b"Auth session test data".to_vec())?;
-    let _sig = tpm.with_session(sess.clone()).Sign(
+    let sig = tpm.with_session(sess.clone()).Sign(
         &loaded_key, &data_to_sign,
         &TPMU_SIG_SCHEME::create(TPM_ALG_ID::NULL)?,
         &TPMT_TK_HASHCHECK::default(),
     )?;
+    assert!(sig.is_some(), "HMAC session signature should not be empty");
     sess = tpm.last_session().unwrap();
     println!("Signed data using HMAC session");
 
@@ -2119,9 +2125,6 @@ fn policy_signed_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
     )?;
     println!("Loaded SW key public part into TPM: {:?}", auth_key_handle);
 
-    // Get the key name (needed for policy digest computation)
-    let key_name = sw_key.publicPart.get_name()?;
-
     // Step 1: Compute trial policy digest for PolicySigned
     let trial = tpm.start_auth_session(TPM_SE::TRIAL, hash_alg)?;
     let policy_ref: Vec<u8> = vec![];
@@ -2355,6 +2358,283 @@ fn admin_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
     Ok(())
 }
 
+/// Demonstrates the PolicyTree abstraction for declarative policy composition.
+/// This replaces the manual trial-session + command-by-command approach with
+/// a composable tree that can compute digests and execute policies automatically.
+fn policy_tree_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("PolicyTree Sample");
+
+    let hash_alg = TPM_ALG_ID::SHA256;
+
+    // -----------------------------------------------------------------------
+    // 1) Simple PolicyTree: PolicyCommandCode restricting to HMAC_Start
+    // -----------------------------------------------------------------------
+    let tree = PolicyTree::new()
+        .add(PolicyCommandCode::new(TPM_CC::HMAC_Start));
+
+    // Compute digest in software (no TPM trial session needed)
+    let sw_digest = tree.get_policy_digest(hash_alg)?;
+
+    // Verify against a trial session on the TPM
+    let trial = tpm.start_auth_session(TPM_SE::TRIAL, hash_alg)?;
+    tpm.PolicyCommandCode(&session_handle(&trial), TPM_CC::HMAC_Start)?;
+    let tpm_digest = tpm.PolicyGetDigest(&session_handle(&trial))?;
+    tpm.FlushContext(&session_handle(&trial))?;
+
+    assert_eq!(sw_digest, tpm_digest, "PolicyCommandCode: SW vs TPM digest mismatch");
+    println!("PolicyTree digest (PolicyCommandCode) matches TPM trial: ✅");
+
+    // -----------------------------------------------------------------------
+    // 2) PolicyTree with multiple assertions chained
+    // -----------------------------------------------------------------------
+    let tree2 = PolicyTree::new()
+        .add(PolicyLocality::new(TPMA_LOCALITY::LOC_ZERO))
+        .add(PolicyCommandCode::new(TPM_CC::Sign));
+
+    let sw_digest2 = tree2.get_policy_digest(hash_alg)?;
+
+    let trial2 = tpm.start_auth_session(TPM_SE::TRIAL, hash_alg)?;
+    tpm.PolicyLocality(&session_handle(&trial2), TPMA_LOCALITY::LOC_ZERO)?;
+    tpm.PolicyCommandCode(&session_handle(&trial2), TPM_CC::Sign)?;
+    let tpm_digest2 = tpm.PolicyGetDigest(&session_handle(&trial2))?;
+    tpm.FlushContext(&session_handle(&trial2))?;
+
+    assert_eq!(sw_digest2, tpm_digest2, "Chained policy: SW vs TPM digest mismatch");
+    println!("PolicyTree digest (Locality + CommandCode) matches TPM trial: ✅");
+
+    // -----------------------------------------------------------------------
+    // 3) PolicyOR via PolicyTree
+    // -----------------------------------------------------------------------
+    // Branch 1: PolicyCommandCode(HMAC_Start)
+    let branch1: Vec<Box<dyn policy::PolicyAssertion>> = vec![
+        Box::new(PolicyCommandCode::new(TPM_CC::HMAC_Start)),
+    ];
+    // Branch 2: PolicyCommandCode(Sign)
+    let branch2: Vec<Box<dyn policy::PolicyAssertion>> = vec![
+        Box::new(PolicyCommandCode::new(TPM_CC::Sign)),
+    ];
+
+    let or_tree = PolicyTree::new()
+        .add(PolicyOr::new(vec![branch1, branch2]));
+
+    let sw_or_digest = or_tree.get_policy_digest(hash_alg)?;
+
+    // Verify OR digest with TPM trial session
+    let trial_b1 = tpm.start_auth_session(TPM_SE::TRIAL, hash_alg)?;
+    tpm.PolicyCommandCode(&session_handle(&trial_b1), TPM_CC::HMAC_Start)?;
+    let b1_digest = tpm.PolicyGetDigest(&session_handle(&trial_b1))?;
+    tpm.FlushContext(&session_handle(&trial_b1))?;
+
+    let trial_b2 = tpm.start_auth_session(TPM_SE::TRIAL, hash_alg)?;
+    tpm.PolicyCommandCode(&session_handle(&trial_b2), TPM_CC::Sign)?;
+    let b2_digest = tpm.PolicyGetDigest(&session_handle(&trial_b2))?;
+    tpm.FlushContext(&session_handle(&trial_b2))?;
+
+    let hash_list = vec![
+        TPM2B_DIGEST { buffer: b1_digest },
+        TPM2B_DIGEST { buffer: b2_digest },
+    ];
+
+    let trial_or = tpm.start_auth_session(TPM_SE::TRIAL, hash_alg)?;
+    tpm.PolicyOR(&session_handle(&trial_or), &hash_list)?;
+    let tpm_or_digest = tpm.PolicyGetDigest(&session_handle(&trial_or))?;
+    tpm.FlushContext(&session_handle(&trial_or))?;
+
+    assert_eq!(sw_or_digest, tpm_or_digest, "PolicyOR: SW vs TPM digest mismatch");
+    println!("PolicyTree digest (PolicyOR) matches TPM trial: ✅");
+
+    // -----------------------------------------------------------------------
+    // 4) Execute a PolicyTree against a real policy session
+    // -----------------------------------------------------------------------
+    // Create an HMAC key with the simple PolicyCommandCode policy
+    let hmac_key = make_hmac_primary_with_policy(tpm, &sw_digest, &[], hash_alg)?;
+
+    // Execute the policy tree against a real session
+    let policy_sess = tpm.start_auth_session(TPM_SE::POLICY, hash_alg)?;
+    let policy_sess = tree.execute(tpm, policy_sess)?;
+
+    let hmac_seq = tpm.with_session(policy_sess.clone()).HMAC_Start(&hmac_key, &vec![], hash_alg)?;
+    println!("PolicyTree execute succeeded — HMAC_Start handle: {:?}", hmac_seq);
+    tpm.FlushContext(&hmac_seq)?;
+    tpm.FlushContext(&session_handle(&policy_sess))?;
+    tpm.FlushContext(&hmac_key)?;
+
+    // -----------------------------------------------------------------------
+    // 5) PolicyPassword via PolicyTree  
+    // -----------------------------------------------------------------------
+    let pw_tree = PolicyTree::new()
+        .add(PolicyPassword::new());
+
+    let pw_digest = pw_tree.get_policy_digest(hash_alg)?;
+
+    let trial_pw = tpm.start_auth_session(TPM_SE::TRIAL, hash_alg)?;
+    tpm.PolicyPassword(&session_handle(&trial_pw))?;
+    let tpm_pw_digest = tpm.PolicyGetDigest(&session_handle(&trial_pw))?;
+    tpm.FlushContext(&session_handle(&trial_pw))?;
+
+    assert_eq!(pw_digest, tpm_pw_digest, "PolicyPassword: SW vs TPM digest mismatch");
+    println!("PolicyTree digest (PolicyPassword) matches TPM trial: ✅");
+
+    println!("✅ PolicyTree sample completed successfully");
+    Ok(())
+}
+
+/// Demonstrates a salted (seeded) auth session. The salt is RSA-OAEP encrypted
+/// to a storage primary's public key, providing protection even when authValues
+/// are known or can be inferred.
+fn seeded_session_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("SeededSession");
+
+    // Create a storage primary to use as the salt-encryption key
+    let salt_key = make_storage_primary(tpm)?;
+
+    // Generate a random salt
+    let salt = Crypto::get_random(20);
+    println!("Salt ({} bytes): {:?}", salt.len(), &salt[..8]);
+
+    // Start a salted HMAC session.
+    // start_auth_session_ex will ReadPublic on the salt key, encrypt the salt
+    // with RSA-OAEP (label "SECRET"), and derive the session key via KDFa.
+    let sess = tpm.start_auth_session_ex(
+        &salt_key,                                  // tpmKey for salt encryption
+        &TPM_HANDLE::new(TPM_RH::NULL.get_value()), // no binding
+        TPM_SE::HMAC,
+        TPM_ALG_ID::SHA256,
+        TPMA_SESSION::continueSession,
+        TPMT_SYM_DEF::new(TPM_ALG_ID::AES, 128, TPM_ALG_ID::CFB),
+        &salt,
+    )?;
+    println!("Started salted HMAC session: {:?}", session_handle(&sess));
+
+    // Use the salted session to create a child key under the storage primary
+    let sign_parms = TPMU_PUBLIC_PARMS::rsaDetail(TPMS_RSA_PARMS::new(
+        &TPMT_SYM_DEF_OBJECT::new(TPM_ALG_ID::NULL, 0, TPM_ALG_ID::NULL),
+        &Some(TPMU_ASYM_SCHEME::rsassa(TPMS_SIG_SCHEME_RSASSA { hashAlg: TPM_ALG_ID::SHA256 })),
+        2048,
+        65537,
+    ));
+    let in_pub = TPMT_PUBLIC::new(
+        TPM_ALG_ID::SHA256,
+        TPMA_OBJECT::sign | TPMA_OBJECT::fixedParent | TPMA_OBJECT::fixedTPM
+            | TPMA_OBJECT::sensitiveDataOrigin | TPMA_OBJECT::userWithAuth,
+        &vec![],
+        &Some(sign_parms),
+        &Some(TPMU_PUBLIC_ID::rsa(TPM2B_PUBLIC_KEY_RSA::default())),
+    );
+
+    let created = tpm.with_session(sess.clone()).Create(
+        &salt_key, &TPMS_SENSITIVE_CREATE::default(), &in_pub, &vec![], &vec![],
+    )?;
+    let sess = tpm.last_session().unwrap_or(sess);
+    println!("Created child key under salted session");
+
+    // Load the child
+    let child_handle = tpm.with_session(sess.clone()).Load(
+        &salt_key, &created.outPrivate, &created.outPublic,
+    )?;
+    let sess = tpm.last_session().unwrap_or(sess);
+    println!("Loaded child key: {:?}", child_handle);
+
+    tpm.FlushContext(&child_handle)?;
+    tpm.FlushContext(&session_handle(&sess))?;
+    tpm.FlushContext(&salt_key)?;
+
+    println!("✅ SeededSession sample completed successfully");
+    Ok(())
+}
+
+/// Demonstrates a bound auth session. A bound session is associated with a
+/// specific TPM entity. When the session is used with that entity, the HMAC
+/// calculation uses the entity's auth value in the session key derivation.
+fn bound_session_sample(tpm: &mut Tpm2) -> Result<(), TpmError> {
+    announce("BoundSession");
+
+    // Set owner auth to a known non-empty value
+    let owner_auth: Vec<u8> = vec![0, 2, 1, 3, 5, 6];
+    tpm.HierarchyChangeAuth(&TPM_HANDLE::new(TPM_RH::OWNER.get_value()), &owner_auth)?;
+    tpm.set_admin_auth(TPM_RH::OWNER, &owner_auth);
+
+    // Run the actual test, then ALWAYS reset OWNER auth afterward
+    let result = bound_session_inner(tpm, &owner_auth);
+
+    // Always reset owner auth, even if the test failed
+    tpm.allow_errors();
+    let _ = tpm.HierarchyChangeAuth(&TPM_HANDLE::new(TPM_RH::OWNER.get_value()), &vec![]);
+    tpm.set_admin_auth(TPM_RH::OWNER, &vec![]);
+
+    result
+}
+
+fn bound_session_inner(tpm: &mut Tpm2, owner_auth: &[u8]) -> Result<(), TpmError> {
+    // Start a session bound to the owner handle
+    let mut owner_handle = TPM_HANDLE::new(TPM_RH::OWNER.get_value());
+    owner_handle.auth_value = owner_auth.to_vec();
+
+    let sess = tpm.start_auth_session_ex(
+        &TPM_HANDLE::new(TPM_RH::NULL.get_value()), // no salt
+        &owner_handle,                                // bound to OWNER
+        TPM_SE::HMAC,
+        TPM_ALG_ID::SHA256,
+        TPMA_SESSION::continueSession,
+        TPMT_SYM_DEF::default(),
+        &[],                                          // no salt
+    )?;
+    println!("Started bound session (bound to OWNER): {:?}", session_handle(&sess));
+
+    // Use the bound session to define an NV index (owner-authorized operation)
+    let nv_index: u32 = 0x01800099;
+    let nv_handle = TPM_HANDLE::new(nv_index);
+
+    // Clean up in case it exists from a previous run
+    tpm.allow_errors();
+    let _ = tpm.NV_UndefineSpace(&TPM_HANDLE::new(TPM_RH::OWNER.get_value()), &nv_handle);
+
+    let nv_pub = TPMS_NV_PUBLIC::new(
+        &nv_handle,
+        TPM_ALG_ID::SHA256,
+        TPMA_NV::AUTHREAD | TPMA_NV::AUTHWRITE,
+        &vec![],
+        16,
+    );
+
+    // Define NV space using the bound session (bound to OWNER, same entity)
+    let nv_auth: Vec<u8> = vec![5, 4, 3, 2, 1, 0];
+    tpm.with_session(sess.clone()).NV_DefineSpace(
+        &TPM_HANDLE::new(TPM_RH::OWNER.get_value()), &nv_auth, &nv_pub,
+    )?;
+    let sess = tpm.last_session().unwrap_or(sess);
+    println!("Defined NV index with bound session (same-entity binding)");
+
+    // Read NV public to get the name
+    let nv_info = tpm.NV_ReadPublic(&nv_handle)?;
+    let mut nv_handle_with_auth = nv_handle.clone();
+    nv_handle_with_auth.auth_value = nv_auth.clone();
+    nv_handle_with_auth.set_name(&nv_info.nvName)?;
+
+    // Write to NV using the bound session (different entity — the NV index)
+    tpm.with_session(sess.clone()).NV_Write(
+        &nv_handle_with_auth, &nv_handle_with_auth, &vec![0, 1, 2, 3], 0,
+    )?;
+    let sess = tpm.last_session().unwrap_or(sess);
+    println!("Wrote to NV index with bound session (different-entity binding)");
+
+    // Read back
+    let read_data = tpm.with_session(sess.clone()).NV_Read(
+        &nv_handle_with_auth, &nv_handle_with_auth, 4, 0,
+    )?;
+    let sess = tpm.last_session().unwrap_or(sess);
+    println!("Read back NV data: {:?}", read_data);
+    assert_eq!(read_data, vec![0, 1, 2, 3], "NV read/write mismatch");
+
+    // Clean up NV and session
+    tpm.allow_errors();
+    let _ = tpm.NV_UndefineSpace(&TPM_HANDLE::new(TPM_RH::OWNER.get_value()), &nv_handle);
+    tpm.FlushContext(&session_handle(&sess))?;
+
+    println!("✅ BoundSession sample completed successfully");
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Example usage of the TSS.Rust library
     let mut device = Box::new(TpmTbsDevice::new());
@@ -2412,16 +2692,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Try to recover owner hierarchy if auth was changed by a previous run
     {
-        let known_owner_auth = Crypto::hash(TPM_ALG_ID::SHA1, b"passw0rd").unwrap_or_default();
-        tpm.set_admin_auth(TPM_RH::OWNER, &known_owner_auth);
-        tpm.allow_errors();
-        let _ = tpm.HierarchyChangeAuth(&TPM_HANDLE::new(TPM_RH::OWNER.get_value()), &vec![]);
-        if tpm.last_response_code() == TPM_RC::SUCCESS {
-            println!("Recovered OWNER auth (was set to hash of 'passw0rd')");
-        } else {
-            // If it fails, reset admin auth to empty (it was probably already empty)
-            tpm.set_admin_auth(TPM_RH::OWNER, &[]);
+        // Try known auth values that samples might leave behind
+        let known_auths: Vec<Vec<u8>> = vec![
+            Crypto::hash(TPM_ALG_ID::SHA1, b"passw0rd").unwrap_or_default(),
+            vec![0, 2, 1, 3, 5, 6], // bound_session_sample
+        ];
+        for known_auth in &known_auths {
+            tpm.set_admin_auth(TPM_RH::OWNER, known_auth);
+            tpm.allow_errors();
+            let _ = tpm.HierarchyChangeAuth(&TPM_HANDLE::new(TPM_RH::OWNER.get_value()), &vec![]);
+            if tpm.last_response_code() == TPM_RC::SUCCESS {
+                println!("Recovered OWNER auth");
+                break;
+            }
         }
+        // Reset admin auth to empty regardless
+        tpm.set_admin_auth(TPM_RH::OWNER, &[]);
     }
 
     // Run capabilities test
@@ -2457,7 +2743,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Err(e) = policy_simplest_sample(&mut tpm) {
         println!("⚠️  policy_simplest_sample failed: {}", e);
     }
-    // PolicyLocalitySample already ran above (C++ calls it twice with different names)
     if let Err(e) = policy_pcr_sample(&mut tpm) {
         println!("⚠️  policy_pcr_sample failed: {}", e);
     }
@@ -2533,7 +2818,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Err(e) = rewrap_sample(&mut tpm) {
         println!("⚠️  rewrap_sample failed: {}", e);
     }
-    // BoundSession — not yet implemented (needs bind handle support)
+    if let Err(e) = policy_tree_sample(&mut tpm) {
+        println!("⚠️  policy_tree_sample failed: {}", e);
+    }
+    if let Err(e) = seeded_session_sample(&mut tpm) {
+        println!("⚠️  seeded_session_sample failed: {}", e);
+    }
+    if let Err(e) = bound_session_sample(&mut tpm) {
+        println!("⚠️  bound_session_sample failed: {}", e);
+    }
     // NVX — not yet implemented (needs Platform auth / simulator)
 
     announce(
